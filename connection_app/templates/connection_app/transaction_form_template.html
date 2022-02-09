@@ -1,0 +1,8 @@
+{% extends 'fsm_admin2/fsm_transition_form.html' %}
+
+{% load i18n %}
+
+{% block content %}
+    {{ obj.lead_details_in_html }}
+    {{ block.super }}
+{% endblock %}

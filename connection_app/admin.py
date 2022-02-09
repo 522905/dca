@@ -1,0 +1,57 @@
+# -*- coding: utf-8 -*-
+from django.contrib import admin
+from import_export.admin import ExportActionMixin
+
+from .enums import ConnectionApplicationLeadStatus
+from .models import ConnectionApplication, ConnectionApplicationDocuments
+from django_fsm_log.admin import StateLogInline
+from fsm_admin2.admin import FSMTransitionMixin
+
+
+class ConnectionApplicationDocumentsInline(admin.TabularInline):
+    extra = 0
+    model = ConnectionApplicationDocuments
+
+
+@admin.register(ConnectionApplication)
+class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionMixin, admin.ModelAdmin):
+    fsm_transition_form_template = 'connection_app/transaction_form_template.html'
+
+    fsm_fields = ['status', ]
+    list_display = (
+        'id',
+        'name',
+        'mobile',
+        'application_type',
+        'created_on',
+        'updated_on',
+        'required_by',
+        'status',
+    )
+    search_fields = ('name',)
+
+    draft_fieldsets = [(None, {'fields': [
+            'name', 'mobile', 'address', 'application_type', 'item_code',
+            'connection_type', 'referral_code', 'applicant_remarks',
+            'communication_mode', 'fsm_display_status'
+        ]})]
+
+    process_fieldsets = [(None, {'fields': [
+            'lead_details_in_html', 'fsm_display_status'
+        ]})]
+
+    readonly_fields = ('lead_details_in_html',)
+
+    def get_fieldsets(self, request, obj=None):
+        # fieldsets = super().get_fieldsets(request, obj)
+
+        if obj and obj.status != ConnectionApplicationLeadStatus.DRAFT:
+            return self.process_fieldsets
+        else:
+            return self.draft_fieldsets
+
+    def get_inlines(self, request, obj):
+        if obj and obj.status != ConnectionApplicationLeadStatus.DRAFT:
+            return [StateLogInline, ]
+        else:
+            return [ConnectionApplicationDocumentsInline, ]
