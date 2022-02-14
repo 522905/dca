@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import os # new
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -129,8 +130,16 @@ USE_TZ = True
 CORS_ORIGIN_ALLOW_ALL = True
 
 
-CAMUNDA_BASE_URL = "http://192.168.1.77:25252/engine-rest"
+# CAMUNDA_BASE_URL = "http://192.168.1.77:25252/engine-rest"
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
+
+#DataFlair #Django #Static files
 STATIC_URL = '/static/'
+#--------------------------------------------------
+STATIC_ROOT = os.path.join(BASE_DIR, 'root')
+#-----------------------------------------------------
+STATICFILES_DIRS = [
+        os.path.join(BASE_DIR, 'static'),
+]

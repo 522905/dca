@@ -1,68 +1,76 @@
-<table style="width: 100%;">
-	<tbody>
-        <tr>
-            <td colspan="3"><h3>Application Status: {{obj.get_status_display}}</h3>
-				<br>
-			</td>
-		</tr>
-		<tr>
-			<td style="width: 33.3333%;">Name: {{obj.name}}
-				<br>
-			</td>
-			<td style="width: 33.3333%;">Contact: {{obj.mobile}}
-				<br>
-			</td>
-			<td style="width: 33.3333%;">Channel: {{obj.communication_mode}}
-				<br>
-			</td>
-		</tr>
-		<tr>
-			<td colspan="3">Address: {{obj.address}}
-				<br>
-			</td>
-		</tr>
-		<tr>
-			<td>Application Type: {{obj.application_type}}
-				<br>
-			</td>
-			<td>Item: {{obj.item_code}}
-				<br>
-			</td>
-			<td>Connection Type: {{obj.connection_type}}
-				<br>
-			</td>
-		</tr>
-		<tr>
-			<td>Required By: {{obj.required_by}}
-				<br>
-			</td>
-			<td colspan="2">Applicant Remarks: {{obj.applicant_remarks}}
-				<br>
-			</td>
-		</tr>
-	</tbody>
-</table>
-<div style="display: flex;">
-{% for doc in obj.documents.all %}
-
-<a target="_blank" href="{{ doc.link }}">
-    <img style="max-width: 200px" src="{{ doc.link }}"></img><br>
-    <span>{{ doc.get_type_display }}</span>
-</a>
-
-{% endfor %}
+<div class="container">
+	
+	<table style="width: 100%;">
+		<tbody>
+			<tr>
+				<td colspan="3"><h3>Application Status: {{obj.get_status_display}}</h3>
+					<br>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 33.3333%;"><label>Name:</label> {{obj.name}}
+					<br>
+				</td>
+				<td style="width: 33.3333%;"><label>Contact:</label> {{obj.mobile}}
+					<br>
+				</td>
+				<td style="width: 33.3333%;"><label>Channel:</label> {{obj.communication_mode}}
+					<br>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="3"><label>Address: </label>{{obj.address}}
+					<br>
+				</td>
+			</tr>
+			<tr>
+				<td><label>Application Type:</label> {{obj.application_type}}
+					<br>
+				</td>
+				<td><label>Item:</label> {{obj.item_code}}
+					<br>
+				</td>
+				<td><label>Connection Type:</label> {{obj.connection_type}}
+					<br>
+				</td>
+			</tr>
+			<tr>
+				<td><label>Required By: </label>{{obj.required_by}}
+					<br>
+				</td>
+				<td colspan="2"><label>Applicant Remarks:</label> {{obj.applicant_remarks}}
+					<br>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+<div class="image_module">
+	{% for doc in obj.documents.all %}
+		<a target="_blank" href="{{ doc.link }}">
+			<img style="max-width: 200px" src="{{ doc.link }}"></img><br>
+			<span>{{ doc.get_type_display }}</span>
+		</a>
+	{% endfor %}
 </div>
 {%  if obj.consumer_id %}
     <table style="width: 100%;">
         <tbody>
             <tr>
-                <td style="width: 33.3333%;">Consumer Id: {{obj.consumer_id}}
+                <td style="width: 33.3333%;"><label>Consumer Id:</label> {{obj.consumer_id}}
                     <br>
                 </td>
-                <td style="width: 33.3333%;">Process Type: {{obj.process_type}}
+                <td style="width: 33.3333%;"><label>Process Type: </label>{{obj.process_type}}
                     <br>
                 </td>
             </tr>
         </tbody>
     </table>
 {% endif %}
+<style>
+	label{  font-weight: bold;}
+	.field-lead_details_in_html .readonly{ margin-left: 0 !important;}
+	.image_module{ display: flex; padding: 10px 0;}
+	.image_module a{ flex: 1; margin: 0 auto; text-align: center; margin: 10px 0;}
+	.image_module a img{ width:100%; padding: 10px; border: 1px solid #ccc; height: 150px; margin-bottom: 10px;}
+</style>

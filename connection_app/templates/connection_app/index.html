@@ -1,0 +1,508 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+	<html lang="em">
+		<head>
+			<title>ARUN GAS SERVICE</title>
+			<link rel = "icon"  type = "image/png" href = "img/logo2.png">
+			    <meta charset="utf-8"></meta>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
+			<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+			<link rel="stylesheet" href="https://arungas.com/django/css/style.css">
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+			<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+			<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+			<link href="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.css" rel="stylesheet">
+			<script src="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.js"></script>
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+			<style>
+			
+			img 
+			{
+			  display: block;
+			  margin-left: auto;
+			  margin-right: auto;
+			  width:100%;
+			  height:200px;
+			}
+			select
+			{
+				height:2.4em;
+				width:250px;
+				border:circle;
+			}
+			.btn
+			{
+				margin-left:62px;
+				width:250px;
+			}
+				
+			.uppy-Dashboard-innerWrap
+			{
+				width:200px;
+				height:200px;
+			}
+			.uppy-Dashboard-inner
+			{
+				width:200px;
+				height:200px;
+				border:0;
+				border-radius: 3px;
+			}
+			
+			.uppy-Dashboard-AddFiles-title
+			{
+				font-size:12px;
+				width:100px;
+				margin:auto;
+				
+			}
+		
+		
+			.uppy-DashboardContent-bar
+			{
+				
+				height:50px;
+			}
+			
+					
+			.uppy-Dashboard-innerWrap
+			{
+				width:180px;
+				height:200px;
+			}
+			
+			.uppy-Dashboard
+			{
+				height:200px;
+				width:180px;
+				
+			}
+
+			</style>	
+				<script>
+
+					function keys(event)
+					{
+						var keyCode = event.which;
+						if(keyCode>=65 && keyCode<=90 || keyCode>=97 && keyCode<=122 ||  keyCode>=32 && keyCode<=33)
+						{
+							return true;
+						}
+						else
+						{
+							event.preventDefault();
+						}
+					}
+					
+					function digits(event)
+					{
+						var keyCode = event.which;
+						
+						if(keyCode>=48 && keyCode<=57 )
+						{
+							return true;
+							
+						}
+						else
+						{
+							event.preventDefault();
+						}
+					}
+						function digit(event)
+					{
+						var keyCode = event.which;
+						
+						if(keyCode>=48 && keyCode<=57 || keyCode>=65 && keyCode<=90 || keyCode>=97 && keyCode<=122)
+						{ 
+							return true;
+						}
+						else
+						{
+							event.preventDefault();
+						}
+					}
+					
+					function valid() {
+						let files = [
+							validateUppy(customerpictureuppy,'CUSTOMER_PHOTO', 'Customer Picture or Selfie (ग्राहक की फोटो)*', true),
+							validateUppy(aadharcarduppy,'UID_FRONT', 'Aadhar Card Frontside Picture (आधार कार्ड की फोटो)*', false),
+							validateUppy(aadharcardbackuppy,'UID_BACK','Aadhar Card Backside Picture (आधार कार्ड की फोटो)*', false),
+							validateUppy(identificationuppy,'OTHER_ID_PROOF', 'Any Other Identification Card', false),
+							validateUppy(bankdetailuppy, 'BANK_DETAIL', 'Bank Detail (पास बुक का विवरण)*', false)
+						]
+						
+						if (!files.reduce((aggr, current) => {return current.valid && aggr}, true)) {
+							let error = files.reduce((aggr, current) => {
+								if (current.msg) {
+									return aggr + '\n' + current.msg
+								} else {
+									return aggr
+								}
+							}, '');
+							return window.alert(error);
+						}
+						let documentArray = files.filter(e => e.url).map(e => {return { type: e.key, link: e.url}});
+						console.log(documentArray);
+						return documentArray;
+					}
+					
+					function validateUppy(uppyObj, key, label, fileMandatory) {
+
+						if (!uppyObj.state || uppyObj.state.totalProgress == 0) {
+							if (fileMandatory) {
+								return {
+									valid: false, key: key, 
+									msg: `${label} is required` 
+								};
+							}
+							return {valid: true};
+						} else if (uppyObj.state.totalProgress < 100) {
+							return {valid: false, key: key, msg: `${label} upload in Progress(अपलोड प्रगति पर है)`};
+						} else {
+							return {valid: true, key: key, url: Object.values(uppyObj.state.files)[0].uploadURL};
+						}
+					}
+
+					var initialData = {
+						"mobile": "9876543210",
+						"referral_code": "4521",
+					};
+					
+					function fillInitialData() {
+						Object.entries(initialData).forEach((keyValue) => {
+							$(`[name=${keyValue[0]}]`).val(keyValue[1]);
+						})
+					}
+
+					
+			</script>
+		</head>
+		<body >
+			
+		<div id="form_hide" class="container">
+			
+			<img src = "{% static 'img/logo2.png' %}">
+			<h3 class="text-center">Form to Apply New Domestic LPG Gas Connection</h3>
+			<h4 class="text-center">नया घरेलू गैस कनेक्शन आवेदन करने के लिए फार्म</h4><br>
+			<h4 class="text-success"><p>Registration Form</p></h4>
+			<form class="form-horizontal" action="" id="punjab"  method="POST" enctype="multipart/form-data">
+				<div class="row">
+					<div class="col-sm-12 one">
+						<p>Customer Name (ग्राहक का नाम)<strong style="color:red">*</strong></p>
+						<input type="text" class="form-control" id="customername" name="name" value="" required />
+						<span id="customername_detail" class="text-danger"></span>
+						<br>
+						<p>Mobile No. (फोन नंबर)<strong style="color:red">*</strong></p>
+						<input type="text" class="form-control" id="mobile" name="mobile"  onkeypress="return digits(event)" value="" maxlength="10" required />
+						<span id="mobile_detail" class="text-danger"></span>
+						<br>
+						<p>Current Address (वर्तमान पता)<strong style="color:red">*</strong></p>
+						<input type="text" class="form-control" id="currentaddress" name="address" value="" required >
+						<span id="currentaddress_detail" class="text-danger"></span>
+						<br><hr>
+						<div class="row">
+						<div class="col-sm-2">
+						<p>Customer Picture or Selfie (ग्राहक की फोटो)<strong style="color:red">*</strong></p>
+						<span class="custom-file-input" name="customerpicture" id="customerpicture" ></span><br>
+							<span id="customerpicture_detail" class="text-danger"></span>
+						</div>
+						<div class="col-sm-2">
+						<p>Aadhar Card Frontside Pic (आधार कार्ड की फोटो)<strong style="color:red">*</strong></p>
+						<span class="custom-file-input" name="aadharcard" id="aadharcard">
+						</span><br>
+						</div>
+						<div class="col-sm-2">
+						<p>Aadhar Card Backside Pic (आधार कार्ड की फोटो)<strong style="color:red">*</strong></p>
+						<span class="custom-file-input" name="aadharcardback" id="aadharcardback">
+						</span><br>
+						</div>
+						<div class="col-sm-2">
+						<p>Any Other Identification Proof (कोई अन्य पहचान पत्र)</p>
+						<span class="custom-file-input" name="OTHER_ID_PROOF" id="identification"></span><br>
+						</div>
+						<div class="col-sm-2">
+						<p>Bank Detail (पास बुक का विवरण)<strong style="color:red">*</strong></p>
+						<span class="custom-file-input" id="bankdetail" name="bankdetail"></span><br>
+						</div>
+						</div><hr>
+						<p>Application Type (किस लिए आवेदन)<strong style="color:red">*</strong></p>
+						<input type="radio" class="form-check-input" name="application_type" value="NEW_CONNECTION" required> New Connection (नया कनेक्शन)<br>
+						<input type="radio" class="form-check-input" name="application_type" value="BLUE_BOOK" required> Blue Book (नीली किताब)<hr>
+						<p>Connection Type<strong style="color:red">*</strong></p>
+							<select class="selectpicker form-control" data-style="warning" name="connection_type" required>
+								<option value="" selected="selected">Select connection Type</option>
+								<option value="FC14#SINGLE" >14.2 KG Single Connection(14.2 किलो सिंगल कनेक्शन)</option>
+								<option value="FC14#DOUBLE">14.2 Kg Double Connection (14.2 किलो डबल कनेक्श)</option>
+								<option value="FC5#SINGLE">5 KG Single Connection (5 किलो सिंगल कनेक्श)</option>
+								<option value="FC5#DOUBLE">5 KG Double Connection(5 किलो डबल कनेक्श)</option>
+							</select>
+							<br>
+							<p>Reference Code</p>
+						<input type="text" class="form-control" id="reference" name="referral_code" value="">
+						<br>
+						<input type="submit"  id="submit" name="submit" value="submit" class="btn btn-success">
+					</div>     
+				</div>
+
+			</form>
+			<br>
+		</div>
+		<div id="cus_id"></div>
+		<div id="application_receipt">
+			
+			<span id="app_id"></span>
+			<span id="app_id_creation"></span>
+		</div> 
+		
+		<div id="message"></div>
+		
+		<script>
+				$('#punjab').on('submit', function(event) {
+				event.preventDefault();
+				let documentArray = valid();
+				
+				let formdata = $('form').serializeArray()
+					.reduce(function(accum, item) {
+						
+						if (-1 === [ 'ignoreThis', 'andThat' ].indexOf(item.name)) {
+							
+							if (item.value !== null) {
+								accum[item.name] = item.value;
+							}
+						}
+						return accum;
+					},
+					{}
+				);
+
+				formdata.documents = documentArray;
+				
+				formdata.item_code = formdata.connection_type.split('#')[0];
+				formdata.connection_type = formdata.connection_type.split('#')[1];
+				
+				console.log(formdata);
+			
+			jQuery('#submit').val ('Please wait...'); 
+				jQuery('#submit').attr('disabled',true);
+				
+				var formData = new FormData(this);
+			
+				jQuery.ajax({
+					url: '/connection-app/connection-application/',
+					type: 'POST',
+					data: JSON.stringify(formdata),
+					contentType: "application/json; charset=utf-8",
+					dataType: 'JSON',
+					
+					processData:false,
+					success: function(result){
+						
+						$('#form_hide').hide();
+						
+						console.log(result);
+						jQuery('#punjab')['0'].reset();
+						jQuery('#submit').val('Submit');
+						jQuery('#submit').attr('disabled',false);
+						
+						swal({
+							title: "successful",
+							text: "Thank You",
+							icon: "success",
+							})
+							
+						$("#message").html('<div class="alert alert-success" style="color:red; text-align:center; margin-top:250px;"><strong>SUCCESS!</strong> 	your application has been submitted</div>');
+						
+						 $("#cus_id").append(result);
+							$("#message").append(result.id).css({ "text-align":"center"}).append(" <b>is you application Id</b>.");
+							
+						$('#application_receipt').show();
+						$('#cus_id').attr('id');
+					}
+				});
+			});
+	
+
+
+			/*$('#punjab').on('submit', function(event) {
+				event.preventDefault();
+
+				const data = new formData(event.target);
+
+				const value = Object.fromEntries(data.entries());
+
+			 value.topics = data.getAll("topics");
+
+				console.log({ value });
+			  });
+
+			  const form = document.querySelector("submit");
+			  form.addEventListener("submit", handleSubmit);
+				*/
+		
+			
+			$(document).ready(function(){
+				
+				fillInitialData();
+				
+				window.customerpictureuppy = new Uppy.Core({
+				  debug: true,
+				  autoProceed: true,
+				  restrictions: {
+					maxFileSize: 50000000,
+					maxNumberOfFiles: 1,
+					minNumberOfFiles: 1,
+					allowedFileTypes: ['image/*'],
+					//requiredMetaFields: ['caption'],
+				  }
+				})
+				.use(Uppy.Dashboard, {
+					  trigger: '#customerpicture',
+					  inline: true,
+					  target: '#customerpicture',
+					  showProgressDetails: true,
+					  note: 'Images and video only, 2–3 files, up to 10 MB',
+					  height: 470,
+					  metaFields: [],
+					  id: 'customerpicture',
+					  browserBackButtonClose: false
+				})
+				.use(Uppy.Tus, {
+					endpoint: 'https://tusd.tusdemo.net/files/',
+				})
+				customerpictureuppy.on('complete', result => {
+					console.log('successful files:', result.successful)
+					console.log('failed files:', result.failed)
+				})
+				
+				
+				window.aadharcarduppy = new Uppy.Core({
+				  debug: true,
+				  autoProceed: true,
+				  restrictions: {
+					maxFileSize: 50000000,
+					maxNumberOfFiles: 1,
+					minNumberOfFiles: 1,
+					allowedFileTypes: ['image/*'],
+					//requiredMetaFields: ['caption'],
+				  }
+				})
+				.use(Uppy.Dashboard, {
+					  trigger: '#aadharcard',
+					  inline: true,
+					  target: '#aadharcard',
+					  showProgressDetails: true,
+					  note: 'Images and video only, 2–3 files, up to 10 MB',
+					  height: 470,
+					  metaFields: [],
+					  id: 'aadharcard',
+					  browserBackButtonClose: false
+				})
+				.use(Uppy.Tus, {
+					endpoint: 'https://tusd.tusdemo.net/files/',
+				})
+				aadharcarduppy.on('complete', result => {
+					console.log('successful files:', result.successful)
+					console.log('failed files:', result.failed)
+				})
+				
+				window.aadharcardbackuppy = new Uppy.Core({
+				  debug: true,
+				  autoProceed: true,
+				  restrictions: {
+					maxFileSize: 50000000,
+					maxNumberOfFiles: 1,
+					minNumberOfFiles: 1,
+					allowedFileTypes: ['image/*'],
+					//requiredMetaFields: ['caption'],
+				  }
+				})
+				.use(Uppy.Dashboard, {
+					  trigger: '#aadharcardback',
+					  inline: true,
+					  target: '#aadharcardback',
+					  showProgressDetails: true,
+					  note: 'Images and video only, 2–3 files, up to 10 MB',
+					  height: 470,
+					  metaFields: [],
+					  id: 'aadharcardback',
+					  browserBackButtonClose: false
+				})
+				.use(Uppy.Tus, {
+					endpoint: 'https://tusd.tusdemo.net/files/',
+				})
+				aadharcarduppy.on('complete', result => {
+					console.log('successful files:', result.successful)
+					console.log('failed files:', result.failed)
+				})
+				
+			
+				window.identificationuppy = new Uppy.Core({
+				  debug: true,
+				  autoProceed: true,
+				  restrictions: {
+					maxFileSize: 50000000,
+					maxNumberOfFiles: 1,
+					minNumberOfFiles: 1,
+					allowedFileTypes: ['image/*'],
+					//requiredMetaFields: ['caption'],
+				  }
+				})
+				.use(Uppy.Dashboard, {
+					  trigger: '#identification',
+					  inline: true,
+					  target: '#identification',
+					  showProgressDetails: true,
+					  note: 'Images and video only, 2–3 files, up to 10 MB',
+					  height: 470,
+					  metaFields: [],
+					  id: 'identification',
+					  browserBackButtonClose: false
+				})
+				.use(Uppy.Tus, {
+					endpoint: 'https://tusd.tusdemo.net/files/',
+				})
+				identificationuppy.on('complete', result => {
+					console.log('successful files:', result.successful)
+					console.log('failed files:', result.failed)
+				})
+				
+			
+				window.bankdetailuppy = new Uppy.Core({
+				  debug: true,
+				  autoProceed: true,
+				  restrictions: {
+					maxFileSize: 50000000,
+					maxNumberOfFiles: 1,
+					minNumberOfFiles: 1,
+					allowedFileTypes: ['image/*'],
+					//requiredMetaFields: ['caption'],
+				  }
+				})
+				.use(Uppy.Dashboard, {
+					  trigger: '#bankdetail',
+					  inline: true,
+					  target: '#bankdetail',
+					  showProgressDetails: true,
+					  note: 'Images and video only, 2–3 files, up to 10 MB',
+					  height: 470,
+					  metaFields: [],
+					  id: 'bankdetail',
+					  browserBackButtonClose: false
+				})
+				.use(Uppy.Tus, {
+					endpoint: 'https://tusd.tusdemo.net/files/',
+				})
+				bankdetailuppy.on('complete', result => {
+					console.log('successful files:', result.successful)
+					console.log('failed files:', result.failed)
+				})
+			});
+			
+			
+		
+		</script>
