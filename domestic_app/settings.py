@@ -129,6 +129,7 @@ USE_TZ = True
 
 CORS_ORIGIN_ALLOW_ALL = True
 
+INTERAKT_API_KEY = "HmtU2CH6poGN_TU-XqCtwuvef8utPNRJRlamfbWXTwg"
 
 # CAMUNDA_BASE_URL = "http://192.168.1.77:25252/engine-rest"
 # Static files (CSS, JavaScript, Images)

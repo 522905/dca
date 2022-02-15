@@ -18,6 +18,7 @@ class ConnectionApplicationLeadStatus(models.TextChoices):
 	NOT_INTERESTED = 'NOT_INTERESTED', 'Not Interested',
 	BACK_OFFICE = 'BACK_OFFICE', 'Back Office',
 	FRONT_OFFICE = 'FRONT_OFFICE', 'Front Office',
+	FRONT_OFFICE_SV = 'FRONT_OFFICE_SV', 'Front Office SV',
 	COMPLETED = 'COMPLETED', 'Completed'
 
 

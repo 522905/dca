@@ -64,5 +64,14 @@ class FrontOfficeForm(forms.Form):
 		return data
 
 
+class FrontOfficeSVForm(FrontOfficeForm):
+	sv_doc_url = forms.URLField(required=False, help_text="Upload SV Document")
+
+	def clean(self):
+		data = super().clean()
+		if data.get("verified") and not data.get("sv_doc_url"):
+			raise forms.ValidationError("Upload SV Document")
+
+
 
 
