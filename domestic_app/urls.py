@@ -18,10 +18,15 @@ from django.template.defaulttags import url
 from django.urls import path, include
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
-    path(r'connection-app/', include('connection_app.urls'))
+    path(r'connection-app/', include('connection_app.urls')),
+    path(r'commlog/', include('communication_log.urls'))
 ]
 
 
+urlpatterns += [
+    path('django-rq/', include('django_rq.urls'))
+]

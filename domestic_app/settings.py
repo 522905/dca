@@ -41,12 +41,16 @@ INSTALLED_APPS = [
     'django_extensions',
     'rest_framework',
     'corsheaders',
+    'communication_log',
+
+    'django_rq',
 
     'django_fsm',
     'django_fsm_log',
     'fsm_admin2',
 
     'connection_app'
+
 ]
 
 MIDDLEWARE = [
@@ -144,3 +148,30 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'root')
 STATICFILES_DIRS = [
         os.path.join(BASE_DIR, 'static'),
 ]
+
+RQ_QUEUES = {
+    'default': {
+        'HOST': 'localhost',
+        'PORT': 56379,
+        'DB': 0,
+        # 'PASSWORD': 'some-password',
+        'DEFAULT_TIMEOUT': 360,
+        'ASYNC': False
+    }
+}
+
+# If you need custom exception handlers
+RQ_EXCEPTION_HANDLERS = ['path.to.my.handler']
+
+BASE_URL = 'https://dca.arungas.com'
+
+MINIO_URL = "http://localhost:55556/"
+
+MINIO_ENDPOINT = "localhost:55556"
+
+MINIO_BUCKET_NAME = "domesticconnectionapplicationdocs"
+
+MINIO_CREDENTIAL = {
+    "access_key": "FW3EQ9USIVOBMEDRIY86",
+    "secret_key": "J3uqfPVyCyap9CsbDIwDCLYzhI79oLheMmjpPTcg"
+}
