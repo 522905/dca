@@ -65,7 +65,7 @@ class FrontOfficeForm(forms.Form):
 
 
 class FrontOfficeSVForm(FrontOfficeForm):
-	sv_doc_url = forms.URLField(required=False, help_text="Upload SV Document")
+	sv_doc_url = forms.CharField(widget=forms.TextInput, required=False, help_text="Upload SV Document")
 
 	def clean(self):
 		data = super().clean()
