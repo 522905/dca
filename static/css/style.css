@@ -57,7 +57,7 @@ select
     width:180px;
     
 }
-.container { float: left; width: 100%;}
+
 .col-md-6{ float: left; width: 50%;}
 .thumb_img{ float: left; width: 40px; height: 40px;}
 .thumb_img img{     width: 100%;

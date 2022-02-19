@@ -38,10 +38,10 @@ class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionCustomMixin, ad
         ]})]
 
     process_fieldsets = [(None, {'fields': [
-            'lead_details_in_html', 'fsm_display_status'
+            'lead_details_in_html', 'attachment_details_in_html', 'fsm_display_status'
         ]})]
 
-    readonly_fields = ('lead_details_in_html',)
+    readonly_fields = ('lead_details_in_html', 'attachment_details_in_html')
 
     def get_fieldsets(self, request, obj=None):
         # fieldsets = super().get_fieldsets(request, obj)

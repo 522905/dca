@@ -1,0 +1,7 @@
+Attachment Dikho!!
+{{obj.document}}
+  {% for doc in obj.document %}
+  <a href="{{ doc.link }}" download>
+    <p>{{ doc.key }}</p>
+  </a>
+  {% endfor %}

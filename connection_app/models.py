@@ -55,6 +55,13 @@ class ConnectionApplication(models.Model):
 
 	lead_details_in_html.short_description = 'Lead Details'
 
+	def attachment_details_in_html(self):
+		template = loader.get_template("connection_app/application_attachment_details_template.html")
+		html = template.render({'obj': self})
+		return mark_safe(html)
+
+	lead_details_in_html.short_description = 'Lead Details'
+
 	@fsm_log_description
 	@fsm_log_by
 	@transition(

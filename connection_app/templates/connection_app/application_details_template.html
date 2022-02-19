@@ -1,16 +1,10 @@
 {% load static %}
 <link rel="stylesheet" href="{% static '/css/style.css' %}">
-<link rel="stylesheet" href="{% static '/css/zoom/zoomist.css' %}">
+<!-- <link rel="stylesheet" href="{% static '/css/zoom/zoomist.css' %}">
 <script src="{% static '/js/zoomist.js' %}"></script>
-<script defer src="{% static '/js/test.js' %}" ></script>
+<script defer src="{% static '/js/test.js' %}" ></script> -->
 
-<style>
-	.form-group{ float: left; width: 80%; background: #ececec; border: 1px solid #ddd;  padding: 10px;}
-	.form-group p label{  width: 50%; float: left; padding-left: 10px;}
-	.form-group p span{ font-weight: bold; float: left;}
-	.form-group p{ float: right; width: 100%;}
-</style>
-<h3>Application Status:<span> {{obj.get_status_display}}</h3>
+	<h3>Application Status:<span> {{obj.get_status_display}}</h3>
 	<div class="form-group">
 		<p>
 			<label>Name:</label> 
@@ -50,8 +44,8 @@
 		</p>
 	</div>
 
-<script src="{% static '/js/wheelzoom.js' %}"></script>
-<script>
+<!-- <script src="{% static '/js/wheelzoom.js' %}"></script> -->
+<!-- <script>
 	var slideIndex = 1;
 	showSlides(slideIndex);
 	
@@ -82,10 +76,14 @@
 	  captionText.innerHTML = dots[slideIndex-1].alt;
 	}
 	wheelzoom(document.querySelector('img.zoom')); 
-</script>
+</script> -->
 
  <style>
- .readonly{ float: left; width: 100%; margin: 0 !important;}
+	 .form-group{ float: left; width: 80%; background: #ececec; border: 1px solid #ddd;  padding: 10px;}
+	.form-group p label{  width: 50%; float: left; padding-left: 10px;}
+	.form-group p span{ font-weight: bold; float: left;}
+	.form-group p{ float: right; width: 100%;}
+ 	.readonly{ float: left; width: 100%; margin: 0 !important;}
 	label{  font-weight: bold;}
 	.field-lead_details_in_html .readonly{ margin-left: 0 !important;}
 	.image_module{ display: flex; padding: 10px 0;}
