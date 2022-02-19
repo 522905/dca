@@ -317,6 +317,10 @@ class ConnectionApplication(models.Model):
 	def application_completed_sv(self, *args, **kwargs):
 		if kwargs.get("verified"):
 			self.remarks = kwargs.get("remarks")
+			self.documents.create(
+				type=ConnectionApplicationDocumentsEnum.SV,
+				link=kwargs.get("sv_doc_url")
+			)
 
 
 class ConnectionApplicationDocuments(models.Model):
