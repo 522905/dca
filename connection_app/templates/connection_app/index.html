@@ -311,7 +311,7 @@
 			var formData = new FormData(this);
 
 			jQuery.ajax({
-				url: '/connection-app/connection-application/',
+				url: '/connection-app/connection-application/wf/',
 				type: 'POST',
 				data: JSON.stringify(formdata),
 				contentType: "application/json; charset=utf-8",
@@ -368,7 +368,7 @@
 					browserBackButtonClose: false
 				})
 				.use(Uppy.Tus, {
-					endpoint: 'https://tusd.tusdemo.net/files/',
+					endpoint: 'https://tus.dca.arungas.com/files/',
 				})
 			customerpictureuppy.on('complete', result => {
 				console.log('successful files:', result.successful)
@@ -399,7 +399,7 @@
 					browserBackButtonClose: false
 				})
 				.use(Uppy.Tus, {
-					endpoint: 'https://tusd.tusdemo.net/files/',
+					endpoint: 'https://tus.dca.arungas.com/files/',
 				})
 			aadharcarduppy.on('complete', result => {
 				console.log('successful files:', result.successful)
@@ -429,7 +429,7 @@
 					browserBackButtonClose: false
 				})
 				.use(Uppy.Tus, {
-					endpoint: 'https://tusd.tusdemo.net/files/',
+					endpoint: 'https://tus.dca.arungas.com/files/',
 				})
 			aadharcarduppy.on('complete', result => {
 				console.log('successful files:', result.successful)
@@ -460,7 +460,7 @@
 					browserBackButtonClose: false
 				})
 				.use(Uppy.Tus, {
-					endpoint: 'https://tusd.tusdemo.net/files/',
+					endpoint: 'https://tus.dca.arungas.com/files/',
 				})
 			identificationuppy.on('complete', result => {
 				console.log('successful files:', result.successful)
@@ -491,7 +491,7 @@
 					browserBackButtonClose: false
 				})
 				.use(Uppy.Tus, {
-					endpoint: 'https://tusd.tusdemo.net/files/',
+					endpoint: 'https://tus.dca.arungas.com/files/',
 				})
 			bankdetailuppy.on('complete', result => {
 				console.log('successful files:', result.successful)
