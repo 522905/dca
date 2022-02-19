@@ -1,18 +1,31 @@
+import io
+
 import requests
 import track
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.template import loader
 from django.utils.safestring import mark_safe
 from django_currentuser.middleware import get_current_user
 from django_fsm import transition, FSMField, GET_STATE
 from django_fsm_log.decorators import fsm_log_description, fsm_log_by
+from minio import Minio
 
+from communication_log.models import CommunicationLog
 from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTypeEnum, \
 	ConnectionApplicationProcessType, ConnectionApplicationLeadStatus, ConnectionApplicationDocumentsEnum, \
 	ConnectionApplicationLeadCommunicationMode
 from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, FrontOfficeForm, SubmitLead, \
 	FrontOfficeSVForm
+from domestic_app.utils import get_minio_public_url
+
+minio_client = Minio(
+        settings.MINIO_ENDPOINT,
+        access_key=settings.MINIO_CREDENTIAL.get("access_key"),
+        secret_key=settings.MINIO_CREDENTIAL.get("secret_key"),
+		secure=False
+    )
 
 
 class ConnectionApplication(models.Model):
@@ -55,27 +68,10 @@ class ConnectionApplication(models.Model):
 		# conditions=[can_close]
 	)
 	def submit(self, *args, **kwargs):
-		# {
-		# 	"countryCode": "+xx",
-		# 	"phoneNumber": "xxxxxxxxxx",
-		# 	"type": "Template",
-		# 	"callbackData": "some_callback_data",
-		# 	"template": {
-		# 		"name": "delivered_alert_101",
-		# 		"languageCode": "en",
-		# 		"headerValues": [
-		# 			"Alert",  #
-		# 		],
-		# 		"bodyValues": [
-		# 			"There",  # value for variable {{1}} in body text
-		# 			"1234"  # value for variable {{2}} in body text
-		# 		],
-		# 		"buttonValues": {
-		# 			"0": [
-		# 				"12344"  # value for {{1}} for dynamic url in button at index position 0
-		# 			]
-		# 		}
-		# 	}
+		self.event_submit_channel_whatsapp()
+
+
+	def event_submit_channel_whatsapp(self):
 		body_text = {
 			"countryCode": "+91",
 			"phoneNumber": self.mobile,
@@ -93,7 +89,7 @@ class ConnectionApplication(models.Model):
 				"bodyValues": [
 					self.name,
 					self.id,
-					'{} {} Kg {}'.format(
+					'{} {} {}'.format(
 						self.get_application_type_display(),
 						self.get_item_code_display(),
 						self.get_connection_type_display()
@@ -107,25 +103,66 @@ class ConnectionApplication(models.Model):
 				}
 			}
 		}
+		connection_application_content_type = ContentType.objects.get_for_model(ConnectionApplication)
+		data = track.client.post(
+			api_key=settings.INTERAKT_API_KEY,
+			path="/v1/public/message/",
+			body=body_text
+		).json()
 
-		track.client.post(api_key=settings.INTERAKT_API_KEY, path="/v1/public/message/", body=body_text)
-		# track.user(
-		# 	country_code="+91",
-		# 	phone_number=self.mobile,
-		# 	traits={
-		# 		"name": self.name,
-		# 	}
-		# )
-		# Push Event
+		if data['result']:
+			CommunicationLog.objects.create(
+				content_type=connection_application_content_type,
+				object_id=self.pk,
+				event="submit", channel="whatsapp",
+				message_id=data.get('id')
+			)
+		else:
+			self.event_submit_channel_sms()
 
-		# track.event(event='APPLICATION_SUBMITTED', traits={
-		# 	"application_id": self.id,
-		# 	"application_details": "{} {} Kg {}".format(
-		# 		self.application_type, self.item_code.replace("FC", ""), self.connection_type
-		# 	),
-		# 	"url": "connection-app/connection-application/{}/".format(self.id)
-		#
-		# }, phone_number=self.mobile)
+	def event_submit_channel_sms(self):
+		context = {
+			"name": self.name,
+			"id": self.id,
+			"application_details": '{} {} {}'.format(
+						self.get_application_type_display(),
+						self.get_item_code_display(),
+						self.get_connection_type_display()
+					),
+			"working_days": "2"
+		}
+
+		message = settings.SUBMIT_SMS_TEMPLATE.format(**context)
+
+		x = requests.post("https://4r198.api.infobip.com/sms/2/text/advanced", json={
+			"messages": [
+				{
+					"from": "ARUNGS",
+					"destinations": [
+						{
+							"to": "+91{}".format(self.mobile)
+						}
+					],
+
+					"text": message,
+					"flash": False,
+
+					"regional": {
+						"indiaDlt": {
+							"principalEntityId": "1101546710000030317",
+							"contentTemplateId": "1107161183026272363"
+						}
+					},
+
+					"notifyUrl": "https://www.example.com/sms/advanced",
+					"notifyContentType": "application/json",
+					# "callbackData": "DLR callback data",
+					# "validityPeriod": 720
+				}
+			]
+		}, headers={
+			'Authorization': 'App 140a3abf6dd9134f5defb703a54dfcf0-e3df520b-f144-4282-a174-aa3765c7b438'
+		})
 
 
 	@fsm_log_description
@@ -192,24 +229,33 @@ class ConnectionApplication(models.Model):
 	def application_completed(self, *args, **kwargs):
 		if kwargs.get("verified"):
 			self.remarks = kwargs.get("remarks")
-			track.api_key = settings.INTERAKT_API_KEY
-			# # Add User To Whatsapp
-			# track.user(
-			# 	country_code="+91",
-			# 	phone_number=self.mobile,
-			# 	traits={
-			# 		"name": self.name,
-			# 	}
-			# )
 
-			# Push Event
-			# track.event(event='APPLICATION_COMPLETED', traits={
-			# 	"application_id": self.id,
-			# 	"application_details": "{} {} Kg {}".format(
-			# 		self.application_type, self.item_code.replace("FC", ""), self.connection_type
-			# 	),
-			# 	"url": "connection-app/connection-application/{}/".format(self.id)
-			# }, phone_number=self.mobile)@fsm_log_description
+			# Loading html template & converting to pdf document
+			sv_doc_html_template = loader.get_template("connection_app/application_details_template.html")
+			sv_doc_html = sv_doc_html_template.render({'obj': self})
+
+			sv_doc_pdf = requests.post(
+				settings.HTML_TO_PDF_SERVER_URL,
+				json={
+					"content": sv_doc_html,
+					"options": {"pageSize": "A4"}
+				}
+			)
+
+			# Converting PDF file to Bytes IO Stream and Uploading To minio
+			sv_doc_pdf_bytes = io.BytesIO(sv_doc_pdf.content)
+			sv_doc_file_name = "{}_sv.pdf".format(self.consumer_id)
+			minio_client.put_object(
+				settings.MINIO_BUCKET_NAME,
+				sv_doc_file_name,
+				sv_doc_pdf_bytes, sv_doc_pdf_bytes.getbuffer().nbytes
+			)
+
+			self.documents.create(
+				type=ConnectionApplicationDocumentsEnum.SV,
+				link=get_minio_public_url(settings.MINIO_BUCKET_NAME, sv_doc_file_name)
+			)
+
 
 	@fsm_log_by
 	@transition(
@@ -229,24 +275,6 @@ class ConnectionApplication(models.Model):
 	def application_completed_sv(self, *args, **kwargs):
 		if kwargs.get("verified"):
 			self.remarks = kwargs.get("remarks")
-			track.api_key = settings.INTERAKT_API_KEY
-			# # Add User To Whatsapp
-			# track.user(
-			# 	country_code="+91",
-			# 	phone_number=self.mobile,
-			# 	traits={
-			# 		"name": self.name,
-			# 	}
-			# )
-
-			# Push Event
-			# track.event(event='APPLICATION_COMPLETED', traits={
-			# 	"application_id": self.id,
-			# 	"application_details": "{} {} Kg {}".format(
-			# 		self.application_type, self.item_code.replace("FC", ""), self.connection_type
-			# 	),
-			# 	"url": "connection-app/connection-application/{}/".format(self.id)
-			# }, phone_number=self.mobile)
 
 
 class ConnectionApplicationDocuments(models.Model):

@@ -1,0 +1,50 @@
+version: "3"
+services:
+
+  dca-html-to-pdf:
+    container_name: dca-html-to-pdf
+    image: kurzdigital/html-to-pdf:latest
+    ports:
+      - 58080:8080/tcp
+    restart: unless-stopped
+
+
+  dca-minio:
+    container_name: dca-minio
+    command:
+      - /opt/bitnami/scripts/minio/run.sh
+    entrypoint:
+      - /opt/bitnami/scripts/minio/entrypoint.sh
+    image: bitnami/minio:latest
+    ports:
+      - 59000:9000/tcp
+      - 59001:9001/tcp
+    restart: unless-stopped
+    working_dir: /opt/bitnami/minio-client
+    volumes:
+        - ./minio-persistence:/data
+
+  dca-redis:
+    command:
+      - redis-server
+    container_name: dca-redis
+    entrypoint:
+      - docker-entrypoint.sh
+    image: redis:latest
+    ports:
+      - 56379:6379/tcp
+    restart: unless-stopped
+    volumes:
+      - ./redis-data:/data
+    working_dir: /data
+
+  dca-tus:
+    container_name: dca-tus
+    image: tusproject/tusd:sha-2c8fe24
+    ports:
+      - 51080:1080/tcp
+    restart: unless-stopped
+    volumes:
+      - ./tus-data:/srv/tusd-data
+    working_dir: /srv/tusd-data
+

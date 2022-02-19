@@ -41,12 +41,16 @@ INSTALLED_APPS = [
     'django_extensions',
     'rest_framework',
     'corsheaders',
+    'communication_log',
+
+    'django_rq',
 
     'django_fsm',
     'django_fsm_log',
     'fsm_admin2',
 
     'connection_app'
+
 ]
 
 MIDDLEWARE = [
@@ -144,3 +148,39 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'root')
 STATICFILES_DIRS = [
         os.path.join(BASE_DIR, 'static'),
 ]
+
+RQ_QUEUES = {
+    'default': {
+        'HOST': 'dca.arungas.com',
+        'PORT': 56379,
+        'DB': 0,
+        # 'PASSWORD': 'some-password',
+        'DEFAULT_TIMEOUT': 360,
+        'ASYNC': False
+    }
+}
+
+# If you need custom exception handlers
+RQ_EXCEPTION_HANDLERS = ['path.to.my.handler']
+
+BASE_URL = 'https://dca.arungas.com'
+
+MINIO_UPLOAD_URL = "{}:59001".format(BASE_URL)
+
+MINIO_ENDPOINT = "dca.arungas.com:59001"
+
+MINIO_BUCKET_NAME = "domesticconnectionapplicationdocs"
+
+MINIO_CREDENTIAL = {
+    "access_key": "FW3EQ9USIVOBMEDRIY86",
+    "secret_key": "J3uqfPVyCyap9CsbDIwDCLYzhI79oLheMmjpPTcg"
+}
+
+HTML_TO_PDF_SERVER_URL = "{}:58080".format(BASE_URL)
+
+SUBMIT_SMS_TEMPLATE_ID = "1107164508265878553"
+
+SUBMIT_SMS_TEMPLATE = \
+    "Dear {name}," \
+    "Your application with Id {id} submitted for connection type  {application_details}. " \
+    "We will get back to you within {working_days} working days."

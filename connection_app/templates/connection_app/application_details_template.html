@@ -49,9 +49,7 @@
 			<span> {{obj.applicant_remarks}}</span>
 		</p>
 	</div>
-<style>
-	.readonly{ float: left; width: 100%; margin: 0 !important;}
-</style>
+
 <script src="{% static '/js/wheelzoom.js' %}"></script>
 <script>
 	var slideIndex = 1;
@@ -86,11 +84,12 @@
 	wheelzoom(document.querySelector('img.zoom')); 
 </script>
 
- <!--rHTML = dots[slideIndex-1].alt;
-	}
-	wheelzoom(document.querySelector('img.zoom')); 
-</script>
+ <style>
+ .readonly{ float: left; width: 100%; margin: 0 !important;}
+	label{  font-weight: bold;}
+	.field-lead_details_in_html .readonly{ margin-left: 0 !important;}
+	.image_module{ display: flex; padding: 10px 0;}
+	.image_module a{ flex: 1; margin: 0 auto; text-align: center; margin: 10px 0;}
+	.image_module a img{ width:100%; padding: 10px; border: 1px solid #ccc; height: 150px; margin-bottom: 10px;}
+</style>
 
- </script>-->
-
- 
