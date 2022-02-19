@@ -55,7 +55,7 @@ class FrontOfficeForm(forms.Form):
 		required=False, help_text="Check If Verified Uncheck To Send Back Office For Recheck"
 	)
 	description = forms.CharField(
-		widget=forms.Textarea, label='Remarks', required=False, help_text="Enter description"
+		widget=forms.Textarea, label='Remarks', required=False
 	)
 
 	def clean(self):
@@ -65,7 +65,7 @@ class FrontOfficeForm(forms.Form):
 
 
 class FrontOfficeSVForm(FrontOfficeForm):
-	sv_doc_url = forms.URLField(required=False, help_text="Upload SV Document")
+	sv_doc_url = forms.CharField(widget=forms.TextInput, required=False, help_text="Upload SV Document")
 
 	def clean(self):
 		data = super().clean()

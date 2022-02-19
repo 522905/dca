@@ -16,6 +16,7 @@ class ConnectionApplicationDocumentsInline(admin.TabularInline):
 @admin.register(ConnectionApplication)
 class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionMixin, admin.ModelAdmin):
     fsm_transition_form_template = 'connection_app/transaction_form_template.html'
+    fsm_transition_buttons_template = 'connection_app/transition_buttons.html'
 
     fsm_fields = ['status', ]
     list_display = (

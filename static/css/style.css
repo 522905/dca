@@ -1,0 +1,80 @@
+img 
+{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width:100%;
+    height:200px;
+}
+select
+{
+    height:2.4em;
+    width:250px;
+    border:circle;
+}
+.btn
+{
+    margin-left:62px;
+    width:250px;
+}
+    
+.uppy-Dashboard-innerWrap
+{
+    width:200px;
+    height:200px;
+}
+.uppy-Dashboard-inner
+{
+    width:200px;
+    height:200px;
+    border:0;
+    border-radius: 3px;
+}
+
+.uppy-Dashboard-AddFiles-title
+{
+    font-size:12px;
+    width:100px;
+    margin:auto;
+    
+}
+.uppy-DashboardContent-bar
+{
+    
+    height:50px;
+}
+
+        
+.uppy-Dashboard-innerWrap
+{
+    width:180px;
+    height:200px;
+}
+
+.uppy-Dashboard
+{
+    height:200px;                                                                                                                                                                                                                                                   
+    width:180px;
+    
+}
+.container { float: left; width: 100%;}
+.col-md-6{ float: left; width: 50%;}
+.thumb_img{ float: left; width: 40px; height: 40px;}
+.thumb_img img{     width: 100%;
+    object-fit: cover;
+    background: red;
+    height: 100%;
+} 
+.verified_form label{ float: left; width: 100px !important; margin-left: 0}
+.verified_form span{ float: left; width: 100%;}
+.verified_form input[type="checkbox"]{ float: left; margin-right: 10px;}
+.verified_form .helptext{ font-weight: normal; font-size: 12px;color: #777; float: left; width: auto !important;}
+.verified_form textarea[name="description"]{ height: 50px; }
+/* .verified_form .uppy-Dashboard-innerWrap{ height: 80px;} */
+.verified_form input[type="submit"]{ margin-left: 105px;}
+
+.actions_img{ border-bottom: 1px solid #ddd;}
+#rotate_btn{ border:0; background-color: none; }
+.btn{  padding: 10px 15px; border: none; border-radius: 4px; background-color: #79aec8; cursor: pointer; margin-left: 0; color: #fff !important;}
+.btn:hover{ background-color: #417690;}
+.js-inline-admin-formset.inline-group{ border:1px solid #ececec}

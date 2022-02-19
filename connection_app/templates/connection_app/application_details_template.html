@@ -1,76 +1,96 @@
-<div class="container">
-	
-	<table style="width: 100%;">
-		<tbody>
-			<tr>
-				<td colspan="3"><h3>Application Status: {{obj.get_status_display}}</h3>
-					<br>
-				</td>
-			</tr>
-			<tr>
-				<td style="width: 33.3333%;"><label>Name:</label> {{obj.name}}
-					<br>
-				</td>
-				<td style="width: 33.3333%;"><label>Contact:</label> {{obj.mobile}}
-					<br>
-				</td>
-				<td style="width: 33.3333%;"><label>Channel:</label> {{obj.communication_mode}}
-					<br>
-				</td>
-			</tr>
-			<tr>
-				<td colspan="3"><label>Address: </label>{{obj.address}}
-					<br>
-				</td>
-			</tr>
-			<tr>
-				<td><label>Application Type:</label> {{obj.application_type}}
-					<br>
-				</td>
-				<td><label>Item:</label> {{obj.item_code}}
-					<br>
-				</td>
-				<td><label>Connection Type:</label> {{obj.connection_type}}
-					<br>
-				</td>
-			</tr>
-			<tr>
-				<td><label>Required By: </label>{{obj.required_by}}
-					<br>
-				</td>
-				<td colspan="2"><label>Applicant Remarks:</label> {{obj.applicant_remarks}}
-					<br>
-				</td>
-			</tr>
-		</tbody>
-	</table>
-</div>
-<div class="image_module">
-	{% for doc in obj.documents.all %}
-		<a target="_blank" href="{{ doc.link }}">
-			<img style="max-width: 200px" src="{{ doc.link }}"></img><br>
-			<span>{{ doc.get_type_display }}</span>
-		</a>
-	{% endfor %}
-</div>
-{%  if obj.consumer_id %}
-    <table style="width: 100%;">
-        <tbody>
-            <tr>
-                <td style="width: 33.3333%;"><label>Consumer Id:</label> {{obj.consumer_id}}
-                    <br>
-                </td>
-                <td style="width: 33.3333%;"><label>Process Type: </label>{{obj.process_type}}
-                    <br>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-{% endif %}
+{% load static %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}">
+<link rel="stylesheet" href="{% static '/css/zoom/zoomist.css' %}">
+<script src="{% static '/js/zoomist.js' %}"></script>
+<script defer src="{% static '/js/test.js' %}" ></script>
+
 <style>
-	label{  font-weight: bold;}
-	.field-lead_details_in_html .readonly{ margin-left: 0 !important;}
-	.image_module{ display: flex; padding: 10px 0;}
-	.image_module a{ flex: 1; margin: 0 auto; text-align: center; margin: 10px 0;}
-	.image_module a img{ width:100%; padding: 10px; border: 1px solid #ccc; height: 150px; margin-bottom: 10px;}
+	.form-group{ float: left; width: 80%; background: #ececec; border: 1px solid #ddd;  padding: 10px;}
+	.form-group p label{  width: 50%; float: left; padding-left: 10px;}
+	.form-group p span{ font-weight: bold; float: left;}
+	.form-group p{ float: right; width: 100%;}
 </style>
+<h3>Application Status:<span> {{obj.get_status_display}}</h3>
+	<div class="form-group">
+		<p>
+			<label>Name:</label> 
+			<span>{{obj.name}}</span>
+		</p>
+		<p>
+			<label>Contact:</label> 
+			<span>{{obj.mobile}}</span>
+		</p>
+		<p>
+			<label>Channel:</label> 
+			<span>{{obj.communication_mode}}</span>
+		</p>
+		<p>
+			<label>Address:</label> 
+			<span>{{obj.address}}</span>
+		</p>
+		<p>
+			<label>Application Type:</label> 
+			<span>{{obj.application_type}}</span>
+		</p>
+		<p>
+			<label>Item:</label> 
+			<span>{{obj.item_code}}</span>
+		</p>
+		<p>
+			<label>Connection Type:</label> 
+			<span>{{obj.connection_type}}</span>
+		</p>
+		<p>
+			<label>Required By:</label> 
+			<span>{{obj.required_by}}</span>
+		</p>
+		<p>
+			<label>Applicant Remarks:</label> 
+			<span> {{obj.applicant_remarks}}</span>
+		</p>
+	</div>
+<style>
+	.readonly{ float: left; width: 100%; margin: 0 !important;}
+</style>
+<script src="{% static '/js/wheelzoom.js' %}"></script>
+<script>
+	var slideIndex = 1;
+	showSlides(slideIndex);
+	
+	function plusSlides(n) {
+	  showSlides(slideIndex += n);
+	}
+	
+	function currentSlide(n) {
+	  showSlides(slideIndex = n);
+	}
+	
+
+	function showSlides(n) {
+	  var i;
+	  var slides = document.getElementsByClassName("mainimage");
+	  var dots = document.getElementsByClassName("customimage");
+	
+	  if (n > slides.length) {slideIndex = 1}
+	  if (n < 1) {slideIndex = slides.length}
+	  for (i = 0; i < slides.length; i++) {
+		  slides[i].style.display = "none";	
+	  }
+	  for (i = 0; i < dots.length; i++) {
+		  dots[i].className = dots[i].className.replace(" active", "");
+	  }
+	  slides[slideIndex-1].style.display = "block";
+	  dots[slideIndex-1].className += " active";
+	  captionText.innerHTML = dots[slideIndex-1].alt;
+	}
+	wheelzoom(document.querySelector('img.zoom')); 
+</script>
+
+ <!--rHTML = dots[slideIndex-1].alt;
+	}
+	wheelzoom(document.querySelector('img.zoom')); 
+</script>
+
+ </script>-->
+
+ 
