@@ -184,3 +184,6 @@ SUBMIT_SMS_TEMPLATE = \
     "Dear {name}," \
     "Your application with Id {id} submitted for connection type  {application_details}. " \
     "We will get back to you within {working_days} working days."
+
+VERIFIED_SMS_TEMPLATE = \
+    ""
