@@ -2,10 +2,10 @@
 from django.contrib import admin
 from import_export.admin import ExportActionMixin
 
+from fsm_admin2_custom.admin import FSMTransitionCustomMixin
 from .enums import ConnectionApplicationLeadStatus
 from .models import ConnectionApplication, ConnectionApplicationDocuments
 from django_fsm_log.admin import StateLogInline
-from fsm_admin2.admin import FSMTransitionMixin
 
 
 class ConnectionApplicationDocumentsInline(admin.TabularInline):
@@ -14,7 +14,7 @@ class ConnectionApplicationDocumentsInline(admin.TabularInline):
 
 
 @admin.register(ConnectionApplication)
-class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionMixin, admin.ModelAdmin):
+class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdmin):
     fsm_transition_form_template = 'connection_app/transaction_form_template.html'
     fsm_transition_buttons_template = 'connection_app/transition_buttons.html'
 
@@ -55,4 +55,7 @@ class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionMixin, admin.Mo
         if obj and obj.status != ConnectionApplicationLeadStatus.DRAFT:
             return [StateLogInline, ]
         else:
-            return [ConnectionApplicationDocumentsInline, ]
+            return [ConnectionApplicationDocumentsInline,]
+
+    def fsm_transition_view_extra_context(self, obj):
+        return {'obj': obj}
