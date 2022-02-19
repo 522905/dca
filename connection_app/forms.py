@@ -71,7 +71,4 @@ class FrontOfficeSVForm(FrontOfficeForm):
 		data = super().clean()
 		if data.get("verified") and not data.get("sv_doc_url"):
 			raise forms.ValidationError("Upload SV Document")
-
-
-
-
+		return data

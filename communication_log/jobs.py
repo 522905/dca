@@ -93,50 +93,5 @@ def move_files_to_minio_processing(id):
 
 
 def send_message_on_whatsapp(id):
-    import track
-    from django.conf import settings
-    from django.contrib.contenttypes.models import ContentType
-
-    from communication_log.models import CommunicationLog
-
     obj = ConnectionApplication.objects.get(id=id)
-    sv_doc = obj.documents.filter(type=ConnectionApplicationDocumentsEnum.SV).first()
-    
-    body_text = {
-        "countryCode": "+91",
-        "phoneNumber": obj.mobile,
-        "type": "Template",
-        "traits": {
-            "name": obj.name,
-        },
-        # "callbackData": "some_callback_data",
-        "template": {
-            "name": "domestic_application_completed",
-            "languageCode": "en_GB",
-            "headerValues": [
-                sv_doc.link
-            ],
-            "bodyValues": [
-                obj.name,
-                obj.id,
-                '{} {} {}'.format(
-                    obj.get_application_type_display(),
-                    obj.get_item_code_display(),
-                    obj.get_connection_type_display()
-                ),
-            ],
-        }
-    }
-    connection_application_content_type = ContentType.objects.get_for_model(ConnectionApplication)
-    data = track.client.post(
-        api_key=settings.INTERAKT_API_KEY,
-        path="/v1/public/message/",
-        body=body_text
-    ).json()
-    if data.get('result'):
-        CommunicationLog.objects.create(
-            content_type=connection_application_content_type,
-            object_id=obj.pk,
-            event="submit", channel="whatsapp",
-            message_id=data.get('id')
-        )
+    obj.event_completed_channel_whatsapp()

@@ -7,7 +7,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.template import loader
 from django.utils.safestring import mark_safe
-from django_currentuser.middleware import get_current_user
 from django_fsm import transition, FSMField, GET_STATE
 from django_fsm_log.decorators import fsm_log_description, fsm_log_by
 from minio import Minio
@@ -21,11 +20,11 @@ from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, F
 from domestic_app.utils import get_minio_public_url
 
 minio_client = Minio(
-        settings.MINIO_ENDPOINT,
-        access_key=settings.MINIO_CREDENTIAL.get("access_key"),
-        secret_key=settings.MINIO_CREDENTIAL.get("secret_key"),
-		secure=False
-    )
+    settings.MINIO_ENDPOINT,
+    access_key=settings.MINIO_CREDENTIAL.get("access_key"),
+    secret_key=settings.MINIO_CREDENTIAL.get("secret_key"),
+	secure=False
+)
 
 
 class ConnectionApplication(models.Model):
@@ -154,7 +153,7 @@ class ConnectionApplication(models.Model):
 						}
 					},
 
-					"notifyUrl": "https://www.example.com/sms/advanced",
+					# "notifyUrl": "https://www.example.com/sms/advanced",
 					"notifyContentType": "application/json",
 					# "callbackData": "DLR callback data",
 					# "validityPeriod": 720
@@ -164,6 +163,49 @@ class ConnectionApplication(models.Model):
 			'Authorization': 'App 140a3abf6dd9134f5defb703a54dfcf0-e3df520b-f144-4282-a174-aa3765c7b438'
 		})
 
+	def event_completed_channel_whatsapp(self):
+		sv_doc = self.documents.filter(type=ConnectionApplicationDocumentsEnum.SV).first()
+
+		body_text = {
+			"countryCode": "+91",
+			"phoneNumber": self.mobile,
+			"type": "Template",
+			"traits": {
+				"name": self.name,
+			},
+			# "callbackData": "some_callback_data",
+			"template": {
+				"name": "domestic_application_completed",
+				"languageCode": "en_GB",
+				"headerValues": [
+					sv_doc.link
+				],
+				"bodyValues": [
+					self.name,
+					self.id,
+					'{} {} {}'.format(
+						self.get_application_type_display(),
+						self.get_item_code_display(),
+						self.get_connection_type_display()
+					),
+				],
+			}
+		}
+
+		connection_application_content_type = ContentType.objects.get_for_model(ConnectionApplication)
+		data = track.client.post(
+			api_key=settings.INTERAKT_API_KEY,
+			path="/v1/public/message/",
+			body=body_text
+		).json()
+
+		if data.get('result'):
+			CommunicationLog.objects.create(
+				content_type=connection_application_content_type,
+				object_id=self.pk,
+				event="completed", channel="whatsapp",
+				message_id=data.get('id')
+			)
 
 	@fsm_log_description
 	@fsm_log_by
@@ -231,7 +273,7 @@ class ConnectionApplication(models.Model):
 			self.remarks = kwargs.get("remarks")
 
 			# Loading html template & converting to pdf document
-			sv_doc_html_template = loader.get_template("connection_app/application_details_template.html")
+			sv_doc_html_template = loader.get_template("connection_app/sv-doc.html")
 			sv_doc_html = sv_doc_html_template.render({'obj': self})
 
 			sv_doc_pdf = requests.post(
