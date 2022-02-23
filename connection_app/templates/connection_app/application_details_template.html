@@ -3,7 +3,6 @@
 <!-- <link rel="stylesheet" href="{% static '/css/zoom/zoomist.css' %}">
 <script src="{% static '/js/zoomist.js' %}"></script>
 <script defer src="{% static '/js/test.js' %}" ></script> -->
-
 	<h3>Application Status:<span> {{obj.get_status_display}}</h3>
 	<div class="form-group">
 		<p>
@@ -44,44 +43,23 @@
 		</p>
 	</div>
 
-<!-- <script src="{% static '/js/wheelzoom.js' %}"></script> -->
-<!-- <script>
-	var slideIndex = 1;
-	showSlides(slideIndex);
-	
-	function plusSlides(n) {
-	  showSlides(slideIndex += n);
-	}
-	
-	function currentSlide(n) {
-	  showSlides(slideIndex = n);
-	}
-	
-
-	function showSlides(n) {
-	  var i;
-	  var slides = document.getElementsByClassName("mainimage");
-	  var dots = document.getElementsByClassName("customimage");
-	
-	  if (n > slides.length) {slideIndex = 1}
-	  if (n < 1) {slideIndex = slides.length}
-	  for (i = 0; i < slides.length; i++) {
-		  slides[i].style.display = "none";	
-	  }
-	  for (i = 0; i < dots.length; i++) {
-		  dots[i].className = dots[i].className.replace(" active", "");
-	  }
-	  slides[slideIndex-1].style.display = "block";
-	  dots[slideIndex-1].className += " active";
-	  captionText.innerHTML = dots[slideIndex-1].alt;
-	}
-	wheelzoom(document.querySelector('img.zoom')); 
-</script> -->
+	<div class="form-group" style="margin-top:10px">
+	{%  if obj.consumer_id %}
+		<p>
+			<label>Consumer Id:</label> 
+			<span> {{obj.consumer_id}}</span>
+		</p>
+		<p>
+			<label>Process Type: </label> 
+			<span>{{obj.process_type}}</span>
+		</p>
+	{% endif %}
+	</div>
 
  <style>
 	 .form-group{ float: left; width: 80%; background: #ececec; border: 1px solid #ddd;  padding: 10px;}
 	.form-group p label{  width: 50%; float: left; padding-left: 10px;}
-	.form-group p span{ font-weight: bold; float: left;}
+	.form-group p span{ font-weight: normal; float: left;}
 	.form-group p{ float: right; width: 100%;}
  	.readonly{ float: left; width: 100%; margin: 0 !important;}
 	label{  font-weight: bold;}
@@ -89,5 +67,8 @@
 	.image_module{ display: flex; padding: 10px 0;}
 	.image_module a{ flex: 1; margin: 0 auto; text-align: center; margin: 10px 0;}
 	.image_module a img{ width:100%; padding: 10px; border: 1px solid #ccc; height: 150px; margin-bottom: 10px;}
+	select.form-control:not([size]):not([multiple]) {
+    height: calc(2.25rem + 10px) !important;
+}
 </style>
 

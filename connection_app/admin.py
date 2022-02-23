@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
 from import_export.admin import ExportActionMixin
-
+# from django.contrib.flatpages.admin import FlatPageAdmin
 from fsm_admin2_custom.admin import FSMTransitionCustomMixin
 from .enums import ConnectionApplicationLeadStatus
 from .models import ConnectionApplication, ConnectionApplicationDocuments
@@ -11,7 +11,21 @@ from django_fsm_log.admin import StateLogInline
 class ConnectionApplicationDocumentsInline(admin.TabularInline):
     extra = 0
     model = ConnectionApplicationDocuments
+    template = 'connection_app/admin/document-inline.html'
 
+
+# class FlatPageAdmin(FlatPageAdmin):
+#     fieldsets = (
+#         (None, {'fields': ('url', 'title', 'content', 'sites')}),
+#         (_('Advanced options'), {
+#             'classes': ('collapse',),
+#             'fields': (
+#                 'enable_comments',
+#                 'registration_required',
+#                 'template_name',
+#             ),
+#         }),
+#     )
 
 @admin.register(ConnectionApplication)
 class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdmin):

@@ -1,7 +1,26 @@
-Attachment Dikho!!
-{{obj.document}}
-  {% for doc in obj.document %}
-  <a href="{{ doc.link }}" download>
-    <p>{{ doc.key }}</p>
-  </a>
-  {% endfor %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
+<div class="image_module_contain">
+  <ul>
+    {% for doc in obj.documents.all %}
+      <li>
+        <a target="_blank" href="{{ doc.link }}" download>
+          <!-- <img src="{{ doc.link }}" /> -->
+          <!-- Attachments -->
+          <p><i style="padding-right: 10px; font-size: 14px;" class="fa fa-eye" aria-hidden="true"></i>{{ doc.get_type_display }}</p>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+<style>
+ .image_module_contain ul{ float: left; padding: 0 !important; margin-left: 0 !important; width: 100%; margin-top: 20px;;}
+ .image_module_contain ul li{ float: left; width:15%; margin-right: 5px; position: relative; }
+ .image_module_contain ul li a:hover{ color:#4299c5; text-decoration: underline !important;} 
+ .image_module_contain ul li a{color: #555; }
+ .image_module_contain ul li p { float: left;  overflow: hidden; position: absolute; bottom: 0; padding: 8px 5px; right: 0; left: 0; margin: 0; font-size: 13px;}
+</style>
+
+  <!-- {% for doc in obj.documents.all %}
+  <li class="thumb-item active"><img src="{{ doc.link }}"></li>
+  {% endfor %} -->
