@@ -128,7 +128,7 @@ function add_uppy_handler(id, value_target) {
           browserBackButtonClose: false
         })
         .use(Uppy.Tus, {
-          endpoint: 'https://tusd.tusdemo.net/files/',
+          endpoint: 'https://tus.dca.arungas.com/files/',
         });
       window[id].on('complete', result => {
         $(value_target).val(result.successful[0]['uploadURL']);
