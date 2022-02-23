@@ -93,7 +93,10 @@ Original highlight.js style (c) Ivan Sagalaev <maniac@softwaremaniacs.org>
   color: #4d99bf;
 }
 
-
+.thumbnail-slider .thumb-items {
+  margin-top: 5px;
+  margin: 18px 0px 0px 100px;
+}
 /* Misc effects */
 
 .hljs-emphasis {

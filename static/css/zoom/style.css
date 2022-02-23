@@ -649,7 +649,10 @@ ul.tabs a.active {
   color: var(--tertiary-color);
   border: 1px solid var(--tertiary-color);
 }
-
+.thumb-items {
+    margin-top: 5px;
+    margin: 18px 0px 0px 100px;
+}
 .views pre {
   height: 100%;
   margin-bottom: 0;
