@@ -16,3 +16,5 @@ def application_completed_event_notification(sender, instance=None, target=None,
 				args=(instance.id,),
 				depends_on=result
 			)
+
+

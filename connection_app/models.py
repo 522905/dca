@@ -15,16 +15,26 @@ from communication_log.models import CommunicationLog
 from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTypeEnum, \
 	ConnectionApplicationProcessType, ConnectionApplicationLeadStatus, ConnectionApplicationDocumentsEnum, \
 	ConnectionApplicationLeadCommunicationMode
-from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, FrontOfficeForm, SubmitLead, \
-	FrontOfficeSVForm
+from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, SubmitLead, \
+	FrontOfficeCompleted, BackOfficeReactivation, BackOfficeRegularisation, \
+	BackOfficeNewConnection
 from domestic_app.utils import get_minio_public_url
 
 minio_client = Minio(
-    settings.MINIO_ENDPOINT,
-    access_key=settings.MINIO_CREDENTIAL.get("access_key"),
-    secret_key=settings.MINIO_CREDENTIAL.get("secret_key"),
+	settings.MINIO_ENDPOINT,
+	access_key=settings.MINIO_CREDENTIAL.get("access_key"),
+	secret_key=settings.MINIO_CREDENTIAL.get("secret_key"),
 	secure=False
 )
+
+
+def get_form_to_load(self):
+	if self.process_type == ConnectionApplicationProcessType.NEW_CONNECTION:
+		return BackOfficeNewConnection
+	elif self.process_type == ConnectionApplicationProcessType.REGULARISATION:
+		return BackOfficeRegularisation
+	else:
+		return BackOfficeReactivation
 
 
 class ConnectionApplication(models.Model):
@@ -37,7 +47,8 @@ class ConnectionApplication(models.Model):
 	item_code = models.CharField(max_length=25, choices=ItemCodeEnum.choices)
 	connection_type = models.CharField(max_length=25, choices=ConnectionTypeEnum.choices)
 	referral_code = models.CharField(max_length=16, null=True, blank=True)
-	status = FSMField(default=ConnectionApplicationLeadStatus.DRAFT, choices=ConnectionApplicationLeadStatus.choices)
+	status = FSMField(default=ConnectionApplicationLeadStatus.SUBMITTED,
+	                  choices=ConnectionApplicationLeadStatus.choices)
 	applicant_remarks = models.TextField(null=True, blank=True)
 	required_by = models.DateField(null=True, blank=True)
 	consumer_id = models.CharField(max_length=25, null=True, blank=True)
@@ -47,6 +58,7 @@ class ConnectionApplication(models.Model):
 	communication_mode = models.CharField(
 		max_length=25, choices=ConnectionApplicationLeadCommunicationMode.choices, null=True, blank=True
 	)
+	last_execution_state = models.CharField(max_length=50, null=True, blank=True)
 
 	def lead_details_in_html(self):
 		template = loader.get_template("connection_app/application_details_template.html")
@@ -66,16 +78,33 @@ class ConnectionApplication(models.Model):
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=ConnectionApplicationLeadStatus.DRAFT,
-		target=ConnectionApplicationLeadStatus.SUBMITTED,
+		source='*',
+		target=ConnectionApplicationLeadStatus.EDIT_APPLICATION,
 		custom=dict(
-			short_description='Submit Application', admin=True
+			short_description='Edit Application', admin=True
 		),
-		# conditions=[can_close]
 	)
+	def edit(self, *args, **kwargs):
+		self.last_execution_state = self.status
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=ConnectionApplicationLeadStatus.EDIT_APPLICATION,
+		target=GET_STATE(
+			lambda self, **kwargs: self.last_execution_state,
+			# states='*'
+		),
+		custom=dict(
+			short_description='Update Edits To Application', admin=True
+		),
+	)
+	def restore_edit(self, *args, **kwargs):
+		pass
+
 	def submit(self, *args, **kwargs):
 		self.event_submit_channel_whatsapp()
-
 
 	def event_submit_channel_whatsapp(self):
 		body_text = {
@@ -83,8 +112,8 @@ class ConnectionApplication(models.Model):
 			"phoneNumber": self.mobile,
 			"type": "Template",
 			"traits": {
-			 		"name": self.name,
-			 	},
+				"name": self.name,
+			},
 			# "callbackData": "some_callback_data",
 			"template": {
 				"name": "domestic_application_submitted",
@@ -131,10 +160,10 @@ class ConnectionApplication(models.Model):
 			"name": self.name,
 			"id": self.id,
 			"application_details": '{} {} {}'.format(
-						self.get_application_type_display(),
-						self.get_item_code_display(),
-						self.get_connection_type_display()
-					),
+				self.get_application_type_display(),
+				self.get_item_code_display(),
+				self.get_connection_type_display()
+			),
 			"working_days": "2"
 		}
 
@@ -159,8 +188,7 @@ class ConnectionApplication(models.Model):
 							"contentTemplateId": "1107161183026272363"
 						}
 					},
-
-					# "notifyUrl": "https://www.example.com/sms/advanced",
+					"notifyUrl": "https://dca.arungas.com/commlog/infobip/webhook/",
 					"notifyContentType": "application/json",
 					# "callbackData": "DLR callback data",
 					# "validityPeriod": 720
@@ -221,10 +249,10 @@ class ConnectionApplication(models.Model):
 		source=ConnectionApplicationLeadStatus.SUBMITTED,
 		target=GET_STATE(
 			lambda self, **kwargs: \
-			ConnectionApplicationLeadStatus.BACK_OFFICE \
-			if kwargs.get("required") else ConnectionApplicationLeadStatus.NOT_INTERESTED,
+					ConnectionApplicationLeadStatus.BACK_OFFICE_START \
+							if kwargs.get("required") else ConnectionApplicationLeadStatus.NOT_INTERESTED,
 			states=[
-				ConnectionApplicationLeadStatus.BACK_OFFICE,
+				ConnectionApplicationLeadStatus.BACK_OFFICE_START,
 				ConnectionApplicationLeadStatus.NOT_INTERESTED
 			]
 		),
@@ -235,51 +263,46 @@ class ConnectionApplication(models.Model):
 			self.required_by = kwargs.get("required_by")
 			self.applicant_remarks = kwargs.get("applicant_remarks")
 
-
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=ConnectionApplicationLeadStatus.BACK_OFFICE,
-		# target=ConnectionApplicationLeadStatus.FRONT_OFFICE,
-		target=GET_STATE(
-			lambda self, **kwargs: \
-			ConnectionApplicationLeadStatus.FRONT_OFFICE \
-			if kwargs.get("process_type") == ConnectionApplicationProcessType.REACTIVATION \
-					else ConnectionApplicationLeadStatus.FRONT_OFFICE_SV,
-			states=[
-				ConnectionApplicationLeadStatus.FRONT_OFFICE_SV,
-				ConnectionApplicationLeadStatus.FRONT_OFFICE
-			]
-		),
-		custom=dict(short_description='Back Office Processing', admin=True, form=BackOfficeForm),
+		source=ConnectionApplicationLeadStatus.BACK_OFFICE_START,
+		target=ConnectionApplicationLeadStatus.BACK_OFFICE_END,
+		custom=dict(short_description='Back Office Processing Begin', admin=True, form=BackOfficeForm),
 	)
-	def front_office_process(self, *args, **kwargs):
+	def back_office_process(self, *args, **kwargs):
 		self.consumer_id = kwargs.get("consumer_id")
 		self.process_type = kwargs.get("process_type")
 
-
-	@fsm_log_description
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=ConnectionApplicationLeadStatus.FRONT_OFFICE,
-		target=GET_STATE(
-			lambda self, **kwargs: \
-			ConnectionApplicationLeadStatus.COMPLETED \
-			if kwargs.get("verified") else ConnectionApplicationLeadStatus.BACK_OFFICE,
-			states=[
-				ConnectionApplicationLeadStatus.COMPLETED,
-				ConnectionApplicationLeadStatus.BACK_OFFICE
-			]
+		source=ConnectionApplicationLeadStatus.BACK_OFFICE_END,
+		target=ConnectionApplicationLeadStatus.FRONT_OFFICE,
+		custom=dict(
+			short_description='Back Office Processing End',
+			admin=True,
+			form_func=get_form_to_load
 		),
-		custom=dict(short_description='Front Office Processing', admin=True, form=FrontOfficeForm),
 	)
-	def application_completed(self, *args, **kwargs):
-		if kwargs.get("verified"):
+	def application_processed(self, *args, **kwargs):
+		if self.process_type == ConnectionApplicationProcessType.NEW_CONNECTION:
+			self.remarks = kwargs.get("remarks")
+			self.consumer_id = kwargs.get("consumer_id")
+
+			self.documents.create(
+				type=ConnectionApplicationDocumentsEnum.SV,
+				link=kwargs.get('sv_doc_url')
+			)
+		elif self.process_type == ConnectionApplicationProcessType.REGULARISATION:
 			self.remarks = kwargs.get("remarks")
 
-			# Loading html template & converting to pdf document
+			self.documents.create(
+				type=ConnectionApplicationDocumentsEnum.SV,
+				link=kwargs.get('sv_doc_url')
+			)
+		else:
 			sv_doc_html_template = loader.get_template("connection_app/sv-doc.html")
 			sv_doc_html = sv_doc_html_template.render({'obj': self})
 
@@ -297,7 +320,8 @@ class ConnectionApplication(models.Model):
 			minio_client.put_object(
 				settings.MINIO_BUCKET_NAME,
 				sv_doc_file_name,
-				sv_doc_pdf_bytes, sv_doc_pdf_bytes.getbuffer().nbytes
+				sv_doc_pdf_bytes, sv_doc_pdf_bytes.getbuffer().nbytes,
+				content_type="application/pdf"
 			)
 
 			self.documents.create(
@@ -306,28 +330,27 @@ class ConnectionApplication(models.Model):
 			)
 
 
+	@fsm_log_description
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=ConnectionApplicationLeadStatus.FRONT_OFFICE_SV,
+		source=ConnectionApplicationLeadStatus.FRONT_OFFICE,
+		# target=ConnectionApplicationLeadStatus.COMPLETED,
 		target=GET_STATE(
 			lambda self, **kwargs: \
-			ConnectionApplicationLeadStatus.COMPLETED \
-			if kwargs.get("verified") else ConnectionApplicationLeadStatus.BACK_OFFICE,
+					ConnectionApplicationLeadStatus.COMPLETED \
+							if kwargs.get("verified") else ConnectionApplicationLeadStatus.BACK_OFFICE_END,
 			states=[
-				ConnectionApplicationLeadStatus.COMPLETED,
-				ConnectionApplicationLeadStatus.BACK_OFFICE
-			]
+				ConnectionApplicationLeadStatus.BACK_OFFICE_END,
+				ConnectionApplicationLeadStatus.COMPLETED
+			]),
+		custom=dict(
+			short_description='Verified OTP & Application', admin=True, form=FrontOfficeCompleted
 		),
-		custom=dict(short_description='Front Office Processing With SV', admin=True, form=FrontOfficeSVForm),
 	)
-	def application_completed_sv(self, *args, **kwargs):
-		if kwargs.get("verified"):
+	def front_office_completed(self, *args, **kwargs):
+		if kwargs.get("verified") and kwargs.get("is_otp_verified"):
 			self.remarks = kwargs.get("remarks")
-			self.documents.create(
-				type=ConnectionApplicationDocumentsEnum.SV,
-				link=kwargs.get("sv_doc_url")
-			)
 
 
 class ConnectionApplicationDocuments(models.Model):

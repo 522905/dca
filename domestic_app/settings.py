@@ -48,8 +48,10 @@ INSTALLED_APPS = [
     'django_fsm',
     'django_fsm_log',
     'fsm_admin2',
+    'import_export',
 
-    'connection_app'
+    'connection_app',
+    'inactive_customers'
 
 ]
 

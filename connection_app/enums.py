@@ -13,12 +13,16 @@ class ConnectionApplicationProcessType(models.TextChoices):
 
 
 class ConnectionApplicationLeadStatus(models.TextChoices):
-	DRAFT = 'DRAFT', 'Draft',
+	# DRAFT = 'DRAFT', 'Draft',
+	EDIT_APPLICATION = 'EDIT_APPLICATION', 'Edit Application',
 	SUBMITTED = 'SUBMITTED', 'Submitted',
 	NOT_INTERESTED = 'NOT_INTERESTED', 'Not Interested',
-	BACK_OFFICE = 'BACK_OFFICE', 'Back Office',
+	# BACK_OFFICE = 'BACK_OFFICE', 'Back Office',
+	BACK_OFFICE_START = 'BACK_OFFICE', 'Back Office',
+	# FRONT_OFFICE_SV = 'FRONT_OFFICE_SV', 'Front Office SV',
+	BACK_OFFICE_END = 'BACK_OFFICE_END', 'Back Office End',
+	BACK_OFFICE_END_SV = 'BACK_OFFICE_END_SV', 'Back Office End SV',
 	FRONT_OFFICE = 'FRONT_OFFICE', 'Front Office',
-	FRONT_OFFICE_SV = 'FRONT_OFFICE_SV', 'Front Office SV',
 	COMPLETED = 'COMPLETED', 'Completed'
 
 

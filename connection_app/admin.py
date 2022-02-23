@@ -60,16 +60,18 @@ class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionCustomMixin, ad
     def get_fieldsets(self, request, obj=None):
         # fieldsets = super().get_fieldsets(request, obj)
 
-        if obj and obj.status != ConnectionApplicationLeadStatus.DRAFT:
+        if obj and obj.status not in (
+                ConnectionApplicationLeadStatus.EDIT_APPLICATION,
+        ):
             return self.process_fieldsets
         else:
             return self.draft_fieldsets
 
     def get_inlines(self, request, obj):
-        if obj and obj.status != ConnectionApplicationLeadStatus.DRAFT:
+        if obj and obj.status != ConnectionApplicationLeadStatus.EDIT_APPLICATION:
             return [StateLogInline, ]
         else:
-            return [ConnectionApplicationDocumentsInline,]
+            return [ConnectionApplicationDocumentsInline, ]
 
     def fsm_transition_view_extra_context(self, obj):
         return {'obj': obj}

@@ -86,7 +86,8 @@ def move_files_to_minio_processing(id):
             minio_client.put_object(
                 settings.MINIO_BUCKET_NAME,
                 doc_file_name,
-                doc_file_bytes, doc_file_bytes.getbuffer().nbytes
+                doc_file_bytes, doc_file_bytes.getbuffer().nbytes,
+                content_type=descriptor.mime_type
             )
             doc.link = get_minio_public_url(settings.MINIO_BUCKET_NAME, doc_file_name)
             doc.save()

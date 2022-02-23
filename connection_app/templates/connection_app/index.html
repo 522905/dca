@@ -58,7 +58,7 @@
 				validateUppy(aadharcarduppy, 'UID_FRONT', 'Aadhar Card Frontside Picture (आधार कार्ड की फोटो)*', true),
 				validateUppy(aadharcardbackuppy, 'UID_BACK', 'Aadhar Card Backside Picture (आधार कार्ड की फोटो)*', true),
 				validateUppy(identificationuppy, 'OTHER_ID_PROOF', 'Any Other Identification Card', false),
-				validateUppy(bankdetailuppy, 'BANK_DETAIL', 'Bank Detail (पास बुक का विवरण)', flase)
+				validateUppy(bankdetailuppy, 'BANK_DETAIL', 'Bank Detail (पास बुक का विवरण)', false)
 			]
 
 			if (!files.reduce((aggr, current) => { return current.valid && aggr }, true)) {
