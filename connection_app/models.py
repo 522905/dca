@@ -78,7 +78,11 @@ class ConnectionApplication(models.Model):
 	@fsm_log_by
 	@transition(
 		field=status,
-		source='*',
+		source=[
+			ConnectionApplicationLeadStatus.SUBMITTED,
+			ConnectionApplicationLeadStatus.BACK_OFFICE_START,
+			ConnectionApplicationLeadStatus.BACK_OFFICE_END,
+		],
 		target=ConnectionApplicationLeadStatus.EDIT_APPLICATION,
 		custom=dict(
 			short_description='Edit Application', admin=True
@@ -269,9 +273,9 @@ class ConnectionApplication(models.Model):
 		field=status,
 		source=ConnectionApplicationLeadStatus.BACK_OFFICE_START,
 		target=ConnectionApplicationLeadStatus.BACK_OFFICE_END,
-		custom=dict(short_description='Back Office Processing Begin', admin=True, form=BackOfficeForm),
+		custom=dict(short_description='Back Office Processing Start', admin=True, form=BackOfficeForm),
 	)
-	def back_office_process(self, *args, **kwargs):
+	def back_office_process_start(self, *args, **kwargs):
 		self.consumer_id = kwargs.get("consumer_id")
 		self.process_type = kwargs.get("process_type")
 
@@ -335,7 +339,6 @@ class ConnectionApplication(models.Model):
 	@transition(
 		field=status,
 		source=ConnectionApplicationLeadStatus.FRONT_OFFICE,
-		# target=ConnectionApplicationLeadStatus.COMPLETED,
 		target=GET_STATE(
 			lambda self, **kwargs: \
 					ConnectionApplicationLeadStatus.COMPLETED \
@@ -349,7 +352,7 @@ class ConnectionApplication(models.Model):
 		),
 	)
 	def front_office_completed(self, *args, **kwargs):
-		if kwargs.get("verified") and kwargs.get("is_otp_verified"):
+		if kwargs.get("verified"):
 			self.remarks = kwargs.get("remarks")
 
 

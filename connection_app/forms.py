@@ -116,8 +116,8 @@ class FrontOfficeCompleted(forms.Form):
 	verified = forms.BooleanField(
 		required=False, help_text="Check If Verified Uncheck To Send Back Office For Recheck"
 	)
-	is_otp_verified = forms.BooleanField(
-		required=False, help_text="Check If OTP Verified Uncheck To Send Back Office For Recheck"
+	phone_updated = forms.BooleanField(
+		required=False, help_text="Check If Phone Number Updated"
 	)
 	description = forms.CharField(
 		widget=forms.Textarea, label='Remarks', required=False
