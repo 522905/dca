@@ -19,4 +19,5 @@ class ConnectionApplicationViewSet(viewsets.ModelViewSet):
         application = serializer.save()
         if getattr(self.request, "PERFORM_SUBMIT", False):
             application.submit()
+            application.save()
         return application
