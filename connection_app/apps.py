@@ -13,3 +13,4 @@ class ConnectionAppConfig(AppConfig):
             application_completed_event_notification,
             dispatch_uid='domestic_application_completed_event_notification'
         )
+    

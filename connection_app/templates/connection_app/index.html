@@ -110,6 +110,7 @@
 </head>
 
 <body>
+	
 	<div class="container register">
 		<div class="form-contain">
 			<div id="form_hide">
@@ -124,8 +125,8 @@
 					</div>
 					<div class="form-group">
 						<p>Mobile No. (फोन नंबर)<strong style="color:red">*</strong></p>
-						<input type="text" class="form-control" id="mobile" name="mobile"
-							onkeypress="return digits(event)" value="" maxlength="10" required />
+						<input type="text" class="form-control" id="mobile" pattern="[789][0-9]{9}" name="mobile"
+							onkeypress="return digits(event)" value="" min="6000000000" max="9999999999" maxlength="10" pattern="[1-9]{1}[0-9]{9}" required />
 						<span id="mobile_detail" class="text-danger"></span>
 					</div>
 					<div class="form-group">
@@ -175,8 +176,8 @@
 							<span style="padding-left:10px;"> New Connection (नया कनेक्शन)</span>
 						</div>
 						<div class="input-block">
-							<input type="radio" class="form-check-input" name="application_type" value="BLUE_BOOK"required>
-							<span style="padding-left:10px;"> Blue Book (नीली किताब)</span>
+							<input type="radio" class="form-check-input" name="application_type" value="BLUE_BOOK" required>
+							<span style="padding-left:10px;"> Gas Book (गैस कॉपी)</span>
 						</div>
 					</div>
 					<div class="form-group">
@@ -191,7 +192,7 @@
 						</select>
 					</div>
 					<div class="form-group">
-						<p>Reference Code</p>
+						<p>Referral Code</p>
 						<input type="text" class="form-control" id="reference" name="referral_code" value="">
 						<br>
 						<input type="submit" id="submit" name="submit" value="submit" class="btn btn-success">
@@ -577,4 +578,5 @@
 		margin-bottom: -15%;
 		color: #495057;
 	}
+	
 </style>

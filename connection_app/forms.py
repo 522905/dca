@@ -18,7 +18,7 @@ class SubmitLead(forms.Form):
 
 class ConnectionVerificationResult(forms.Form):
 	required = forms.BooleanField(
-		label="Required ?", required=False, help_text="Check If Required For Not Interested Uncheck"
+		label="Required ?", required=False, help_text="Check If Required"
 	)
 	required_by = forms.DateTimeField(
 		label="Select Required Date :", required=False, widget=NumberInput(attrs={'type': 'date'}),

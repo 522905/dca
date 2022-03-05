@@ -51,7 +51,11 @@ INSTALLED_APPS = [
     'import_export',
 
     'connection_app',
-    'inactive_customers'
+    'inactive_customers',
+
+    'rangefilter',
+    'django_admin_listfilter_dropdown',
+    
 
 ]
 

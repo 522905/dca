@@ -60,6 +60,11 @@ class ConnectionApplication(models.Model):
 	)
 	last_execution_state = models.CharField(max_length=50, null=True, blank=True)
 
+	# def status(request):
+	# 	status = Status.objects.all()
+
+	# 	return render(request, 'connection_app/status.html', {'status': status})
+
 	def lead_details_in_html(self):
 		template = loader.get_template("connection_app/application_details_template.html")
 		html = template.render({'obj': self})

@@ -1,10 +1,10 @@
-
+/* 
 .btn
 {
     margin-left:62px;
     width:250px;
 }
-    
+     */
 .uppy-Dashboard-innerWrap
 {
     width:200px;
@@ -63,8 +63,14 @@
 .actions_img{ border-bottom: 1px solid #ddd; position: absolute; padding: 5px; background-color: #fff; border-radius: 2px; margin: 5px; z-index: 1000;}
 .actions_img i{ font-size: 20px; color: #999; }
 #rotate_btn{ border:0; background-color: transparent; }
-.btn{  padding: 10px 15px; border: none; border-radius: 4px; background-color: #79aec8; cursor: pointer; margin-left: 0; color: #fff !important;}
-.btn:hover{ background-color: #417690;}
+.form-control{margin-left:15px;}
+p{margin-left:15px;}
+input[type="radio"],
+input[type="checkbox"] {
+  margin: 4px 0 0 15px;
+}
+.register .btn{  padding: 10px 15px; border: none; border-radius: 4px; margin-left:15px !important;  cursor: pointer; margin-left: 0; color: #fff;}
+.register .btn:hover{ background-color: #417690;} */
 .js-inline-admin-formset.inline-group{ border:1px solid #ececec}
 .custom-file-input{ opacity: 1 !important;}
 .form-horizontal select{ height: 40px !important; }
@@ -75,3 +81,8 @@
   @media only screen and (max-width: 600px) {
     .uppy-Dashboard{ margin: 0 auto; }
   }
+#content-main .btn{ background-color: #417690; color: #fff;  padding: 10px; border-radius: 5px;}
+#content-main .btn:hover{background-color:#79aec8}
+ul.errorlist{ background-color: transparent; margin-left: 110px; display: block;}
+.helptext{ margin-left: 110px; float: left; width: 100%;}
+.cotainer form input,.cotainer form select,.cotainer form textarea{ display: block;}

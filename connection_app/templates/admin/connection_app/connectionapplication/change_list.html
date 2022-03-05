@@ -1,0 +1,221 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+<!-- Override extrahead to add Chart.js -->
+{% block extrahead %}
+{{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datasource@0.1.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@^3"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@^2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@^1"></script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+
+  const myChartctx = document.getElementById('myChart').getContext('2d');
+  const comp_chartctx = document.getElementById('comp_chart').getContext('2d');
+
+  const labelOptions = {
+    'BACK_OFFICE_START': {
+      backgroundColor: 'YellowGreen	',
+      barThickness: 15,
+    },
+    'EDIT_APPLICATION': {
+      backgroundColor: 'MediumSlateBlue	',
+      barThickness: 15,
+    },
+    'FRONT_OFFICE_SV': {
+      backgroundColor: 'DarkGreen',
+      barThickness: 15,
+    },
+    'FRONT_OFFICE': {
+      backgroundColor: 'orange',
+      barThickness: 15,
+    },
+    'BACK_OFFICE_START': {
+      backgroundColor: 'Gold',
+      barThickness: 15,
+    },
+    'SUBMITTED': {
+      backgroundColor: 'yellow',
+      barThickness: 15,
+    },
+    'COMPLETED': {
+        backgroundColor: 'blue',
+        barThickness: 15,
+      },
+      'NOT_INTERESTED': {
+        backgroundColor: 'red',
+        barThickness: 15,
+      }
+  }
+
+  const pending_chat = new Chart(myChartctx, {
+
+
+    type: 'bar',
+    data: {
+      labels:['BACK_OFFICE_START','EDIT_APPLICATION','FRONT_OFFICE_SV','FRONT_OFFICE','BACK_OFFICE_START','SUBMITTED'],
+      datasets: [
+        // {
+        //   type: 'bar',
+        //   label: 'Connections',
+        //   data: []
+        //   backgroundColor: 'rgba(220,20,20,0.5)',
+        //   showLine: true, // overrides the `line` dataset default
+        //   barPercentage: 1,
+        //   barThickness: 6,
+        //   maxBarThickness: 8,
+        //   minBarLength: 2,
+        // },
+      ],
+    },
+    options: {
+      responsive: true,
+      parsing: {
+        xAxisKey: 'created_on_date_obj',
+        yAxisKey: 'cnt'
+      },
+      scales: {
+        xAxes: {
+          type: 'time',
+          time: {
+            unit: 'day',
+            round: 'day',
+            displayFormats: {
+              day: 'D MMM YYYY',
+            },
+          },
+          max: 1646228663000,
+          min: 1643723042000,
+          ticks: {
+            source: 'auto'
+          }
+        },
+        yAxes: {
+          beginAtZero: true,
+        }
+      },
+    },
+ 
+  });
+
+
+  const completed_chart = new Chart(comp_chartctx, {
+      type: 'bar',
+      data: {
+        labels:['COMPLETED'],
+        datasets: [
+         
+        ],
+      },
+      options: {
+        responsive: true,
+        parsing: {
+          xAxisKey: 'created_on_date_obj',
+          yAxisKey: 'cnt'
+        },
+        scales: {
+          xAxes: {
+            type: 'time',
+            time: {
+              unit: 'day',
+              round: 'day',
+              displayFormats: {
+                day: 'D MMM YYYY',
+              },
+            },
+            max: 1646228663000,
+            min: 1643723042000,
+            ticks: {
+              source: 'auto'
+            }
+          },
+          yAxes: {
+            beginAtZero: true,
+          }
+        },
+      },
+   
+    });
+
+
+
+  const btn = document.querySelector('#reload');
+  btn.addEventListener('click', () => loadChartData);
+
+
+  async function loadChartData()  {
+    const res = await fetch("/admin/connection_app/connectionapplication/chart_data/");
+    const charts_json = await res.json();
+
+    applyDataToChart(charts_json.pending, pending_chat);
+    applyDataToChart(charts_json.completed, completed_chart);
+  }
+
+
+
+  function applyDataToChart(json, chart) {
+  var datasetList = json['data'].map((datasetObj) => {
+      var options = labelOptions[datasetObj.label] || {};
+      var dataset = Object.assign({}, options, datasetObj);
+      dataset.data.forEach((dataItem) => {
+        dataItem.created_on_date_obj = new Date(dataItem.created_on);
+      });
+      return dataset;
+    });
+
+    //debugger;
+    chart.options.scales.xAxes.max = new Date(json.max_date).getTime();
+    chart.options.scales.xAxes.min = new Date(json.min_date).getTime();
+
+    chart.data.datasets = datasetList;
+    chart.update();
+}
+
+  setTimeout(() => {
+    loadChartData()
+  }, 0);
+
+});
+  </script>
+
+{% endblock %}
+
+{% block content %}
+
+<button id="reload" style="margin: 1rem 0;  border-radius: 12px; height:30px; width:250px; background-color:#bfa7f8;">Reload chart data</button>
+<br><br>
+<hr>
+<p style="font-size:30px; color:red;">Pending Applications</p>
+<div style="width: 100%;">
+    <div style="width: 80%;">
+        <canvas style="margin-bottom: 30px; width: 60%; height: 50%;" id="myChart"></canvas>
+      </div>
+        
+</div>
+<!-- Render the rest of the ChangeList view -->
+<hr>
+<p style="font-size:30px; color:red;">Completed Applications</p>
+<div style="width: 100%;">
+    <div style="width: 80%;">
+        <canvas style="margin-bottom: 30px; width: 60%; height: 50%;" id="comp_chart"></canvas>
+      </div>
+        
+      
+</div>
+<hr>
+<br>
+<!-- Render the rest of the ChangeList view -->
+{{ block.super }}
+{% endblock %}
+
+
