@@ -115,10 +115,20 @@ class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionCustomMixin, ad
     def my_custom_sql(self):
         with connection.cursor() as cursor:
             # All Status instead Completed and Not Interested
-            cursor.execute("SELECT date(created_on) as created_on, status, count(*) as cnt FROM connection_app_connectionapplication where status not in ('COMPLETED', 'NOT_INTERESTED') group by date(created_on), status", [])
+            cursor.execute("""
+            SELECT date(created_on) as created_on, status, count(*) as cnt
+            FROM connection_app_connectionapplication where
+            status not in ('COMPLETED', 'NOT_INTERESTED')
+            group by date(created_on), status
+            order by status
+            """, [])
             rows = dictfetchall(cursor)
             
-            cursor.execute("SELECT min(date(created_on)) as min_date, max(date(created_on)) as max_date FROM connection_app_connectionapplication where status not in ('COMPLETED', 'NOT_INTERESTED')", [])
+            cursor.execute("""
+            SELECT min(date(created_on)) as min_date, max(date(created_on)) as max_date
+            FROM connection_app_connectionapplication where
+            status not in ('COMPLETED', 'NOT_INTERESTED')
+            """, [])
             min_max = dictfetchall(cursor)
             min_max = min_max[0]
             min_max['data'] = rows
@@ -129,11 +139,21 @@ class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionCustomMixin, ad
         with connection.cursor() as cursor:
                         
             # Completed
-            cursor.execute("SELECT date(created_on) as created_on, status, count(*) as cnt FROM connection_app_connectionapplication where status in ('COMPLETED', 'NOT_INTERESTED') group by date(created_on), status", [])
+            cursor.execute("""
+            SELECT date(created_on) as created_on, status, count(*) as cnt
+            FROM connection_app_connectionapplication where
+            status in ('COMPLETED', 'NOT_INTERESTED')
+            group by date(created_on), status
+            order by status
+            """, [])
             rows = dictfetchall(cursor)
 
 
-            cursor.execute("SELECT min(date(created_on)) as min_date, max(date(created_on)) as max_date FROM connection_app_connectionapplication where status in ('COMPLETED', 'NOT_INTERESTED')", [])
+            cursor.execute("""
+            SELECT min(date(created_on)) as min_date, max(date(created_on)) as max_date
+            FROM connection_app_connectionapplication where
+            status in ('COMPLETED', 'NOT_INTERESTED')
+            """, [])
             min_max = dictfetchall(cursor)
             min_max = min_max[0]
             min_max['data'] = rows
