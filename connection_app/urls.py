@@ -1,4 +1,5 @@
 # Routers provide an easy way of automatically determining the URL conf.
+from django.conf.urls import url
 from django.urls import path, include
 from django.contrib import admin
 from email.mime import application
@@ -10,12 +11,15 @@ from . import views
 
 
 router = routers.DefaultRouter()
-router.register(r'connection-application', ConnectionApplicationViewSet),
+router.register(r'connection-application', ConnectionApplicationViewSet)
 
 
 urlpatterns = [
     path('', views.index),
-    # path('status/', views.Status, name="status"),
-     path('^status/$', views.Status, name="status"),
+    url(
+        '^connection-application/(?P<pk>[^/.]+)/status/$',
+        views.ApplicationDetailView.as_view(),
+        name="application_status"
+    ),
     path('', include(router.urls))
 ]
