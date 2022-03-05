@@ -6,26 +6,36 @@ from fsm_admin2_custom.admin import FSMTransitionCustomMixin
 from .enums import ConnectionApplicationLeadStatus
 from .models import ConnectionApplication, ConnectionApplicationDocuments
 from django_fsm_log.admin import StateLogInline
+from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
+from django_admin_listfilter_dropdown.filters import DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter
+from django.contrib.admin import SimpleListFilter
+
+
+
+class StatusFilter(SimpleListFilter):
+    title = 'Application Status'  # or use _('country') for translated title
+    parameter_name = 'application_status'
+
+    def lookups(self, request, model_admin):
+        return [
+            ('SP', 'Staff Pending'),
+            ('E', 'End'),
+            ('CP', 'Customer Pending'),
+        ]
+
+    def queryset(self, request, queryset):
+        state = self.value()
+        if state == 'SP':
+            return queryset.exclude(status__in=(ConnectionApplicationLeadStatus.COMPLETED, ConnectionApplicationLeadStatus.NOT_INTERESTED))
+        if state == 'E':
+            return queryset.filter(status__in=(ConnectionApplicationLeadStatus.COMPLETED, ConnectionApplicationLeadStatus.NOT_INTERESTED))
+        return queryset
 
 
 class ConnectionApplicationDocumentsInline(admin.TabularInline):
     extra = 0
     model = ConnectionApplicationDocuments
     template = 'connection_app/admin/document-inline.html'
-
-
-# class FlatPageAdmin(FlatPageAdmin):
-#     fieldsets = (
-#         (None, {'fields': ('url', 'title', 'content', 'sites')}),
-#         (_('Advanced options'), {
-#             'classes': ('collapse',),
-#             'fields': (
-#                 'enable_comments',
-#                 'registration_required',
-#                 'template_name',
-#             ),
-#         }),
-#     )
 
 @admin.register(ConnectionApplication)
 class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdmin):
@@ -42,14 +52,26 @@ class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionCustomMixin, ad
         'updated_on',
         'required_by',
         'status',
+        'referral_code',
     )
-    search_fields = ('name',)
+
+    search_fields = ('name','referral_code','mobile')
+    ordering = ('id',)
+
+    list_filter = (
+          StatusFilter,
+          ('created_on', DateRangeFilter),
+          ('updated_on', DateRangeFilter),
+          ('required_by', DateRangeFilter),
+          ('status', DropdownFilter),
+          ('application_type', DropdownFilter),
+    )
 
     draft_fieldsets = [(None, {'fields': [
-            'name', 'mobile', 'address', 'application_type', 'item_code',
-            'connection_type', 'referral_code', 'applicant_remarks',
-            'communication_mode', 'fsm_display_status'
-        ]})]
+        'name', 'mobile', 'address', 'application_type', 'item_code',
+        'connection_type', 'referral_code', 'applicant_remarks',
+        'communication_mode', 'fsm_display_status'
+    ]})]
 
     process_fieldsets = [(None, {'fields': [
             'lead_details_in_html', 'attachment_details_in_html', 'fsm_display_status'
