@@ -114,20 +114,20 @@
 	<div class="container register">
 		<div class="form-contain">
 			<div id="form_hide">
-				<!-- <img src="{% static 'img/logo2.png' %}"> -->
+			 <img style="width:100%; height:250px;" src="{% static 'img/logo2.png'  %}"> 
 				<h3 class="text-center">Form to Apply New Domestic LPG Gas Connection</h3>
 				<h4 class="text-center">नया घरेलू गैस कनेक्शन आवेदन करने के लिए फार्म</h4><br>
 				<form class="form-horizontal" action="" id="punjab" method="POST" enctype="multipart/form-data">
 					<div class="form-group">
-						<p>Customer Name (ग्राहक का नाम)<strong style="color:red">*</strong></p>
-						<input type="text" class="form-control" id="customername" name="name" value="" required />
-						<span id="customername_detail" class="text-danger"></span>
+						<p>Mobile Number. (फोन नंबर)<strong style="color:red">*</strong></p>
+						<input type="text" class="form-control" id="mobile" pattern="[6789][0-9]{9}" name="mobile"
+							onkeypress="return digits(event)" value="" maxlength="10"  required />
+						<span id="mobile_detail" class="text-danger"></span>
 					</div>
 					<div class="form-group">
-						<p>Mobile No. (फोन नंबर)<strong style="color:red">*</strong></p>
-						<input type="text" class="form-control" id="mobile" pattern="[789][0-9]{9}" name="mobile"
-							onkeypress="return digits(event)" value="" min="6000000000" max="9999999999" maxlength="10" pattern="[1-9]{1}[0-9]{9}" required />
-						<span id="mobile_detail" class="text-danger"></span>
+						<p>Your Name (आपका नाम)<strong style="color:red">*</strong></p>
+						<input type="text" class="form-control" id="customername" name="name" value="" required />
+						<span id="customername_detail" class="text-danger"></span>
 					</div>
 					<div class="form-group">
 						<p>Current Address (वर्तमान पता)<strong style="color:red">*</strong></p>
@@ -138,7 +138,7 @@
 					<div class="form-group">
 						<div class="row">
 							<div class="col-sm-2 col">
-								<p>Customer Picture or Selfie(ग्राहक की फोटो)<strong style="color:red">*</strong>
+								<p>Your Picture or Selfie(ग्राहक की फोटो)<strong style="color:red">*</strong>
 								</p><br>
 								<span class="custom-file-input" name="customerpicture"
 									id="customerpicture"></span><br>
@@ -181,14 +181,14 @@
 						</div>
 					</div>
 					<div class="form-group">
-						<p>Connection Type<strong style="color:red">*</strong></p>
+						<p>Connection Type (गैस कनेक्शन का प्रकार)<strong style="color:red">*</strong></p>
 						<select class="selectpicker form-control" data-style="warning" name="connection_type"
 							required>
-							<option value="" selected="selected">Select connection Type</option>
-							<option value="FC14#SINGLE">14.2 KG Single Connection(14.2 किलो सिंगल कनेक्शन)</option>
+							<option value="" selected="selected">Select Connection Type (गैस कनेक्शन प्रकार चुनें)</option>
+							<option value="FC14#SINGLE">14.2 KG Single Connection (14.2 किलो सिंगल कनेक्शन)</option>
 							<option value="FC14#DOUBLE">14.2 Kg Double Connection (14.2 किलो डबल कनेक्श)</option>
 							<option value="FC5#SINGLE">5 KG Single Connection (5 किलो सिंगल कनेक्श)</option>
-							<option value="FC5#DOUBLE">5 KG Double Connection(5 किलो डबल कनेक्श)</option>
+							<option value="FC5#DOUBLE">5 KG Double Connection (5 किलो डबल कनेक्श)</option>
 						</select>
 					</div>
 					<div class="form-group">
@@ -210,21 +210,21 @@
 		</div>
 	</div>
 	<script>
-		function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
+	function getCookie(name) {
+		let cookieValue = null;
+			if (document.cookie && document.cookie !== '') {
+				const cookies = document.cookie.split(';');
+				for (let i = 0; i < cookies.length; i++) {
+					const cookie = cookies[i].trim();
+					// Does this cookie string begin with the name we want?
+					if (cookie.substring(0, name.length + 1) === (name + '=')) {
+						cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+						break;
+					}
+				}
+			}
+			return cookieValue;
+		}
 		$('#punjab').on('submit', function (event) {
 			event.preventDefault();
 			let documentArray = valid();
@@ -251,6 +251,9 @@
 
 			console.log(formdata);
 
+				 
+			
+
 			jQuery('#submit').val('Please wait...');
 			jQuery('#submit').attr('disabled', true);
 
@@ -266,6 +269,7 @@
 
 				processData: false,
 				success: function (result) {
+
 					$('#form_hide').hide();
 					console.log(result);
 					jQuery('#punjab')['0'].reset();
@@ -287,21 +291,62 @@
 				}
 			});
 		});
+		
 		$(document).ready(function () {
-
 			fillInitialData();
+			$("#mobile").blur(function(){
+			var mobile = $("#mobile").val();
+			if (!mobile) return;
+			$("#mobile_detail").show();
+			$("#mobile_detail").html('<img style="width:18px; margin-left:10px;" src="{% static "img/33.gif"  %}" align="left">&nbsp;Checking application...');
+// 			http://dca.arungas.com/connection-app/connection-application/check_phone/?mobile=6393700696
+//  http://dca.arungas.com/connection-app/connection-application/9/status/
 
-			window.customerpictureuppy = new Uppy.Core({
-				debug: true,
-				autoProceed: true,
-				restrictions: {
-					maxFileSize: 50000000,
-					maxNumberOfFiles: 1,
-					minNumberOfFiles: 1,
-					allowedFileTypes: ['image/*'],
-					//requiredMetaFields: ['caption'],
-				}
-			})
+		jQuery.ajax({
+			url: '/connection-app/connection-application/check_phone/',
+			type: "GET",
+			data: {'mobile': mobile},
+			success: function (data) {
+				
+				response = data;
+				if (response.status === true) {
+					$("#mobile_detail").show();
+					$("#mobile_detail").html('✔ Available for New Application').css({'color': 'green', 'margin-left':'22px', 'font-size' : '17px'});
+					return true;	
+				} else {
+					var proceed = confirm(
+						`You already Fill the Application.
+If you want to change your mobile number click on cancel otherwise click on OK! to check the application status.
+
+आप पहले ही आवेदन भर चुके हैं। अगर आप अपना मोबाइल नंबर बदलना चाहते हैं तो कैंसिल पर क्लिक करें अन्यथा ओके पर क्लिक करें!
+आवेदन भरे हुए स्थिति की जांच करने के लिए।)`
+					);
+					
+					if (proceed) {
+						window.location.href = response.application_url;
+						return false;
+					} else {
+						$('#mobile').val('');
+						$('#mobile').focus();
+						$("#mobile_detail").show();
+						$("#mobile_detail").html('Please Provide New Mobile Number').css({'color': 'green', 'margin-left':'20px', 'font-size' : '17px'});
+					}
+					}
+					},	
+					});	
+			});
+
+		window.customerpictureuppy = new Uppy.Core({
+			debug: true,
+			autoProceed: true,
+			restrictions: {
+				maxFileSize: 50000000,
+				maxNumberOfFiles: 1,
+				minNumberOfFiles: 1,
+				allowedFileTypes: ['image/*'],
+				//requiredMetaFields: ['caption'],
+			}
+		})
 				.use(Uppy.Dashboard, {
 					trigger: '#customerpicture',
 					inline: true,
@@ -320,7 +365,6 @@
 				console.log('successful files:', result.successful)
 				console.log('failed files:', result.failed)
 			})
-
 
 			window.aadharcarduppy = new Uppy.Core({
 				debug: true,
@@ -577,6 +621,16 @@
 		margin-top: 8%;
 		margin-bottom: -15%;
 		color: #495057;
+	h: 100px;
+		color: #0062cc;
+		border: 2px solid #0062cc;
+		border-top-left-radius: 1.5rem;
+		border-bottom-left-radius: 1.5rem;
 	}
+
+	.register-heading {
+		text-align: center;
+		margin-top: 8%;
+		margin-bottom: -15%;
+		color: #495057;
 	
-</style>
