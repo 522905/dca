@@ -19,28 +19,46 @@
                 </div>
             </div> <!-- Add class 'active' to progress -->
             <div class="row d-flex justify-content-center">
+                <div class="row justify-content-between top" style="padding-top: 10px;"></div>
                 <div class="col-12">
+               
                     <ul id="progressbar" class="text-center">
-                     
                         {% if object.status == 'SUBMITTED' %}
-                            <li class="step0 active"></li>
+                         <li class="step0 active "><div class="row d-flex icon-content"> <img class="icon" style="margin-left:120px;" src="{% static 'img/submitted.png' %}">
+                                <div class="d-flex flex-column">
+                                    <p class="font-weight-bold">SUBMITTED</p>
+                                </div></div></li>
                             {% else %}
-                            <li class="step0"></li>
-                        {% endif %}
-                        {% if object.status == 'BACK_OFFICE_START' %}
                             <li class="step0 active"></li>
-                            {% else %}
-                            <li class="step0"></li>
                         {% endif %}
+                        {% if object.status in 'BACK_OFFICE_START,BACK_OFFICE_END'  %}
+                            <li class="step0 active"> <div class="row d-flex icon-content"> <img class="icon" style="margin-left:120px;" src="{% static 'img/accepted.png' %}">
+                                <div class="d-flex flex-column">
+                                    <p class="font-weight-bold " style="margin-left: 90px;"> Document Accepted</p>
+                                </div>
+                            </div></li>
+                            {% else %}
+                            <li class="step0 active"></li>
+                        {% endif %}
+                        
                         {% if object.status == 'FRONT_OFFICE' %}
-                            <li class="step0 active"></li>
+                            <li class="step0 active">  <div class="row d-flex icon-content"> <img class="icon" style="margin-left:120px;" src="{% static 'img/process.png' %}">
+                                <div class="d-flex flex-column">
+                                    <p class="font-weight-bold">In Process</p>
+                                </div>
+                            </div></li>
                             {% else %}
-                            <li class="step0"></li>
-                        {% endif %}
-                        {% if object.status == 'BACK_OFFICE_START' and object.status == 'SUBMITTED' %}
+                            <li class="step0 active"></li>
+                        {% endif %} 
+                        
+                        {% if object.status == 'COMPLETED' %}
+                        <li class="step0 active"COMPLETED> <div class="row d-flex icon-content "> <img class="icon" style="margin-left:120px;" src="{% static 'img/check.png' %}">
+                            <div class="d-flex flex-column">
+                                <p class="font-weight-bold" >COMPLETED</p>
+                            </div>
+                        </div> </li>
+                        {% else %} 
                         <li class="step0 active"></li>
-                        {% else %}
-                        <li class="step0"></li>
                         {% endif %}
 
                         <!-- EDIT_APPLICATION = 'EDIT_APPLICATION', 'Edit Application',
@@ -52,9 +70,10 @@
                         COMPLETED = 'COMPLETED', 'Completed' -->
 
                     </ul>
+                    </div>
                 </div>
             </div>
-            <div class="row justify-content-between top" style="padding-top: 10px;">
+             <!-- <div class="row justify-content-between top" style="padding-top: 10px;">
                 <div class="row d-flex icon-content"> <img class="icon" src="https://i.imgur.com/9nnc9Et.png">
                     <div class="d-flex flex-column">
                         <p class="font-weight-bold">SUBMITTED</p>
@@ -75,37 +94,47 @@
                         <p class="font-weight-bold">COMPLETED</p>
                     </div>
                 </div>
-            </div>
+            </div>   -->
         </div>
     </div>
 
-
-    <div class="container">
+<!-- <div class="container">
         <div class="container mt-5 mb-5">
             <div class="row">
                 <div class="col-md-6 offset-md-3">
                     <h4>Application Status  <span style="font-size:22px; color:var(--link-fg)">{{ object.pk }}</span></h4>
                     <ul class="timeline">
                         <li>
-                            {% if object.status == 'EDIT_APPLICATION' %}
+                            {% if object.status == 'SUBMITTED' %}
+                            SUBMITTED
+                        </li>      
+                        <li>
+                            {% elif object.status == 'EDIT_APPLICATION' %}
                                 EDIT APPLICATION
                         </li>      
                             {% elif object.status == 'BACK_OFFICE_START' %}
                             <li>
                                 BACK OFFICE START
                             </li>
+                            {% elif object.status == 'BACK_OFFICE_END' %}
+                            <li>
+                                BACK_OFFICE_END
+                            </li>
+                            {% elif object.status == 'COMPLETED' %}
+                            <li>
+                                COMPLETED
+                            </li>
                             {% else %}
-                                text-warning
+                                Front Office
                             {% endif %}</p>
                         </li>
-
-
                     </ul>
                 </div>
             </div>
         </div>
-    </div>
+  var  </div> -->
 </body>
+
 <style>
     .card {
     z-index: 0;
