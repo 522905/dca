@@ -26,7 +26,7 @@ class ConnectionApplicationViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
 
-        for document in serializer.data.get('documents'):
+        for document in request.data.get('documents'):
             instance.documents.filter(type=document['type']).delete()
             instance.documents.create(**document)
 
@@ -68,7 +68,7 @@ class ConnectionApplicationViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
 
-        for document in serializer.data.get('documents'):
+        for document in request.data.get('documents'):
             instance.documents.filter(type=document['type']).delete()
             instance.documents.create(**document)
 
