@@ -140,17 +140,17 @@ class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionCustomMixin, ad
                         
             # Completed
             cursor.execute("""
-            SELECT date(created_on) as created_on, status, count(*) as cnt
+            SELECT date(updated_on) as created_on, status, count(*) as cnt
             FROM connection_app_connectionapplication where
             status in ('COMPLETED', 'NOT_INTERESTED')
-            group by date(created_on), status
+            group by date(updated_on), status
             order by status
             """, [])
             rows = dictfetchall(cursor)
 
 
             cursor.execute("""
-            SELECT min(date(created_on)) as min_date, max(date(created_on)) as max_date
+            SELECT min(date(updated_on)) as min_date, max(date(updated_on)) as max_date
             FROM connection_app_connectionapplication where
             status in ('COMPLETED', 'NOT_INTERESTED')
             """, [])
