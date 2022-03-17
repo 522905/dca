@@ -20,6 +20,14 @@ class ConnectionApplicationLeadStatus(models.TextChoices):
 	BACK_OFFICE_END = 'BACK_OFFICE_END', 'Back Office End',
 	FRONT_OFFICE = 'FRONT_OFFICE', 'Front Office',
 	COMPLETED = 'COMPLETED', 'Completed'
+	REUPLOAD = 'REUPLOAD', 'Reupload'
+
+
+class ConnectionInstallationStatus(models.TextChoices):
+	PENDING = 'PENDING', 'Pending',
+	SUBMITTED = 'SUBMITTED', 'Submitted',
+	ACCEPTED = 'ACCEPTED', 'Accepted',
+	REUPLOAD = 'REUPLOAD', 'Reupload'
 
 
 class ApplicationTypeEnum(models.TextChoices):

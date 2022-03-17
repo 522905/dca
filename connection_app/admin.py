@@ -55,7 +55,7 @@ class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionCustomMixin, ad
     fsm_transition_form_template = 'connection_app/transaction_form_template.html'
     fsm_transition_buttons_template = 'connection_app/transition_buttons.html'
 
-    fsm_fields = ['status', ]
+    fsm_fields = ['status', 'installation_status']
     list_display = (
         'id',
         'name',
@@ -87,8 +87,8 @@ class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionCustomMixin, ad
     ]})]
 
     process_fieldsets = [(None, {'fields': [
-            'lead_details_in_html', 'attachment_details_in_html', 'fsm_display_status'
-        ]})]
+        'lead_details_in_html', 'attachment_details_in_html', 'fsm_display_status'
+    ]})]
 
     readonly_fields = ('lead_details_in_html', 'attachment_details_in_html')
 

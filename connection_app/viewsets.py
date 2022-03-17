@@ -18,6 +18,14 @@ class ConnectionApplicationViewSet(viewsets.ModelViewSet):
         request.PERFORM_SUBMIT = True
         return super().create(request, *args, **kwargs)
 
+    @action(methods=['post'], detail=False, url_path='reupload_application')
+    def reupload_application(self, request, *args, **kwargs):
+        request.PERFORM_SUBMIT = True
+        resp = super().partial_update(request, *args, **kwargs)
+        instance = self.get_object()
+        instance.reuploaded_by_customer()
+        return resp
+
     @action(methods=['get'], detail=False, url_path='check_phone')
     def check_phone(self, request, *args, **kwargs):
         mobile = request.GET.get('mobile')
@@ -44,3 +52,11 @@ class ConnectionApplicationViewSet(viewsets.ModelViewSet):
             application.submit()
             application.save()
         return application
+
+    @action(methods=['post'], detail=False, url_path='upload_installation')
+    def upload_installation(self, request, *args, **kwargs):
+        request.PERFORM_SUBMIT = True
+        resp = super().partial_update(request, *args, **kwargs)
+        instance = self.get_object()
+        instance.upload_installation()
+        return resp

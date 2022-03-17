@@ -14,10 +14,10 @@ from minio import Minio
 from communication_log.models import CommunicationLog
 from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTypeEnum, \
 	ConnectionApplicationProcessType, ConnectionApplicationLeadStatus, ConnectionApplicationDocumentsEnum, \
-	ConnectionApplicationLeadCommunicationMode
+	ConnectionApplicationLeadCommunicationMode, ConnectionInstallationStatus
 from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, SubmitLead, \
 	FrontOfficeCompleted, BackOfficeReactivation, BackOfficeRegularisation, \
-	BackOfficeNewConnection
+	BackOfficeNewConnection, DocumentsReupload
 from domestic_app.utils import get_minio_public_url
 
 minio_client = Minio(
@@ -47,8 +47,18 @@ class ConnectionApplication(models.Model):
 	item_code = models.CharField(max_length=25, choices=ItemCodeEnum.choices)
 	connection_type = models.CharField(max_length=25, choices=ConnectionTypeEnum.choices)
 	referral_code = models.CharField(max_length=16, null=True, blank=True)
-	status = FSMField(default=ConnectionApplicationLeadStatus.SUBMITTED,
-	                  choices=ConnectionApplicationLeadStatus.choices)
+
+	documents_reupload_remarks = models.TextField(null=True, blank=True)
+	documents_required_for_reupload = models.TextField(null=True, blank=True)
+
+	status = FSMField(
+		default=ConnectionApplicationLeadStatus.SUBMITTED,
+		choices=ConnectionApplicationLeadStatus.choices
+	)
+	installation_status = FSMField(
+		default=ConnectionInstallationStatus.PENDING,
+		choices=ConnectionInstallationStatus.choices
+	)
 	applicant_remarks = models.TextField(null=True, blank=True)
 	required_by = models.DateField(null=True, blank=True)
 	consumer_id = models.CharField(max_length=25, null=True, blank=True)
@@ -95,6 +105,75 @@ class ConnectionApplication(models.Model):
 	)
 	def edit(self, *args, **kwargs):
 		self.last_execution_state = self.status
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source='*',
+		target=ConnectionApplicationLeadStatus.REUPLOAD,
+		custom=dict(
+			short_description='Resend To Customer', admin=True, form=DocumentsReupload
+		),
+	)
+	def send_for_reupload_to_customer(self, *args, **kwargs):
+		self.last_execution_state = self.status
+		self.documents_reupload_remarks = kwargs.get('remarks')
+		self.documents_required_for_reupload = kwargs.get('documents_required_for_reupload')
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=ConnectionApplicationLeadStatus.REUPLOAD,
+		target=GET_STATE(
+			lambda self, **kwargs: self.last_execution_state,
+		),
+		custom=dict(
+			short_description='Resend To Customer', admin=True, form=DocumentsReupload
+		),
+	)
+	def reuploaded_by_customer(self, *args, **kwargs):
+		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=installation_status,
+		source=[ConnectionInstallationStatus.PENDING, ConnectionInstallationStatus.REUPLOAD],
+		target=ConnectionInstallationStatus.SUBMITTED,
+		custom=dict(
+			short_description='Upload Installation', admin=True
+		),
+	)
+	def upload_installation(self, *args, **kwargs):
+		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=installation_status,
+		source=ConnectionInstallationStatus.SUBMITTED,
+		target=ConnectionInstallationStatus.ACCEPTED,
+		custom=dict(
+			short_description='Accept Installation', admin=True
+		),
+	)
+	def accept_installation(self, *args, **kwargs):
+		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=installation_status,
+		source=ConnectionInstallationStatus.SUBMITTED,
+		target=ConnectionInstallationStatus.REUPLOAD,
+		custom=dict(
+			short_description='Resend for reupload of Installation', admin=True
+		),
+	)
+	def send_for_reupload_installation(self, *args, **kwargs):
+		pass
 
 	@fsm_log_description
 	@fsm_log_by

@@ -1,10 +1,13 @@
+import json
+
 from django import forms
 from django.forms import NumberInput
 from django.utils import timezone
 from django_currentuser.middleware import get_current_user
 from django.contrib.admin.widgets import AdminDateWidget
 
-from connection_app.enums import ConnectionApplicationProcessType, ConnectionApplicationLeadStatus
+from connection_app.enums import ConnectionApplicationProcessType, ConnectionApplicationLeadStatus, \
+	ConnectionApplicationDocumentsEnum
 from inactive_customers.models import InactiveCustomer
 
 
@@ -125,4 +128,23 @@ class FrontOfficeCompleted(forms.Form):
 
 	def clean(self):
 		data = self.cleaned_data
+		return data
+
+
+class DocumentsReupload(forms.Form):
+	documents_required_for_reupload = forms.MultipleChoiceField(
+		widget=forms.SelectMultiple,
+		choices=ConnectionApplicationDocumentsEnum.choices,
+		help_text="Documents to prompt for reupload"
+	)
+
+	remarks = forms.CharField(
+		widget=forms.Textarea,
+		label='Remarks For Customer',
+		required=True
+	)
+
+	def clean(self):
+		data = self.cleaned_data
+		data['documents_required_for_reupload'] = json.dumps(data['documents_required_for_reupload'])
 		return data
