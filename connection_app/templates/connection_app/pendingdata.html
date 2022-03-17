@@ -80,7 +80,10 @@
 	</script>
 </head>
 
+{{ object.documents_required_for_reupload|json_script:"req-doc-data" }}
+
 <body>
+	
 
     <div class="container px-1 px-md-4 py-5 mx-auto">
         <h3 class="text-center">Form for resumption of pending documents</h3>
@@ -119,13 +122,16 @@
                             <label>Required By:</label> 
                             <td class="col-md-6">{{object.required_by}}</td>
                         </p>
-                      
+                        <p>
+                            <label>Process Type: </label> 
+                            <td class="col-md-6">{{object.process_type}}</td>
+                        </p>
                     </div>
                 
                     <div class="form-group" style="margin-top:10px">
                         <p>
                             <label>Process Type: </label> 
-                            <td class="col-md-6">{{object.process_type}}</td>
+                            <td class="col-md-6">{{object.documents_reupload_remarks}}</td>
                         </p>
                    
                     </div>
@@ -155,12 +161,14 @@
 	</div>
 	<script>
 
-	let documentsRequired = ['CUSTOMER_PHOTO', 'UID_FRONT','UID_BACK'];
-	
+	let documentsRequired = JSON.parse(JSON.parse(document.getElementById('req-doc-data').textContent));
+
 	let documentTypesList = {
 		CUSTOMER_PHOTO: {label: "Your Picture or Selfie(ग्राहक की फोटो)"},
 		UID_FRONT: {label: "Aadhar Card Front Photo (आधार कार्ड की फोटो)"},
 		UID_BACK: {label: "Aadhar Card Back Photo (आधार कार्ड की फोटो)"},
+		BANK_DETAIL: {label: "Aadhar Card Back Photo (आधार कार्ड की फोटो)"},
+		OTHER_ID_PROOF: {label: "Any Other Identification Card (आधार कार्ड की फोटो)"}
 	}
 	
 	$(document).ready(function(){
@@ -229,7 +237,7 @@
 		var formData = new FormData(this);
 
 		jQuery.ajax({
-			url: '/connection-app/connection-application/wf/',
+			url: '/connection-app/connection-application/{{object.pk}}/reupload_application/',
 			type: 'POST',
 			data: JSON.stringify(formdata),
 			contentType: "application/json; charset=utf-8",
@@ -242,6 +250,7 @@
 				$('#form_hide').hide();
 				console.log(result);
 				jQuery('#punjab')['0'].reset();
+				window.location.href = '/connection-app/connection-application/{{object.pk}}/status/';
 			}
 		});
 	});

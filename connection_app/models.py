@@ -130,7 +130,7 @@ class ConnectionApplication(models.Model):
 			lambda self, **kwargs: self.last_execution_state,
 		),
 		custom=dict(
-			short_description='Resend To Customer', admin=True, form=DocumentsReupload
+			short_description='Application Uploaded By Customer'
 		),
 	)
 	def reuploaded_by_customer(self, *args, **kwargs):

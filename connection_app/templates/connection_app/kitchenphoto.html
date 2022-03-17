@@ -163,10 +163,10 @@
 	</div>
 	<script>
 
-	let documentsRequired = ['CUSTOMER_PHOTO'];
+	let documentsRequired = ['KITCHEN_PHOTO'];
 	
 	let documentTypesList = {
-		CUSTOMER_PHOTO: {label: "Kitchen Photo (रसोई की फोटो)"},
+		KITCHEN_PHOTO: {label: "Kitchen Photo (रसोई की फोटो)"},
 	}
 	
 	$(document).ready(function(){
@@ -235,7 +235,7 @@
 		var formData = new FormData(this);
 
 		jQuery.ajax({
-			url: '/connection-app/connection-application/wf/',
+			url: '/connection-app/connection-application/{{object.pk}}/upload_installation/',
 			type: 'POST',
 			data: JSON.stringify(formdata),
 			contentType: "application/json; charset=utf-8",
@@ -248,6 +248,7 @@
 				$('#form_hide').hide();
 				console.log(result);
 				jQuery('#punjab')['0'].reset();
+				window.location.href = '/connection-app/connection-application/{{object.pk}}/status/';
 			}
 		});
 	});

@@ -146,5 +146,6 @@ class DocumentsReupload(forms.Form):
 
 	def clean(self):
 		data = self.cleaned_data
-		data['documents_required_for_reupload'] = json.dumps(data['documents_required_for_reupload'])
+		if data.get('documents_required_for_reupload', []):
+			data['documents_required_for_reupload'] = json.dumps(data['documents_required_for_reupload'])
 		return data

@@ -53,5 +53,6 @@ class ConnectionApplicationDocumentsEnum(models.TextChoices):
 	OTHER_ID_PROOF = 'OTHER_ID_PROOF', 'Other Id Proof'
 	SV = 'SV', 'Subscription Voucher'
 	CONNECTION_DETAIL = 'CONNECTION_DETAIL', 'Connection Detail'
+	KITCHEN_PHOTO = 'KITCHEN_PHOTO', 'Kitchen Photo'
 
 
