@@ -4,6 +4,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link  href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500&family=Roboto+Condensed:wght@300;400;700&family=Roboto:wght@100&display=swap"
         rel="stylesheet">
+        
     <script src='https://kit.fontawesome.com/a076d05399.js' crossorigin='anonymous'></script>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
@@ -38,27 +39,33 @@
                                 </div>
                             </div></li>
                             {% else %}
-                            <li class="step0 active"></li>
+                            <li class="step0 "></li>
                         {% endif %}
-                        
                         {% if object.status == 'FRONT_OFFICE' %}
-                            <li class="step0 active">  <div class="row d-flex icon-content"> <img class="icon" style="margin-left:120px;" src="{% static 'img/process.png' %}">
-                                <div class="d-flex flex-column">
-                                    <p class="font-weight-bold">In Process</p>
-                                </div>
-                            </div></li>
+                            <li class="step0 active">
+                               
+                                  <div class="row d-flex icon-content">
+                                  
+                                     <img class="icon" style="margin-left:120px;" src="{% static 'img/process.png' %}">
+                                
+                                    <div class="d-flex flex-column">
+                                        <p class="font-weight-bold">In Process</p>
+                                    </div>
+                              
+                                 </div>
+                            </li>
                             {% else %}
                             <li class="step0 active"></li>
                         {% endif %} 
                         
                         {% if object.status == 'COMPLETED' %}
-                        <li class="step0 active"COMPLETED> <div class="row d-flex icon-content "> <img class="icon" style="margin-left:120px;" src="{% static 'img/check.png' %}">
+                        <li class="step0 active"> <div class="row d-flex icon-content "> <img class="icon" style="margin-left:120px;" src="{% static 'img/check.png' %}">
                             <div class="d-flex flex-column">
                                 <p class="font-weight-bold" >COMPLETED</p>
                             </div>
                         </div> </li>
                         {% else %} 
-                        <li class="step0 active"></li>
+                        <li class="step0 "></li>
                         {% endif %}
 
                         <!-- EDIT_APPLICATION = 'EDIT_APPLICATION', 'Edit Application',
@@ -73,67 +80,20 @@
                     </div>
                 </div>
             </div>
-             <!-- <div class="row justify-content-between top" style="padding-top: 10px;">
-                <div class="row d-flex icon-content"> <img class="icon" src="https://i.imgur.com/9nnc9Et.png">
-                    <div class="d-flex flex-column">
-                        <p class="font-weight-bold">SUBMITTED</p>
-                    </div>
-                </div>
-                <div class="row d-flex icon-content"> <img class="icon" src="https://i.imgur.com/u1AzR7w.png">
-                    <div class="d-flex flex-column">
-                        <p class="font-weight-bold">Document Accepted</p>
-                    </div>
-                </div>
-                <div class="row d-flex icon-content"> <img class="icon" src="https://i.imgur.com/TkPm63y.png">
-                    <div class="d-flex flex-column">
-                        <p class="font-weight-bold">In Process</p>
-                    </div>
-                </div>
-                <div class="row d-flex icon-content "> <img class="icon" src="{% static 'img/check.png' %}">
-                    <div class="d-flex flex-column">
-                        <p class="font-weight-bold">COMPLETED</p>
-                    </div>
-                </div>
-            </div>   -->
+            
         </div>
     </div>
 
-<!-- <div class="container">
-        <div class="container mt-5 mb-5">
-            <div class="row">
-                <div class="col-md-6 offset-md-3">
-                    <h4>Application Status  <span style="font-size:22px; color:var(--link-fg)">{{ object.pk }}</span></h4>
-                    <ul class="timeline">
-                        <li>
-                            {% if object.status == 'SUBMITTED' %}
-                            SUBMITTED
-                        </li>      
-                        <li>
-                            {% elif object.status == 'EDIT_APPLICATION' %}
-                                EDIT APPLICATION
-                        </li>      
-                            {% elif object.status == 'BACK_OFFICE_START' %}
-                            <li>
-                                BACK OFFICE START
-                            </li>
-                            {% elif object.status == 'BACK_OFFICE_END' %}
-                            <li>
-                                BACK_OFFICE_END
-                            </li>
-                            {% elif object.status == 'COMPLETED' %}
-                            <li>
-                                COMPLETED
-                            </li>
-                            {% else %}
-                                Front Office
-                            {% endif %}</p>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-  var  </div> -->
+
 </body>
+<script>
+
+$(document).ready(function(){
+
+    
+
+});
+</script>
 
 <style>
     .card {

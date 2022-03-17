@@ -16,9 +16,20 @@ router.register(r'connection-application', ConnectionApplicationViewSet)
 
 urlpatterns = [
     path('', views.index),
+    path('connection-application/start/', views.index),
     url(
         '^connection-application/(?P<pk>[^/.]+)/status/$',
-        views.ApplicationDetailView.as_view(),
+        views.ApplicationStatusView.as_view(),
+        name="application_status"
+    ),
+    url(
+        '^connection-application/(?P<pk>[^/.]+)/installation/$',
+        views.ApplicationInstallationView.as_view(),
+        name="application_status"
+    ),
+    url(
+        '^connection-application/(?P<pk>[^/.]+)/reupload/$',
+        views.ApplicationReuploadView.as_view(),
         name="application_status"
     ),
     path('', include(router.urls))
