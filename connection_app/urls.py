@@ -25,12 +25,22 @@ urlpatterns = [
     url(
         '^connection-application/(?P<pk>[^/.]+)/installation/$',
         views.ApplicationInstallationView.as_view(),
-        name="application_status"
+        name="installation_start"
     ),
     url(
         '^connection-application/(?P<pk>[^/.]+)/reupload/$',
         views.ApplicationReuploadView.as_view(),
-        name="application_status"
+        name="application_reupload"
+    ),
+    url(
+        '^installation-gleam-start/$',
+        views.installation_upload_process_gleam_entry_gate,
+        name="application_installation_gleam_start"
+    ),
+    url(
+        '^installation-gleam-complete/$',
+        views.installation_upload_process_gleam_entry_gate_completed,
+        name="application_installation_gleam_complete"
     ),
     path('', include(router.urls))
 ]
