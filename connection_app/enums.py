@@ -21,6 +21,7 @@ class ConnectionApplicationLeadStatus(models.TextChoices):
 	FRONT_OFFICE = 'FRONT_OFFICE', 'Front Office',
 	COMPLETED = 'COMPLETED', 'Completed'
 	REUPLOAD = 'REUPLOAD', 'Reupload'
+	KITCHEN_PHOTO_UPLOAD = 'KITCHEN_PHOTO_UPLOAD', 'Kitchen Photo Upload'
 
 
 class ConnectionInstallationStatus(models.TextChoices):
@@ -55,4 +56,23 @@ class ConnectionApplicationDocumentsEnum(models.TextChoices):
 	CONNECTION_DETAIL = 'CONNECTION_DETAIL', 'Connection Detail'
 	KITCHEN_PHOTO = 'KITCHEN_PHOTO', 'Kitchen Photo'
 
+	@classmethod
+	def get_skipped_additional_choices(cls):
 
+		ret = []
+
+		for e in cls:
+			if not e in ('SV', 'CONNECTION_DETAIL', 'KITCHEN_PHOTO'):
+				ret.append((e.value, e.label))
+		return ret
+
+	@classmethod
+	def get_only_additional_choices(cls):
+		ret = []
+
+		for e in cls:
+			if e in ('SV', 'CONNECTION_DETAIL', 'KITCHEN_PHOTO'):
+				ret.append((e.value, e.label))
+		return ret
+
+		

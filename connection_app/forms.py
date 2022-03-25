@@ -134,7 +134,7 @@ class FrontOfficeCompleted(forms.Form):
 class DocumentsReupload(forms.Form):
 	documents_required_for_reupload = forms.MultipleChoiceField(
 		widget=forms.SelectMultiple,
-		choices=ConnectionApplicationDocumentsEnum.choices,
+		choices=ConnectionApplicationDocumentsEnum.get_skipped_additional_choices(),
 		help_text="Documents to prompt for reupload"
 	)
 
@@ -148,4 +148,20 @@ class DocumentsReupload(forms.Form):
 		data = self.cleaned_data
 		if data.get('documents_required_for_reupload', []):
 			data['documents_required_for_reupload'] = json.dumps(data['documents_required_for_reupload'])
+		return data
+
+
+class KitchenPhotoUploadForm(forms.Form):
+	kitchen_photo = ConnectionApplicationDocumentsEnum.KITCHEN_PHOTO
+			
+	remarks = forms.CharField(
+		widget=forms.Textarea,
+		label='Remarks For Customer',
+		required=True
+	)
+
+	def clean(self):
+		data = self.cleaned_data
+		if data.get('kitchen_photo', []):
+			data['kitchen_photo'] = json.dumps(data['kitchen_photo'])
 		return data

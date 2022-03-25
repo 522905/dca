@@ -19,19 +19,7 @@
 	<script src="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.js"></script>
  
  <style>
-    .form-group{ float: left; width: 80%; background: #ececec; border: 1px solid #ddd;  padding: 10px;}
-   .form-group p label{  width: 50%; float: left; padding-left: 10px;}
-   .form-group p span{ font-weight: normal; float: left;}
-   .form-group p{ float: right; width: 100%;}
-    .readonly{ float: left; width: 100%; margin: 0 !important;}
-   label{  font-weight: bold;}
-   .field-lead_details_in_html .readonly{ margin-left: 0 !important;}
-   .image_module{ display: flex; padding: 10px 0;}
-   .image_module a{ flex: 1; margin: 0 auto; text-align: center; margin: 10px 0;}
-   .image_module a img{ width:100%; padding: 10px; border: 1px solid #ccc; height: 150px; margin-bottom: 10px;}
-   select.form-control:not([size]):not([multiple]) {
-   height: calc(2.25rem + 10px) !important;
-}
+  
 </style>
 	<script>
 		function valid() {
@@ -91,54 +79,65 @@
         <div class="card">
             <div class="row d-flex justify-content-between px-3 top">
                 <div class="d-flex">
-                <h5 style="font-size:15px;" class="text-info font-weight-bold">Your Application Id is : <span class="text-info font-weight-bold">{{ object.pk }}</span></h5>
-                    </div>
+                <h5 style="font-size:15px; margin-left:20px;" class="text-info font-weight-bold">Your Application Id is : <span class="text-info font-weight-bold">{{ object.pk }}</span></h5>
+                    </div><hr>
                     <div class="form-group">
-                        <p>
-                            <label>Name:</label> 
-                            <td class="col-md-6">{{object.name}}</td>
-                        </p>
-                        <p>
-                            <label>Contact:</label> 
-                            <td class="col-md-6">{{object.mobile}}</td>
-                        </p>
-                        <p>
-                            <label>Address:</label> 
-                            <td class="col-md-6">{{object.address}}</td>
-                        </p>
-                        <p>
-                            <label>Application Type:</label> 
-                            <td class="col-md-6">{{object.application_type}}</td>
-                        </p>
-                        <p>
-                            <label>Item:</label> 
-                            <td class="col-md-6">{{object.item_code}}</td>
-                        </p>
-                        <p>
-                            <label>Connection Type:</label> 
-                            <td class="col-md-6">{{object.connection_type}}</td>
-                        </p>
-                        <p>
-                            <label>Required By:</label> 
-                            <td class="col-md-6">{{object.required_by}}</td>
-                        </p>
-                        <p>
-                            <label>Process Type: </label> 
-                            <td class="col-md-6">{{object.process_type}}</td>
-                        </p>
+						<div class="container">
+							<table class="table table-striped table-class" id= "responside-table-demo">
+								<tr>
+									<th>Name</th>
+									<th>{{object.name}}</th>
+								</tr>
+								<tr>
+									<th>Contact:</th>
+									<th >{{object.mobile}}</th>
+								</tr>
+								<tr>
+									<th>Address:</th> 
+									<th>{{object.address}}</th>
+								</tr>
+								<tr>
+									<th>Application Type:</th> 
+									<th>{{object.application_type}}</th>
+								</tr>
+								<tr>
+									<th>Item:</th> 
+									<th>{{object.item_code}}</th>
+								</tr>
+								<tr>
+									<th>Connection Type:</th> 
+									<th>{{object.connection_type}}</th>
+								</tr>
+								<tr>
+									<th>Required By:</th> 
+									<th>{{object.required_by}}</th>
+								</tr>
+								<tr>
+									<th>Process Type: </th> 
+									<th>{{object.process_type}}</th>
+								</tr>
+					
+							</table>
+							<div class="row visible-sm-block visible-xs-block table-xs" style="width: 100% ;">
+							</div>
+						  </div>
+						</div>
                     </div>
-                
-                    <div class="form-group" style="margin-top:10px">
-                        <p>
-                            <label>Process Type: </label> 
-                            <td class="col-md-6">{{object.documents_reupload_remarks}}</td>
-                        </p>
-                   
-                    </div>
+					<div class="container">
+						<table class="table table-striped table-class" id= "responside-table-demo">
+							<tr>
+								<th >Remarks: </th> 
+								<th>{{object.documents_reupload_remarks}}</th>
+							</tr>
+						</table>
+						<div class="row visible-sm-block visible-xs-block table-xs" style="width: 100% ;">
+						</div>
+					</div>
             </div>
+			<hr>
         </div>
     </div>
-
+	
 	<div class="container register">
 		<div class="form-contain">
 			<div id="form_hide">
@@ -147,8 +146,8 @@
 						<div id="uppy_row" class="row">
 						</div>
 						</div>
-					<br>	
-					<input type="submit" id="submit" name="submit" value="submit" class="btn btn-success">
+					<hr>	
+					<input type="submit" id="submit" name="submit" value="submit" class="btn btn-success button">
 				</form><br>
 			</div>
 			<div id="cus_id"></div>

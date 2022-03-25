@@ -17,33 +17,21 @@
     <link rel="stylesheet" href="{% static '/css/style.css' %}">
 	<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 	<script src="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.js"></script>
- 
+	<script src=”https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js”></script>
+
+
+
+<script type=”text/javascript” src=”js/responsive-table/js.js”></script>
 	<style>
-		.form-group{ float: left; margin-left:0px; width: 76%; background: #ececec; border: 1px solid #ddd;  padding: 10px;}
-		.video {margin-left:0px;}
-		.buttons {margin-left:150px;}
-	   .form-group p label{  width: 50%; float: left; padding-left: 10px;}
-	   .form-group p span{ font-weight: normal; float: left;}
-	   .form-group p{ float: right; width: 100%;}
-		.readonly{ float: left; width: 100%; margin: 0 !important;}
-	   label{  font-weight: bold;}
-	   .field-lead_details_in_html .readonly{ margin-left: 0 !important;}
-	   .image_module{ display: flex; padding: 10px 0;}
-	   .image_module a{ flex: 1; margin: 0 auto; text-align: center; margin: 10px 0;}
-	   .image_module a img{ width:100%; padding: 10px; border: 1px solid #ccc; height: 150px; margin-bottom: 10px;}
-	   select.form-control:not([size]):not([multiple]) {
-	   height: calc(2.25rem + 10px) !important;
-	}
-	
-	
+	iframe { margin-left:20px;}
 		@media screen and (min-width:200px) and (max-width:1300px)
 					{
-					.videos {margin-left:50px;}
-					.form-group{margin-left:50px;}
-					.buttons {margin-left:150px;}
+					iframe {width:320px; height:250px; margin-left:20px;}
+					
+					.buttons { 	display:block; margin:2em auto;}
 					.iddetail {margin-left:50px;}
-					}
-	
+				
+					} 
 </style>
 	<script>
 		function valid() {
@@ -100,46 +88,63 @@
         <div class="card">
             <div class="row d-flex justify-content-between px-3 top">
                 <div class="d-flex">
-                <h5 style="font-size:15px;" class="text-info font-weight-bold iddetail">Your Application Id is : <span class="text-info font-weight-bold">{{ object.pk }}</span></h5>
-                    </div>
+                <h5 style="font-size:15px; margin-left:20px;" class="text-info font-weight-bold iddetail">Your Application Id is : <span class="text-info font-weight-bold">{{ object.pk }}</span></h5>
+                    </div><hr>
                     <div class="form-group">
-                        <p>
-                            <label>Name:</label> 
-                            <td class="col-md-6">{{object.name}}</td>
-                        </p>
-                        <p>
-                            <label>Contact:</label> 
-                            <td class="col-md-6">{{object.mobile}}</td>
-                        </p>
-                        <p>
-                            <label>Address:</label> 
-                            <td class="col-md-6">{{object.address}}</td>
-                        </p>
-                        <p>
-                            <label>Application Type:</label> 
-                            <td class="col-md-6">{{object.application_type}}</td>
-                        </p>
-                        <p>
-                            <label>Item:</label> 
-                            <td class="col-md-6">{{object.item_code}}</td>
-                        </p>
-                        <p>
-                            <label>Connection Type:</label> 
-                            <td class="col-md-6">{{object.connection_type}}</td>
-                        </p>
-                    
+                      
+						<div class="container">
+						<table class="table table-striped table-class" id= "responside-table-demo">
+							<tr>							<th>Name</th>
+								<th>{{object.name}}</th>
+							</tr>
+							<tr>
+								<th>Contact:</th>
+								<th >{{object.mobile}}</th>
+							</tr>
+							<tr>
+								<th>Address:</th> 
+								<th>{{object.address}}</th>
+							</tr>
+							<tr>
+								<th>Application Type:</th> 
+								<th>{{object.application_type}}</th>
+							</tr>
+							<tr>
+								<th>Item:</th> 
+								<th>{{object.item_code}}</th>
+							</tr>
+							<tr>
+								<th>Connection Type:</th> 
+								<th>{{object.connection_type}}</th>
+							</tr>
+						</table>
+						<div class="row visible-sm-block visible-xs-block table-xs" style="width: 100% ;">
+						</div>
+					  </div>
+                            
+                       
                     </div>
-				
-            </div>
-			<h5 class="iddetail">See below video how to upload kitchen photo.</h5>
-
-			<video width="280" height="240" class="videos" controls>
-				<source src="movie.mp4" type="video/mp4">
-			  </video>
-			
+					<div class="container">
+					<table class="table table-striped table-class" id= "responside-table-demo">
+						<tr>
+							<th>Remarks: </th> 
+							<th>{{object.documents_reupload_remarks}}</th>
+						</tr>
+					</table>
+					<div class="row visible-sm-block visible-xs-block table-xs" style="width: 100% ;">
+					</div>
+				  </div>
+				  <hr>
+			<h5 style="font-size:15px; margin-left:20px; text-decoration: underline;" class="text-info font-weight-bold iddetail">See below video how to upload kitchen photo.</h5>
+				 
+			<iframe width="420" height="315" 
+				src="https://www.youtube.com/embed/pByPsmipwL4?autoplay=1&mute=1" title="YouTube video player" 
+				frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+				allowfullscreen>
+			</iframe>
         </div>
     </div>
-
+	<hr>
 
 	<div class="container register">
 		<div class="form-contain">
@@ -149,7 +154,7 @@
 						<div id="uppy_row" class="row">
 						</div>
 						</div>
-					<br>	
+					<hr>	
 					<input class="btn btn-success buttons" type="submit" id="submit" name="submit" value="submit" >
 				</form><br>
 			</div>
@@ -161,6 +166,12 @@
 			<div id="message"></div>
 		</div>
 	</div>
+	
+
+<script type="text/javascript">
+        responsiveTable ('#responside-table-demo');
+        balanceSize();
+</script>
 	<script>
 
 	let documentsRequired = ['KITCHEN_PHOTO'];

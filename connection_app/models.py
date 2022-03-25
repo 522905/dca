@@ -17,7 +17,7 @@ from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTy
 	ConnectionApplicationLeadCommunicationMode, ConnectionInstallationStatus
 from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, SubmitLead, \
 	FrontOfficeCompleted, BackOfficeReactivation, BackOfficeRegularisation, \
-	BackOfficeNewConnection, DocumentsReupload
+	BackOfficeNewConnection, DocumentsReupload, KitchenPhotoUploadForm
 from domestic_app.utils import get_minio_public_url
 
 minio_client = Minio(
@@ -120,6 +120,25 @@ class ConnectionApplication(models.Model):
 		self.last_execution_state = self.status
 		self.documents_reupload_remarks = kwargs.get('remarks')
 		self.documents_required_for_reupload = kwargs.get('documents_required_for_reupload')
+		self.event_reupload_channel_whatsapp()
+
+	
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source='*',
+		target=ConnectionApplicationLeadStatus.KITCHEN_PHOTO_UPLOAD,
+		custom=dict(
+			short_description='Upload Kitchen Photo', admin=True, form=KitchenPhotoUploadForm
+		),
+	)
+	def send_for_kitchen_photo_upload(self, *args, **kwargs):
+		self.last_execution_state = self.status
+		self.documents_reupload_remarks = kwargs.get('remarks')
+		self.documents_required_for_reupload = kwargs.get('kitchen_photo')
+		self.event_installation_upload_channel_whatsapp()
+
 
 	@fsm_log_description
 	@fsm_log_by
@@ -135,6 +154,23 @@ class ConnectionApplication(models.Model):
 	)
 	def reuploaded_by_customer(self, *args, **kwargs):
 		pass
+
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=ConnectionApplicationLeadStatus.KITCHEN_PHOTO_UPLOAD,
+		target=GET_STATE(
+			lambda self, **kwargs: self.last_execution_state,
+		),
+		custom=dict(
+			short_description='Kitchen Photo Uploaded By Customer'
+		),
+	)
+	def kitchen_photo_uploaded_by_customer(self, *args, **kwargs):
+		pass
+
 
 	@fsm_log_description
 	@fsm_log_by
@@ -204,8 +240,8 @@ class ConnectionApplication(models.Model):
 			},
 			# "callbackData": "some_callback_data",
 			"template": {
-				"name": "domestic_application_submitted",
-				"languageCode": "en_GB",
+				"name": "domestic_application_sub_8v",
+				"languageCode": "en_GB",	
 				"headerValues": [
 					# "Alert",  #
 				],
@@ -438,6 +474,101 @@ class ConnectionApplication(models.Model):
 	def front_office_completed(self, *args, **kwargs):
 		if kwargs.get("verified"):
 			self.remarks = kwargs.get("remarks")
+
+		
+	def event_installation_upload_channel_whatsapp(self):
+		body_text = {
+			"countryCode": "+91",
+			"phoneNumber": self.mobile,
+			"type": "Template",
+			"traits": {
+				"name": self.name,
+			},
+			# "callbackData": "some_callback_data",
+			"template": {
+				"name": "domestic_application_installation",
+				"languageCode": "en_GB",	
+				"headerValues": [
+					# "Alert",  #
+				],
+				"bodyValues": [
+					self.name,
+				],
+				"buttonValues": {
+					"0": [
+						"connection-app/connection-application/{}/".format(self.id)
+					]
+				}
+			}
+		}
+
+		connection_application_content_type = ContentType.objects.get_for_model(ConnectionApplication)
+		data = track.client.post(
+			api_key=settings.INTERAKT_API_KEY,
+			path="/v1/public/message/",
+			body=body_text
+		).json()
+
+		if data['result']:
+			CommunicationLog.objects.create(
+				content_type=connection_application_content_type,
+				object_id=self.pk,
+				event="submit", channel="whatsapp",
+				message_id=data.get('id')
+			)
+		else:
+			pass
+			#self.event_submit_channel_sms()
+
+	def event_installation_upload_channel_sms(self):
+		pass
+
+	def event_reupload_channel_whatsapp(self):
+		body_text = {
+			"countryCode": "+91",
+			"phoneNumber": self.mobile,
+			"type": "Template",
+			"traits": {
+				"name": self.name,
+			},
+			# "callbackData": "some_callback_data",
+			"template": {
+				"name": "domestic_application_reupload",
+				"languageCode": "en_GB",	
+				"headerValues": [
+					# "Alert",  #
+				],
+				"bodyValues": [
+					self.name,
+				],
+				"buttonValues": {
+					"0": [
+						"connection-app/connection-application/{}/".format(self.id)
+					]
+				}
+			}
+		}
+
+		connection_application_content_type = ContentType.objects.get_for_model(ConnectionApplication)
+		data = track.client.post(
+			api_key=settings.INTERAKT_API_KEY,
+			path="/v1/public/message/",
+			body=body_text
+		).json()
+
+		if data['result']:
+			CommunicationLog.objects.create(
+				content_type=connection_application_content_type,
+				object_id=self.pk,
+				event="submit", channel="whatsapp",
+				message_id=data.get('id')
+			)
+		else:
+			self.event_submit_channel_sms()
+
+	def event_reupload_channel_sms(self):
+		pass
+
 
 
 class ConnectionApplicationDocuments(models.Model):

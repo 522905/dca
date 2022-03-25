@@ -25,7 +25,7 @@
                
                     <ul id="progressbar" class="text-center">
                         {% if object.status == 'SUBMITTED' %}
-                         <li class="step0 active "><div class="row d-flex icon-content"> <img class="icon" style="margin-left:120px;" src="{% static 'img/submitted.png' %}">
+                         <li class="step0 active"><div class="row d-flex icon-content"> <img class="icon" style="margin-left:120px;" src="{% static 'img/submitted.png' %}">
                                 <div class="d-flex flex-column">
                                     <p class="font-weight-bold">SUBMITTED</p>
                                 </div></div></li>
@@ -39,7 +39,7 @@
                                 </div>
                             </div></li>
                             {% else %}
-                            <li class="step0 "></li>
+                            <li class="step0 active"></li>
                         {% endif %}
                         {% if object.status == 'FRONT_OFFICE' %}
                             <li class="step0 active">
@@ -65,7 +65,7 @@
                             </div>
                         </div> </li>
                         {% else %} 
-                        <li class="step0 "></li>
+                        <li class="step0 active"></li>
                         {% endif %}
 
                         <!-- EDIT_APPLICATION = 'EDIT_APPLICATION', 'Edit Application',
