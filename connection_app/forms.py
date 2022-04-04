@@ -151,9 +151,7 @@ class DocumentsReupload(forms.Form):
 		return data
 
 
-class KitchenPhotoUploadForm(forms.Form):
-	kitchen_photo = ConnectionApplicationDocumentsEnum.KITCHEN_PHOTO
-			
+class InstallationReuploadForm(forms.Form):
 	remarks = forms.CharField(
 		widget=forms.Textarea,
 		label='Remarks For Customer',
@@ -162,6 +160,15 @@ class KitchenPhotoUploadForm(forms.Form):
 
 	def clean(self):
 		data = self.cleaned_data
-		if data.get('kitchen_photo', []):
-			data['kitchen_photo'] = json.dumps(data['kitchen_photo'])
+		if data.get('documents_required_for_reupload', []):
+			data['documents_required_for_reupload'] = json.dumps([ConnectionApplicationDocumentsEnum.KITCHEN_PHOTO])
 		return data
+
+
+
+class InstallationAccpetForm(forms.Form):
+	remarks = forms.CharField(
+		widget=forms.Textarea,
+		label='Remarks',
+		required=True
+	)

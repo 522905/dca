@@ -123,54 +123,61 @@ class ConnectionApplication(models.Model):
 		self.event_reupload_channel_whatsapp()
 
 	
-	@fsm_log_description
-	@fsm_log_by
-	@transition(
-		field=status,
-		source='*',
-		target=ConnectionApplicationLeadStatus.KITCHEN_PHOTO_UPLOAD,
-		custom=dict(
-			short_description='Upload Kitchen Photo', admin=True, form=KitchenPhotoUploadForm
-		),
-	)
-	def send_for_kitchen_photo_upload(self, *args, **kwargs):
-		self.last_execution_state = self.status
-		self.documents_reupload_remarks = kwargs.get('remarks')
-		self.documents_required_for_reupload = kwargs.get('kitchen_photo')
-		self.event_installation_upload_channel_whatsapp()
+	# @fsm_log_description
+	# @fsm_log_by
+	# @transition(
+	# 	field=status,
+	# 	source='*',
+	# 	target=ConnectionApplicationLeadStatus.KITCHEN_PHOTO_UPLOAD,
+	# 	custom=dict(
+	# 		short_description='Upload Kitchen Photo', admin=True, form=KitchenPhotoUploadForm
+	# 	),
+	# )
+	# def send_for_kitchen_photo_upload(self, *args, **kwargs):
+	# 	self.last_execution_state = self.status
+	# 	self.documents_reupload_remarks = kwargs.get('remarks')
+	# 	self.documents_required_for_reupload = kwargs.get('kitchen_photo')
+	# 	self.event_installation_upload_channel_whatsapp()
 
 
-	@fsm_log_description
-	@fsm_log_by
-	@transition(
-		field=status,
-		source=ConnectionApplicationLeadStatus.REUPLOAD,
-		target=GET_STATE(
-			lambda self, **kwargs: self.last_execution_state,
-		),
-		custom=dict(
-			short_description='Application Uploaded By Customer'
-		),
-	)
-	def reuploaded_by_customer(self, *args, **kwargs):
-		pass
+	# @fsm_log_description
+	# @fsm_log_by
+	# @transition(
+	# 	field=installation_status,
+	# 	source=ConnectionApplicationLeadStatus.REUPLOAD,
+	# 	target=GET_STATE(
+	# 		lambda self, **kwargs: self.last_execution_state,
+	# 	),
+	# 	custom=dict(
+	# 		short_description='Application Uploaded By Customer'
+	# 	),
+	# )
+	# def reuploaded_by_customer(self, *args, **kwargs):
+	# 	pass
 
 
-	@fsm_log_description
-	@fsm_log_by
-	@transition(
-		field=status,
-		source=ConnectionApplicationLeadStatus.KITCHEN_PHOTO_UPLOAD,
-		target=GET_STATE(
-			lambda self, **kwargs: self.last_execution_state,
-		),
-		custom=dict(
-			short_description='Kitchen Photo Uploaded By Customer'
-		),
-	)
-	def kitchen_photo_uploaded_by_customer(self, *args, **kwargs):
-		pass
+	# @fsm_log_description
+	# @fsm_log_by
+	# @transition(
+	# 	field=status,
+	# 	source=ConnectionApplicationLeadStatus.KITCHEN_PHOTO_UPLOAD,
+	# 	target=GET_STATE(
+	# 		lambda self, **kwargs: self.last_execution_state,
+	# 	),
+	# 	custom=dict(
+	# 		short_description='Kitchen Photo Uploaded By Customer'
+	# 	),
+	# )
+	# def kitchen_photo_uploaded_by_customer(self, *args, **kwargs):
+	# 	pass
 
+
+	def send_reminder_for_kitchen_photo_upload(self):
+		if self.installation_status in (
+				ConnectionInstallationStatus.REUPLOAD,
+				ConnectionInstallationStatus.PENDING
+		):
+			self.event_installation_upload_channel_whatsapp()
 
 	@fsm_log_description
 	@fsm_log_by
@@ -179,7 +186,7 @@ class ConnectionApplication(models.Model):
 		source=[ConnectionInstallationStatus.PENDING, ConnectionInstallationStatus.REUPLOAD],
 		target=ConnectionInstallationStatus.SUBMITTED,
 		custom=dict(
-			short_description='Upload Installation', admin=True
+			short_description='Upload Installation', admin=False
 		),
 	)
 	def upload_installation(self, *args, **kwargs):
@@ -192,7 +199,7 @@ class ConnectionApplication(models.Model):
 		source=ConnectionInstallationStatus.SUBMITTED,
 		target=ConnectionInstallationStatus.ACCEPTED,
 		custom=dict(
-			short_description='Accept Installation', admin=True
+			short_description='Accept Installation', admin=True, form=InstallationAccpetForm
 		),
 	)
 	def accept_installation(self, *args, **kwargs):
@@ -205,11 +212,14 @@ class ConnectionApplication(models.Model):
 		source=ConnectionInstallationStatus.SUBMITTED,
 		target=ConnectionInstallationStatus.REUPLOAD,
 		custom=dict(
-			short_description='Resend for reupload of Installation', admin=True
+			short_description='Resend Installation Upload',
+			admin=True,
+			form=InstallationReuploadForm
 		),
 	)
 	def send_for_reupload_installation(self, *args, **kwargs):
-		pass
+		self.documents_reupload_remarks = kwargs.get('remarks')
+		self.documents_required_for_reupload = kwargs.get('documents_required_for_reupload')
 
 	@fsm_log_description
 	@fsm_log_by
@@ -218,7 +228,6 @@ class ConnectionApplication(models.Model):
 		source=ConnectionApplicationLeadStatus.EDIT_APPLICATION,
 		target=GET_STATE(
 			lambda self, **kwargs: self.last_execution_state,
-			# states='*'
 		),
 		custom=dict(
 			short_description='Update Edits To Application', admin=True
@@ -404,6 +413,7 @@ class ConnectionApplication(models.Model):
 		field=status,
 		source=ConnectionApplicationLeadStatus.BACK_OFFICE_END,
 		target=ConnectionApplicationLeadStatus.FRONT_OFFICE,
+		conditions=[lambda app: app.installation_status == ConnectionInstallationStatus.ACCEPTED],
 		custom=dict(
 			short_description='Back Office Processing End',
 			admin=True,

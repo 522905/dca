@@ -50,6 +50,7 @@ class ConnectionApplicationDocumentsInline(admin.TabularInline):
     model = ConnectionApplicationDocuments
     template = 'connection_app/admin/document-inline.html'
 
+
 @admin.register(ConnectionApplication)
 class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdmin):
     fsm_transition_form_template = 'connection_app/transaction_form_template.html'
@@ -65,6 +66,7 @@ class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionCustomMixin, ad
         'updated_on',
         'required_by',
         'status',
+        'installation_status',
         'referral_code',
     )
 
