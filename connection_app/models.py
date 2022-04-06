@@ -496,7 +496,7 @@ class ConnectionApplication(models.Model):
 			},
 			# "callbackData": "some_callback_data",
 			"template": {
-				"name": "domestic_application_installation",
+				"name": "kitchen_photo_upload_sp",
 				"languageCode": "en_GB",	
 				"headerValues": [
 					# "Alert",  #
@@ -506,7 +506,7 @@ class ConnectionApplication(models.Model):
 				],
 				"buttonValues": {
 					"0": [
-						"connection-app/connection-application/{}/".format(self.id)
+						"connection-app/installation-gleam-start/?application_id={}/".format(self.id)
 					]
 				}
 			}
