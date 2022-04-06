@@ -17,7 +17,7 @@ from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTy
 	ConnectionApplicationLeadCommunicationMode, ConnectionInstallationStatus
 from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, SubmitLead, \
 	FrontOfficeCompleted, BackOfficeReactivation, BackOfficeRegularisation, \
-	BackOfficeNewConnection, DocumentsReupload, KitchenPhotoUploadForm
+	BackOfficeNewConnection, DocumentsReupload, InstallationReviewForm
 from domestic_app.utils import get_minio_public_url
 
 minio_client = Minio(
@@ -172,12 +172,14 @@ class ConnectionApplication(models.Model):
 	# 	pass
 
 
-	def send_reminder_for_kitchen_photo_upload(self):
+	def send_reminder_for_installation_upload(self):
 		if self.installation_status in (
 				ConnectionInstallationStatus.REUPLOAD,
 				ConnectionInstallationStatus.PENDING
 		):
 			self.event_installation_upload_channel_whatsapp()
+			return True
+		return False
 
 	@fsm_log_description
 	@fsm_log_by
@@ -197,29 +199,23 @@ class ConnectionApplication(models.Model):
 	@transition(
 		field=installation_status,
 		source=ConnectionInstallationStatus.SUBMITTED,
-		target=ConnectionInstallationStatus.ACCEPTED,
+		target=GET_STATE(
+			lambda self, **kwargs: \
+				ConnectionInstallationStatus.ACCEPTED \
+				if kwargs.get("verified") else ConnectionInstallationStatus.REUPLOAD,
+			states=[
+				ConnectionInstallationStatus.ACCEPTED,
+				ConnectionInstallationStatus.REUPLOAD
+			]
+		),
 		custom=dict(
-			short_description='Accept Installation', admin=True, form=InstallationAccpetForm
+			short_description='Review Installation', admin=True, form=InstallationReviewForm
 		),
 	)
 	def accept_installation(self, *args, **kwargs):
-		pass
-
-	@fsm_log_description
-	@fsm_log_by
-	@transition(
-		field=installation_status,
-		source=ConnectionInstallationStatus.SUBMITTED,
-		target=ConnectionInstallationStatus.REUPLOAD,
-		custom=dict(
-			short_description='Resend Installation Upload',
-			admin=True,
-			form=InstallationReuploadForm
-		),
-	)
-	def send_for_reupload_installation(self, *args, **kwargs):
 		self.documents_reupload_remarks = kwargs.get('remarks')
 		self.documents_required_for_reupload = kwargs.get('documents_required_for_reupload')
+
 
 	@fsm_log_description
 	@fsm_log_by
@@ -237,7 +233,11 @@ class ConnectionApplication(models.Model):
 		pass
 
 	def submit(self, *args, **kwargs):
+		"""
+		Called when application is uploaded via api to change state to submitted
+		"""
 		self.event_submit_channel_whatsapp()
+		self.send_reminder_for_kitchen_photo_upload()
 
 	def event_submit_channel_whatsapp(self):
 		body_text = {
@@ -383,7 +383,7 @@ class ConnectionApplication(models.Model):
 		target=GET_STATE(
 			lambda self, **kwargs: \
 					ConnectionApplicationLeadStatus.BACK_OFFICE_START \
-							if kwargs.get("required") else ConnectionApplicationLeadStatus.NOT_INTERESTED,
+					if kwargs.get("required") == 'Y' else ConnectionApplicationLeadStatus.NOT_INTERESTED,
 			states=[
 				ConnectionApplicationLeadStatus.BACK_OFFICE_START,
 				ConnectionApplicationLeadStatus.NOT_INTERESTED

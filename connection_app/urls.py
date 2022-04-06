@@ -41,6 +41,6 @@ urlpatterns = [
         '^installation-gleam-complete/$',
         views.installation_upload_process_gleam_entry_gate_completed,
         name="application_installation_gleam_complete"
-    ),
+    ), 
     path('', include(router.urls))
 ]

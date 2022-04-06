@@ -20,8 +20,15 @@ class SubmitLead(forms.Form):
 
 
 class ConnectionVerificationResult(forms.Form):
-	required = forms.BooleanField(
-		label="Required ?", required=False, help_text="Check If Required"
+	required = forms.ChoiceField(
+		label="Required ?",
+		required=True,
+		help_text="Check If Required",
+		choices=[
+			('', '-- Select If Required Or Not --'),
+			('Y', 'Yes'), 
+			('N', 'No')
+		]
 	)
 	required_by = forms.DateTimeField(
 		label="Select Required Date :", required=False, widget=NumberInput(attrs={'type': 'date'}),
@@ -151,24 +158,22 @@ class DocumentsReupload(forms.Form):
 		return data
 
 
-class InstallationReuploadForm(forms.Form):
+class InstallationReviewForm(forms.Form):
+	verified = forms.BooleanField(
+		required=False,
+		help_text="Check If Installation is safe as per standards"
+	)
+
 	remarks = forms.CharField(
 		widget=forms.Textarea,
-		label='Remarks For Customer',
+		label='Remarks (Will be displayed to customer)',
 		required=True
 	)
 
 	def clean(self):
 		data = self.cleaned_data
-		if data.get('documents_required_for_reupload', []):
+		if not data.get('verified'):
 			data['documents_required_for_reupload'] = json.dumps([ConnectionApplicationDocumentsEnum.KITCHEN_PHOTO])
+		else:
+			data['documents_required_for_reupload'] = '[]'
 		return data
-
-
-
-class InstallationAccpetForm(forms.Form):
-	remarks = forms.CharField(
-		widget=forms.Textarea,
-		label='Remarks',
-		required=True
-	)

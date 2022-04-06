@@ -12,7 +12,7 @@ from django_admin_listfilter_dropdown.filters import DropdownFilter, RelatedDrop
 from django.contrib.admin import SimpleListFilter
 from django.db import connection
 from django.urls import path
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from itertools import groupby
 
 
@@ -55,6 +55,7 @@ class ConnectionApplicationDocumentsInline(admin.TabularInline):
 class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdmin):
     fsm_transition_form_template = 'connection_app/transaction_form_template.html'
     fsm_transition_buttons_template = 'connection_app/transition_buttons.html'
+    # change_form_template = "entities/villain_changeform.html"
 
     fsm_fields = ['status', 'installation_status']
     list_display = (
@@ -89,7 +90,8 @@ class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionCustomMixin, ad
     ]})]
 
     process_fieldsets = [(None, {'fields': [
-        'lead_details_in_html', 'attachment_details_in_html', 'fsm_display_status'
+        'lead_details_in_html', 'attachment_details_in_html',
+        'fsm_display_status', 'fsm_display_installation_status'
     ]})]
 
     readonly_fields = ('lead_details_in_html', 'attachment_details_in_html')
@@ -190,3 +192,15 @@ class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionCustomMixin, ad
         sql_data = self.my_custom_sql_completed()
         sql_data['data'] = [{'label': status, 'data': list(values)} for status, values in groupby(sql_data['data'], lambda x: x['status'])]
         return sql_data
+
+        change_form_template = "entities/villain_changeform.html"
+
+
+    def response_change(self, request, obj):
+        if "_send-installation-reminder" in request.POST:
+            if obj.send_reminder_for_installation_upload():
+                self.message_user(request, "Installation Reminder Sent")
+            else:
+                self.message_user(request, "Installation Reminder Not Sent")
+            return HttpResponseRedirect(".")
+        return super().response_change(request, obj)

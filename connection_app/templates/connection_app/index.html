@@ -251,9 +251,6 @@
 
 			console.log(formdata);
 
-				 
-			
-
 			jQuery('#submit').val('Please wait...');
 			jQuery('#submit').attr('disabled', true);
 
@@ -283,6 +280,7 @@
 
 					$("#message").html('<div class="alert alert-success" style="color:red; text-align:center; margin-top:250px;"><strong>SUCCESS!</strong> 	your application has been submitted</div>');
 
+					
 					$("#cus_id").append(result);
 					$("#message").append(result.id).css({ "text-align": "center" }).append(" <b>is you application Id</b>.");
 
