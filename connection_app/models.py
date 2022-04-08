@@ -237,7 +237,7 @@ class ConnectionApplication(models.Model):
 		Called when application is uploaded via api to change state to submitted
 		"""
 		self.event_submit_channel_whatsapp()
-		self.send_reminder_for_kitchen_photo_upload()
+		self.send_reminder_for_installation_upload()
 
 	def event_submit_channel_whatsapp(self):
 		body_text = {
@@ -413,7 +413,7 @@ class ConnectionApplication(models.Model):
 		field=status,
 		source=ConnectionApplicationLeadStatus.BACK_OFFICE_END,
 		target=ConnectionApplicationLeadStatus.FRONT_OFFICE,
-		conditions=[lambda app: app.installation_status == ConnectionInstallationStatus.ACCEPTED],
+#		conditions=[lambda app: app.installation_status == ConnectionInstallationStatus.ACCEPTED],
 		custom=dict(
 			short_description='Back Office Processing End',
 			admin=True,
@@ -487,6 +487,7 @@ class ConnectionApplication(models.Model):
 
 		
 	def event_installation_upload_channel_whatsapp(self):
+
 		body_text = {
 			"countryCode": "+91",
 			"phoneNumber": self.mobile,
@@ -506,7 +507,7 @@ class ConnectionApplication(models.Model):
 				],
 				"buttonValues": {
 					"0": [
-						"connection-app/installation-gleam-start/?application_id={}/".format(self.id)
+						"connection-app/connection-application/{}/installation".format(self.id)
 					]
 				}
 			}
@@ -521,7 +522,7 @@ class ConnectionApplication(models.Model):
 
 		if data['result']:
 			CommunicationLog.objects.create(
-				content_type=connection_application_content_type,
+					content_type=connection_application_content_type,
 				object_id=self.pk,
 				event="submit", channel="whatsapp",
 				message_id=data.get('id')

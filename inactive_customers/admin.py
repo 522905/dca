@@ -23,7 +23,7 @@ class StatusFilter(SimpleListFilter):
             return queryset.exclude(
                 consumer_id__in=ConnectionApplication.objects.exclude(
                     status=ConnectionApplicationLeadStatus.NOT_INTERESTED
-                ).values_list('pk')
+                ).exclude(consumer_id=None).values_list("consumer_id", flat=True)
             )
         return queryset
 
