@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+	<html lang="em">
+		<head>
+			<title>ARUN GAS SERVICE</title>
+	<link rel="icon" type="image/png" href="img/logo2.png">
+	<meta charset="utf-8"></meta>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+	<link href="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	<link href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,600,800&amp;display=swap" rel="stylesheet">
+ 	<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+	<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+	<script src="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.js"></script>
+			
+		</head>
+		<style>
+		
+		.uppy-Dashboard-innerWrap
+
+    width:200px;
+    height:200px;
+}
+.uppy-Dashboard-inner
+{
+    width:200px;
+    height:200px;
+    border:0;
+    border-radius: 3px;
+}
+
+.uppy-Dashboard-Add	-title
+{
+    font-size:12px;
+    width:100px;
+    margin:auto;
+    
+}
+.uppy-DashboardContent-bar
+{
+    
+    height:30px;
+}
+
+        
+.uppy-Dashboard-innerWrap
+{
+    width:180px;
+    height:150px;
+}
+
+.uppy-Dashboard
+{
+    height:150px;                                                                                                                                                                                                                                    
+    width:180px;
+    
+}
+
+	.main
+		{
+		text-align:center;
+		background:#2aaeff;
+		height:80px;
+		}
+	.content-inner {
+    padding: 25px 30px;
+    padding-bottom: 5px;
+    margin: 15px -25px;
+    border-top: 1px solid #efefef;
+    border-bottom: 1px solid #efefef;
+}
+
+.featured-icon-box.icon-align-top-content.style4 {
+    -webkit-transform: translateY(0);
+    -moz-transform: translateY(0);
+    -ms-transform: translateY(0);
+    -o-transform: translateY(0);
+    transform: translateY(0);
+    -webkit-transition: .5s;
+    -o-transition: .5s;
+    -moz-transition: .5s;
+    transition: .5s;
+}
+.featured-icon-box.icon-align-top-content.style4 {
+	width:90%;
+	margin:auto;
+    padding: 30px 25px 25px;
+    background-color: #fff;
+    box-shadow: 0 0 9px 0 rgb(29 33 67 / 10%);
+    margin-top: 50px;
+}
+
+.featured-icon-box.icon-align-top-content.style4:hover{
+
+  box-shadow: 20px 20px 20px 20px lightblue;
+
+}
+
+.bor_rad_5 {
+    border-radius: 5px;
+}
+.featured-icon-box {
+    position: relative;
+    margin: 15px 0;
+}
+.text-center {
+    text-align: center!important;
+}
+
+
+body {
+    font-family: Muli, sans-serif;
+    font-weight: 400;
+   
+    line-height: 25px;
+    letter-spacing: 0;
+    color: #898a9c;
+}
+body {
+    margin: 0;
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+
+    font-weight: 400;
+    line-height: 1.5;
+    color: #212529;
+    text-align: left;
+    background-color: #fff;
+	background:#f5f5f5;
+}
+
+
+		</style>
+		<body>
+		<div class="top-banner row text-center">
+		
+		<h1>Arun Gas Service</h1>
+		<h4 >UJJWALA SCHEME</h4>
+		</div>
+		<div class="featured-icon-box icon-align-top-content style4 bor_rad_5 ">
+			<div class="container">
+			
+			<form class="form-horizontal" action="" id="punjab" method="POST" enctype="multipart/form-data">
+			<div class="row">
+				<div class="col-sm-12">
+					<div class="form-group">
+						<p>Marital Status (वैवाहिक स्थिति)<strong style="color:red">*</strong></p>
+						<select class="selectpicker form-control" id="marital_status" data-style="warning" name="marital_status"
+							>
+							<option value="" selected="selected" id="status">Select Marital Status (चुनें वैवाहिक स्थिति)</option>
+							<option value="MARRIED">Married (विवाहित)</option>
+							<option value="UNMARRIED">Unmarried (अविवाहित)</option>
+							<option value="DIVORCED">Divorced (तलाक)</option>
+						</select>
+					</div>
+							<div class="form-group">
+						<p>Your Name (आपका नाम)<strong style="color:red">*</strong></p>
+						<input type="text" class="form-control" id="customername" name="name" value=""   />
+							</div>
+								<div class="form-group">
+						<p>Current Address (वर्तमान पता)<strong style="color:red">*</strong></p>
+						<input type="text" class="form-control" id="currentaddress" name="address" value=""
+							>
+						<span id="currentaddress_detail" class="text-danger"></span>
+					</div>
+						<div class="form-group">
+						<p>Mobile Number. (फोन नंबर)<strong style="color:red">*</strong></p>
+						<input type="text" class="form-control" id="contact_mobile" pattern="[6789][0-9]{9}" name="contact_mobile"
+							 value="" maxlength="10"   />
+					</div>
+					<div class="form-group">
+						<p>Aadhar registered Mobile Number<strong style="color:red">*</strong></p>
+						<select  id="uid_mobile_status" class="selectpicker form-control " name="uid_mobile_status" data-style="warning"
+							>
+							<option  selected="selected" >Select</option>
+							<option value="LINKED_WITH_SAME_MOBILE" >Provided Mobile number is Same on aadhar</option>
+							<option value="MOBILE_NOT_AVAILABLE">I don't know the registered mobile number</option>
+							<option value="LINKED_WITH_OTHER_MOBILE">Aadhar registered mobile number is differant</option>
+						</select>
+					</div>
+					<div class="form-group LINKED_WITH_OTHER_MOBILE initializeAadhar">
+						<p>Aadhar Card Mobile Number. (आधार कार्ड फोन नंबर)<strong style="color:red">*</strong></p>
+						<input type="text" class="form-control" id="uid_linked_mobile" pattern="[6789][0-9]{9}" name="uid_linked_mobile"
+							 value="" maxlength="10" />
+					</div>
+                    <div id="family_members_tree" class="container">
+			        </div>
+					<div class="form-group" class="container">
+					<div class="row">
+							<div class="col-sm-2 col">
+								<p>Your Picture or Selfie(ग्राहक की फोटो)<strong style="color:red">*</strong>
+								</p>
+								<span class="custom-file-input" name="customerpicture"
+									id="customerpicture"></span><br>
+								<span id="customerpicture_detail" class="text-danger"></span>
+							</div>
+{#							<div class="col-sm-2">#}
+{#								<p>Aadhar Card Front Photo (आधार कार्ड की फोटो)<strong#}
+{#										style="color:red">*</strong></p>#}
+{#								<span class="custom-file-input" name="aadharcard" id="aadharcard">#}
+{#								</span><br>#}
+{#							</div>#}
+{#							<div class="col-sm-2">#}
+{#								<p>Aadhar Card Back Photo (आधार कार्ड की फोटो)<strong style="color:red">*</strong>#}
+{#								</p>#}
+{#								<span class="custom-file-input" name="aadharcardback" id="aadharcardback">#}
+{#								</span><br>#}
+{#							</div>#}
+                            <div class="col-sm-2 col">
+								<p>Bank Detail (पास बुक का विवरण)</p>
+								<span class="custom-file-input" id="bankdetail" name="bankdetail"></span><br>
+							</div>
+						</div>
+						</div>
+				</div>
+			</div>
+			</div>
+
+		<div class="container" id="show">
+				<div class="form-group">
+						<p>Referral Code</p>
+						<input type="text" class="form-control" id="reference" name="referral_code" value="">
+						<br>
+						<input type="submit" id="submit" name="submit" value="submit"   class="btn btn-success">
+					</div>
+		</div>
+		</div>
+			</form>
+			<div id="message"></div>
+		</body>
+		</html>
+
+		<script>
+		function getCookie(name) {
+		let cookieValue = null;
+			if (document.cookie && document.cookie !== '') {
+				const cookies = document.cookie.split(';');
+				for (let i = 0; i < cookies.length; i++) {
+					const cookie = cookies[i].trim();
+					// Does this cookie string begin with the name we want?
+					if (cookie.substring(0, name.length + 1) === (name + '=')) {
+						cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+						break;
+					}
+				}
+			}
+			return cookieValue;
+		}
+		$('#punjab').on('submit', function (event) {
+
+			event.preventDefault();
+			let documentArray = valid();
+			{#let documentsRelationArray = validmain();#}
+            let documentsRelationArray = gatherFamilyMembersData();
+
+			if(documentArray && documentsRelationArray == null) return;
+
+			{#documentsRelationArray.add()#}
+
+            {#memberMap.uid_front_link = Object.values(window[`ink_uppy`].state.files)[0].uploadURL;#}
+            {#memberMap.uid_back_link = Object.values(window[`${memberMap.relation}-uid_back_link_uppy`].state.files)[0].uploadURL;#}
+
+			let formdata = $('form').serializeArray()
+				.reduce(function (accum, item) {
+
+					if (-1 === ['ignoreThis', 'andThat'].indexOf(item.name)) {
+
+						if (item.value !== null) {
+							accum[item.name] = item.value;
+						}
+					}
+					return accum;
+				},
+					{}
+				);
+
+			formdata.documents = documentArray;
+			formdata.family_members = documentsRelationArray;
+
+
+			//formdata.item_code = formdata.connection_type.split('#')[0];
+			//formdata.connection_type = formdata.connection_type.split('#')[1];
+
+			console.log(formdata);
+
+			jQuery('#submit').val('Please wait...');
+			{#jQuery('#submit').attr('disabled', true);#}
+
+			var formData = new FormData(this);
+
+			jQuery.ajax({
+				url: '/ujjwala/ujjwala-application/wf/',
+				type: 'POST',
+				data: JSON.stringify(formdata),
+				contentType: "application/json; charset=utf-8",
+				dataType: 'JSON',
+				headers: {'X-CSRFToken': getCookie('csrftoken')},
+
+				processData: false,
+				success: function (result) {
+
+					$('#form_hide').hide();
+					console.log(result);
+					jQuery('#punjab')['0'].reset();
+					jQuery('#submit').val('Submit');
+					jQuery('#submit').attr('disabled', false);
+					swal({
+						title: "successful",
+						text: "Thank You",
+						icon: "success",
+					})
+
+					$("#message").html('<div class="alert alert-success" style="color:red; text-align:center; margin-top:250px;"><strong>SUCCESS!</strong> 	your application has been submitted</div>');
+
+					$("#cus_id").append(result);
+					$("#message").append(result.id).css({ "text-align": "center" }).append(" <b>is you application Id</b>.");
+
+					$('#application_receipt').show();
+				}
+			});
+		});
+
+
+		function valid() {
+			let files = [
+				validateUppy(customerpictureuppy, 'CUSTOMER_PHOTO', 'Customer Picture or Selfie (ग्राहक की फोटो)*', false),
+				validateUppy(bankdetailuppy, 'BANK_DETAIL', 'Bank Detail (पास बुक का विवरण)', false)
+			]
+
+			if (!files.reduce((aggr, current) => { return current.valid && aggr }, true)) {
+				let error = files.reduce((aggr, current) => {
+					if (current.msg) {
+						return aggr + '\n' + current.msg
+					} else {
+						return aggr
+					}
+				}, '');
+				window.alert(error);
+				return null;
+			}
+			let documentArray = files.filter(e => e.url).map(e => { return { type: e.key, link: e.url } });
+			console.log(documentArray);
+			return documentArray;
+		}
+
+		function validateUppy(uppyObj, key, label, fileMandatory) {
+
+			if (!uppyObj.state || uppyObj.state.totalProgress == 0) {
+				if (fileMandatory) {
+					return {
+						valid: false, key: key,
+						msg: `${label} is required`
+					};
+				}
+				return { valid: true };
+			} else if (uppyObj.state.totalProgress < 100) {
+				return { valid: false, key: key, msg: `${label} upload in Progress(अपलोड प्रगति पर है)` };
+			} else {
+				return { valid: true, key: key, url: Object.values(uppyObj.state.files)[0].uploadURL };
+			}
+		}
+
+			function validmain() {
+			let file = [
+
+				validateUppy(aadharcarduppy,'UID_FRONT', 'Aadhar Card Frontside Picture (आधार कार्ड की फोटो)*', true),
+				validateUppy(aadharcardbackuppy,'UID_BACK','Aadhar Card Backside Picture (आधार कार्ड की फोटो)*', true),
+			//	validateUppy(fatheraadharcarduppy,'FATHER_UID_FRONT','Father Aadhar Card Frontside Picture (आधार कार्ड की फोटो)*', true),
+			//	validateUppy(fatheraadharcardbackuppy,'FATHER_UID_BACK','Father Aadhar Card Backside Picture (आधार कार्ड की फोटो)*', false),
+				//  validateUppy(motheraadharcarduppy,'MOTHER_UID_FRONT','Mother Aadhar Card Frontside Picture (आधार कार्ड की फोटो)*', false),
+				//  validateUppy(motheraadharcarduppy,'MOTHER_UID_BACK','Mother Aadhar Card Backside Picture (आधार कार्ड की फोटो)*', false),
+				//  validateUppy(husbandaadharcarduppy,'HUSBAND_UID_FRONT','Husband Aadhar Card Frontside Picture (आधार कार्ड की फोटो)*', false),
+				//  validateUppy(husbandaadharcarduppy,'HUSBAND_UID_BACK','Husband Aadhar Card Backside Picture (आधार कार्ड की फोटो)*', false),
+
+			]
+
+
+			if (!file.reduce((aggr, current) => { return current.valid && aggr }, true)) {
+				let error = file.reduce((aggr, current) => {
+					if (current.msg) {
+						return aggr + '\n' + current.msg
+					} else {
+						return aggr
+					}
+				}, '');
+				window.alert(error);
+				return null;
+			}
+			let documentsRelationArray = file.filter(e => e.url).map(e => { return { type: e.key, link: e.url } });
+			console.log(documentsRelationArray);
+			return documentsRelationArray;
+		}
+
+
+		$(document).ready(function(){
+			let setMaritalStatus = '';
+
+        $('#customername').on('blur', function() {
+            if (document.getElementById("SELF-name") != null){
+                $('#SELF-name').val($('#customername').val());
+            }
+		});
+
+		$('#marital_status').on('change', function() {
+			if (setMaritalStatus == this.value) return;
+			setMaritalStatus = this.value;
+
+			removeAllFamilyMembers();
+
+			addFamilyMember('SELF', 'Self');
+
+			if (setMaritalStatus == 'UNMARRIED') {
+				addFamilyMember('FATHER', 'Father');
+				addFamilyMember('MOTHER', 'Mother');
+			} else if (setMaritalStatus == 'MARRIED') {
+				addFamilyMember('HUSBAND', 'Husband');
+			} else {
+			}
+		});
+
+	    $('#uid_mobile_status').change(function(){
+            $(this).find("option:selected").each(function(){
+                 var optionValue = $(this).attr("value");
+
+                 if(optionValue === 'LINKED_WITH_SAME_MOBILE'){
+                     $("#uid_linked_mobile").val($("#contact_mobile").val());
+                     $(".initializeAadhar").hide();
+                 }else{
+                     $(".initializeAadhar").show();
+                 }
+            });
+		}).change();
+
+
+		window.customerpictureuppy = new Uppy.Core({
+			debug: true,
+			autoProceed: true,
+			restrictions: {
+				maxFileSize: 50000000,
+				maxNumberOfFiles: 1,
+				minNumberOfFiles: 1,
+				allowedFileTypes: ['image/*'],
+				//requiredMetaFields: ['caption'],
+			}
+		})
+				.use(Uppy.Dashboard, {
+					trigger: '#customerpicture',
+					inline: true,
+					target: '#customerpicture',
+					showProgressDetails: true,
+					note: 'Images and video only, 2–3 files, up to 10 MB',
+					height: 250,
+					metaFields: [],
+					id: 'customerpicture',
+					browserBackButtonClose: false
+				})
+				.use(Uppy.Tus, {
+					endpoint: 'https://tus.dca.arungas.com/files/',
+				})
+			customerpictureuppy.on('complete', result => {
+				console.log('successful files:', result.successful)
+				console.log('failed files:', result.failed)
+			})
+
+			window.bankdetailuppy = new Uppy.Core({
+				debug: true,
+				autoProceed: true,
+				restrictions: {
+					maxFileSize: 50000000,
+					maxNumberOfFiles: 1,
+					minNumberOfFiles: 1,
+					allowedFileTypes: ['image/*'],
+					//requiredMetaFields: ['caption'],
+				}
+			})
+				.use(Uppy.Dashboard, {
+					trigger: '#bankdetail',
+					inline: true,
+					target: '#bankdetail',
+					showProgressDetails: true,
+					note: 'Images and video only, 2–3 files, up to 10 MB',
+					height: 250,
+					metaFields: [],
+					id: 'bankdetail',
+					browserBackButtonClose: false
+				})
+				.use(Uppy.Tus, {
+					endpoint: 'https://tus.dca.arungas.com/files/',
+				})
+			bankdetailuppy.on('complete', result => {
+				console.log('successful files:', result.successful)
+				console.log('failed files:', result.failed)
+			})
+
+
+			window.fatheraadharcarduppy = new Uppy.Core({
+				debug: true,
+				autoProceed: true,
+				restrictions: {
+					maxFileSize: 50000000,
+					maxNumberOfFiles: 1,
+					minNumberOfFiles: 1,
+					allowedFileTypes: ['image/*'],
+					//requiredMetaFields: ['caption'],
+				}
+			})
+				.use(Uppy.Dashboard, {
+					trigger: '#fatheraadharcard',
+					inline: true,
+					target: '#fatheraadharcard',
+					showProgressDetails: true,
+					note: 'Images and video only, 2–3 files, up to 10 MB',
+					height: 250,
+					metaFields: [],
+					id: 'fatheraadharcard',
+					browserBackButtonClose: false
+				})
+				.use(Uppy.Tus, {
+					endpoint: 'https://tus.dca.arungas.com/files/',
+				})
+			fatheraadharcarduppy.on('complete', result => {
+				console.log('successful files:', result.successful)
+				console.log('failed files:', result.failed)
+			})
+
+			window.fatheraadharcardbackuppy = new Uppy.Core({
+				debug: true,
+				autoProceed: true,
+				restrictions: {
+					maxFileSize: 50000000,
+					maxNumberOfFiles: 1,
+					minNumberOfFiles: 1,
+					allowedFileTypes: ['image/*'],
+					//requiredMetaFields: ['caption'],
+				}
+			})
+				.use(Uppy.Dashboard, {
+					trigger: '#fatheraadharcardback',
+					inline: true,
+					target: '#fatheraadharcardback',
+					showProgressDetails: true,
+					note: 'Images and video only, 2–3 files, up to 10 MB',
+					height: 250,
+					metaFields: [],
+					id: 'fatheraadharcardback',
+					browserBackButtonClose: false
+				})
+				.use(Uppy.Tus, {
+					endpoint: 'https://tus.dca.arungas.com/files/',
+				})
+			fatheraadharcardbackuppy.on('complete', result => {
+				console.log('successful files:', result.successful)
+				console.log('failed files:', result.failed)
+			})
+
+
+			});
+
+		function validateFamilyMembersFiles() {
+
+			members =  $.map($('.familyMemberLineItem'), member =>  {
+
+				return $(member).find('input').serializeArray().reduce(
+					function (accum, item) {
+						if (item.value !== null) {
+							accum[item.name.split('-')[1]] = item.value;
+						}
+						return accum;
+					},
+						{}
+				);
+
+			})
+
+
+			file_list_front = $.map(members, memberMap =>
+				validateUppy(window[`${memberMap.relation}-uid_front_link_uppy`], 'UID_FRONT', `${memberMap.relation} Aadhar Card Frontside Picture (आधार कार्ड की फोटो)*`, true),
+				validateUppy(window[`${memberMap.relation}-uid_front_link_uppy`],'FATHER_UID_FRONT',`${memberMap.relation}Father Aadhar Card Frontside Picture (आधार कार्ड की फोटो)*`, true)
+
+			);
+
+			file_list_back = $.map(members, memberMap =>
+				validateUppy(window[`${memberMap.relation}-uid_back_link_uppy`], 'UID_BACK', `${memberMap.relation} Aadhar Card Backside Picture (आधार कार्ड की फोटो)*`, true),
+				validateUppy(window[`${memberMap.relation}-uid_back_link_uppy`],'FATHER_UID_FRONT',`${memberMap.relation}Father Aadhar Card Frontside Picture (आधार कार्ड की फोटो)*`, true)
+			);
+
+			files = file_list_front.concat(file_list_back);
+
+			if (!files.reduce((aggr, current) => { return current.valid && aggr }, true)) {
+				let error = files.reduce((aggr, current) => {
+					if (current.msg) {
+						return aggr + '\n' + current.msg
+					} else {
+						return aggr
+					}
+				}, '');
+				window.alert(error);
+				return null;
+			}
+
+		}
+
+		function gatherFamilyMembersData() {
+			return $.map($('.familyMemberLineItem'), member =>  {
+
+				memberMap = $(member).find('input').serializeArray().reduce(
+					function (accum, item) {
+						if (item.value !== null) {
+							accum[item.name.split('-')[1]] = item.value;
+						}
+						return accum;
+					},
+						{}
+				);
+
+				memberMap.uid_front_link = Object.values(window[`${memberMap.relation}-uid_front_link_uppy`].state.files)[0].uploadURL;
+				memberMap.uid_back_link = Object.values(window[`${memberMap.relation}-uid_back_link_uppy`].state.files)[0].uploadURL;
+
+				return memberMap;
+
+			});
+
+		}
+
+		function removeAllFamilyMembers() {
+			$.each($('.familyMemberLineItem'), (index, member) =>  {
+
+				memberMap = $(member).find('input').serializeArray().reduce(
+					function (accum, item) {
+						if (item.value !== null) {
+							accum[item.name.split('-')[1]] = item.value;
+						}
+						return accum;
+					},
+						{}
+				);
+
+
+                delete window[`${memberMap.relation}-uid_front_link_uppy`];
+                delete window[`${memberMap.relation}-uid_back_link_uppy`];
+
+			});
+
+			$('#family_members_tree').html('');
+		}
+
+
+
+		function addFamilyMember(relation_name, relation_label) {
+
+		let farilyBlockElement = `
+
+		<div class="form-group initialize familyMemberLineItem">
+
+			<input type="hidden" name="${relation_name}-relation" value="${relation_name}"/>
+
+			<div class="form-group">
+						<p>${relation_label} Name<strong style="color:red">*</strong></p>
+						<input type="text" class="form-control" id="${relation_name}-name"  name="${relation_name}-name" value=""   />
+							</div>
+							<div class="form-group">
+						<p>Date Of Birth<strong style="color:red">*</strong></p>
+			<input type="date" class="form-control" name="${relation_name}-dob" id="${relation_name}-dob"></input>
+				</div>
+
+			<div class="row">
+				<div class="col-sm-2 ">
+					<p>${relation_label} Aadhar Card Front Photo (आधार कार्ड की फोटो)<strong
+							style="color:red">*</strong></p>
+					<span class="custom-file-input" name="${relation_name}-uid_front_link" id="${relation_name}-uid_front_link">
+					</span><br>
+				</div>
+				<div class="col-sm-2 ">
+					<p>${relation_label} Aadhar Card Back Photo (आधार कार्ड की फोटो)<strong style="color:red">*</strong>
+					</p>
+					<span class="custom-file-input" name="${relation_name}-uid_back_link" id="${relation_name}-uid_back_link">
+					</span><br>
+				</div>
+			</div>
+		</div>
+		`;
+		
+		$('#family_members_tree').append($(farilyBlockElement));
+		
+		setTimeout(()=>{
+			initUppyUpload(`${relation_name}-uid_back_link`, `${relation_name}-uid_back_link_uppy`);
+			initUppyUpload(`${relation_name}-uid_front_link`, `${relation_name}-uid_front_link_uppy`);
+		}, 0);
+
+		}
+		
+		function initUppyUpload(elementId, elementVariable) {
+		
+			window[elementVariable] = new Uppy.Core({
+				debug: true,
+				autoProceed: true,
+				restrictions: {
+					maxFileSize: 50000000,
+					maxNumberOfFiles: 1,
+					minNumberOfFiles: 1,
+					allowedFileTypes: ['image/*'],
+				}
+			})
+			.use(Uppy.Dashboard, {
+				trigger: `#${elementId}`,
+				inline: true,
+				target: `#${elementId}`,
+				showProgressDetails: true,
+				note: 'Image, 1 file, up to 10 MB',
+				height: 250,
+				metaFields: [],
+				id: elementId,
+				browserBackButtonClose: false
+			})
+			.use(Uppy.Tus, {
+				endpoint: 'https://tus.dca.arungas.com/files/',
+			});
+
+		}
+	
+		</script>
+		
