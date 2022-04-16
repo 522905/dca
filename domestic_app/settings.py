@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django_fsm',
     'django_fsm_log',
     'fsm_admin2',
+    'fsm_admin2_custom',
     'import_export',
 
     'connection_app',
@@ -55,7 +56,7 @@ INSTALLED_APPS = [
 
     'rangefilter',
     'django_admin_listfilter_dropdown',
-    
+    'ujjwala',
 
 ]
 

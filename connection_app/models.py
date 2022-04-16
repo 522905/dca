@@ -389,7 +389,11 @@ class ConnectionApplication(models.Model):
 				ConnectionApplicationLeadStatus.NOT_INTERESTED
 			]
 		),
-		custom=dict(short_description='Application Confirmation', admin=True, form=ConnectionVerificationResult),
+		custom=dict(
+			short_description='Application Confirmation',
+			admin=True,
+			form=ConnectionVerificationResult
+		),
 	)
 	def confirm_application(self, *args, **kwargs):
 		if kwargs.get("required"):
@@ -576,10 +580,10 @@ class ConnectionApplication(models.Model):
 			)
 		else:
 			self.event_submit_channel_sms()
+			self.event_submit_channel_sms()
 
 	def event_reupload_channel_sms(self):
 		pass
-
 
 
 class ConnectionApplicationDocuments(models.Model):

@@ -54,7 +54,6 @@ class ConnectionApplicationDocumentsInline(admin.TabularInline):
 @admin.register(ConnectionApplication)
 class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdmin):
     fsm_transition_form_template = 'connection_app/transaction_form_template.html'
-    fsm_transition_buttons_template = 'connection_app/transition_buttons.html'
     # change_form_template = "entities/villain_changeform.html"
 
     fsm_fields = ['status', 'installation_status']
@@ -71,7 +70,7 @@ class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionCustomMixin, ad
         'referral_code',
     )
 
-    search_fields = ('name','referral_code','mobile')
+    search_fields = ('name', 'referral_code', 'mobile')
     ordering = ('id',)
 
     list_filter = (

@@ -5,16 +5,16 @@ from django.forms import NumberInput
 
 
 class EkycInitiated(forms.Form):
-	reupload_documents = forms.ChoiceField(
-		label="Reupload Documents ?",
-		required=True,
-		help_text="",
-		choices=[
-			('', '-- Select If Documents To Be Re-uploaded --'),
-			('YES', 'Yes'),
-			('NO', 'No')
-		]
-	)
+	# reupload_documents = forms.ChoiceField(
+	# 	label="Reupload Documents ?",
+	# 	required=True,
+	# 	help_text="",
+	# 	choices=[
+	# 		('', '-- Select If Documents To Be Re-uploaded --'),
+	# 		('YES', 'Yes'),
+	# 		('NO', 'No')
+	# 	]
+	# )
 	description = forms.CharField(widget=forms.Textarea, label='Remarks', required=False)
 
 	def clean(self):

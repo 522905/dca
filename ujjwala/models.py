@@ -48,6 +48,7 @@ class UjjwalaV2ApplicationStatus(models.TextChoices):
 	LEGAL_DOCUMENTS_COLLECTED = 'LEGAL_DOCUMENTS_COLLECTED', 'Legal Documents Collected'
 	SV_RELEASED = 'SV_RELEASED', 'SV Released'
 	COMPLETED = 'COMPLETED', 'Completed'
+	EDIT_APPLICATION = 'EDIT_APPLICATION', 'Edit Application'
 
 
 class UjjwalaInstallationStatus(models.TextChoices):
@@ -58,6 +59,8 @@ class UjjwalaInstallationStatus(models.TextChoices):
 
 
 class UjjwalaV2Application(models.Model):
+	created_on = models.DateTimeField(auto_now_add=True)
+	updated_on = models.DateTimeField(auto_now=True)
 	marital_status = models.CharField(max_length=25, choices=MaritalStatusEnum.choices)
 	name = models.CharField(max_length=50)
 	address = models.TextField()
@@ -76,6 +79,7 @@ class UjjwalaV2Application(models.Model):
 		choices=UjjwalaInstallationStatus.choices
 	)
 	sv = models.CharField(max_length=25, null=True, blank=True)
+	last_execution_state = models.CharField(max_length=50, null=True, blank=True)
 	# def submit(self, *args, **kwargs):
 	# 	"""
 	# 	Called when application is uploaded via api to change state to submitted
@@ -92,16 +96,17 @@ class UjjwalaV2Application(models.Model):
 			UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
 			UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD
 		],
-		target=GET_STATE(
-			lambda self, **kwargs: \
-					UjjwalaV2ApplicationStatus.EKYC_INITIATED \
-							if kwargs.get(
-						"reupload_documents") == 'NO' else UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD,
-			states=[
-				UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD,
-				UjjwalaV2ApplicationStatus.EKYC_INITIATED
-			]
-		),
+		target=UjjwalaV2ApplicationStatus.EKYC_INITIATED,
+		# GET_STATE(
+		# 	lambda self, **kwargs: \
+		# 			UjjwalaV2ApplicationStatus.EKYC_INITIATED \
+		# 					if kwargs.get(
+		# 				"reupload_documents") == 'NO' else UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD,
+		# 	states=[
+		# 		UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD,
+		# 		UjjwalaV2ApplicationStatus.EKYC_INITIATED
+		# 	]
+		# ),
 		custom=dict(short_description='E-KYC Initiated', admin=True, form=EkycInitiated),
 	)
 	def ekyc_initiated(self, *args, **kwargs):
@@ -228,6 +233,38 @@ class UjjwalaV2Application(models.Model):
 	def accept_installation(self, *args, **kwargs):
 		self.documents_reupload_remarks = kwargs.get('remarks')
 		self.documents_required_for_reupload = kwargs.get('documents_required_for_reupload')
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=[
+			UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
+			UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD,
+			UjjwalaV2ApplicationStatus.EKYC_INITIATED
+		],
+		target=UjjwalaV2ApplicationStatus.EDIT_APPLICATION,
+		custom=dict(
+			short_description='Edit Application', admin=True
+		),
+	)
+	def edit(self, *args, **kwargs):
+		self.last_execution_state = self.status
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=UjjwalaV2ApplicationStatus.EDIT_APPLICATION,
+		target=GET_STATE(
+			lambda self, **kwargs: self.last_execution_state,
+		),
+		custom=dict(
+			short_description='Update Edits To Application', admin=True
+		),
+	)
+	def restore_edit(self, *args, **kwargs):
+		pass
 
 
 class FamilyMembers(models.Model):
