@@ -3,6 +3,7 @@ from django.contrib import admin
 # Register your models here.
 # -*- coding: utf-8 -*-
 from django.contrib import admin
+from django_fsm_log.admin import StateLogInline
 from import_export.admin import ExportActionMixin
 
 from fsm_admin2_custom.admin import FSMTransitionCustomMixin
@@ -42,7 +43,7 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 	)
 
 	inlines = [
-		FamilyMembersInline, UjjwalaApplicationDocumentsInline,
+		FamilyMembersInline, UjjwalaApplicationDocumentsInline, StateLogInline
 	]
 	fsm_fields = ['status', 'installation_status']
 
