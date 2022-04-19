@@ -173,18 +173,22 @@ RQ_EXCEPTION_HANDLERS = ['path.to.my.handler']
 
 BASE_URL = 'https://dca.arungas.com'
 
+# MINIO_UPLOAD_URL = "http://files.dca.arungas.com"
 MINIO_UPLOAD_URL = "http://localhost:59000"
 
+# MINIO_ENDPOINT = "files.dca.arungas.com"
 MINIO_ENDPOINT = "localhost:59000"
 
 MINIO_BUCKET_NAME = "domesticconnectionapplicationdocs"
 
 MINIO_CREDENTIAL = {
-    "access_key": "MSLLTHEW74Q8RTJ83692",
-    "secret_key": "6m24RB5eY5AW+raBAs5xnsIDlDmJJNUG617D0zm0"
+    "access_key": "A105SYTFQ5D152QNMM4G",
+    "secret_key": "i4ETnrqIWHdOABwhOP8xnWcnlZQdLPRbi0T2dCDF"
 }
 
 HTML_TO_PDF_SERVER_URL = "http://localhost:58080".format(BASE_URL)
+
+THUMBOR_URL = "http://dca.arungas.com:6988/unsafe/fit-in/1920x1080/filters:quality(75)/"
 
 SUBMIT_SMS_TEMPLATE_ID = "1107164508265878553"
 

@@ -1,6 +1,7 @@
 import io
 import zipfile
 
+import magic
 import requests
 from django.conf import settings
 from django.contrib import admin
@@ -22,12 +23,16 @@ from django_admin_listfilter_dropdown.filters import DropdownFilter
 class UjjwalaApplicationDocumentsInline(admin.TabularInline):
 	extra = 0
 	model = UjjwalaApplicationDocuments
+	fields = ('type', 'download_links', )
+	readonly_fields = ('download_links', )
 	# template = 'connection_app/admin/document-inline.html'
 
 
 class FamilyMembersInline(admin.TabularInline):
 	extra = 0
 	model = FamilyMembers
+	fields = ('name', 'relation', 'dob', 'uid_no', 'download_links', )
+	readonly_fields = ('download_links', )
 
 
 @admin.register(UjjwalaV2Application)
@@ -72,7 +77,6 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 		""")
 
 	def download_legal_documents_pdf(self, obj):
-
 		attachments = []
 		customer_signature_file = obj.documents.filter(
 			type=UjjwalaApplicationDocumentsEnum.CUSTOMER_SIGNATURE
@@ -115,6 +119,16 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 
 		attachments.append(('{}.pdf'.format(occupancy_file_name), occupancy_form_pdf))
 
+		customer_docs = obj.documents.exclude(
+			type=UjjwalaApplicationDocumentsEnum.CUSTOMER_SIGNATURE
+		).all()
+
+		for customer_doc in customer_docs:
+			doc_file = requests.get("{}{}".format(settings.THUMBOR_URL, customer_doc.link))
+			doc_file_bytes = io.BytesIO(doc_file.content)
+			descriptor = magic.detect_from_content(doc_file_bytes.read(2048))
+			file_extension = descriptor.mime_type.split('/')[-1]
+			attachments.append(('{}.{}'.format(customer_doc.type, file_extension), doc_file))
 		documents_zip = io.BytesIO()
 
 		with zipfile.ZipFile(documents_zip, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:

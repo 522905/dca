@@ -1,4 +1,8 @@
+from django import template
+from django.conf import settings
 from django.db import models
+from django.template import loader
+from django.utils.safestring import mark_safe
 from django_fsm import FSMField, transition, GET_STATE
 from django_fsm_log.decorators import fsm_log_description, fsm_log_by
 from organizations.models import Organization
@@ -243,8 +247,22 @@ class FamilyMembers(models.Model):
 		else:
 			return "Male"
 
+	def download_links(self):
+		html = '''
+		<a href="{}" target="blank">View Ori.</a> UID Front <a href="{}{}" target="blank">Download Comp.</a><br><br>
+		<a href="{}" target="blank">View Ori.</a> UID Back <a href="{}{}" target="blank">Download Comp.</a>
+		'''.format(self.uid_front_link, settings.THUMBOR_URL, self.uid_front_link,
+		           self.uid_back_link, settings.THUMBOR_URL, self.uid_back_link,)
+		return mark_safe(html)
+
 
 class UjjwalaApplicationDocuments(models.Model):
 	parent = models.ForeignKey(UjjwalaV2Application, on_delete=models.CASCADE, related_name='documents', null=True)
 	type = models.CharField(max_length=25, choices=UjjwalaApplicationDocumentsEnum.choices)
 	link = models.URLField()
+
+	def download_links(self):
+		html = '''
+		<a href="{}" target="blank">Ori. File</a>&nbsp||&nbsp<a href="{}{}" target="blank">Download Comp.</a>
+		'''.format(self.link, settings.THUMBOR_URL, self.link)
+		return mark_safe(html)
