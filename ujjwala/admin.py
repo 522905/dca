@@ -1,12 +1,19 @@
+import io
+import zipfile
+
+import requests
+from django.conf import settings
 from django.contrib import admin
 
-# Register your models here.
-# -*- coding: utf-8 -*-
 from django.contrib import admin
+from django.http import HttpResponse
+from django.template import loader
+from django.utils.safestring import mark_safe
 from django_fsm_log.admin import StateLogInline
 from import_export.admin import ExportActionMixin
 
 from fsm_admin2_custom.admin import FSMTransitionCustomMixin
+from .enums import ResidentialStatusEnum, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum
 from .models import UjjwalaV2Application, FamilyMembers, UjjwalaApplicationDocuments, UjjwalaV2ApplicationStatus
 from rangefilter.filters import DateRangeFilter
 from django_admin_listfilter_dropdown.filters import DropdownFilter
@@ -45,8 +52,83 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 	inlines = [
 		FamilyMembersInline, UjjwalaApplicationDocumentsInline, StateLogInline
 	]
-	fsm_fields = ['status', 'installation_status']
+	fsm_fields = ['status', 'pre_inspection_status']
 
 	def has_change_permission(self, request, obj=None):
 		if not obj: return True
 		return obj.status == UjjwalaV2ApplicationStatus.EDIT_APPLICATION
+
+	def get_readonly_fields(self, request, obj=None):
+		readonly_fields = super().get_readonly_fields(request, obj)
+		if obj and obj.status == UjjwalaV2ApplicationStatus.EKYC_ACCEPTED and obj.version == 'V2':
+			readonly_fields = readonly_fields + ['download_legal_docs']
+
+		return readonly_fields
+
+	def download_legal_docs(self, obj=None):
+		return mark_safe("""
+			<input type="submit" value="Download Legal Docs" name="_download-legal-doc-pdf">
+		""")
+
+	def download_legal_documents_pdf(self, obj):
+
+		attachments = []
+		customer_signature_file = obj.documents.filter(
+			type=UjjwalaApplicationDocumentsEnum.CUSTOMER_SIGNATURE
+		).first().link
+		ujjwala_declaration_html_template = loader.get_template("ujjwala/forms/ujjwala_declaration_form.html")
+		ujjwala_declaration_html = ujjwala_declaration_html_template.render({
+			'obj': obj,
+			'customer_signature_file': customer_signature_file
+		})
+
+		ujjwala_declaration_pdf = requests.post(
+			settings.HTML_TO_PDF_SERVER_URL,
+			json={
+				"content": ujjwala_declaration_html,
+				"options": {"pageSize": "A4"}
+			}
+		)
+		attachments.append(('annexure_14_points.pdf', ujjwala_declaration_pdf))
+
+		if obj.residential_status == ResidentialStatusEnum.LIVING_ALONE:
+			occupancy_template_html = "ujjwala/forms/single_occupancy_form.html"
+			occupancy_file_name = "single_occupancy"
+		else:
+			occupancy_template_html = "ujjwala/forms/family_occupancy_form.html"
+			occupancy_file_name = "family_occupancy"
+
+		occupancy_form_html_template = loader.get_template(occupancy_template_html)
+		occupancy_form_html = occupancy_form_html_template.render({
+			'obj': obj,
+			'customer_signature_file': customer_signature_file
+		})
+
+		occupancy_form_pdf = requests.post(
+			settings.HTML_TO_PDF_SERVER_URL,
+			json={
+				"content": occupancy_form_html,
+				"options": {"pageSize": "A4"}
+			}
+		)
+
+		attachments.append(('{}.pdf'.format(occupancy_file_name), occupancy_form_pdf))
+
+		documents_zip = io.BytesIO()
+
+		with zipfile.ZipFile(documents_zip, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
+			for key, value in attachments:
+				zf.writestr(key, value.content)
+
+		# Grab ZIP file from in-memory, make response with correct MIME-type
+		resp = HttpResponse(documents_zip.getvalue(), content_type="application/x-zip-compressed")
+		# ..and correct content-disposition
+		resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_{}_legal_docs.zip'.format(obj.id)
+
+		return resp
+
+	def change_view(self, request, object_id, form_url='', extra_context=None):
+		if "_download-legal-doc-pdf" in request.POST:
+			obj = UjjwalaV2Application.objects.get(pk=object_id)
+			return self.download_legal_documents_pdf(obj)
+		return super().change_view(request, object_id, form_url=form_url, extra_context=extra_context)

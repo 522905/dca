@@ -1,85 +1,44 @@
 from django.db import models
 from django_fsm import FSMField, transition, GET_STATE
 from django_fsm_log.decorators import fsm_log_description, fsm_log_by
+from organizations.models import Organization
 
-from ujjwala.forms import EkycInitiated, EkycAcceptedOrRejected, NewConnectionAcceptedOrRejected, \
-	LegalDocumentsCollected, SvReleased
-
-
-class UjjwalaApplicationDocumentsEnum(models.TextChoices):
-	CUSTOMER_PHOTO = 'CUSTOMER_PHOTO', 'Customer Photo'
-	BANK_DETAIL = 'BANK_DETAIL', 'Bank Detail'
-	OTHER_ID_PROOF = 'OTHER_ID_PROOF', 'Other Id Proof'
-	SV = 'SV', 'Subscription Voucher'
-	CONNECTION_DETAIL = 'CONNECTION_DETAIL', 'Connection Detail'
-	KITCHEN_PHOTO = 'KITCHEN_PHOTO', 'Kitchen Photo'
-
-
-class UjjwalaUidMobileStatusEnum(models.TextChoices):
-	LINKED_WITH_SAME_MOBILE = 'LINKED_WITH_SAME_MOBILE', 'Linked With Same Mobile'
-	LINKED_WITH_OTHER_MOBILE = 'LINKED_WITH_OTHER_MOBILE', 'Linked With Other Mobile'
-	MOBILE_NOT_AVAILABLE = 'MOBILE_NOT_AVAILABLE', 'Mobile Not Available'
-
-
-class FamilyMemberRelationEnum(models.TextChoices):
-	SELF = 'SELF', 'Self'
-	FATHER = 'FATHER', 'Father'
-	MOTHER = 'MOTHER', 'Mother'
-	HUSBAND = 'HUSBAND', 'Husband'
-	SON = 'SON', 'Son'
-	DAUGHTER = 'DAUGHTER', 'Daughter'
-
-
-class MaritalStatusEnum(models.TextChoices):
-	MARRIED = 'MARRIED', 'Married'
-	UNMARRIED = 'UNMARRIED', 'Unmarried'
-	DIVORCED = 'DIVORCED', 'Divorced'
-	WIDOW = 'WIDOW', 'Widow'
-
-
-class UjjwalaV2ApplicationStatus(models.TextChoices):
-	DOCUMENTS_UPLOADED = 'DOCUMENTS_UPLOADED', 'Documents Uploaded'
-	DOCUMENTS_REUPLOAD = 'DOCUMENTS_REUPLOAD', 'Documents Reupload'
-	EKYC_INITIATED = 'EKYC_INITIATED', 'E-KYC Initiated'
-	EKYC_REJECTED = 'EKYC_REJECTED', 'E-KYC Rejected'
-	EKYC_ACCEPTED = 'EKYC_ACCEPTED', 'E-KYC Accepted'
-	CONNECTION_REJECTED = 'CONNECTION_REJECTED', 'Connection Rejected'
-	NEW_CONNECTION_ACCEPTED = 'NEW_CONNECTION_ACCEPTED', 'New Connection Accepted'
-	LEGAL_DOCUMENTS_COLLECTED = 'LEGAL_DOCUMENTS_COLLECTED', 'Legal Documents Collected'
-	SV_RELEASED = 'SV_RELEASED', 'SV Released'
-	COMPLETED = 'COMPLETED', 'Completed'
-	EDIT_APPLICATION = 'EDIT_APPLICATION', 'Edit Application'
-
-
-class UjjwalaInstallationStatus(models.TextChoices):
-	PENDING = 'PENDING', 'Pending',
-	SUBMITTED = 'SUBMITTED', 'Submitted',
-	ACCEPTED = 'ACCEPTED', 'Accepted',
-	REUPLOAD = 'REUPLOAD', 'Reupload'
+from teams.models import ServiceLocations
+from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMobileStatusEnum, \
+	UjjwalaPreInspectionStatus, UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum
+from ujjwala.forms import EkycAcceptedOrRejected, \
+	LegalDocumentsCollected, LegalDocumentsUpload, ConnectionStatusUpdate, \
+	ConnectionRelease, PostInstallationUpload
 
 
 class UjjwalaV2Application(models.Model):
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
 	marital_status = models.CharField(max_length=25, choices=MaritalStatusEnum.choices)
+	residential_status = models.CharField(max_length=25, choices=ResidentialStatusEnum.choices)
 	name = models.CharField(max_length=50)
 	address = models.TextField()
 	contact_mobile = models.CharField(max_length=10)
-	uid_linked_mobile = models.CharField(max_length=10)
+	uid_linked_mobile = models.CharField(max_length=10, null=True, blank=True)
 	uid_mobile_status = models.CharField(max_length=25, choices=UjjwalaUidMobileStatusEnum.choices)
 	referral_code = models.CharField(max_length=16, null=True, blank=True)
+	service_team = models.ForeignKey(Organization, on_delete=models.CASCADE, null=True, blank=True)
+	service_location = models.ForeignKey(ServiceLocations, on_delete=models.CASCADE, null=True, blank=True)
+	version = models.CharField(max_length=2, default='V1')
 
 	status = FSMField(
 		default=UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
 		choices=UjjwalaV2ApplicationStatus.choices
 	)
 
-	installation_status = FSMField(
-		default=UjjwalaInstallationStatus.PENDING,
-		choices=UjjwalaInstallationStatus.choices
+	pre_inspection_status = FSMField(
+		default=UjjwalaPreInspectionStatus.PENDING,
+		choices=UjjwalaPreInspectionStatus.choices
 	)
+
 	sv = models.CharField(max_length=25, null=True, blank=True)
 	last_execution_state = models.CharField(max_length=50, null=True, blank=True)
+
 	# def submit(self, *args, **kwargs):
 	# 	"""
 	# 	Called when application is uploaded via api to change state to submitted
@@ -92,31 +51,7 @@ class UjjwalaV2Application(models.Model):
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=[
-			UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
-			UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD
-		],
-		target=UjjwalaV2ApplicationStatus.EKYC_INITIATED,
-		# GET_STATE(
-		# 	lambda self, **kwargs: \
-		# 			UjjwalaV2ApplicationStatus.EKYC_INITIATED \
-		# 					if kwargs.get(
-		# 				"reupload_documents") == 'NO' else UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD,
-		# 	states=[
-		# 		UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD,
-		# 		UjjwalaV2ApplicationStatus.EKYC_INITIATED
-		# 	]
-		# ),
-		custom=dict(short_description='E-KYC Initiated', admin=True, form=EkycInitiated),
-	)
-	def ekyc_initiated(self, *args, **kwargs):
-		pass
-
-	@fsm_log_description
-	@fsm_log_by
-	@transition(
-		field=status,
-		source=UjjwalaV2ApplicationStatus.EKYC_INITIATED,
+		source=UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
 		target=GET_STATE(
 			lambda self, **kwargs: \
 					UjjwalaV2ApplicationStatus.EKYC_ACCEPTED \
@@ -137,28 +72,41 @@ class UjjwalaV2Application(models.Model):
 	@transition(
 		field=status,
 		source=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
-		target=GET_STATE(
-			lambda self, **kwargs: \
-					UjjwalaV2ApplicationStatus.NEW_CONNECTION_ACCEPTED \
-						if kwargs.get(
-						"new_connection_accepted") == 'ACCEPTED' else UjjwalaV2ApplicationStatus.CONNECTION_REJECTED,
-			states=[
-				UjjwalaV2ApplicationStatus.NEW_CONNECTION_ACCEPTED,
-				UjjwalaV2ApplicationStatus.CONNECTION_REJECTED
-			]
-		),
+		target=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD,
 		custom=dict(
-			short_description='Connection Accpeted Or Rejected', admin=True, form=NewConnectionAcceptedOrRejected
+			short_description='Legal Documents Upload', admin=True, form=LegalDocumentsUpload
 		),
 	)
-	def connection_accepted(self, *args, **kwargs):
+	def legal_documents_upload(self, *args, **kwargs):
 		pass
 
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=UjjwalaV2ApplicationStatus.NEW_CONNECTION_ACCEPTED,
+		source=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD,
+		target=GET_STATE(
+			lambda self, **kwargs: \
+					UjjwalaV2ApplicationStatus.CONNECTION_APPROVED \
+							if kwargs.get(
+						"connection_approved") == 'APPROVED' else UjjwalaV2ApplicationStatus.CONNECTION_REJECTED,
+			states=[
+				UjjwalaV2ApplicationStatus.CONNECTION_APPROVED,
+				UjjwalaV2ApplicationStatus.CONNECTION_REJECTED
+			]
+		),
+		custom=dict(
+			short_description='Update Connection Status', admin=True, form=ConnectionStatusUpdate
+		),
+	)
+	def update_connection_status(self, *args, **kwargs):
+		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=UjjwalaV2ApplicationStatus.CONNECTION_APPROVED,
 		target=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_COLLECTED,
 		custom=dict(short_description='Legal Documents Collected', admin=True, form=LegalDocumentsCollected),
 	)
@@ -170,27 +118,38 @@ class UjjwalaV2Application(models.Model):
 	@transition(
 		field=status,
 		source=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_COLLECTED,
-		target=UjjwalaV2ApplicationStatus.SV_RELEASED,
-		custom=dict(short_description='SV Released', admin=True, form=SvReleased),
+		target=UjjwalaV2ApplicationStatus.CONNECTION_RELEASE,
+		custom=dict(short_description='Connection Release', admin=True, form=ConnectionRelease),
 	)
-	def sv_released(self, *args, **kwargs):
+	def connection_release(self, *args, **kwargs):
 		pass
 
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=UjjwalaV2ApplicationStatus.SV_RELEASED,
+		source=UjjwalaV2ApplicationStatus.CONNECTION_RELEASE,
+		target=UjjwalaV2ApplicationStatus.POST_INSTALLATION_UPLOAD,
+		custom=dict(short_description='Post Installation Upload', admin=True, form=PostInstallationUpload),
+	)
+	def post_installation_upload(self, *args, **kwargs):
+		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=UjjwalaV2ApplicationStatus.POST_INSTALLATION_UPLOAD,
 		target=UjjwalaV2ApplicationStatus.COMPLETED,
 		custom=dict(short_description='Completed', admin=True),
 	)
 	def completed(self, *args, **kwargs):
 		pass
 
-	def send_reminder_for_installation_upload(self):
-		if self.installation_status in (
-				UjjwalaInstallationStatus.REUPLOAD,
-				UjjwalaInstallationStatus.PENDING
+	def send_reminder_for_pre_inspection_upload(self):
+		if self.pre_inspection_status in (
+				UjjwalaPreInspectionStatus.REUPLOAD,
+				UjjwalaPreInspectionStatus.PENDING
 		):
 			# self.event_installation_upload_channel_whatsapp()
 			return True
@@ -199,38 +158,35 @@ class UjjwalaV2Application(models.Model):
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
-		field=installation_status,
-		source=[UjjwalaInstallationStatus.PENDING, UjjwalaInstallationStatus.REUPLOAD],
-		target=UjjwalaInstallationStatus.SUBMITTED,
+		field=pre_inspection_status,
+		source=[UjjwalaPreInspectionStatus.PENDING, UjjwalaPreInspectionStatus.REUPLOAD],
+		target=UjjwalaPreInspectionStatus.SUBMITTED,
 		custom=dict(
-			short_description='Upload Installation', admin=False
+			short_description='Upload Pre Inspection', admin=False
 		),
 	)
-	def upload_installation(self, *args, **kwargs):
+	def upload_pre_inspection(self, *args, **kwargs):
 		pass
 
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
-		field=installation_status,
-		source=UjjwalaInstallationStatus.SUBMITTED,
+		field=pre_inspection_status,
+		source=UjjwalaPreInspectionStatus.SUBMITTED,
 		target=GET_STATE(
 			lambda self, **kwargs: \
-					UjjwalaInstallationStatus.ACCEPTED \
-							if kwargs.get("verified") else UjjwalaInstallationStatus.REUPLOAD,
+					UjjwalaPreInspectionStatus.ACCEPTED \
+							if kwargs.get("verified") else UjjwalaPreInspectionStatus.REUPLOAD,
 			states=[
-				UjjwalaInstallationStatus.ACCEPTED,
-				UjjwalaInstallationStatus.REUPLOAD
+				UjjwalaPreInspectionStatus.ACCEPTED,
+				UjjwalaPreInspectionStatus.REUPLOAD
 			]
 		),
-		# custom=dict(
-		# 	short_description='Review Installation', admin=True, form=InstallationReviewForm
-		# ),
 		custom=dict(
-			short_description='Review Installation', admin=True
+			short_description='Review Pre Inspection', admin=True
 		),
 	)
-	def accept_installation(self, *args, **kwargs):
+	def accept_pre_inspection(self, *args, **kwargs):
 		self.documents_reupload_remarks = kwargs.get('remarks')
 		self.documents_required_for_reupload = kwargs.get('documents_required_for_reupload')
 
@@ -241,7 +197,8 @@ class UjjwalaV2Application(models.Model):
 		source=[
 			UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
 			UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD,
-			UjjwalaV2ApplicationStatus.EKYC_INITIATED
+			UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
+			UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD
 		],
 		target=UjjwalaV2ApplicationStatus.EDIT_APPLICATION,
 		custom=dict(
@@ -272,8 +229,19 @@ class FamilyMembers(models.Model):
 	name = models.CharField(max_length=50)
 	relation = models.CharField(max_length=25, choices=FamilyMemberRelationEnum.choices)
 	dob = models.DateField()
+	uid_no = models.CharField(max_length=12, null=True, blank=True)
 	uid_front_link = models.URLField()
 	uid_back_link = models.URLField()
+
+	def get_gender(self):
+		if self.relation in (
+				FamilyMemberRelationEnum.SELF,
+				FamilyMemberRelationEnum.MOTHER,
+				FamilyMemberRelationEnum.DAUGHTER
+		):
+			return "Female"
+		else:
+			return "Male"
 
 
 class UjjwalaApplicationDocuments(models.Model):

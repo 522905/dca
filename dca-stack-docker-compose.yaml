@@ -3,7 +3,7 @@ services:
 
   dca-html-to-pdf:
     container_name: dca-html-to-pdf
-    image: kurzdigital/html-to-pdf:latest
+    image: bhupeshg2/wkhtml2pdf-devnagri
     ports:
       - 58080:8080/tcp
     restart: unless-stopped
@@ -47,4 +47,3 @@ services:
     volumes:
       - ./data/tus-data:/srv/tusd-data
     working_dir: /srv/tusd-data
-

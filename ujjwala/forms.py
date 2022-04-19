@@ -3,23 +3,7 @@ import json
 from django import forms
 from django.forms import NumberInput
 
-
-class EkycInitiated(forms.Form):
-	# reupload_documents = forms.ChoiceField(
-	# 	label="Reupload Documents ?",
-	# 	required=True,
-	# 	help_text="",
-	# 	choices=[
-	# 		('', '-- Select If Documents To Be Re-uploaded --'),
-	# 		('YES', 'Yes'),
-	# 		('NO', 'No')
-	# 	]
-	# )
-	description = forms.CharField(widget=forms.Textarea, label='Remarks', required=False)
-
-	def clean(self):
-		data = self.cleaned_data
-		return data
+from ujjwala.models import UjjwalaApplicationDocumentsEnum
 
 
 class EkycAcceptedOrRejected(forms.Form):
@@ -39,14 +23,31 @@ class EkycAcceptedOrRejected(forms.Form):
 		return data
 
 
-class NewConnectionAcceptedOrRejected(forms.Form):
-	new_connection_accepted = forms.ChoiceField(
-		label="New Connection Accepted Or Rejected ?",
+class LegalDocumentsUpload(forms.Form):
+	# legal_documents_uploaded = forms.ChoiceField(
+	# 	label="Legal Documents Uploaded ?",
+	# 	required=True,
+	# 	help_text="",
+	# 	choices=[
+	# 		('', '-- Select If Legal Documents Uploaded --'),
+	# 		('VERIFIED', 'Verified'),
+	# 		('NOT VERIFIED', 'Not Verified')
+	# 	]
+	# )
+
+	def clean(self):
+		data = self.cleaned_data
+		return data
+
+
+class ConnectionStatusUpdate(forms.Form):
+	connection_approved = forms.ChoiceField(
+		label="Connection Approved ?",
 		required=True,
 		help_text="",
 		choices=[
-			('', '-- Select If New Connection Accepted Or Rejected --'),
-			('ACCEPTED', 'Accepted'),
+			('', '-- Select If Connection Approved --'),
+			('APPROVED', 'Approved'),
 			('REJECTED', 'Rejected')
 		]
 	)
@@ -58,13 +59,13 @@ class NewConnectionAcceptedOrRejected(forms.Form):
 
 class LegalDocumentsCollected(forms.Form):
 	legal_documents_verified = forms.ChoiceField(
-		label="Legal Documents Verified ?",
+		label="Legal Documents Collected ?",
 		required=True,
 		help_text="",
 		choices=[
-			('', '-- Select If Legal Documents Verified --'),
-			('VERIFIED', 'Verified'),
-			('NOT VERIFIED', 'Not Verified')
+			('', '-- Select If Legal Documents Collected --'),
+			('COLLECTED', 'Collected'),
+			('NOT COLLECTED', 'Not Collected')
 		]
 	)
 
@@ -73,21 +74,40 @@ class LegalDocumentsCollected(forms.Form):
 		return data
 
 
-class SvReleased(forms.Form):
-	sv_released = forms.ChoiceField(
-		label="SV Released Or Not ?",
-		required=True,
-		help_text="",
-		choices=[
-			('', '-- Select If SV Released Or Not --'),
-			('Y', 'Yes'),
-			('N', 'No')
-		]
-	)
+class ConnectionRelease(forms.Form):
 	sv = forms.CharField(
-		widget=forms.Textarea, required=False, help_text="Enter SV Document No. "
+		widget=forms.TextInput, max_length=15, required=True, help_text="Enter SV Document No. "
+	)
+	sv_doc_url = forms.URLField(widget=forms.HiddenInput)
+
+	def clean(self):
+		data = self.cleaned_data
+		return data
+
+
+class PostInstallationUpload(forms.Form):
+
+	def clean(self):
+		data = self.cleaned_data
+		return data
+
+
+class PreInspectionReviewForm(forms.Form):
+	verified = forms.BooleanField(
+		required=False,
+		help_text="Check If Installation is safe as per standards"
+	)
+
+	remarks = forms.CharField(
+		widget=forms.Textarea,
+		label='Remarks (Will be displayed to customer)',
+		required=True
 	)
 
 	def clean(self):
 		data = self.cleaned_data
+		if not data.get('verified'):
+			data['documents_required_for_reupload'] = json.dumps([UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO])
+		else:
+			data['documents_required_for_reupload'] = '[]'
 		return data
