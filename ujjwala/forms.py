@@ -18,6 +18,10 @@ class EkycAcceptedOrRejected(forms.Form):
 		]
 	)
 
+	description = forms.CharField(
+		widget=forms.Textarea, label='Remarks', required=True
+	)
+
 	def clean(self):
 		data = self.cleaned_data
 		return data
@@ -34,6 +38,9 @@ class LegalDocumentsUpload(forms.Form):
 	# 		('NOT VERIFIED', 'Not Verified')
 	# 	]
 	# )
+	description = forms.CharField(
+		widget=forms.Textarea, label='Remarks', required=True
+	)
 
 	def clean(self):
 		data = self.cleaned_data
