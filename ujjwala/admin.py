@@ -46,7 +46,8 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 	list_filter = (
 		('created_on', DateRangeFilter),
 		('updated_on', DateRangeFilter),
-		('status', DropdownFilter)
+		('status', DropdownFilter),
+		('version', DropdownFilter)
 	)
 
 	inlines = [
