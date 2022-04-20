@@ -66,7 +66,10 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 
 	def get_readonly_fields(self, request, obj=None):
 		readonly_fields = super().get_readonly_fields(request, obj)
-		if obj and obj.status == UjjwalaV2ApplicationStatus.EKYC_ACCEPTED and obj.version == 'V2':
+
+		if obj and obj.status in (
+				UjjwalaV2ApplicationStatus.EKYC_ACCEPTED, UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED
+		):
 			readonly_fields = readonly_fields + ['download_legal_docs']
 
 		return readonly_fields
@@ -78,46 +81,47 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 
 	def download_legal_documents_pdf(self, obj):
 		attachments = []
-		customer_signature_file = obj.documents.filter(
-			type=UjjwalaApplicationDocumentsEnum.CUSTOMER_SIGNATURE
-		).first().link
-		ujjwala_declaration_html_template = loader.get_template("ujjwala/forms/ujjwala_declaration_form.html")
-		ujjwala_declaration_html = ujjwala_declaration_html_template.render({
-			'obj': obj,
-			'customer_signature_file': customer_signature_file
-		})
+		if obj.version == 'V2':
+			customer_signature_file = obj.documents.filter(
+				type=UjjwalaApplicationDocumentsEnum.CUSTOMER_SIGNATURE
+			).first().link
+			ujjwala_declaration_html_template = loader.get_template("ujjwala/forms/ujjwala_declaration_form.html")
+			ujjwala_declaration_html = ujjwala_declaration_html_template.render({
+				'obj': obj,
+				'customer_signature_file': customer_signature_file
+			})
 
-		ujjwala_declaration_pdf = requests.post(
-			settings.HTML_TO_PDF_SERVER_URL,
-			json={
-				"content": ujjwala_declaration_html,
-				"options": {"pageSize": "A4"}
-			}
-		)
-		attachments.append(('annexure_14_points.pdf', ujjwala_declaration_pdf))
+			ujjwala_declaration_pdf = requests.post(
+				settings.HTML_TO_PDF_SERVER_URL,
+				json={
+					"content": ujjwala_declaration_html,
+					"options": {"pageSize": "A4"}
+				}
+			)
+			attachments.append(('annexure_14_points.pdf', ujjwala_declaration_pdf))
 
-		if obj.residential_status == ResidentialStatusEnum.LIVING_ALONE:
-			occupancy_template_html = "ujjwala/forms/single_occupancy_form.html"
-			occupancy_file_name = "single_occupancy"
-		else:
-			occupancy_template_html = "ujjwala/forms/family_occupancy_form.html"
-			occupancy_file_name = "family_occupancy"
+			if obj.residential_status == ResidentialStatusEnum.LIVING_ALONE:
+				occupancy_template_html = "ujjwala/forms/single_occupancy_form.html"
+				occupancy_file_name = "single_occupancy"
+			else:
+				occupancy_template_html = "ujjwala/forms/family_occupancy_form.html"
+				occupancy_file_name = "family_occupancy"
 
-		occupancy_form_html_template = loader.get_template(occupancy_template_html)
-		occupancy_form_html = occupancy_form_html_template.render({
-			'obj': obj,
-			'customer_signature_file': customer_signature_file
-		})
+			occupancy_form_html_template = loader.get_template(occupancy_template_html)
+			occupancy_form_html = occupancy_form_html_template.render({
+				'obj': obj,
+				'customer_signature_file': customer_signature_file
+			})
 
-		occupancy_form_pdf = requests.post(
-			settings.HTML_TO_PDF_SERVER_URL,
-			json={
-				"content": occupancy_form_html,
-				"options": {"pageSize": "A4"}
-			}
-		)
+			occupancy_form_pdf = requests.post(
+				settings.HTML_TO_PDF_SERVER_URL,
+				json={
+					"content": occupancy_form_html,
+					"options": {"pageSize": "A4"}
+				}
+			)
 
-		attachments.append(('{}.pdf'.format(occupancy_file_name), occupancy_form_pdf))
+			attachments.append(('{}.pdf'.format(occupancy_file_name), occupancy_form_pdf))
 
 		customer_docs = obj.documents.exclude(
 			type=UjjwalaApplicationDocumentsEnum.CUSTOMER_SIGNATURE
