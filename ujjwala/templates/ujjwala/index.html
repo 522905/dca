@@ -17,6 +17,7 @@
     <script src="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.js"></script>
     <script src="https://arungas.com/public/ujwalla/js/signature_pad.umd.js"></script>
     <link rel="stylesheet" href="https://arungas.com/public/ujwalla/css/signature-pad.css">
+    <link rel="stylesheet" href="https://arungas.com/public/ujwalla/css/style.css">
 </head>
 <style>
     body{font-family: 'Montserrat'; }
@@ -187,18 +188,18 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Aadhar registered Mobile Number<strong style="color:red">*</strong></label>
+                            <label>Aadhaar registered Mobile Number<strong style="color:red">*</strong></label>
                             <select id="uid_mobile_status" class="selectpicker form-control " name="uid_mobile_status">
                                 <option selected="selected">Select</option>
-                                <option value="LINKED_WITH_SAME_MOBILE">Provided Mobile number is Same on aadhar</option>
+                                <option value="LINKED_WITH_SAME_MOBILE">Provided Mobile number is Same on Aadhaar</option>
                                 <option value="MOBILE_NOT_AVAILABLE">I don't know the registered mobile number</option>
-                                <option value="LINKED_WITH_OTHER_MOBILE">Aadhar registered mobile number is differant
+                                <option value="LINKED_WITH_OTHER_MOBILE">Aadhaar registered mobile number is different
                                 </option>
                             </select>
                         </div>
 
                         <div id="uid_linked_mobile_form_group" class="form-group">
-                            <label>Aadhar Card Mobile Number. (आधार कार्ड फोन नंबर)<strong style="color:red">*</strong></label>
+                            <label>Aadhaar Card Mobile Number. (आधार कार्ड फोन नंबर)<strong style="color:red">*</strong></label>
                             <input type="tel" class="form-control" id="uid_linked_mobile" pattern="[6789][0-9]{9}"
                                 name="uid_linked_mobile" maxlength="10"/>
                         </div>
@@ -470,8 +471,8 @@
     function validmain() {
         let file = [
 
-            validateUppy(aadharcarduppy, 'UID_FRONT', 'Aadhar Card Frontside Picture (आधार कार्ड की फोटो)*', true),
-            validateUppy(aadharcardbackuppy, 'UID_BACK', 'Aadhar Card Backside Picture (आधार कार्ड की फोटो)*', true),
+            validateUppy(aadharcarduppy, 'UID_FRONT', 'Aadhaar Card Frontside Picture (आधार कार्ड की फोटो)*', true),
+            validateUppy(aadharcardbackuppy, 'UID_BACK', 'Aadhaar Card Backside Picture (आधार कार्ड की फोटो)*', true),
         ]
 
 
@@ -688,13 +689,13 @@
 
 
         file_list_front = $.map(members, memberMap =>
-                validateUppy(window[`${memberMap.relation}-uid_front_link_uppy`], 'UID_FRONT', `${memberMap.relation} Aadhar Card Frontside Picture (आधार कार्ड की फोटो)*`, true),
-            validateUppy(window[`${memberMap.relation}-uid_front_link_uppy`], 'FATHER_UID_FRONT', `${memberMap.relation}Father Aadhar Card Frontside Picture (आधार कार्ड की फोटो)*`, true)
+                validateUppy(window[`${memberMap.relation}-uid_front_link_uppy`], 'UID_FRONT', `${memberMap.relation} Aadhaar Card Frontside Picture (आधार कार्ड की फोटो)*`, true),
+            validateUppy(window[`${memberMap.relation}-uid_front_link_uppy`], 'FATHER_UID_FRONT', `${memberMap.relation}Father Aadhaar Card Frontside Picture (आधार कार्ड की फोटो)*`, true)
         );
 
         file_list_back = $.map(members, memberMap =>
-                validateUppy(window[`${memberMap.relation}-uid_back_link_uppy`], 'UID_BACK', `${memberMap.relation} Aadhar Card Backside Picture (आधार कार्ड की फोटो)*`, true),
-            validateUppy(window[`${memberMap.relation}-uid_back_link_uppy`], 'FATHER_UID_FRONT', `${memberMap.relation}Father Aadhar Card Frontside Picture (आधार कार्ड की फोटो)*`, true)
+                validateUppy(window[`${memberMap.relation}-uid_back_link_uppy`], 'UID_BACK', `${memberMap.relation} Aadhaar Card Backside Picture (आधार कार्ड की फोटो)*`, true),
+            validateUppy(window[`${memberMap.relation}-uid_back_link_uppy`], 'FATHER_UID_FRONT', `${memberMap.relation}Father Aadhaar Card Frontside Picture (आधार कार्ड की फोटो)*`, true)
         );
 
         files = file_list_front.concat(file_list_back);
@@ -798,7 +799,7 @@
                         </div>
                     </div>
                     <div class="col-sm-4">
-                        <p>${relation_label} Aadhar No.<strong style="color:red">*</strong></p>
+                        <p>${relation_label} Aadhaar No.<strong style="color:red">*</strong></p>
                         <div class="">
                             <input type="tel" class="form-control" name="${relation_name}-uid_no" id="${relation_name}-uid_no" minlength="12" maxlength="12" pattern="[0-9]{12}"></input>
                         </div>
@@ -807,7 +808,7 @@
                 <div class="row m-0 pl-4 pt-3 mt-4">
                     <div class="col-sm-4">
                         <div>
-                            <p>${relation_label} Aadhar Card Front Photo (आधार कार्ड की फोटो)<strong
+                            <p>${relation_label} Aadhaar Card Front Photo (आधार कार्ड की फोटो)<strong
                                     style="color:red">*</strong></p>
                             <span class="custom-file-input" name="${relation_name}-uid_front_link" id="${relation_name}-uid_front_link">
                             </span><br>
@@ -815,7 +816,7 @@
                     </div>
                     <div class="col-sm-4">
                         <div class="">
-                            <p>${relation_label} Aadhar Card Back Photo (आधार कार्ड की फोटो)<strong style="color:red">*</strong>
+                            <p>${relation_label} Aadhaar Card Back Photo (आधार कार्ड की फोटो)<strong style="color:red">*</strong>
                             </p>
                             <span class="custom-file-input" name="${relation_name}-uid_back_link" id="${relation_name}-uid_back_link">
                             </span><br>

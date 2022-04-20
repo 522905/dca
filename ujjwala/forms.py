@@ -38,6 +38,9 @@ class LegalDocumentsUpload(forms.Form):
 	# 		('NOT VERIFIED', 'Not Verified')
 	# 	]
 	# )
+	consumer_id = forms.CharField(
+		widget=forms.TextInput, max_length=16, label='Consumer Id', required=True
+	)
 	description = forms.CharField(
 		widget=forms.Textarea, label='Remarks', required=True
 	)
@@ -58,6 +61,9 @@ class ConnectionStatusUpdate(forms.Form):
 			('REJECTED', 'Rejected')
 		]
 	)
+	description = forms.CharField(
+		widget=forms.Textarea, label='Remarks', required=True
+	)
 
 	def clean(self):
 		data = self.cleaned_data
@@ -74,6 +80,9 @@ class LegalDocumentsCollected(forms.Form):
 			('COLLECTED', 'Collected'),
 			('NOT COLLECTED', 'Not Collected')
 		]
+	)
+	description = forms.CharField(
+		widget=forms.Textarea, label='Remarks', required=True
 	)
 
 	def clean(self):

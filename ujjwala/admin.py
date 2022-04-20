@@ -1,5 +1,6 @@
 import io
 import zipfile
+from datetime import datetime
 
 import magic
 import requests
@@ -14,7 +15,7 @@ from django_fsm_log.admin import StateLogInline
 from import_export.admin import ExportActionMixin
 
 from fsm_admin2_custom.admin import FSMTransitionCustomMixin
-from .enums import ResidentialStatusEnum, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum
+from .enums import ResidentialStatusEnum, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, MaritalStatusEnum
 from .models import UjjwalaV2Application, FamilyMembers, UjjwalaApplicationDocuments, UjjwalaV2ApplicationStatus
 from rangefilter.filters import DateRangeFilter
 from django_admin_listfilter_dropdown.filters import DropdownFilter
@@ -85,10 +86,23 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 			customer_signature_file = obj.documents.filter(
 				type=UjjwalaApplicationDocumentsEnum.CUSTOMER_SIGNATURE
 			).first().link
+
+			self_doc = obj.family_members.filter(relation=FamilyMemberRelationEnum.SELF).first()
+
+			if obj.residential_status == ResidentialStatusEnum.LIVING_WITH_FAMILY:
+				if obj.marital_status == MaritalStatusEnum.MARRIED:
+					relationship_name = obj.family_members.filter(relation=FamilyMemberRelationEnum.HUSBAND).first().name
+				elif obj.marital_status == MaritalStatusEnum.UNMARRIED:
+					relationship_name = obj.family_members.filter(relation=FamilyMemberRelationEnum.FATHER).first().name
+
 			ujjwala_declaration_html_template = loader.get_template("ujjwala/forms/ujjwala_declaration_form.html")
 			ujjwala_declaration_html = ujjwala_declaration_html_template.render({
-				'obj': obj,
-				'customer_signature_file': customer_signature_file
+				'name': obj.name,
+				'uid': list(self_doc.uid_no),
+				'age': '{}'.format(str(datetime.now().year - self_doc.dob.year)),
+				'relation_name': relationship_name,
+				'customer_signature_file': customer_signature_file,
+				'date': datetime.now().strftime("%d-%m-%Y")
 			})
 
 			ujjwala_declaration_pdf = requests.post(

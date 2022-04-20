@@ -23,6 +23,7 @@ class UjjwalaV2Application(models.Model):
 	name = models.CharField(max_length=50)
 	address = models.TextField()
 	contact_mobile = models.CharField(max_length=10)
+	consumer_id = models.CharField(max_length=16, null=True, blank=True)
 	uid_linked_mobile = models.CharField(max_length=10, null=True, blank=True)
 	uid_mobile_status = models.CharField(max_length=25, choices=UjjwalaUidMobileStatusEnum.choices)
 	referral_code = models.CharField(max_length=16, null=True, blank=True)
@@ -82,7 +83,7 @@ class UjjwalaV2Application(models.Model):
 		),
 	)
 	def legal_documents_upload(self, *args, **kwargs):
-		pass
+		self.consumer_id = kwargs.get('consumer_id')
 
 	@fsm_log_description
 	@fsm_log_by
