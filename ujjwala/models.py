@@ -1,5 +1,7 @@
+import track
 from django import template
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.template import loader
 from django.utils.safestring import mark_safe
@@ -7,6 +9,7 @@ from django_fsm import FSMField, transition, GET_STATE
 from django_fsm_log.decorators import fsm_log_description, fsm_log_by
 from organizations.models import Organization
 
+from communication_log.models import CommunicationLog
 from teams.models import ServiceLocations
 from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMobileStatusEnum, \
 	UjjwalaPreInspectionStatus, UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum
@@ -227,6 +230,101 @@ class UjjwalaV2Application(models.Model):
 	)
 	def restore_edit(self, *args, **kwargs):
 		pass
+
+	def submit(self, *args, **kwargs):
+		"""
+		Called when application is uploaded via api to change state to submitted
+		"""
+		self.event_submit_channel_whatsapp()
+
+	def event_submit_channel_whatsapp(self):
+		body_text = {
+			"countryCode": "+91",
+			"phoneNumber": self.contact_mobile,
+			"type": "Template",
+			"traits": {
+				"name": self.name,
+			},
+			# "callbackData": "some_callback_data",
+			"template": {
+				"name": "domestic_application_sub_8v",
+				"languageCode": "en_GB",
+				"headerValues": [
+					# "Alert",  #
+				],
+				"bodyValues": [
+					self.name,
+					self.id,
+					'Ujjwala Connection',
+					"21"
+				],
+				"buttonValues": {
+					"0": [
+						"connection-app/connection-application/{}/".format(self.id)
+					]
+				}
+			}
+		}
+		ujjwala_v2_application_content_type = ContentType.objects.get_for_model(UjjwalaV2Application)
+		data = track.client.post(
+			api_key=settings.INTERAKT_API_KEY,
+			path="/v1/public/message/",
+			body=body_text
+		).json()
+
+		if data['result']:
+			CommunicationLog.objects.create(
+				content_type=ujjwala_v2_application_content_type,
+				object_id=self.pk,
+				event="submit", channel="whatsapp",
+				message_id=data.get('id')
+			)
+
+
+	def event_connection_accepted_whatsapp(self):
+		pass
+		# sv_doc = self.documents.filter(type=ConnectionApplicationDocumentsEnum.SV).first()
+		#
+		# body_text = {
+		# 	"countryCode": "+91",
+		# 	"phoneNumber": self.mobile,
+		# 	"type": "Template",
+		# 	"traits": {
+		# 		"name": self.name,
+		# 	},
+		# 	# "callbackData": "some_callback_data",
+		# 	"template": {
+		# 		"name": "domestic_application_completed",
+		# 		"languageCode": "en_GB",
+		# 		"headerValues": [
+		# 			sv_doc.link
+		# 		],
+		# 		"bodyValues": [
+		# 			self.name,
+		# 			self.id,
+		# 			'{} {} {}'.format(
+		# 				self.get_application_type_display(),
+		# 				self.get_item_code_display(),
+		# 				self.get_connection_type_display()
+		# 			),
+		# 		],
+		# 	}
+		# }
+		#
+		# connection_application_content_type = ContentType.objects.get_for_model(ConnectionApplication)
+		# data = track.client.post(
+		# 	api_key=settings.INTERAKT_API_KEY,
+		# 	path="/v1/public/message/",
+		# 	body=body_text
+		# ).json()
+		#
+		# if data.get('result'):
+		# 	CommunicationLog.objects.create(
+		# 		content_type=connection_application_content_type,
+		# 		object_id=self.pk,
+		# 		event="completed", channel="whatsapp",
+		# 		message_id=data.get('id')
+		# 	)
 
 
 class FamilyMembers(models.Model):
