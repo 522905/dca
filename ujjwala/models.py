@@ -249,7 +249,7 @@ class UjjwalaV2Application(models.Model):
 		custom=dict(
 			short_description='Edit Application', admin=True
 		),
-		permission='ujjwala.can_change',
+		permission='ujjwala.change_ujjwalav2application',
 	)
 	def edit(self, *args, **kwargs):
 		self.last_execution_state = self.status
