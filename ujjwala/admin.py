@@ -36,6 +36,7 @@ class FamilyMembersInline(admin.TabularInline):
 	readonly_fields = ('download_links', )
 
 
+
 @admin.register(UjjwalaV2Application)
 class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdmin):
 	list_display = (
@@ -46,7 +47,7 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 		'referral_code',
 		'status'
 	)
-	search_fields = ('name', 'referral_code', 'contact_mobile')
+	search_fields = ('id', 'name', 'referral_code', 'contact_mobile')
 	ordering = ('id',)
 
 	list_filter = (

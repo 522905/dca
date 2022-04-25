@@ -50,23 +50,39 @@ class LegalDocumentsUpload(forms.Form):
 		return data
 
 
-class ConnectionStatusUpdate(forms.Form):
-	connection_approved = forms.ChoiceField(
-		label="Connection Approved ?",
-		required=True,
-		help_text="",
-		choices=[
-			('', '-- Select If Connection Approved --'),
-			('APPROVED', 'Approved'),
-			('REJECTED', 'Rejected')
-		]
-	)
+class ConnectionStatusApproved(forms.Form):
 	description = forms.CharField(
 		widget=forms.Textarea, label='Remarks', required=True
 	)
 
 	def clean(self):
 		data = self.cleaned_data
+		return data
+
+
+class ConnectionStatusRejected(forms.Form):
+	connection_rejected_reason = forms.ChoiceField(
+		label="Connection Rejected Reason ?",
+		required=True,
+		help_text="",
+		choices=[
+			('', '-- Select Connection Rejected Reason --'),
+			('OMC_DEDUP_FAILED', 'OMC Dedup Failed'),
+			('NIC_FAILED', 'NIC Failed'),
+			('OTHER', 'Other')
+		]
+	)
+
+	other_reason = forms.CharField(
+		widget=forms.TextInput, max_length=50, label='Other Reason', required=False
+	)
+
+	def clean(self):
+		data = self.cleaned_data
+		if data:
+			data = {'description': '{}: {}'.format(
+				data.get('connection_rejected_reason'), data.get('other_reason', '')
+			)}
 		return data
 
 

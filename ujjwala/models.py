@@ -14,8 +14,8 @@ from teams.models import ServiceLocations
 from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMobileStatusEnum, \
 	UjjwalaPreInspectionStatus, UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum
 from ujjwala.forms import EkycAcceptedOrRejected, \
-	LegalDocumentsCollected, LegalDocumentsUpload, ConnectionStatusUpdate, \
-	ConnectionRelease, PostInstallationUpload
+	LegalDocumentsCollected, LegalDocumentsUpload, \
+	ConnectionRelease, PostInstallationUpload, ConnectionStatusApproved, ConnectionStatusRejected
 
 
 class UjjwalaV2Application(models.Model):
@@ -47,13 +47,17 @@ class UjjwalaV2Application(models.Model):
 	sv = models.CharField(max_length=25, null=True, blank=True)
 	last_execution_state = models.CharField(max_length=50, null=True, blank=True)
 
-	# def submit(self, *args, **kwargs):
-	# 	"""
-	# 	Called when application is uploaded via api to change state to submitted
-	# 	"""
-	#
-	# # self.event_submit_channel_whatsapp()
-	# # self.send_reminder_for_installation_upload()
+	class Meta:
+		permissions = (
+			("can_edit_record_transition", "Can edit record transition"),
+			("can_do_ekyc", "Can do ekyc"),
+			("can_upload_legal_docs", "Can upload legal docs"),
+			("can_approve_connection", "Can approve connection"),
+			("can_reject_connection", "Can reject connection"),
+			("can_collect_legal_documents", "Can collect legal documents"),
+			("can_release_connection", "Can release connection"),
+			("can_upload_post_installation", "Can upload post installation"),
+		)
 
 	@fsm_log_description
 	@fsm_log_by
@@ -71,6 +75,7 @@ class UjjwalaV2Application(models.Model):
 			]
 		),
 		custom=dict(short_description='E-KYC Accepted Or Rejected', admin=True, form=EkycAcceptedOrRejected),
+		permission='ujjwala.can_do_ekyc'
 	)
 	def ekyc_accepted_or_rejected(self, *args, **kwargs):
 		pass
@@ -84,30 +89,59 @@ class UjjwalaV2Application(models.Model):
 		custom=dict(
 			short_description='Legal Documents Upload', admin=True, form=LegalDocumentsUpload
 		),
+		permission='ujjwala.can_upload_legal_docs',
 	)
 	def legal_documents_upload(self, *args, **kwargs):
 		self.consumer_id = kwargs.get('consumer_id')
+
+	# @fsm_log_description
+	# @fsm_log_by
+	# @transition(
+	# 	field=status,
+	# 	source=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD,
+	# 	target=GET_STATE(
+	# 		lambda self, **kwargs: \
+	# 				UjjwalaV2ApplicationStatus.CONNECTION_APPROVED \
+	# 						if kwargs.get(
+	# 					"connection_approved") == 'APPROVED' else UjjwalaV2ApplicationStatus.CONNECTION_REJECTED,
+	# 		states=[
+	# 			UjjwalaV2ApplicationStatus.CONNECTION_APPROVED,
+	# 			UjjwalaV2ApplicationStatus.CONNECTION_REJECTED
+	# 		]
+	# 	),
+	# 	custom=dict(
+	# 		short_description='Update Connection Status', admin=True, form=ConnectionStatusUpdate
+	# 	),
+	# )
+	# def update_connection_status(self, *args, **kwargs):
+	# 	pass
 
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
 		field=status,
 		source=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD,
-		target=GET_STATE(
-			lambda self, **kwargs: \
-					UjjwalaV2ApplicationStatus.CONNECTION_APPROVED \
-							if kwargs.get(
-						"connection_approved") == 'APPROVED' else UjjwalaV2ApplicationStatus.CONNECTION_REJECTED,
-			states=[
-				UjjwalaV2ApplicationStatus.CONNECTION_APPROVED,
-				UjjwalaV2ApplicationStatus.CONNECTION_REJECTED
-			]
-		),
+		target=UjjwalaV2ApplicationStatus.CONNECTION_APPROVED,
 		custom=dict(
-			short_description='Update Connection Status', admin=True, form=ConnectionStatusUpdate
+			short_description='Connection Status Approved', admin=True, form=ConnectionStatusApproved
 		),
+		permission='ujjwala.can_approve_connection',
 	)
-	def update_connection_status(self, *args, **kwargs):
+	def connection_status_approved(self, *args, **kwargs):
+		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD,
+		target=UjjwalaV2ApplicationStatus.CONNECTION_REJECTED,
+		custom=dict(
+			short_description='Connection Status Rejected', admin=True, form=ConnectionStatusRejected
+		),
+		permission='ujjwala.can_reject_connection',
+	)
+	def connection_status_rejected(self, *args, **kwargs):
 		pass
 
 	@fsm_log_description
@@ -117,6 +151,7 @@ class UjjwalaV2Application(models.Model):
 		source=UjjwalaV2ApplicationStatus.CONNECTION_APPROVED,
 		target=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_COLLECTED,
 		custom=dict(short_description='Legal Documents Collected', admin=True, form=LegalDocumentsCollected),
+		permission='ujjwala.can_collect_legal_documents',
 	)
 	def legal_documents_collected(self, *args, **kwargs):
 		pass
@@ -128,6 +163,7 @@ class UjjwalaV2Application(models.Model):
 		source=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_COLLECTED,
 		target=UjjwalaV2ApplicationStatus.CONNECTION_RELEASE,
 		custom=dict(short_description='Connection Release', admin=True, form=ConnectionRelease),
+		permission='can_release_connection',
 	)
 	def connection_release(self, *args, **kwargs):
 		pass
@@ -139,6 +175,7 @@ class UjjwalaV2Application(models.Model):
 		source=UjjwalaV2ApplicationStatus.CONNECTION_RELEASE,
 		target=UjjwalaV2ApplicationStatus.POST_INSTALLATION_UPLOAD,
 		custom=dict(short_description='Post Installation Upload', admin=True, form=PostInstallationUpload),
+		permission='ujjwala.can_upload_post_installation',
 	)
 	def post_installation_upload(self, *args, **kwargs):
 		pass
@@ -212,6 +249,7 @@ class UjjwalaV2Application(models.Model):
 		custom=dict(
 			short_description='Edit Application', admin=True
 		),
+		permission='ujjwala.can_change',
 	)
 	def edit(self, *args, **kwargs):
 		self.last_execution_state = self.status
