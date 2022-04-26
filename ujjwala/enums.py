@@ -43,17 +43,18 @@ class ResidentialStatusEnum(models.TextChoices):
 class UjjwalaV2ApplicationStatus(models.TextChoices):
 	DOCUMENTS_UPLOADED = 'DOCUMENTS_UPLOADED', 'Documents Uploaded'
 	DOCUMENTS_REUPLOAD = 'DOCUMENTS_REUPLOAD', 'Documents Reupload'
-	EKYC_INITIATED = 'EKYC_INITIATED', 'E-KYC Initiated'
+	# EKYC_INITIATED = 'EKYC_INITIATED', 'E-KYC Initiated'
 	EKYC_REJECTED = 'EKYC_REJECTED', 'E-KYC Rejected'
 	EKYC_ACCEPTED = 'EKYC_ACCEPTED', 'E-KYC Accepted'
 	LEGAL_DOCUMENTS_UPLOAD = 'LEGAL_DOCUMENTS_UPLOAD', 'Legal Documents Upload'
 	CONNECTION_APPROVED = 'CONNECTION_APPROVED', 'Connection Approved'
 	CONNECTION_REJECTED = 'CONNECTION_REJECTED', 'Connection Rejected'
 	LEGAL_DOCUMENTS_COLLECTED = 'LEGAL_DOCUMENTS_COLLECTED', 'Legal Documents Collected'
-	CONNECTION_RELEASE = 'CONNECTION_RELEASED', 'Connection Released'
+	CONNECTION_RELEASED = 'CONNECTION_RELEASED', 'Connection Released'
 	POST_INSTALLATION_UPLOAD = 'POST_INSTALLATION_UPLOAD', 'Post Installation Upload'
 	COMPLETED = 'COMPLETED', 'Completed'
 	EDIT_APPLICATION = 'EDIT_APPLICATION', 'Edit Application'
+	APPLICATION_REJECTED = 'APPLICATION_REJECTED', 'Application Rejected'
 
 
 class UjjwalaPreInspectionStatus(models.TextChoices):
@@ -61,3 +62,9 @@ class UjjwalaPreInspectionStatus(models.TextChoices):
 	SUBMITTED = 'SUBMITTED', 'Submitted',
 	ACCEPTED = 'ACCEPTED', 'Accepted',
 	REUPLOAD = 'REUPLOAD', 'Reupload'
+
+
+class RejectionTypeEnum(models.TextChoices):
+	EKYC = 'EKYC', 'Ekyc'
+	APPLICATION = 'APPLICATION', 'Application'
+	CONNECTION = 'CONNECTION', 'Connection'

@@ -12,19 +12,29 @@ from organizations.models import Organization
 from communication_log.models import CommunicationLog
 from teams.models import ServiceLocations
 from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMobileStatusEnum, \
-	UjjwalaPreInspectionStatus, UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum
+	UjjwalaPreInspectionStatus, UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, \
+	RejectionTypeEnum
 from ujjwala.forms import EkycAcceptedOrRejected, \
 	LegalDocumentsCollected, LegalDocumentsUpload, \
-	ConnectionRelease, PostInstallationUpload, ConnectionStatusApproved, ConnectionStatusRejected
+	ConnectionRelease, PostInstallationUpload, ConnectionStatusApproved, ConnectionStatusRejected, ApplicationRejected, \
+	EkycAccepted
 
 
 class UjjwalaV2Application(models.Model):
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
+	rejection_type = models.CharField(max_length=25, choices=RejectionTypeEnum.choices, null=True)
 	marital_status = models.CharField(max_length=25, choices=MaritalStatusEnum.choices)
 	residential_status = models.CharField(max_length=25, choices=ResidentialStatusEnum.choices)
 	name = models.CharField(max_length=50)
-	address = models.TextField()
+	address = models.TextField(null=True, blank=True)
+	address_json = models.JSONField(null=True, blank=True)
+	# house_no = models.CharField(max_length=16)
+	# floor = models.CharField(max_length=8)
+	# street_no = models.CharField(max_length=24)
+	# mohalla = models.CharField(max_length=50)
+	# pincode = models.CharField(max_length=8)
+	# landmark = models.CharField(max_length=48)
 	contact_mobile = models.CharField(max_length=10)
 	consumer_id = models.CharField(max_length=16, null=True, blank=True)
 	uid_linked_mobile = models.CharField(max_length=10, null=True, blank=True)
@@ -57,28 +67,59 @@ class UjjwalaV2Application(models.Model):
 			("can_collect_legal_documents", "Can collect legal documents"),
 			("can_release_connection", "Can release connection"),
 			("can_upload_post_installation", "Can upload post installation"),
+			("can_reject_application", "Can reject application")
 		)
+
+	# @fsm_log_description
+	# @fsm_log_by
+	# @transition(
+	# 	field=status,
+	# 	source=UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
+	# 	target=GET_STATE(
+	# 		lambda self, **kwargs: \
+	# 				UjjwalaV2ApplicationStatus.EKYC_ACCEPTED \
+	# 						if kwargs.get(
+	# 					"ekyc_accepted") == 'ACCEPTED' else UjjwalaV2ApplicationStatus.EKYC_REJECTED,
+	# 		states=[
+	# 			UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
+	# 			UjjwalaV2ApplicationStatus.EKYC_REJECTED
+	# 		]
+	# 	),
+	# 	custom=dict(short_description='E-KYC Accepted Or Rejected', admin=True, form=EkycAcceptedOrRejected),
+	# 	permission='ujjwala.can_do_ekyc'
+	# )
+	# def ekyc_accepted_or_rejected(self, *args, **kwargs):
+	# 	pass
 
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
 		field=status,
 		source=UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
-		target=GET_STATE(
-			lambda self, **kwargs: \
-					UjjwalaV2ApplicationStatus.EKYC_ACCEPTED \
-							if kwargs.get(
-						"ekyc_accepted") == 'ACCEPTED' else UjjwalaV2ApplicationStatus.EKYC_REJECTED,
-			states=[
-				UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
-				UjjwalaV2ApplicationStatus.EKYC_REJECTED
-			]
-		),
-		custom=dict(short_description='E-KYC Accepted Or Rejected', admin=True, form=EkycAcceptedOrRejected),
+		target=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
+		custom=dict(short_description='E-KYC Accepted', admin=True, form=EkycAccepted),
 		permission='ujjwala.can_do_ekyc'
 	)
 	def ekyc_accepted_or_rejected(self, *args, **kwargs):
 		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=[
+			UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
+			UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD,
+			UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD,
+			UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
+		],
+		target=UjjwalaV2ApplicationStatus.APPLICATION_REJECTED,
+		custom=dict(short_description='Reject Application', admin=True, form=ApplicationRejected),
+		permission='ujjwala.can_reject_application'
+	)
+	def application_rejected(self, *args, **kwargs):
+		pass
+
 
 	@fsm_log_description
 	@fsm_log_by
@@ -130,19 +171,6 @@ class UjjwalaV2Application(models.Model):
 	def connection_status_approved(self, *args, **kwargs):
 		pass
 
-	@fsm_log_description
-	@fsm_log_by
-	@transition(
-		field=status,
-		source=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD,
-		target=UjjwalaV2ApplicationStatus.CONNECTION_REJECTED,
-		custom=dict(
-			short_description='Connection Status Rejected', admin=True, form=ConnectionStatusRejected
-		),
-		permission='ujjwala.can_reject_connection',
-	)
-	def connection_status_rejected(self, *args, **kwargs):
-		pass
 
 	@fsm_log_description
 	@fsm_log_by
@@ -161,7 +189,7 @@ class UjjwalaV2Application(models.Model):
 	@transition(
 		field=status,
 		source=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_COLLECTED,
-		target=UjjwalaV2ApplicationStatus.CONNECTION_RELEASE,
+		target=UjjwalaV2ApplicationStatus.CONNECTION_RELEASED,
 		custom=dict(short_description='Connection Release', admin=True, form=ConnectionRelease),
 		permission='can_release_connection',
 	)
@@ -172,7 +200,7 @@ class UjjwalaV2Application(models.Model):
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=UjjwalaV2ApplicationStatus.CONNECTION_RELEASE,
+		source=UjjwalaV2ApplicationStatus.CONNECTION_RELEASED,
 		target=UjjwalaV2ApplicationStatus.POST_INSTALLATION_UPLOAD,
 		custom=dict(short_description='Post Installation Upload', admin=True, form=PostInstallationUpload),
 		permission='ujjwala.can_upload_post_installation',
@@ -318,51 +346,50 @@ class UjjwalaV2Application(models.Model):
 				message_id=data.get('id')
 			)
 
-
 	def event_connection_accepted_whatsapp(self):
 		pass
-		# sv_doc = self.documents.filter(type=ConnectionApplicationDocumentsEnum.SV).first()
-		#
-		# body_text = {
-		# 	"countryCode": "+91",
-		# 	"phoneNumber": self.mobile,
-		# 	"type": "Template",
-		# 	"traits": {
-		# 		"name": self.name,
-		# 	},
-		# 	# "callbackData": "some_callback_data",
-		# 	"template": {
-		# 		"name": "domestic_application_completed",
-		# 		"languageCode": "en_GB",
-		# 		"headerValues": [
-		# 			sv_doc.link
-		# 		],
-		# 		"bodyValues": [
-		# 			self.name,
-		# 			self.id,
-		# 			'{} {} {}'.format(
-		# 				self.get_application_type_display(),
-		# 				self.get_item_code_display(),
-		# 				self.get_connection_type_display()
-		# 			),
-		# 		],
-		# 	}
-		# }
-		#
-		# connection_application_content_type = ContentType.objects.get_for_model(ConnectionApplication)
-		# data = track.client.post(
-		# 	api_key=settings.INTERAKT_API_KEY,
-		# 	path="/v1/public/message/",
-		# 	body=body_text
-		# ).json()
-		#
-		# if data.get('result'):
-		# 	CommunicationLog.objects.create(
-		# 		content_type=connection_application_content_type,
-		# 		object_id=self.pk,
-		# 		event="completed", channel="whatsapp",
-		# 		message_id=data.get('id')
-		# 	)
+	# sv_doc = self.documents.filter(type=ConnectionApplicationDocumentsEnum.SV).first()
+	#
+	# body_text = {
+	# 	"countryCode": "+91",
+	# 	"phoneNumber": self.mobile,
+	# 	"type": "Template",
+	# 	"traits": {
+	# 		"name": self.name,
+	# 	},
+	# 	# "callbackData": "some_callback_data",
+	# 	"template": {
+	# 		"name": "domestic_application_completed",
+	# 		"languageCode": "en_GB",
+	# 		"headerValues": [
+	# 			sv_doc.link
+	# 		],
+	# 		"bodyValues": [
+	# 			self.name,
+	# 			self.id,
+	# 			'{} {} {}'.format(
+	# 				self.get_application_type_display(),
+	# 				self.get_item_code_display(),
+	# 				self.get_connection_type_display()
+	# 			),
+	# 		],
+	# 	}
+	# }
+	#
+	# connection_application_content_type = ContentType.objects.get_for_model(ConnectionApplication)
+	# data = track.client.post(
+	# 	api_key=settings.INTERAKT_API_KEY,
+	# 	path="/v1/public/message/",
+	# 	body=body_text
+	# ).json()
+	#
+	# if data.get('result'):
+	# 	CommunicationLog.objects.create(
+	# 		content_type=connection_application_content_type,
+	# 		object_id=self.pk,
+	# 		event="completed", channel="whatsapp",
+	# 		message_id=data.get('id')
+	# 	)
 
 
 class FamilyMembers(models.Model):
@@ -389,7 +416,7 @@ class FamilyMembers(models.Model):
 		<a href="{}" target="blank">View Ori.</a> UID Front <a href="{}{}" target="blank">Download Comp.</a><br><br>
 		<a href="{}" target="blank">View Ori.</a> UID Back <a href="{}{}" target="blank">Download Comp.</a>
 		'''.format(self.uid_front_link, settings.THUMBOR_URL, self.uid_front_link,
-		           self.uid_back_link, settings.THUMBOR_URL, self.uid_back_link,)
+		           self.uid_back_link, settings.THUMBOR_URL, self.uid_back_link, )
 		return mark_safe(html)
 
 

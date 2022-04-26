@@ -7,16 +7,37 @@ from ujjwala.models import UjjwalaApplicationDocumentsEnum
 
 
 class EkycAcceptedOrRejected(forms.Form):
-	ekyc_accepted = forms.ChoiceField(
-		label="Ekyc Status Update ?",
-		required=True,
-		help_text="",
-		choices=[
-			('', '-- Select If Ekyc Accepted Or Rejected --'),
-			('ACCEPTED', 'Accepted'),
-			('REJECTED', 'Rejected')
-		]
+	# ekyc_accepted = forms.ChoiceField(
+	# 	label="Ekyc Status Update ?",
+	# 	required=True,
+	# 	help_text="",
+	# 	choices=[
+	# 		('', '-- Select If Ekyc Accepted Or Rejected --'),
+	# 		('ACCEPTED', 'Accepted'),
+	# 		('REJECTED', 'Rejected')
+	# 	]
+	# )
+
+	description = forms.CharField(
+		widget=forms.Textarea, label='Remarks', required=True
 	)
+
+	def clean(self):
+		data = self.cleaned_data
+		return data
+
+
+class EkycAccepted(forms.Form):
+	# ekyc_accepted = forms.ChoiceField(
+	# 	label="Ekyc Status Update ?",
+	# 	required=True,
+	# 	help_text="",
+	# 	choices=[
+	# 		('', '-- Select If Ekyc Accepted Or Rejected --'),
+	# 		('ACCEPTED', 'Accepted'),
+	# 		('REJECTED', 'Rejected')
+	# 	]
+	# )
 
 	description = forms.CharField(
 		widget=forms.Textarea, label='Remarks', required=True
@@ -57,6 +78,31 @@ class ConnectionStatusApproved(forms.Form):
 
 	def clean(self):
 		data = self.cleaned_data
+		return data
+
+
+class ApplicationRejected(forms.Form):
+	rejected_reason = forms.ChoiceField(
+		label="Rejected Reason",
+		required=True,
+		help_text="Please select rejected reason",
+		choices=[
+			('', '-- Select Rejected Reason --'),
+			('EKYC', 'Ekyc'),
+			('CONNECTION_ALREADY_EXIST', 'Connection Already Exist'),
+			('NIC_FAILED', 'NIC Failed'),
+		]
+	)
+	description = forms.CharField(
+		widget=forms.Textarea, label='Remarks', required=True
+	)
+
+	def clean(self):
+		data = self.cleaned_data
+		if data:
+			data = {'description': '{}: {}'.format(
+				data.get('rejected_reason'), data.get('description', '')
+			)}
 		return data
 
 

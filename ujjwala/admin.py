@@ -6,19 +6,17 @@ import magic
 import requests
 from django.conf import settings
 from django.contrib import admin
-
-from django.contrib import admin
 from django.http import HttpResponse
 from django.template import loader
 from django.utils.safestring import mark_safe
+from django_admin_listfilter_dropdown.filters import DropdownFilter
 from django_fsm_log.admin import StateLogInline
 from import_export.admin import ExportActionMixin
+from rangefilter.filters import DateRangeFilter
 
 from fsm_admin2_custom.admin import FSMTransitionCustomMixin
 from .enums import ResidentialStatusEnum, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, MaritalStatusEnum
 from .models import UjjwalaV2Application, FamilyMembers, UjjwalaApplicationDocuments, UjjwalaV2ApplicationStatus
-from rangefilter.filters import DateRangeFilter
-from django_admin_listfilter_dropdown.filters import DropdownFilter
 
 
 class UjjwalaApplicationDocumentsInline(admin.TabularInline):
@@ -36,7 +34,6 @@ class FamilyMembersInline(admin.TabularInline):
 	readonly_fields = ('download_links', )
 
 
-
 @admin.register(UjjwalaV2Application)
 class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdmin):
 	list_display = (
@@ -47,6 +44,7 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 		'referral_code',
 		'status'
 	)
+
 	search_fields = ('id', 'name', 'referral_code', 'contact_mobile')
 	ordering = ('id',)
 
@@ -63,7 +61,8 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 	fsm_fields = ['status', 'pre_inspection_status']
 
 	def has_change_permission(self, request, obj=None):
-		if not obj: return True
+		if not obj:
+			return True
 		return obj.status == UjjwalaV2ApplicationStatus.EDIT_APPLICATION
 
 	def get_readonly_fields(self, request, obj=None):
@@ -89,6 +88,8 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 			).first().link
 
 			self_doc = obj.family_members.filter(relation=FamilyMemberRelationEnum.SELF).first()
+
+			relationship_name = ''
 
 			if obj.residential_status == ResidentialStatusEnum.LIVING_WITH_FAMILY:
 				if obj.marital_status == MaritalStatusEnum.MARRIED:
