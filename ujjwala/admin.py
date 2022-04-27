@@ -124,6 +124,9 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 				occupancy_template_html = "ujjwala/forms/family_occupancy_form.html"
 				occupancy_file_name = "family_occupancy"
 
+			if obj.version == 'V3':
+				obj.address = ' '.join([obj.address_json.get(r, '') for r in obj.address_json])
+
 			occupancy_form_html_template = loader.get_template(occupancy_template_html)
 			occupancy_form_html = occupancy_form_html_template.render({
 				'obj': obj,
