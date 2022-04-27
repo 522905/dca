@@ -43,10 +43,11 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 		'address_json',
 		'contact_mobile',
 		'referral_code',
+		'sdms_dedup',
 		'status'
 	)
 
-	search_fields = ('id', 'name', 'referral_code', 'contact_mobile')
+	search_fields = ('id', 'name', 'referral_code', 'contact_mobile', 'sdms_dedup')
 	ordering = ('id',)
 
 	list_filter = (
@@ -160,8 +161,8 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 			uid_front_doc_file = requests.get("{}{}".format(settings.THUMBOR_URL, family_member.uid_front_link))
 			uid_back_doc_file = requests.get("{}{}".format(settings.THUMBOR_URL, family_member.uid_back_link))
 
-			uid_front_doc_file_bytes = io.BytesIO(doc_file.content)
-			uid_back_doc_file_bytes = io.BytesIO(doc_file.content)
+			uid_front_doc_file_bytes = io.BytesIO(uid_front_doc_file.content)
+			uid_back_doc_file_bytes = io.BytesIO(uid_back_doc_file.content)
 
 			uid_front_descriptor = magic.detect_from_content(uid_front_doc_file_bytes.read(2048))
 			uid_back_descriptor = magic.detect_from_content(uid_back_doc_file_bytes.read(2048))

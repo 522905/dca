@@ -43,6 +43,7 @@ class UjjwalaV2Application(models.Model):
 	service_team = models.ForeignKey(Organization, on_delete=models.CASCADE, null=True, blank=True)
 	service_location = models.ForeignKey(ServiceLocations, on_delete=models.CASCADE, null=True, blank=True)
 	version = models.CharField(max_length=2, default='V1')
+	sdms_dedup = models.BooleanField(default=False)
 
 	status = FSMField(
 		default=UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
@@ -400,6 +401,7 @@ class FamilyMembers(models.Model):
 	uid_no = models.CharField(max_length=12, null=True, blank=True)
 	uid_front_link = models.URLField()
 	uid_back_link = models.URLField()
+	uid_check_result = models.JSONField(blank=True, null=True)
 
 	def get_gender(self):
 		if self.relation in (
