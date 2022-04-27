@@ -40,6 +40,7 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 		'id',
 		'name',
 		'address',
+		'address_json',
 		'contact_mobile',
 		'referral_code',
 		'status'
@@ -82,7 +83,7 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 
 	def download_legal_documents_pdf(self, obj):
 		attachments = []
-		if obj.version == 'V2':
+		if obj.version in ('V2', 'V3'):
 			customer_signature_file = obj.documents.filter(
 				type=UjjwalaApplicationDocumentsEnum.CUSTOMER_SIGNATURE
 			).first().link
