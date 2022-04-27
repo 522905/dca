@@ -5,7 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from . import models
-from .enums import UjjwalaV2ApplicationStatus
+from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum
 from .forms import ApplicationRejected
 from .models import UjjwalaV2Application, FamilyMembers
 from .serializers import UjjwalaV2ApplicationSerializer
@@ -40,7 +40,8 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=False, url_path='get_aadhar_list')
     def get_aadhar_list(self, request, *args, **kwargs):
         aadhar_list = UjjwalaV2Application.objects.filter(
-            version='V3', status=UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED, sdms_dedup=False
+            version='V3', status=UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
+            robo_sdms_dedup=RoboSdmsDedeupStatusEnum.NOT_PROCESSED
         ).order_by('-created_on')
 
         return JsonResponse([
@@ -57,12 +58,14 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     def update_result(self, request, *args, **kwargs):
         record_valid = True
         invalid_result = {}
+        invalid_result_relation = ''
+        family_member_obj = {}
 
         for member in request.data['family_members']:
             try:
-                member_obj = FamilyMembers.objects.get(pk=member.get('id'))
-                member_obj.uid_check_result = member['result']
-                member_obj.save()
+                family_member_obj = FamilyMembers.objects.get(pk=member.get('id'))
+                family_member_obj.uid_check_result = member['result']
+                family_member_obj.save()
 
                 if not member['result'].get('distributor_name', ''):
                     continue
@@ -70,6 +73,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                     if 'arun' not in member['result'].get('distributor_name').lower():
                         record_valid = False
                         invalid_result = member['result']
+                        invalid_result_relation = family_member_obj.relation
             except FamilyMembers.DoesNotExist:
                 pass
 
@@ -79,17 +83,19 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             try:
                 form = ApplicationRejected(data={
                     'rejected_reason': 'CONNECTION_ALREADY_EXIST',
-                    'description': "{} {} {}".format(
+                    'description': "{} {} {} {}".format(
+                        invalid_result_relation,
                         invalid_result['distributor_name'], invalid_result['consumer_id'],
                         invalid_result['contact_address']
                     )})
                 form.is_valid()
+                member_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE
                 member_obj.application_rejected(**form.cleaned_data)
             except Exception as e:
                 print(e)
                 pass
         else:
-            member_obj.sdms_dedup = True
+            member_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE
 
         member_obj.save()
 

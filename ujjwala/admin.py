@@ -43,18 +43,19 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 		'address_json',
 		'contact_mobile',
 		'referral_code',
-		'sdms_dedup',
+		'robo_sdms_dedup',
 		'status'
 	)
 
-	search_fields = ('id', 'name', 'referral_code', 'contact_mobile', 'sdms_dedup')
+	search_fields = ('id', 'name', 'referral_code', 'contact_mobile', 'robo_sdms_dedup')
 	ordering = ('id',)
 
 	list_filter = (
 		('created_on', DateRangeFilter),
 		('updated_on', DateRangeFilter),
 		('status', DropdownFilter),
-		('version', DropdownFilter)
+		('version', DropdownFilter),
+		('robo_sdms_dedup', DropdownFilter)
 	)
 
 	inlines = [

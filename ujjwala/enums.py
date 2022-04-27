@@ -40,6 +40,12 @@ class ResidentialStatusEnum(models.TextChoices):
 	LIVING_WITH_FAMILY = 'LIVING_WITH_FAMILY', 'Living With Family'
 
 
+class RoboSdmsDedeupStatusEnum(models.TextChoices):
+	NOT_PROCESSED = 'NOT_PROCESSED', 'Not Processed'
+	PROCESSED_AND_UNIQUE = 'PROCESSED_AND_UNIQUE', 'Processed and Unique'
+	PROCESSED_AND_DUPLICATE = 'PROCESSED_AND_DUPLICATE', 'Processed and Duplicate'
+
+
 class UjjwalaV2ApplicationStatus(models.TextChoices):
 	DOCUMENTS_UPLOADED = 'DOCUMENTS_UPLOADED', 'Documents Uploaded'
 	DOCUMENTS_REUPLOAD = 'DOCUMENTS_REUPLOAD', 'Documents Reupload'

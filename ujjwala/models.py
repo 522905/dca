@@ -13,7 +13,7 @@ from communication_log.models import CommunicationLog
 from teams.models import ServiceLocations
 from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMobileStatusEnum, \
 	UjjwalaPreInspectionStatus, UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, \
-	RejectionTypeEnum
+	RejectionTypeEnum, RoboSdmsDedeupStatusEnum
 from ujjwala.forms import EkycAcceptedOrRejected, \
 	LegalDocumentsCollected, LegalDocumentsUpload, \
 	ConnectionRelease, PostInstallationUpload, ConnectionStatusApproved, ConnectionStatusRejected, ApplicationRejected, \
@@ -43,7 +43,9 @@ class UjjwalaV2Application(models.Model):
 	service_team = models.ForeignKey(Organization, on_delete=models.CASCADE, null=True, blank=True)
 	service_location = models.ForeignKey(ServiceLocations, on_delete=models.CASCADE, null=True, blank=True)
 	version = models.CharField(max_length=2, default='V1')
-	sdms_dedup = models.BooleanField(default=False)
+	robo_sdms_dedup = models.CharField(
+		max_length=25, choices=RoboSdmsDedeupStatusEnum.choices, default=RoboSdmsDedeupStatusEnum.NOT_PROCESSED
+	)
 
 	status = FSMField(
 		default=UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
