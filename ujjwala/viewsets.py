@@ -67,17 +67,26 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 family_member_obj.uid_check_result = member['result']
                 family_member_obj.save()
 
+                if request.data.get('alert', ''):
+                    if 'SBL-BPR-00131' in request.data.get('alert'):
+                        continue
+                    else:
+                        application_obj = UjjwalaV2Application.objects.get(pk=request.data.get('id'))
+                        application_obj.status = UjjwalaV2ApplicationStatus.PROCESS_MANUAL
+                        application_obj.save()
+                        return HttpResponse('OK')
+
                 if not member['result'].get('distributor_name', ''):
                     continue
                 else:
-                    if 'arun' not in member['result'].get('distributor_name').lower():
+                    if 'arun indane' not in member['result'].get('distributor_name').lower():
                         record_valid = False
                         invalid_result = member['result']
                         invalid_result_relation = family_member_obj.relation
             except FamilyMembers.DoesNotExist:
                 pass
 
-        member_obj = UjjwalaV2Application.objects.get(pk=request.data.get('id'))
+        application_obj = UjjwalaV2Application.objects.get(pk=request.data.get('id'))
 
         if not record_valid:
             try:
@@ -89,17 +98,15 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                         invalid_result['contact_address']
                     )})
                 form.is_valid()
-                member_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE
-                member_obj.application_rejected(**form.cleaned_data)
+                application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE
+                application_obj.application_rejected(**form.cleaned_data)
             except Exception as e:
                 print(e)
                 pass
         else:
-            member_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE
+            application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE
 
-        member_obj.save()
-
-
+        application_obj.save()
         return HttpResponse('OK')
 
 

@@ -44,7 +44,8 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 		'contact_mobile',
 		'referral_code',
 		'robo_sdms_dedup',
-		'status'
+		'status',
+		'consumer_id'
 	)
 
 	search_fields = ('id', 'name', 'referral_code', 'contact_mobile', 'robo_sdms_dedup')

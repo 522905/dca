@@ -44,6 +44,7 @@ class RoboSdmsDedeupStatusEnum(models.TextChoices):
 	NOT_PROCESSED = 'NOT_PROCESSED', 'Not Processed'
 	PROCESSED_AND_UNIQUE = 'PROCESSED_AND_UNIQUE', 'Processed and Unique'
 	PROCESSED_AND_DUPLICATE = 'PROCESSED_AND_DUPLICATE', 'Processed and Duplicate'
+	PROCESS_MANUAL = 'PROCESS_MANUAL', 'Process Manual'
 
 
 class UjjwalaV2ApplicationStatus(models.TextChoices):
