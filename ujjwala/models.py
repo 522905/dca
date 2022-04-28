@@ -404,6 +404,10 @@ class FamilyMembers(models.Model):
 	uid_front_link = models.URLField()
 	uid_back_link = models.URLField()
 	uid_check_result = models.JSONField(blank=True, null=True)
+	uid_front_compressed = models.BooleanField(default=False)
+	uid_back_compressed = models.BooleanField(default=False)
+	uid_front_file_size = models.CharField(max_length=16, default='0')
+	uid_back_file_size = models.CharField(max_length=16, default='0')
 
 	def get_gender(self):
 		if self.relation in (
@@ -428,6 +432,8 @@ class UjjwalaApplicationDocuments(models.Model):
 	parent = models.ForeignKey(UjjwalaV2Application, on_delete=models.CASCADE, related_name='documents', null=True)
 	type = models.CharField(max_length=25, choices=UjjwalaApplicationDocumentsEnum.choices)
 	link = models.URLField()
+	compressed = models.BooleanField(default=False)
+	file_size = models.CharField(max_length=16, default='0')
 
 	def download_links(self):
 		html = '''
