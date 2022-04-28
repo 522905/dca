@@ -30,11 +30,11 @@ def upload_compressed_file_to_tus(file_url):
     file = requests.get("{}".format(file_url))
     print("File To Be Compressed: {} Original Size: {}".format(file_url, len(file.content)))
     if len(file.content) <= 512000:
-        return False, file_url, str(len(file.content)/1024)
+        return False, file_url, str(round(len(file.content)/1024))
 
     response = requests.get("{}{}".format(settings.THUMBOR_URL_INTERNAL, file_url))
     if response.status_code != 200:
-        return False, '', '0'
+        return False, '', '-2'
 
     doc_file_bytes = io.BytesIO(response.content)
     descriptor = magic.detect_from_content(doc_file_bytes.read(2048))
@@ -43,8 +43,8 @@ def upload_compressed_file_to_tus(file_url):
     file_path = "/tmp/{}.{}".format(str(uuid.uuid4()), file_extension)
     file = open(file_path, "wb")
     file.write(response.content)
-    file_size = str(len(response.content)/1024)
-    print("Compressed Size: {}".format(len(response.content)))
+    file_size = str(round(len(response.content)/1024))
+    print("Compressed Size: {}".format(round(len(response.content))))
     file.close()
     try:
         uploader = tus_client.uploader(
@@ -60,7 +60,7 @@ def upload_compressed_file_to_tus(file_url):
         return True, uploader.url, file_size
     except Exception as e:
         print(e)
-        return False, '', '0'
+        return False, '', '-1'
 
 
 class Command(BaseCommand):
