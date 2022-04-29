@@ -40,9 +40,9 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=False, url_path='get_aadhar_list')
     def get_aadhar_list(self, request, *args, **kwargs):
         aadhar_list = UjjwalaV2Application.objects.filter(
-            version='V3', status=UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
+            status__in=(UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED, 'EKYC_ACCEPTED', 'LEGAL_DOCUMENTS_UPLOAD'),
             robo_sdms_dedup=RoboSdmsDedeupStatusEnum.NOT_PROCESSED
-        ).order_by('-created_on')
+        ).exclude(version='V1').order_by('-id')
 
         return JsonResponse([
             {
@@ -51,7 +51,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                     'id': member.id,
                     'uid': member.uid_no
                 } for member in record.family_members.all()]
-            } for record in aadhar_list[:49]
+            } for record in aadhar_list
         ], safe=False)
 
     @action(methods=['post'], detail=False, url_path='update_result')
@@ -99,7 +99,8 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                     )})
                 form.is_valid()
                 application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE
-                application_obj.application_rejected(**form.cleaned_data)
+                if application_obj.status == 'DOCUMENTS_UPLOADED':
+                    application_obj.application_rejected(**form.cleaned_data)
             except Exception as e:
                 print(e)
                 pass
