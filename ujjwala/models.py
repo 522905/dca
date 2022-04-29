@@ -11,6 +11,7 @@ from organizations.models import Organization
 
 from communication_log.models import CommunicationLog
 from teams.models import ServiceLocations
+from ujjwala.communication_models import UjjwalaWhatsappCommunication
 from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMobileStatusEnum, \
 	UjjwalaPreInspectionStatus, UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, \
 	RejectionTypeEnum, RoboSdmsDedeupStatusEnum
@@ -20,7 +21,7 @@ from ujjwala.forms import EkycAcceptedOrRejected, \
 	EkycAccepted
 
 
-class UjjwalaV2Application(models.Model):
+class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
 	rejection_type = models.CharField(max_length=25, choices=RejectionTypeEnum.choices, null=True)
@@ -73,27 +74,6 @@ class UjjwalaV2Application(models.Model):
 			("can_reject_application", "Can reject application")
 		)
 
-	# @fsm_log_description
-	# @fsm_log_by
-	# @transition(
-	# 	field=status,
-	# 	source=UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
-	# 	target=GET_STATE(
-	# 		lambda self, **kwargs: \
-	# 				UjjwalaV2ApplicationStatus.EKYC_ACCEPTED \
-	# 						if kwargs.get(
-	# 					"ekyc_accepted") == 'ACCEPTED' else UjjwalaV2ApplicationStatus.EKYC_REJECTED,
-	# 		states=[
-	# 			UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
-	# 			UjjwalaV2ApplicationStatus.EKYC_REJECTED
-	# 		]
-	# 	),
-	# 	custom=dict(short_description='E-KYC Accepted Or Rejected', admin=True, form=EkycAcceptedOrRejected),
-	# 	permission='ujjwala.can_do_ekyc'
-	# )
-	# def ekyc_accepted_or_rejected(self, *args, **kwargs):
-	# 	pass
-
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
@@ -138,27 +118,6 @@ class UjjwalaV2Application(models.Model):
 	def legal_documents_upload(self, *args, **kwargs):
 		self.consumer_id = kwargs.get('consumer_id')
 
-	# @fsm_log_description
-	# @fsm_log_by
-	# @transition(
-	# 	field=status,
-	# 	source=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD,
-	# 	target=GET_STATE(
-	# 		lambda self, **kwargs: \
-	# 				UjjwalaV2ApplicationStatus.CONNECTION_APPROVED \
-	# 						if kwargs.get(
-	# 					"connection_approved") == 'APPROVED' else UjjwalaV2ApplicationStatus.CONNECTION_REJECTED,
-	# 		states=[
-	# 			UjjwalaV2ApplicationStatus.CONNECTION_APPROVED,
-	# 			UjjwalaV2ApplicationStatus.CONNECTION_REJECTED
-	# 		]
-	# 	),
-	# 	custom=dict(
-	# 		short_description='Update Connection Status', admin=True, form=ConnectionStatusUpdate
-	# 	),
-	# )
-	# def update_connection_status(self, *args, **kwargs):
-	# 	pass
 
 	@fsm_log_description
 	@fsm_log_by
@@ -306,93 +265,9 @@ class UjjwalaV2Application(models.Model):
 		"""
 		self.event_submit_channel_whatsapp()
 
-	def event_submit_channel_whatsapp(self):
-		body_text = {
-			"countryCode": "+91",
-			"phoneNumber": self.contact_mobile,
-			"type": "Template",
-			"traits": {
-				"name": self.name,
-			},
-			# "callbackData": "some_callback_data",
-			"template": {
-				"name": "domestic_application_sub_8v",
-				"languageCode": "en_GB",
-				"headerValues": [
-					# "Alert",  #
-				],
-				"bodyValues": [
-					self.name,
-					self.id,
-					'Ujjwala Connection',
-					"21"
-				],
-				"buttonValues": {
-					"0": [
-						"connection-app/connection-application/{}/".format(self.id)
-					]
-				}
-			}
-		}
-		ujjwala_v2_application_content_type = ContentType.objects.get_for_model(UjjwalaV2Application)
-		data = track.client.post(
-			api_key=settings.INTERAKT_API_KEY,
-			path="/v1/public/message/",
-			body=body_text
-		).json()
-
-		if data['result']:
-			CommunicationLog.objects.create(
-				content_type=ujjwala_v2_application_content_type,
-				object_id=self.pk,
-				event="submit", channel="whatsapp",
-				message_id=data.get('id')
-			)
-
 	def event_connection_accepted_whatsapp(self):
 		pass
-	# sv_doc = self.documents.filter(type=ConnectionApplicationDocumentsEnum.SV).first()
-	#
-	# body_text = {
-	# 	"countryCode": "+91",
-	# 	"phoneNumber": self.mobile,
-	# 	"type": "Template",
-	# 	"traits": {
-	# 		"name": self.name,
-	# 	},
-	# 	# "callbackData": "some_callback_data",
-	# 	"template": {
-	# 		"name": "domestic_application_completed",
-	# 		"languageCode": "en_GB",
-	# 		"headerValues": [
-	# 			sv_doc.link
-	# 		],
-	# 		"bodyValues": [
-	# 			self.name,
-	# 			self.id,
-	# 			'{} {} {}'.format(
-	# 				self.get_application_type_display(),
-	# 				self.get_item_code_display(),
-	# 				self.get_connection_type_display()
-	# 			),
-	# 		],
-	# 	}
-	# }
-	#
-	# connection_application_content_type = ContentType.objects.get_for_model(ConnectionApplication)
-	# data = track.client.post(
-	# 	api_key=settings.INTERAKT_API_KEY,
-	# 	path="/v1/public/message/",
-	# 	body=body_text
-	# ).json()
-	#
-	# if data.get('result'):
-	# 	CommunicationLog.objects.create(
-	# 		content_type=connection_application_content_type,
-	# 		object_id=self.pk,
-	# 		event="completed", channel="whatsapp",
-	# 		message_id=data.get('id')
-	# 	)
+
 
 
 class FamilyMembers(models.Model):

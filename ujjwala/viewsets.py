@@ -101,6 +101,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE
                 if application_obj.status == 'DOCUMENTS_UPLOADED':
                     application_obj.application_rejected(**form.cleaned_data)
+                    application_obj.event_reject_channel_whatsapp()
             except Exception as e:
                 print(e)
                 pass
