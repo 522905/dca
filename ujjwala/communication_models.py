@@ -5,7 +5,6 @@ from django.contrib.contenttypes.models import ContentType
 from communication_log.models import CommunicationLog
 
 
-
 class UjjwalaWhatsappCommunication(object):
 	def event_submit_channel_whatsapp(self):
 		body_text = {
@@ -49,12 +48,12 @@ class UjjwalaWhatsappCommunication(object):
 			CommunicationLog.objects.create(
 				content_type=ujjwala_v2_application_content_type,
 				object_id=self.pk,
-				event="ujjwala_submit", channel="whatsapp",
+				event="submit", channel="whatsapp",
 				message_id=data.get('id')
 			)
 
 
-	def event_reject_channel_whatsapp(self):
+	def event_ioc_dedupe_reject_channel_whatsapp(self):
 		from ujjwala.models import FamilyMembers
 
 		family_member_with_connection: FamilyMembers = None
@@ -106,6 +105,45 @@ class UjjwalaWhatsappCommunication(object):
 			CommunicationLog.objects.create(
 				content_type=ujjwala_v2_application_content_type,
 				object_id=self.pk,
-				event="ioc_rejected", channel="whatsapp",
+				event="ioc_dedupe_reject", channel="whatsapp",
+				message_id=data.get('id')
+			)
+
+
+	def event_invite_for_ekyc_channel_whatsapp(self):
+		body_text = {
+			"countryCode": "+91",
+			"phoneNumber": self.contact_mobile,
+			"type": "Template",
+			"traits": {
+				"name": self.name,
+			},
+			# "callbackData": "some_callback_data",
+			"template": {
+				"name": "sdms_kyc_dedupe_approved_without_location_dw",
+				"languageCode": "hi",
+				"headerValues": [
+					# "Alert",  #
+				],
+				"bodyValues": [
+					self.id
+				],
+			}
+		}
+
+		ujjwala_v2_application_content_type = ContentType.objects.get(
+			app_label='ujjwala', model='ujjwalav2application'
+		)
+		data = track.client.post(
+			api_key=settings.INTERAKT_API_KEY,
+			path="/v1/public/message/",
+			body=body_text
+		).json()
+
+		if data['result']:
+			CommunicationLog.objects.create(
+				content_type=ujjwala_v2_application_content_type,
+				object_id=self.pk,
+				event="ujjwala_invite_for_ekyc", channel="whatsapp",
 				message_id=data.get('id')
 			)
