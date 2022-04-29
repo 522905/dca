@@ -49,7 +49,7 @@ class UjjwalaWhatsappCommunication(object):
 			CommunicationLog.objects.create(
 				content_type=ujjwala_v2_application_content_type,
 				object_id=self.pk,
-				event="submit", channel="whatsapp",
+				event="ujjwala_submit", channel="whatsapp",
 				message_id=data.get('id')
 			)
 
@@ -59,7 +59,10 @@ class UjjwalaWhatsappCommunication(object):
 
 		family_member_with_connection: FamilyMembers = None
 		for family_member in self.family_members.all():
-			if not family_member.uid_check_result.get('distributor_name', ''):
+			distributor_name = family_member.uid_check_result.get('distributor_name', '')
+			if not distributor_name or (
+				distributor_name and 'arun indane' in distributor_name.lower()
+			):
 				continue
 			family_member_with_connection = family_member
 			break
@@ -103,6 +106,6 @@ class UjjwalaWhatsappCommunication(object):
 			CommunicationLog.objects.create(
 				content_type=ujjwala_v2_application_content_type,
 				object_id=self.pk,
-				event="submit", channel="whatsapp",
+				event="ioc_rejected", channel="whatsapp",
 				message_id=data.get('id')
 			)
