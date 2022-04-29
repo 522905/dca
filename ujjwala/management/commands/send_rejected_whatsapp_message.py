@@ -9,6 +9,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         rejected_applications = UjjwalaV2Application.objects.filter(
             robo_sdms_dedup=RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE
+        ).exclude(
+            family_members__uid_check_result=None
         )
 
         for rejected_application in rejected_applications:
