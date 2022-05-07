@@ -58,6 +58,7 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
             status = request.data.get('status')
             message = request.data.get('message')
             application.legal_documents_upload(description="{} {}".format(status, message))
+            application.save()
         return HttpResponse('OK')
 
 
