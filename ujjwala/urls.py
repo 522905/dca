@@ -8,10 +8,11 @@ from rest_framework import routers
 from connection_app.viewsets import ConnectionApplicationViewSet
 
 from . import views
-from .viewsets import UjjwalaApplicationViewSet
+from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet
 
 router = routers.DefaultRouter()
 router.register(r'ujjwala-application', UjjwalaApplicationViewSet)
+router.register(r'ujjwala-bot', UjjwalaApplicationAPIViewSet)
 
 urlpatterns = [
     path('', views.index),

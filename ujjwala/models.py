@@ -24,18 +24,12 @@ from ujjwala.forms import EkycAcceptedOrRejected, \
 class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
-	rejection_type = models.CharField(max_length=25, choices=RejectionTypeEnum.choices, null=True)
+	rejection_type = models.CharField(max_length=25, choices=RejectionTypeEnum.choices, null=True, blank=True)
 	marital_status = models.CharField(max_length=25, choices=MaritalStatusEnum.choices)
-	residential_status = models.CharField(max_length=25, choices=ResidentialStatusEnum.choices)
+	residential_status = models.CharField(max_length=25, choices=ResidentialStatusEnum.choices, blank=True, null=True)
 	name = models.CharField(max_length=50)
 	address = models.TextField(null=True, blank=True)
 	address_json = models.JSONField(null=True, blank=True)
-	# house_no = models.CharField(max_length=16)
-	# floor = models.CharField(max_length=8)
-	# street_no = models.CharField(max_length=24)
-	# mohalla = models.CharField(max_length=50)
-	# pincode = models.CharField(max_length=8)
-	# landmark = models.CharField(max_length=48)
 	contact_mobile = models.CharField(max_length=10)
 	consumer_id = models.CharField(max_length=16, null=True, blank=True)
 	uid_linked_mobile = models.CharField(max_length=10, null=True, blank=True)
@@ -45,7 +39,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	service_location = models.ForeignKey(ServiceLocations, on_delete=models.CASCADE, null=True, blank=True)
 	version = models.CharField(max_length=2, default='V1')
 	robo_sdms_dedup = models.CharField(
-		max_length=25, choices=RoboSdmsDedeupStatusEnum.choices, default=RoboSdmsDedeupStatusEnum.NOT_PROCESSED
+		max_length=25, choices=RoboSdmsDedeupStatusEnum.choices,
+		default=RoboSdmsDedeupStatusEnum.NOT_PROCESSED
 	)
 
 	status = FSMField(
@@ -57,7 +52,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		default=UjjwalaPreInspectionStatus.PENDING,
 		choices=UjjwalaPreInspectionStatus.choices
 	)
-
+	manual_operation_code = models.CharField(max_length=25, null=True, blank=True)
+	legal_documents_upload_status = models.CharField(max_length=25, null=True, blank=True)
 	sv = models.CharField(max_length=25, null=True, blank=True)
 	last_execution_state = models.CharField(max_length=50, null=True, blank=True)
 
@@ -118,6 +114,28 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	def legal_documents_upload(self, *args, **kwargs):
 		self.consumer_id = kwargs.get('consumer_id')
 
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
+		target=UjjwalaV2ApplicationStatus.MANUAL_LEGAL_DOCUMENTS_UPLOAD,
+		custom=dict(short_description='Update Legal Documents', admin=False),
+	)
+	def robo_manual_legal_documents_upload(self, *args, **kwargs):
+		self.manual_operation_code = kwargs.get('manual_operation_code')
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
+		target=UjjwalaV2ApplicationStatus.DO_MANUAL_OPERATION,
+		custom=dict(short_description='Do Manual Operation', admin=False),
+	)
+	def do_manual_operations(self, *args, **kwargs):
+		self.manual_operation_code = kwargs.get('manual_operation_code')
 
 	@fsm_log_description
 	@fsm_log_by

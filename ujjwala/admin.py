@@ -14,9 +14,11 @@ from django_fsm_log.admin import StateLogInline
 from import_export.admin import ExportActionMixin
 from rangefilter.filters import DateRangeFilter
 
+
 from fsm_admin2_custom.admin import FSMTransitionCustomMixin
 from .enums import ResidentialStatusEnum, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, MaritalStatusEnum
 from .models import UjjwalaV2Application, FamilyMembers, UjjwalaApplicationDocuments, UjjwalaV2ApplicationStatus
+from .ujjwala_functions import download_ujjwala_documents
 
 
 class UjjwalaApplicationDocumentsInline(admin.TabularInline):
@@ -30,8 +32,8 @@ class UjjwalaApplicationDocumentsInline(admin.TabularInline):
 class FamilyMembersInline(admin.TabularInline):
 	extra = 0
 	model = FamilyMembers
-	fields = ('name', 'relation', 'dob', 'uid_no', 'download_links', )
-	readonly_fields = ('download_links', )
+	fields = ('name', 'relation', 'dob', 'uid_no', 'download_links', 'uid_check_result')
+	readonly_fields = ('download_links', 'uid_check_result')
 
 
 @admin.register(UjjwalaV2Application)
@@ -85,112 +87,7 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 		""")
 
 	def download_legal_documents_pdf(self, obj):
-		attachments = []
-		if obj.version in ('V2', 'V3'):
-			customer_signature_file = obj.documents.filter(
-				type=UjjwalaApplicationDocumentsEnum.CUSTOMER_SIGNATURE
-			).first().link
-
-			self_doc = obj.family_members.filter(relation=FamilyMemberRelationEnum.SELF).first()
-
-			relationship_name = ''
-
-			if obj.residential_status == ResidentialStatusEnum.LIVING_WITH_FAMILY:
-				if obj.marital_status == MaritalStatusEnum.MARRIED:
-					relationship_name = obj.family_members.filter(relation=FamilyMemberRelationEnum.HUSBAND).first().name
-				elif obj.marital_status == MaritalStatusEnum.UNMARRIED:
-					relationship_name = obj.family_members.filter(relation=FamilyMemberRelationEnum.FATHER).first().name
-
-			ujjwala_declaration_html_template = loader.get_template("ujjwala/forms/ujjwala_declaration_form.html")
-			ujjwala_declaration_html = ujjwala_declaration_html_template.render({
-				'name': obj.name,
-				'uid': list(self_doc.uid_no),
-				'age': '{}'.format(str(datetime.now().year - self_doc.dob.year)),
-				'relation_name': relationship_name,
-				'customer_signature_file': customer_signature_file,
-				'date': datetime.now().strftime("%d-%m-%Y")
-			})
-
-			ujjwala_declaration_pdf = requests.post(
-				settings.HTML_TO_PDF_SERVER_URL,
-				json={
-					"content": ujjwala_declaration_html,
-					"options": {"pageSize": "A4"}
-				}
-			)
-			attachments.append(('annexure_14_points.pdf', ujjwala_declaration_pdf))
-
-			if obj.residential_status == ResidentialStatusEnum.LIVING_ALONE:
-				occupancy_template_html = "ujjwala/forms/single_occupancy_form.html"
-				occupancy_file_name = "single_occupancy"
-			else:
-				occupancy_template_html = "ujjwala/forms/family_occupancy_form.html"
-				occupancy_file_name = "family_occupancy"
-
-			if obj.version == 'V3':
-				obj.address = ' '.join([obj.address_json.get(r, '') for r in obj.address_json])
-
-			occupancy_form_html_template = loader.get_template(occupancy_template_html)
-			occupancy_form_html = occupancy_form_html_template.render({
-				'obj': obj,
-				'customer_signature_file': customer_signature_file
-			})
-
-			occupancy_form_pdf = requests.post(
-				settings.HTML_TO_PDF_SERVER_URL,
-				json={
-					"content": occupancy_form_html,
-					"options": {"pageSize": "A4"}
-				}
-			)
-
-			attachments.append(('{}.pdf'.format(occupancy_file_name), occupancy_form_pdf))
-
-		customer_docs = obj.documents.exclude(
-			type=UjjwalaApplicationDocumentsEnum.CUSTOMER_SIGNATURE
-		).all()
-
-		for customer_doc in customer_docs:
-			doc_file = requests.get("{}{}".format(settings.THUMBOR_URL, customer_doc.link))
-			doc_file_bytes = io.BytesIO(doc_file.content)
-			descriptor = magic.detect_from_content(doc_file_bytes.read(2048))
-			file_extension = descriptor.mime_type.split('/')[-1]
-			attachments.append(('{}.{}'.format(customer_doc.type, file_extension), doc_file))
-
-		family_members_doc = obj.family_members.all()
-
-		for family_member in family_members_doc:
-			uid_front_doc_file = requests.get("{}{}".format(settings.THUMBOR_URL, family_member.uid_front_link))
-			uid_back_doc_file = requests.get("{}{}".format(settings.THUMBOR_URL, family_member.uid_back_link))
-
-			uid_front_doc_file_bytes = io.BytesIO(uid_front_doc_file.content)
-			uid_back_doc_file_bytes = io.BytesIO(uid_back_doc_file.content)
-
-			uid_front_descriptor = magic.detect_from_content(uid_front_doc_file_bytes.read(2048))
-			uid_back_descriptor = magic.detect_from_content(uid_back_doc_file_bytes.read(2048))
-
-			uid_front_doc_file_extension = uid_front_descriptor.mime_type.split('/')[-1]
-			uid_back_doc_file_extension = uid_back_descriptor.mime_type.split('/')[-1]
-
-			attachments.append(
-				('{}_uid_front.{}'.format(family_member.relation, uid_front_doc_file_extension), uid_front_doc_file)
-			)
-			attachments.append(
-				('{}_uid_back.{}'.format(family_member.relation, uid_back_doc_file_extension), uid_back_doc_file)
-			)
-
-		documents_zip = io.BytesIO()
-
-		with zipfile.ZipFile(documents_zip, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
-			for key, value in attachments:
-				zf.writestr(key, value.content)
-
-		# Grab ZIP file from in-memory, make response with correct MIME-type
-		resp = HttpResponse(documents_zip.getvalue(), content_type="application/x-zip-compressed")
-		# ..and correct content-disposition
-		resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_{}_legal_docs.zip'.format(obj.id)
-
-		return resp
+		return download_ujjwala_documents(obj)
 
 	def change_view(self, request, object_id, form_url='', extra_context=None):
 		if "_download-legal-doc-pdf" in request.POST:

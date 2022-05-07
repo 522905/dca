@@ -50,10 +50,10 @@ class RoboSdmsDedeupStatusEnum(models.TextChoices):
 class UjjwalaV2ApplicationStatus(models.TextChoices):
 	DOCUMENTS_UPLOADED = 'DOCUMENTS_UPLOADED', 'Documents Uploaded'
 	DOCUMENTS_REUPLOAD = 'DOCUMENTS_REUPLOAD', 'Documents Reupload'
-	# EKYC_INITIATED = 'EKYC_INITIATED', 'E-KYC Initiated'
 	EKYC_REJECTED = 'EKYC_REJECTED', 'E-KYC Rejected'
 	EKYC_ACCEPTED = 'EKYC_ACCEPTED', 'E-KYC Accepted'
 	LEGAL_DOCUMENTS_UPLOAD = 'LEGAL_DOCUMENTS_UPLOAD', 'Legal Documents Upload'
+	MANUAL_LEGAL_DOCUMENTS_UPLOAD = 'MANUAL_LEGAL_DOCUMENTS_UPLOAD', 'Manual Legal Documents Upload'
 	CONNECTION_APPROVED = 'CONNECTION_APPROVED', 'Connection Approved'
 	CONNECTION_REJECTED = 'CONNECTION_REJECTED', 'Connection Rejected'
 	LEGAL_DOCUMENTS_COLLECTED = 'LEGAL_DOCUMENTS_COLLECTED', 'Legal Documents Collected'
@@ -62,6 +62,11 @@ class UjjwalaV2ApplicationStatus(models.TextChoices):
 	COMPLETED = 'COMPLETED', 'Completed'
 	EDIT_APPLICATION = 'EDIT_APPLICATION', 'Edit Application'
 	APPLICATION_REJECTED = 'APPLICATION_REJECTED', 'Application Rejected'
+	OMC_CLEARED = 'OMC CLEARED', 'OMC Cleared'
+	NIC_DEDUP_PENDING = 'NIC_DEDUP_PENDING', 'NIC Dedup Pending'
+	NIC_CLEARED = 'NIC_CLEARED', 'NIC Cleared'
+	INSUFFICIENT_ADDRESS = 'INSUFFICIENT_ADDRESS', 'Insufficient Address'
+	DO_MANUAL_OPERATION = 'DO_MANUAL_OPERATION', 'Do Manual Operation'
 
 
 class UjjwalaPreInspectionStatus(models.TextChoices):
@@ -75,3 +80,11 @@ class RejectionTypeEnum(models.TextChoices):
 	EKYC = 'EKYC', 'Ekyc'
 	APPLICATION = 'APPLICATION', 'Application'
 	CONNECTION = 'CONNECTION', 'Connection'
+
+
+class ManualOperationCodeEnum(models.TextChoices):
+	UID_MISMATCH_SDMS = 'UID_MISMATCH_SDMS', 'UID mismatch SDMS'
+	NO_PRIMARY_RECORD = 'NO_PRIMARY_RECORD', 'No Primary Record'
+	NO_UID_FOUND = 'NO_UID_FOUND', 'No UID Found'
+	UID_RELATION_MISMATCH = 'UID_RELATION_MISMATCH', 'UID relation mismatch'
+	ROBO_GOT_ERROR_ALERT = 'ROBO_GOT_ERROR_ALERT', 'Robo Got Error Alert'
