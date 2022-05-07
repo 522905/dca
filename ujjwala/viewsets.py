@@ -288,7 +288,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             "application_id": application.id,
             "application_doc_url": request.build_absolute_uri(url),
             "consumer_id": application.consumer_id,
-            "primary_applicant": [{
+            "primary_applicant": {
                 "Salutation": get_salutation(applicant),
                 "First Name": f_name.title(),
                 "Last Name": l_name.title(),
@@ -306,7 +306,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                         "Identity Method": "14 Point Exclusion Declaration",
                         "Identity Num": applicant.uid_no[-4:],
                     }]
-            }]
+            }
         })
 
         family_members = application.family_members.exclude(uid_no__endswith=uid_last_4_digits)
