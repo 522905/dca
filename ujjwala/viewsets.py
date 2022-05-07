@@ -57,6 +57,7 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
         if application.status == UjjwalaV2ApplicationStatus.EKYC_ACCEPTED:
             status = request.data.get('status')
             message = request.data.get('message')
+            application.legal_documents_upload(description="{} {}".format(status, message))
         return HttpResponse('OK')
 
 
@@ -296,6 +297,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 "DOB": applicant.dob.strftime("%d-%b-%Y"),
                 "Migrated": "Y",
                 "Relationship": "SELF",
+                "Category": primary_record.get('Category') or "Gen",
                 "identities": [{
                     "Identity Type": "INTERNAL-UJJWALA",
                     "Identity Method": "ANNEXURE 1",
@@ -327,6 +329,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 "DOB": family_member.dob.strftime("%d-%b-%Y"),
                 "Migrated": "Y",
                 "Relationship": family_member.relation.upper(),
+                "Category": primary_record.get('Category') or "Gen",
                 "identities": [{
                     "Identity Type": "POA-POI",
                     "Identity Method": "Aadhaar(UID)",
