@@ -20,7 +20,7 @@ from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, Ujjwala
 from .forms import ApplicationRejected
 from .models import UjjwalaV2Application, FamilyMembers
 from .serializers import UjjwalaV2ApplicationSerializer
-from .ujjwala_functions import download_ujjwala_documents, get_salutation
+from .ujjwala_functions import download_ujjwala_documents, get_salutation, download_pre_installation_documents
 
 
 class CustomPagePagination(PageNumberPagination):
@@ -74,8 +74,6 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
         return HttpResponse('OK')
 
 
-
-
 class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     queryset = models.UjjwalaV2Application.objects.all()
     serializer_class = UjjwalaV2ApplicationSerializer
@@ -105,7 +103,11 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=False, url_path='get_aadhar_list')
     def get_aadhar_list(self, request, *args, **kwargs):
         aadhar_list = UjjwalaV2Application.objects.filter(
-            status__in=(UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED, 'EKYC_ACCEPTED', 'LEGAL_DOCUMENTS_UPLOAD'),
+            status__in=(
+                UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
+                UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
+                UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD
+            ),
             robo_sdms_dedup=RoboSdmsDedeupStatusEnum.NOT_PROCESSED
         ).exclude(version='V1').order_by('-id')
 
@@ -119,6 +121,28 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             } for record in aadhar_list
         ], safe=False)
 
+    @action(methods=['get'], detail=False, url_path='get_ekyc_accepted_list')
+    def get_ekyc_accepted_list(self, request, *args, **kwargs):
+        aadhar_list = UjjwalaV2Application.objects.filter(
+            status__in=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
+            consumer_id=None,
+            robo_sdms_dedup=RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE
+        ).exclude(version='V1').order_by('-id')
+
+        return JsonResponse([
+            {
+                'id': record.id,
+                'uid': record.family_members.objects.filter(relation=FamilyMemberRelationEnum.SELF).first().uid_no
+            } for record in aadhar_list
+        ], safe=False)
+
+    @action(methods=['post'], detail=False, url_path='update_consumer_id')
+    def update_result(self, request, *args, **kwargs):
+        application = UjjwalaV2Application.objects.filter(pk=request.data.get('id')).first()
+        application.consumer_id = request.data.get('consumer_id')
+        application.save()
+        return HttpResponse('OK')
+
     @action(methods=['post'], detail=False, url_path='update_result')
     def update_result(self, request, *args, **kwargs):
         record_valid = True
@@ -126,10 +150,13 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         invalid_result_relation = ''
         family_member_obj = {}
 
+        consumer_id = ''
+
         for member in request.data['family_members']:
             try:
                 family_member_obj = FamilyMembers.objects.get(pk=member.get('id'))
                 family_member_obj.uid_check_result = member['result']
+
                 family_member_obj.save()
 
                 if request.data.get('alert', ''):
@@ -171,6 +198,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 print(e)
                 pass
         else:
+            self_member = FamilyMembers
             application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE
             application_obj.event_invite_for_ekyc_channel_whatsapp()
 
@@ -191,6 +219,11 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     def download_ujjwala_legal_docs(self, request, *args, **kwargs):
         obj = self.get_object()
         return download_ujjwala_documents(obj)
+
+    @action(methods=['get'], detail=True, url_path='download_pre_inspection_docs')
+    def download_pre_inspection_docs(self, request, *args, **kwargs):
+        obj = self.get_object()
+        return download_pre_installation_documents(obj)
 
 
     @action(methods=['post'], detail=True, url_path='validate_contacts')

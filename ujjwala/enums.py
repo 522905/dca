@@ -8,6 +8,7 @@ class UjjwalaApplicationDocumentsEnum(models.TextChoices):
 	SV = 'SV', 'Subscription Voucher'
 	CONNECTION_DETAIL = 'CONNECTION_DETAIL', 'Connection Detail'
 	KITCHEN_PHOTO = 'KITCHEN_PHOTO', 'Kitchen Photo'
+	MAIN_GATE = 'MAIN GATE', 'Main Gate'
 	CUSTOMER_SIGNATURE = 'CUSTOMER_SIGNATURE', 'Customer Signature'
 	DEATH_CERTIFICATE = 'DEATH_CERTIFICATE', 'Death Certificate'
 	DIVORCE_DOCUMENT = 'DIVORCE_DOCUMENT', 'Divorce Document'

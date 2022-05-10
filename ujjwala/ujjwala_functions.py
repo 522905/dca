@@ -5,6 +5,7 @@ from datetime import datetime
 import magic
 import requests
 from django.conf import settings
+from django.db.models import Q
 from django.http import HttpResponse
 from django.template import loader
 
@@ -14,6 +15,58 @@ from ujjwala.enums import UjjwalaApplicationDocumentsEnum, FamilyMemberRelationE
 
 def valid_file_size(file):
     return len(file.content) <= 499000
+
+
+def download_pre_installation_documents(obj):
+    attachments = []
+
+    if obj.version != 'V1':
+        # customer_signature_file = obj.documents.filter(
+        #     type=UjjwalaApplicationDocumentsEnum.CUSTOMER_SIGNATURE
+        # ).first().link
+
+        pre_inspection_html_template = loader.get_template("ujjwala/forms/pre_inspection_form.html")
+        pre_inspection_html = pre_inspection_html_template.render({
+            'name': obj.name,
+            # 'customer_signature_file': customer_signature_file,
+            'date': datetime.now().strftime("%d-%m-%Y")
+         })
+
+        pre_inspection_pdf = requests.post(
+            settings.HTML_TO_PDF_SERVER_URL,
+            json={
+                "content": pre_inspection_html,
+                "options": {"pageSize": "A4"}
+            }
+        )
+        attachments.append(('pre_installation_form.pdf', pre_inspection_pdf))
+
+        if obj.version in ('V3', 'V4'):
+            obj.address = ' '.join([obj.address_json.get(r, '') for r in obj.address_json])
+
+    customer_docs = obj.documents.exclude(
+        Q(type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO) | Q(type=UjjwalaApplicationDocumentsEnum.MAIN_GATE)
+    ).all()
+
+    for customer_doc in customer_docs:
+        doc_file = requests.get("{}{}".format(settings.THUMBOR_URL, customer_doc.link))
+        doc_file_bytes = io.BytesIO(doc_file.content)
+        descriptor = magic.detect_from_content(doc_file_bytes.read(2048))
+        file_extension = descriptor.mime_type.split('/')[-1]
+        attachments.append(('{}.{}'.format(customer_doc.type, file_extension), doc_file))
+
+    documents_zip = io.BytesIO()
+
+    with zipfile.ZipFile(documents_zip, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
+        for key, value in attachments:
+            zf.writestr(key, value.content)
+
+    # Grab ZIP file from in-memory, make response with correct MIME-type
+    resp = HttpResponse(documents_zip.getvalue(), content_type="application/x-zip-compressed")
+    # ..and correct content-disposition
+    resp['Content-Disposition'] = 'attachment; filename=%s' % 'pre_inspection_{}_docs.zip'.format(obj.id)
+
+    return resp
 
 
 def download_ujjwala_documents(obj):

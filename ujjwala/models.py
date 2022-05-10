@@ -34,10 +34,14 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	consumer_id = models.CharField(max_length=16, null=True, blank=True)
 	uid_linked_mobile = models.CharField(max_length=10, null=True, blank=True)
 	uid_mobile_status = models.CharField(max_length=25, choices=UjjwalaUidMobileStatusEnum.choices)
+	application_id_kyc_no = models.CharField(max_length=24, null=True, blank=True)
 	referral_code = models.CharField(max_length=16, null=True, blank=True)
 	service_team = models.ForeignKey(Organization, on_delete=models.CASCADE, null=True, blank=True)
 	service_location = models.ForeignKey(ServiceLocations, on_delete=models.CASCADE, null=True, blank=True)
 	version = models.CharField(max_length=2, default='V1')
+	latitude = models.CharField(max_length=16, null=True, blank=True)
+	longitude = models.CharField(max_length=16, null=True, blank=True)
+
 	robo_sdms_dedup = models.CharField(
 		max_length=25, choices=RoboSdmsDedeupStatusEnum.choices,
 		default=RoboSdmsDedeupStatusEnum.NOT_PROCESSED
@@ -112,7 +116,9 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		permission='ujjwala.can_upload_legal_docs',
 	)
 	def legal_documents_upload(self, *args, **kwargs):
-		self.consumer_id = kwargs.get('consumer_id')
+
+		pass
+		# self.consumer_id = kwargs.get('consumer_id')
 
 
 	@fsm_log_description
