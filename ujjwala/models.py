@@ -1,3 +1,4 @@
+
 import track
 from django import template
 from django.conf import settings
@@ -24,6 +25,7 @@ from ujjwala.forms import EkycAcceptedOrRejected, \
 class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
+	sdms_last_updated_on = models.DateTimeField(null=True)
 	rejection_type = models.CharField(max_length=25, choices=RejectionTypeEnum.choices, null=True, blank=True)
 	marital_status = models.CharField(max_length=25, choices=MaritalStatusEnum.choices)
 	residential_status = models.CharField(max_length=25, choices=ResidentialStatusEnum.choices, blank=True, null=True)

@@ -14,6 +14,8 @@ from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
+from django.db.models import Q
+
 from . import models
 from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, UjjwalaApplicationDocumentsEnum, \
     FamilyMemberRelationEnum, ResidentialStatusEnum, MaritalStatusEnum, ManualOperationCodeEnum
@@ -21,6 +23,7 @@ from .forms import ApplicationRejected
 from .models import UjjwalaV2Application, FamilyMembers
 from .serializers import UjjwalaV2ApplicationSerializer
 from .ujjwala_functions import download_ujjwala_documents, get_salutation, download_pre_installation_documents
+from django.utils import timezone
 
 
 class CustomPagePagination(PageNumberPagination):
@@ -124,24 +127,45 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=False, url_path='get_ekyc_accepted_list')
     def get_ekyc_accepted_list(self, request, *args, **kwargs):
         aadhar_list = UjjwalaV2Application.objects.filter(
-            status__in=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
-            consumer_id=None,
-            robo_sdms_dedup=RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE
-        ).exclude(version='V1').order_by('-id')
+            Q(status=UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED) |
+            (
+                Q(status=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED) &
+                Q(consumer_id__isnull=True)
+            )
+        ).filter(sdms_last_updated_on__isnull=True).exclude(version='V1').order_by('id')
 
         return JsonResponse([
             {
                 'id': record.id,
-                'uid': record.family_members.objects.filter(relation=FamilyMemberRelationEnum.SELF).first().uid_no
+                'uid': record.family_members.filter(relation=FamilyMemberRelationEnum.SELF).first().uid_no
             } for record in aadhar_list
         ], safe=False)
 
     @action(methods=['post'], detail=False, url_path='update_consumer_id')
-    def update_result(self, request, *args, **kwargs):
+    def update_consumer_id(self, request, *args, **kwargs):
+        result = request.data.get('result')
         application = UjjwalaV2Application.objects.filter(pk=request.data.get('id')).first()
-        application.consumer_id = request.data.get('consumer_id')
+        application.sdms_last_updated_on = timezone.now() 
+        application.save()
+
+        if 'arun indane' not in result.get('distributor_name', '').lower():
+            return HttpResponse('OK')
+
+        application = UjjwalaV2Application.objects.filter(pk=request.data.get('id')).first()
+        self_family_member = application.family_members.filter(relation=FamilyMemberRelationEnum.SELF).first()
+
+        self_family_member.uid_check_result = result
+        self_family_member.save()
+
+        application.consumer_id = result.get('consumer_id', '')
+
+        if application.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
+            application.ekyc_accepted_or_rejected(description="Bot Processed")
+            # application.status = UjjwalaV2ApplicationStatus.EKYC_ACCEPTED
+
         application.save()
         return HttpResponse('OK')
+
 
     @action(methods=['post'], detail=False, url_path='update_result')
     def update_result(self, request, *args, **kwargs):
