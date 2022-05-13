@@ -16,8 +16,10 @@ class UjjwalaWhatsappCommunication(object):
 			},
 			# "callbackData": "some_callback_data",
 			"template": {
-				"name": "domestic_application_sub_8v",
+				"name": "ujjwla_application_submitted",
+				# "name": "domestic_application_sub_8v",
 				"languageCode": "en_GB",
+				# "languageCode": "hi",
 				"headerValues": [
 					# "Alert",  #
 				],
