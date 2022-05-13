@@ -1,6 +1,6 @@
 import io
 import zipfile
-from datetime import datetime
+import datetime
 
 import django_filters
 import magic
@@ -68,13 +68,41 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
     @action(methods=['post'], detail=True, url_path='update_omc_and_nic_status')
     def update_omc_and_nic_status(self, request: HttpRequest, *args, **kwargs):
         application: UjjwalaV2Application = self.get_object()
+        application.sdms_last_updated_on = timezone.now()
+        application.product = request.data.get('product')
+        nic_status = request.data.get('nic_status')
+
         if application.status == UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD:
-            # request.data.get('OMC Status') == 'OMC Cleared'
-            # request.data.get('OMC Status') == 'OMC Reject'
-            pass
-        if application.status == UjjwalaV2ApplicationStatus.OMC_CLEARED:
-            pass
+            if request.data.get('omc_status') == 'OMC Clear':
+                application.transition_omc_clear(description="Bot Processed")
+            elif request.data.get('omc_status') == 'OMC Reject':
+                application.transition_omc_reject(description="Bot Processed")
+        if application.status == UjjwalaV2ApplicationStatus.OMC_CLEARED and nic_status not in ('Pending', 'Awaited'):
+            if nic_status == 'Cleared':
+                application.transition_nic_cleared(description="Bot Processed")
+#            elif nic_status == 'NIC Rejected':
+            else:
+                application.transition_nic_error(error_code='', description=nic_status)
+        application.save()
         return HttpResponse('OK')
+
+    @action(methods=['get'], detail=False, url_path='get_list_to_fetch_omc_nic_status')
+    def get_list_to_fetch_omc_nic_status(self, request: HttpRequest, *args, **kwargs):
+        aadhar_list = UjjwalaV2Application.objects.filter(
+            Q(status=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD) |
+            Q(status=UjjwalaV2ApplicationStatus.OMC_CLEARED)
+        ).exclude(consumer_id__isnull=True).order_by('-id')
+#.filter(sdms_last_updated_on__lte=datetime.datetime.today()-datetime.timedelta(hours=6))
+#.exclude(version='V1')
+#.order_by('-id')
+
+        return JsonResponse([
+            {
+                'id': record.id,
+                'consumer_id': record.consumer_id
+            } for record in aadhar_list
+        ], safe=False)
+
 
 
 class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
@@ -132,7 +160,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 Q(status=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED) &
                 Q(consumer_id__isnull=True)
             )
-        ).filter(sdms_last_updated_on__isnull=True).exclude(version='V1').order_by('id')
+        ).filter(sdms_last_updated_on__lte=datetime.datetime.today()-datetime.timedelta(hours=12)).exclude(version='V1').order_by('-id')
 
         return JsonResponse([
             {

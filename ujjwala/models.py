@@ -43,6 +43,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	version = models.CharField(max_length=2, default='V1')
 	latitude = models.CharField(max_length=16, null=True, blank=True)
 	longitude = models.CharField(max_length=16, null=True, blank=True)
+	product = models.CharField(max_length=256, null=True, blank=True)
 
 	robo_sdms_dedup = models.CharField(
 		max_length=25, choices=RoboSdmsDedeupStatusEnum.choices,
@@ -150,14 +151,70 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	@transition(
 		field=status,
 		source=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD,
-		target=UjjwalaV2ApplicationStatus.CONNECTION_APPROVED,
+		target=UjjwalaV2ApplicationStatus.OMC_CLEARED,
 		custom=dict(
-			short_description='Connection Status Approved', admin=True, form=ConnectionStatusApproved
+			short_description='Set As OMC Cleared', admin=True, form=ConnectionStatusApproved
 		),
 		permission='ujjwala.can_approve_connection',
 	)
-	def connection_status_approved(self, *args, **kwargs):
+	def transition_omc_clear(self, *args, **kwargs):
 		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD,
+		target=UjjwalaV2ApplicationStatus.OMC_REJECTED,
+		custom=dict(
+			short_description='Set As OMC Rejected', admin=True
+		),
+		permission='ujjwala.can_approve_connection',
+	)
+	def transition_omc_reject(self, *args, **kwargs):
+	        pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD,
+		target=UjjwalaV2ApplicationStatus.OMC_CLEARED,
+		custom=dict(
+			short_description='Set As OMC Reject', admin=True, form=ConnectionStatusApproved
+		),
+		permission='ujjwala.can_approve_connection',
+	)
+	def transition_omc_reject(self, *args, **kwargs):
+	        pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=UjjwalaV2ApplicationStatus.OMC_CLEARED,
+		target=UjjwalaV2ApplicationStatus.NIC_CLEARED,
+		custom=dict(
+			short_description='Set As NIC Cleared', admin=True, form=ConnectionStatusApproved
+		),
+		permission='ujjwala.can_approve_connection',
+	)
+	def transition_nic_cleared(self, *args, **kwargs):
+	        pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=UjjwalaV2ApplicationStatus.OMC_CLEARED,
+		target=UjjwalaV2ApplicationStatus.NIC_ERROR,
+		custom=dict(
+			short_description='Set As NIC Error', admin=True, form=ConnectionStatusApproved
+		),
+		permission='ujjwala.can_approve_connection',
+	)
+	def transition_nic_error(self, *args, **kwargs):
+		self.manual_operation_code = kwargs.get('error_code')
 
 
 	@fsm_log_description
