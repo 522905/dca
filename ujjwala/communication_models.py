@@ -16,17 +16,16 @@ class UjjwalaWhatsappCommunication(object):
 			},
 			# "callbackData": "some_callback_data",
 			"template": {
-				"name": "ujjwla_application_submitted",
+				"name": "ujjwala_application_submitted",
 				# "name": "domestic_application_sub_8v",
-				"languageCode": "en_GB",
-				# "languageCode": "hi",
+				# "languageCode": "en_GB",
+				"languageCode": "hi",
 				"headerValues": [
 					# "Alert",  #
 				],
 				"bodyValues": [
 					self.name,
 					self.id,
-					'Ujjwala Connection',
 					"21"
 				],
 				"buttonValues": {
