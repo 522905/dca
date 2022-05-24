@@ -52,8 +52,6 @@ class UjjwalaWhatsappCommunication(object):
 				event="submit", channel="whatsapp",
 				message_id=data.get('id')
 			)
-
-
 	def event_ioc_dedupe_reject_channel_whatsapp(self):
 		from ujjwala.models import FamilyMembers
 

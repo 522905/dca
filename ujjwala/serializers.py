@@ -23,3 +23,11 @@ class UjjwalaV2ApplicationSerializer(WritableNestedModelSerializer):
     class Meta:
         model = UjjwalaV2Application
         fields = '__all__'
+
+
+class SubmitPreInspectionSerializer(serializers.ModelSerializer):
+    documents = UjjwalaApplicationDocumentsSerializer(many=True)
+
+    class Meta:
+        model = UjjwalaV2Application
+        fields = ('latitude', 'longitude', 'accuracy', 'documents',)

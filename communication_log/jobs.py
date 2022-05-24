@@ -10,6 +10,7 @@ import magic
 
 # @job
 from domestic_app.utils import get_minio_public_url
+from ujjwala.models import UjjwalaV2Application
 
 
 def interakt_webhook_job_processing(data):
@@ -96,3 +97,10 @@ def move_files_to_minio_processing(id):
 def send_message_on_whatsapp(id):
     obj = ConnectionApplication.objects.get(id=id)
     obj.event_completed_channel_whatsapp()
+
+
+def add_lead_to_vicidial(application_id, name, contact_mobile):
+    res = requests.post(
+        "http://vici.hawabadlo.in/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster&function"
+        "=add_lead&phone_number={}&phone_code=1&list_id=1001&first_name={}&last_name={}"
+    ).format(contact_mobile, name, application_id)

@@ -1,9 +1,153 @@
 import json
 
 from django import forms
+from django.contrib.auth.decorators import login_required
 from django.forms import NumberInput
+from django.http import HttpResponseRedirect, HttpResponseBadRequest
+from django.shortcuts import render
+from django.utils.decorators import method_decorator
 
 from ujjwala.models import UjjwalaApplicationDocumentsEnum
+from formtools.wizard.views import SessionWizardView
+
+
+class CustomerKitchenPreInspectionForm(forms.Form):
+	# widget=forms.HiddenInput,
+	application_id = forms.CharField( max_length=8)
+	kitchen_photo = forms.CharField(
+		widget=forms.TextInput, max_length=256, label='Kitchen Photo', required=True
+	)
+	customer_in_kitchen = forms.CharField(
+		widget=forms.TextInput, max_length=256, label='Customer In Kitchen', required=True
+	)
+
+	def clean(self):
+		data = self.cleaned_data
+		return data
+
+
+class WitnessPreInspectionForm(forms.Form):
+	witness_name = forms.CharField(
+		widget=forms.TextInput, max_length=256, label='Witness Name', required=True
+	)
+	witness_mobile_number = forms.CharField(
+		widget=forms.TextInput, max_length=10, label='Witness Mobile', required=True
+	)
+	witness_photo = forms.CharField(
+		widget=forms.TextInput, max_length=256, label='Witness Photo', required=True
+	)
+	witness_signature_photo = forms.CharField(
+		widget=forms.TextInput, max_length=256, label='Witness Signature', required=True
+	)
+
+	def clean(self):
+		data = self.cleaned_data
+		return data
+
+
+class PreviewPreInspectionForm(forms.Form):
+	latitude = forms.CharField(widget=forms.TextInput, max_length=16, label='Latitude', required=True)
+	longitude = forms.CharField(widget=forms.TextInput, max_length=16, label='Longitude', required=True)
+	accuracy = forms.CharField(widget=forms.TextInput, max_length=24, label='Accuracy', required=True)
+	main_gate = forms.CharField(
+		widget=forms.TextInput, max_length=256, label='Main Gate Photo', required=True
+	)
+	otp = forms.CharField(
+		widget=forms.TextInput, max_length=6, label='Otp', required=True
+	)
+	mechanic_photo = forms.CharField(
+		widget=forms.TextInput, max_length=256, label='Mechanic Photo', required=True
+	)
+
+	def clean(self):
+		data = self.cleaned_data
+		return data
+
+
+@method_decorator(login_required, 'dispatch')
+class PreInspectionWizardForm(SessionWizardView):
+	template_name = "ujjwala/pre-Inspection-form/index.html"
+	form_list = [
+		('customer_kitchen_form', CustomerKitchenPreInspectionForm),
+		('witness_form', WitnessPreInspectionForm),
+		('preview_pre_inspection_form', PreviewPreInspectionForm),
+	]
+
+	def dispatch(self, request, *args, **kwargs):
+		from ujjwala.models import UjjwalaV2Application
+
+		application_id = kwargs.get('pk')
+		contact_mobile = request.GET.get('contact_mobile')
+
+		obj = UjjwalaV2Application.objects.filter(id=application_id)
+
+		if obj:
+			obj = obj.filter(contact_mobile=contact_mobile).first()
+			if obj:
+				return super(PreInspectionWizardForm, self).dispatch(request, *args, **kwargs)
+			else:
+				return render(
+					request,
+					template_name="ujjwala/pre_inspection_search.html",
+					context={"msg": "Contact Mobile: {} Not Found.".format(contact_mobile)}
+				)
+		else:
+			return render(
+				request,
+				template_name="ujjwala/pre_inspection_search.html",
+				context={"msg": "Application Id: {} Not Found".format(application_id)}
+			)
+
+	def get_form_initial(self, step):
+		init_data = self.initial_dict.get(step, {})
+		if step == 'customer_kitchen_form':
+			init_data.update({'application_id': self.kwargs.get('pk')})
+		return init_data
+
+	def get_context_data(self, *args, **kwargs):
+		con = super().get_context_data(*args, **kwargs)
+
+		from ujjwala.models import UjjwalaV2Application
+		application_obj = UjjwalaV2Application.objects.filter(id=self.kwargs.get('pk')).first()
+		con.update({
+			"obj": application_obj
+		})
+		return con
+
+	def done(self, form_list, **kwargs):
+		from ujjwala.models import UjjwalaV2Application
+
+		data = self.get_all_cleaned_data()
+
+		obj: UjjwalaV2Application = UjjwalaV2Application.objects.filter(id=data.get('application_id')).first()
+		obj.transition_pre_inspection_submit(**data)
+		obj.save()
+		return HttpResponseRedirect('/ujjwala/frontend/')
+
+
+class PreInspectionReviewForm(forms.Form):
+	verified = forms.BooleanField(
+		required=False,
+		help_text="Pre Inspection Is Valid As Per Standards"
+	)
+
+	remarks = forms.CharField(
+		widget=forms.Textarea,
+		label='Remarks (Will be displayed to customer)',
+		required=True
+	)
+
+	def clean(self):
+		data = self.cleaned_data
+		if not data.get('verified'):
+			data['documents_required_for_reupload'] = json.dumps(
+				[
+					UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO
+				]
+			)
+		else:
+			data['documents_required_for_reupload'] = '[]'
+		return data
 
 
 class EkycAcceptedOrRejected(forms.Form):
@@ -28,17 +172,6 @@ class EkycAcceptedOrRejected(forms.Form):
 
 
 class EkycAccepted(forms.Form):
-	# ekyc_accepted = forms.ChoiceField(
-	# 	label="Ekyc Status Update ?",
-	# 	required=True,
-	# 	help_text="",
-	# 	choices=[
-	# 		('', '-- Select If Ekyc Accepted Or Rejected --'),
-	# 		('ACCEPTED', 'Accepted'),
-	# 		('REJECTED', 'Rejected')
-	# 	]
-	# )
-
 	description = forms.CharField(
 		widget=forms.Textarea, label='Remarks', required=True
 	)
@@ -170,22 +303,21 @@ class PostInstallationUpload(forms.Form):
 		return data
 
 
-class PreInspectionReviewForm(forms.Form):
-	verified = forms.BooleanField(
-		required=False,
-		help_text="Check If Installation is safe as per standards"
+class UjjwalaDocumentsReuploadForm(forms.Form):
+	documents_required_for_reupload = forms.MultipleChoiceField(
+		widget=forms.SelectMultiple,
+		choices=UjjwalaApplicationDocumentsEnum.get_skipped_additional_choices(),
+		help_text="Documents to prompt for reupload"
 	)
 
 	remarks = forms.CharField(
 		widget=forms.Textarea,
-		label='Remarks (Will be displayed to customer)',
+		label='Remarks For Customer',
 		required=True
 	)
 
 	def clean(self):
 		data = self.cleaned_data
-		if not data.get('verified'):
-			data['documents_required_for_reupload'] = json.dumps([UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO])
-		else:
-			data['documents_required_for_reupload'] = '[]'
+		if data.get('documents_required_for_reupload', []):
+			data['documents_required_for_reupload'] = json.dumps(data['documents_required_for_reupload'])
 		return data

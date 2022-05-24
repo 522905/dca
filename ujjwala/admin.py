@@ -17,7 +17,8 @@ from rangefilter.filters import DateRangeFilter
 
 from fsm_admin2_custom.admin import FSMTransitionCustomMixin
 from .enums import ResidentialStatusEnum, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, MaritalStatusEnum
-from .models import UjjwalaV2Application, FamilyMembers, UjjwalaApplicationDocuments, UjjwalaV2ApplicationStatus
+from .models import UjjwalaV2Application, FamilyMembers, UjjwalaApplicationDocuments, UjjwalaV2ApplicationStatus, \
+	UserDocuments
 from .ujjwala_functions import download_ujjwala_documents
 
 
@@ -38,6 +39,7 @@ class FamilyMembersInline(admin.TabularInline):
 
 @admin.register(UjjwalaV2Application)
 class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdmin):
+	fsm_transition_form_template = 'ujjwala/transaction_form_template.html'
 	list_display = (
 		'id',
 		'name',
@@ -64,7 +66,7 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 	inlines = [
 		FamilyMembersInline, UjjwalaApplicationDocumentsInline, StateLogInline
 	]
-	fsm_fields = ['status', 'pre_inspection_status']
+	fsm_fields = ['status', ]
 
 	def has_change_permission(self, request, obj=None):
 		if not obj:
@@ -94,3 +96,12 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 			obj = UjjwalaV2Application.objects.get(pk=object_id)
 			return self.download_legal_documents_pdf(obj)
 		return super().change_view(request, object_id, form_url=form_url, extra_context=extra_context)
+
+	def fsm_transition_view_extra_context(self, obj):
+		return {'obj': obj}
+
+
+@admin.register(UserDocuments)
+class UserDocumentsAdmin(admin.ModelAdmin):
+	list_display = ('id', 'parent', 'type', 'link')
+	list_filter = ('parent',)

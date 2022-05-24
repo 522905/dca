@@ -1,0 +1,83 @@
+{% extends "material/frontend/base_module.html" %}
+{% block content %}
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap"
+    rel="stylesheet">
+<style>
+    .page-breadcrumb {
+        padding: 13px 25px;
+    }
+
+    body {
+        background-color: #edf1f5;
+        font-family: 'Montserrat';
+    }
+
+    .main {
+        display: block;
+        width: 100%;
+        float: left;
+    }
+
+    .content {
+        display: inline-block !important;
+    }
+
+    .page-title {
+        font-size: 1.125rem;
+    }
+
+    form label {
+        color: rgb(112, 112, 112);
+        font-size: 15px;
+        font-weight: 500;
+    }
+    .fw-500{ font-weight: 500;}
+</style>
+<div class="main">
+    <div class="page-breadcrumb bg-white pr-2">
+        <div class="row align-items-center m-0">
+            <div class="col-sm-12 col-xs-12 pl-0 ">
+                <h4 class="page-title mb-0">Pre-Inspection Search Id</h4>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="main p-2 pt-0">
+    <form method="get" id="form_pre_inspection_search">
+        <div class="card">
+            <div class="card-body">
+                <div class="form-group mb-4">
+                    <label class="col-md-12 p-0">Enter Application Id</label>
+                    <input class="searchfield" id="input_application_id" type="tel" placeholder="Enter Application Id" />
+
+                </div>
+                <div class="form-group">
+                    <label class="col-md-12 p-0">Mobile No</label>
+                    <input class="searchfield " id="input_contact_mobile" type="tel" placeholder="Enter Contact Mobile" />
+                </div>
+                <div class="form-group mb-1">
+                    <div class="col-sm-12 pl-0">
+                        <p class="text-danger fw-500">{{ msg }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer float-right">
+                <input class="btn btn-success float-right rounded-0" type="submit" value="Search..." />
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    $('#form_pre_inspection_search').on('submit', function (event) {
+        event.preventDefault();
+        var application_id = $('#input_application_id').val();
+        var contact_mobile = $('#input_contact_mobile').val();
+        var api_url = "http://192.168.1.81:60610/ujjwala/pre_inspection/"
+            + application_id + "/?contact_mobile="
+            + contact_mobile;
+        window.location.replace(api_url);
+    });
+</script>
+{% endblock %}

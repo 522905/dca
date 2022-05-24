@@ -1,29 +1,24 @@
-import io
-import zipfile
 import datetime
 
 import django_filters
-import magic
+import django_rq
 import requests
-from django.conf import settings
+from django.db.models import Q
 from django.http import JsonResponse, HttpResponse, HttpRequest
-from django.template import loader
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.response import Response
 
-from django.db.models import Q
-
+from communication_log.jobs import add_lead_to_vicidial
 from . import models
-from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, UjjwalaApplicationDocumentsEnum, \
-    FamilyMemberRelationEnum, ResidentialStatusEnum, MaritalStatusEnum, ManualOperationCodeEnum
+from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, FamilyMemberRelationEnum, \
+    ManualOperationCodeEnum
 from .forms import ApplicationRejected
 from .models import UjjwalaV2Application, FamilyMembers
 from .serializers import UjjwalaV2ApplicationSerializer
 from .ujjwala_functions import download_ujjwala_documents, get_salutation, download_pre_installation_documents
-from django.utils import timezone
 
 
 class CustomPagePagination(PageNumberPagination):
@@ -44,6 +39,7 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
     def get_work_items_for_doc_upload(self, request: HttpRequest, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         # queryset.filter(status=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED)
+        queryset = queryset.filter(status=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED, consumer_id__isnull=False)
         page = self.paginate_queryset(queryset)
         return self.get_paginated_response([
             {
@@ -114,6 +110,14 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         request.PERFORM_SUBMIT = True
         return super().create(request, *args, **kwargs)
 
+    # @action(methods=['post'], detail=True, url_path='submit_pre_inspection')
+    # def submit_pre_inspection(self, request, *args, **kwargs):
+    #     obj: UjjwalaV2Application = self.get_object()
+    #     serializer = SubmitPreInspectionSerializer(instance=obj, data=request.data, partial=True)
+    #     serializer.is_valid(raise_exception=True)
+    #     obj.transition_pre_inspection_submit(**serializer.data)
+    #     return HttpResponse('Ok')
+
     @action(methods=['get'], detail=False, url_path='check_phone')
     def check_phone(self, request, *args, **kwargs):
         contact_mobile = request.GET.get('contact_mobile')
@@ -154,6 +158,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
     @action(methods=['get'], detail=False, url_path='get_ekyc_accepted_list')
     def get_ekyc_accepted_list(self, request, *args, **kwargs):
+        # .filter(robo_sdms_dedup=RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE) \
         aadhar_list = UjjwalaV2Application.objects.filter(
             Q(status=UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED) |
             (
@@ -176,13 +181,12 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     def update_consumer_id(self, request, *args, **kwargs):
         result = request.data.get('result')
         application = UjjwalaV2Application.objects.filter(pk=request.data.get('id')).first()
-        application.sdms_last_updated_on = timezone.now() 
+        application.sdms_last_updated_on = timezone.now()
         application.save()
 
         if 'arun indane' not in result.get('distributor_name', '').lower():
             return HttpResponse('OK')
 
-        application = UjjwalaV2Application.objects.filter(pk=request.data.get('id')).first()
         self_family_member = application.family_members.filter(relation=FamilyMemberRelationEnum.SELF).first()
 
         self_family_member.uid_check_result = result
@@ -195,6 +199,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             # application.status = UjjwalaV2ApplicationStatus.EKYC_ACCEPTED
 
         application.save()
+
         return HttpResponse('OK')
 
 
@@ -227,9 +232,15 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                     continue
                 else:
                     if 'arun indane' not in member['result'].get('distributor_name').lower():
+                        if member['result'].get('relationship_status') != 'CANCELLED':
+                            record_valid = False
+                            invalid_result = member['result']
+                            invalid_result_relation = family_member_obj.relation
+                    elif family_member_obj.relation != 'SELF':
                         record_valid = False
                         invalid_result = member['result']
                         invalid_result_relation = family_member_obj.relation
+
             except FamilyMembers.DoesNotExist:
                 pass
 
@@ -265,6 +276,16 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         if getattr(self.request, "PERFORM_SUBMIT", False):
             try:
                 application.event_submit_channel_whatsapp()
+                # Add lead to vicicial
+                requests.post(
+                    "http://vici.hawabadlo.in/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+                    "&function=add_lead&phone_number={}&phone_code=1&list_id=1001&first_name={}&last_name={} ".format(
+                        application.contact_mobile, application.name, application.id)
+                )
+
+                # django_rq.enqueue(add_lead_to_vicidial, args=(
+                #     application.id, application.name, application.contact_mobile
+                # ))
             except:
                 pass
 
@@ -279,7 +300,6 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     def download_pre_inspection_docs(self, request, *args, **kwargs):
         obj = self.get_object()
         return download_pre_installation_documents(obj)
-
 
     @action(methods=['post'], detail=True, url_path='validate_contacts')
     def validate_contacts(self, request: HttpRequest, *args, **kwargs):
@@ -442,3 +462,4 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         )
         application.save()
         return HttpResponse('OK')
+    
