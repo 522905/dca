@@ -72,7 +72,7 @@ def download_pre_installation_documents(obj):
 def download_ujjwala_documents(obj):
     attachments = []
 
-    if obj.version in ('V2', 'V3'):
+    if obj.version != 'V1':
         customer_signature_file = obj.documents.filter(
             type=UjjwalaApplicationDocumentsEnum.CUSTOMER_SIGNATURE
         ).first().link

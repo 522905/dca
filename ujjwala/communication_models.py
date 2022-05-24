@@ -16,7 +16,7 @@ class UjjwalaWhatsappCommunication(object):
 			},
 			# "callbackData": "some_callback_data",
 			"template": {
-				"name": "ujjwala_application_submitted",
+				"name": "ujjwala_application_submitted_",
 				# "name": "domestic_application_sub_8v",
 				# "languageCode": "en_GB",
 				"languageCode": "hi",
@@ -26,7 +26,7 @@ class UjjwalaWhatsappCommunication(object):
 				"bodyValues": [
 					self.name,
 					self.id,
-					"21"
+					"90"
 				],
 				"buttonValues": {
 					"0": [

@@ -160,7 +160,10 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 Q(status=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED) &
                 Q(consumer_id__isnull=True)
             )
-        ).filter(sdms_last_updated_on__lte=datetime.datetime.today()-datetime.timedelta(hours=12)).exclude(version='V1').order_by('-id')
+        ).filter(
+		Q(sdms_last_updated_on__lte=datetime.datetime.today()-datetime.timedelta(hours=12)) |
+		Q(sdms_last_updated_on__isnull=True)
+	).exclude(version='V1').order_by('-id')
 
         return JsonResponse([
             {
