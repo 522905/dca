@@ -74,8 +74,7 @@
         event.preventDefault();
         var application_id = $('#input_application_id').val();
         var contact_mobile = $('#input_contact_mobile').val();
-        var api_url = "http://192.168.1.81:60610/ujjwala/pre_inspection/"
-            + application_id + "/?contact_mobile="
+        var api_url = "/ujjwala/pre_inspection/" + application_id + "/?contact_mobile="
             + contact_mobile;
         window.location.replace(api_url);
     });

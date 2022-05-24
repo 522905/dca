@@ -7,6 +7,7 @@ from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 
+from ujjwala.enums import UjjwalaV2ApplicationStatus
 from ujjwala.models import UjjwalaApplicationDocumentsEnum
 from formtools.wizard.views import SessionWizardView
 
@@ -53,7 +54,7 @@ class PreviewPreInspectionForm(forms.Form):
 		widget=forms.TextInput, max_length=256, label='Main Gate Photo', required=True
 	)
 	otp = forms.CharField(
-		widget=forms.TextInput, max_length=6, label='Otp', required=True
+		widget=forms.TextInput, max_length=6, label='Otp', required=False
 	)
 	mechanic_photo = forms.CharField(
 		widget=forms.TextInput, max_length=256, label='Mechanic Photo', required=True
@@ -84,6 +85,12 @@ class PreInspectionWizardForm(SessionWizardView):
 		if obj:
 			obj = obj.filter(contact_mobile=contact_mobile).first()
 			if obj:
+				if obj.status != UjjwalaV2ApplicationStatus.NIC_CLEARED:
+					return render(
+						request,
+						template_name="ujjwala/pre_inspection_search.html",
+						context={"msg": "Application is not ready for Pre-Inspection stage"}
+					)
 				return super(PreInspectionWizardForm, self).dispatch(request, *args, **kwargs)
 			else:
 				return render(

@@ -73,6 +73,23 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 			return True
 		return obj.status == UjjwalaV2ApplicationStatus.EDIT_APPLICATION
 
+	def get_fields(self, request, obj=None):
+		if obj and obj.status in (
+				UjjwalaV2ApplicationStatus.EDIT_APPLICATION
+		):
+			return [
+				'marital_status',
+				'residential_status',
+				'name',
+				'address_json',
+				'contact_mobile',
+				'uid_linked_mobile',
+				'uid_mobile_status',
+			]
+		else:
+			return super().get_fields(request, obj)
+
+
 	def get_readonly_fields(self, request, obj=None):
 		readonly_fields = super().get_readonly_fields(request, obj)
 
