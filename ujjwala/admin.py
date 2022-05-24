@@ -74,6 +74,8 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 		return obj.status == UjjwalaV2ApplicationStatus.EDIT_APPLICATION
 
 	def get_fields(self, request, obj=None):
+		# fields = super().get_fields(request, obj)
+		# return fields
 		if obj and obj.status in (
 				UjjwalaV2ApplicationStatus.EDIT_APPLICATION
 		):
@@ -85,6 +87,7 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 				'contact_mobile',
 				'uid_linked_mobile',
 				'uid_mobile_status',
+				'fsm_display_status',
 			]
 		else:
 			return super().get_fields(request, obj)

@@ -1,28 +1,33 @@
 <div class="row p-2 m-0 pt-0">
-	<div class="card card-profile pt-0 mt-0">
-		<div class="card-img-top" style="background-color: #424242; height:120px;"></div>
-		<div class="row justify-content-center">
-			<div class="col-lg-3 order-lg-2">
+	<div class="card card-profile pt-0 mt-0" >
+		<div class="row justify-content-center m-0" style="max-width: 400px; margin: 0 auto !important; padding: 10px;">
+			<div style="width: 50%; float:left">
 				<div class="card-profile-image">
 					<a href="#">
-						<img src="{{obj.document_self}}" class="rounded-circle">
+						<img src="{{obj.document_self}}">
 					</a>
 				</div>
 			</div>
-		</div>
-		<div class="card-body pt-0" style="margin-top: 50px;">
-			<div class="text-center">
-				<h5 class="h3">{{ obj.name }}<span class="font-weight-light"></span></h5>
-				<div class="h5 font-weight-300">
-					<i class="ni location_pin mr-2"></i>{{ obj.contact_mobile }}
-				</div>
-				<div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
-					<i class="ni business_briefcase-24 mr-2"></i>
-					{% for key,data in obj.address_json.items %}
-					{{data}},
-					{% endfor %}
+			<div style="width: 50%; float:right">
+				<div class="card-body pt-0" style="margin-top: 50px;">
+					<div class="text-center">
+						<h5 class="h3">{{ obj.name }}<span class="font-weight-light"></span></h5>
+						<div class="h5 font-weight-300">
+							<i class="ni location_pin mr-2"></i>{{ obj.contact_mobile }}
+						</div>
+						<div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
+							{% if address_json == address_json  %}
+								{% for key,data in obj.address_json.items %}
+									{{data}},
+								{% endfor %}
+							{% else %}
+								{{ obj.address }}
+							{% endif%}
+						</div>
+					</div>
 				</div>
 			</div>
+			
 		</div>
 	</div>
 	<div class="card mt-0" style="width: 100%;">
