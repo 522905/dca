@@ -45,7 +45,7 @@
                     {% for form in wizard.form.forms %}
                 {% endfor %}
                 {% else %}
-                <!-- {{ wizard.form}} -->
+                 {{ wizard.form.non_field_errors }}
                 <div class="photo_block">
                     <span class="hidden-field">{{ wizard.form.application_id }}</span>
                 </div>
@@ -81,7 +81,7 @@
                                                     <button type="button" class="btn button-primary clear" data-action="clear">Clear</button>
                                                 </div>
                                                 <div>
-                                                    <button type="button" id="submit" name="submit" onclick="upload_sign_and_submit()" class="btn btn-success">Upload Signature & Submit</button>
+                                                    <!-- <button type="button"  name="submit" value="submit" class="btn btn-success">Upload Signature & Submit</button> -->
                                                 </div>
                                             </div>
                                         </div>
@@ -96,9 +96,9 @@
             <div class="card-footer">
                 {% if wizard.steps.prev %}
                 <button class="btn btn-secondary rounded-0" name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">first</button>
-                <button class="btn btn-secondary rounded-0" name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">Next</button>
+                <button class="btn btn-secondary rounded-0" name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">Previous</button>
                 {% endif %}
-                <input class="btn btn-secondary rounded-0" type="submit" value="submit"/>
+                <input class="btn btn-secondary rounded-0" id="submit" id="submit" onclick="upload_sign_and_submit()"  type="submit" />
             </div>
         </form>
     </div>
