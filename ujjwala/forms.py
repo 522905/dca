@@ -1,4 +1,5 @@
 import json
+import logging
 
 from django import forms
 from django.contrib.auth.decorators import login_required
@@ -11,6 +12,15 @@ from ujjwala.enums import UjjwalaV2ApplicationStatus
 from ujjwala.models import UjjwalaApplicationDocumentsEnum
 from formtools.wizard.views import SessionWizardView
 
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.FileHandler("/tmp/debug.log"),
+    ]
+)
 
 class CustomerKitchenPreInspectionForm(forms.Form):
 	# widget=forms.HiddenInput,
@@ -104,6 +114,12 @@ class PreInspectionWizardForm(SessionWizardView):
 				template_name="ujjwala/pre_inspection_search.html",
 				context={"msg": "Application Id: {} Not Found".format(application_id)}
 			)
+
+	def render(self, form=None, **kwargs):
+		if form and not form.is_valid():
+			logger.warning(form.errors.as_text())
+		return super().render(form=form, **kwargs)
+
 
 	def get_form_initial(self, step):
 		init_data = self.initial_dict.get(step, {})
