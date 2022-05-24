@@ -1,0 +1,209 @@
+<link rel="stylesheet" href="https://arungas.com/public/ujwalla/css/signature-pad.css">
+<script src="https://arungas.com/public/ujwalla/js/signature_pad.umd.js"></script>
+<div class="row p-2 m-0 pt-0" style="max-width:800px; overflow-x: hidden;">
+    <style>
+        .location_display input{ float: left; width: 100px !important; margin-right: 10px !important;}
+    </style>
+    <div class="card card-profile pt-0 mt-0">
+        <div class="card-img-top" style="background-color: #f33155; height:120px;"></div>
+        <div class="row justify-content-center">
+            <div class="col-lg-3 order-lg-2">
+                <div class="card-profile-image">
+                    <a href="#">
+                        <img src="{{obj.document_self}}" class="rounded-circle">
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body pt-0" style="margin-top: 50px;">
+            <div class="text-center">
+                <h5 class="h3">{{ obj.name }}<span class="font-weight-light"></span></h5>
+                <div class="h5 font-weight-300">
+                    <i class="ni location_pin mr-2"></i>{{ obj.contact_mobile }}
+                </div>
+                <div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
+                    <i class="ni business_briefcase-24 mr-2"></i>
+                    {% for key,data in obj.address_json.items %}
+                    {{data}},
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card card_body_form">
+        <form action="" method="post">
+            {% csrf_token %}
+            <table>
+                {{ wizard.management_form }}
+                {% if wizard.form.forms %}
+                    {{ wizard.form.management_form }}
+                    {% for form in wizard.form.forms %}
+                {% endfor %}
+                {% else %}
+                {{ wizard.form.non_field_errors }}
+                    <div class="photo_block">
+                        <span class="hidden-field">{{ wizard.form.application_id }}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group ">
+                            <div class="row">
+                                <div class="col-sm-6 photo_block pl-lg-0">
+                                    <span class="hidden-field">{{ wizard.form.main_gate }}</span>
+                                    <label>Photo of main Gate(मुख्य द्वार की तस्वीर)</label>
+                                    <p id="preview_pre_inspection_form-main_gate"></p>
+                                </div>
+                                <div class="col-sm-6 photo_block pr-lg-0">
+                                    <span class="hidden-field">{{ wizard.form.mechanic_photo }}</span>
+                                    <label>Photo of Mechanic (मैकेनिक की तस्वीर)</label>
+                                    <p id="preview_pre_inspection_form-mechanic_photo"></p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12 photo_block p-0">
+                                    <span class="hidden-field">{{ wizard.form.otp }}</span>
+                                    <label>Enter OTP</label>
+                                    <input placeholder="ओटीपी दर्ज करें" type="text" id="preview_pre_inspection_form-otp" name="preview_pre_inspection_form-otp" value=""/>
+                                </div>
+                                <div class="col-sm-12 photo_block p-0">
+                                    <label>Click button Capture Location</label>
+                                    <p id="map_error_msg"></p>
+                                    <p class="location_display">{{wizard.form.latitude}} {{wizard.form.longitude}} {{wizard.form.accuracy}}</p>
+                                    
+                                </div>
+                                <div class="col-sm-12 photo_block p-0">
+                                    <div class="allowLocationNav"><button class="btn btn-primary" onClick="allowLocationNav();">Capture Location</button></div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </table>
+            <div class="card-footer">
+                {% if wizard.steps.prev %}
+                <button class="btn btn-secondary rounded-0" name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">first</button>
+                <button class="btn btn-secondary rounded-0" name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">Next</button>
+                {% endif %}
+                <input class="btn btn-secondary rounded-0" type="submit" value="submit"/>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="https://arungas.com/public/ujwalla/js/signature_pad.umd.js"></script>
+<script>
+    // main gate
+    window.main_gateUppy = new Uppy.Core({
+        debug: true,
+        autoProceed: true,
+        restrictions: {
+            maxFileSize: 50000000,
+            maxNumberOfFiles: 1,
+            minNumberOfFiles: 1,
+            allowedFileTypes: ['image/*'],
+        }
+    })
+    .use(Uppy.Dashboard, {
+        trigger: '#preview_pre_inspection_form-main_gate',
+        inline: true,
+        target: '#preview_pre_inspection_form-main_gate',
+        showProgressDetails: true,
+        note: 'Images and video only, 2–3 files, up to 10 MB',
+        height: 200,
+        metaFields: [],
+        id: 'preview_pre_inspection_form-main_gate',
+        browserBackButtonClose: false
+    })
+    .use(Uppy.Tus, {
+        endpoint: 'https://tus.dca.arungas.com/files/',
+    })
+    main_gateUppy.on('complete', result => {
+        $('#id_preview_pre_inspection_form-main_gate').val(result.successful[0].uploadURL);
+    })
+
+    // mmechanic_photo
+    window.mechanic_photoUppy = new Uppy.Core({
+        debug: true,
+        autoProceed: true,
+        restrictions: {
+            maxFileSize: 50000000,
+            maxNumberOfFiles: 1,
+            minNumberOfFiles: 1,
+            allowedFileTypes: ['image/*'],
+        }
+    })
+    .use(Uppy.Dashboard, {
+        trigger: '#preview_pre_inspection_form-mechanic_photo',
+        inline: true,
+        target: '#preview_pre_inspection_form-mechanic_photo',
+        showProgressDetails: true,
+        note: 'Images and video only, 2–3 files, up to 10 MB',
+        height: 200,
+        metaFields: [],
+        id: 'preview_pre_inspection_form-mechanic_photo',
+        browserBackButtonClose: false
+    })
+    .use(Uppy.Tus, {
+        endpoint: 'https://tus.dca.arungas.com/files/',
+    })
+    mechanic_photoUppy.on('complete', result => {
+        $('#id_preview_pre_inspection_form-mechanic_photo').val(result.successful[0].uploadURL);
+    })
+</script>
+
+<script>
+    // lat long accuracy
+    function allowLocationNav() {
+        navigator.geolocation.getCurrentPosition(
+            successCallback,
+            errorCallback_highAccuracy,
+            {maximumAge:600000, timeout:5000, enableHighAccuracy: true}
+        );
+        console.log('allowLocationNav');
+    }
+
+    function errorCallback_highAccuracy(error) {
+        if (error.code == error.TIMEOUT)
+        {
+            // Attempt to get GPS loc timed out after 5 seconds, 
+            // try low accuracy location
+            $('#map_error_msg').append("attempting to get low accuracy location");
+            navigator.geolocation.getCurrentPosition(
+                successCallback, 
+                errorCallback_lowAccuracy,
+                {maximumAge:600000, timeout:10000, enableHighAccuracy: false});
+            return;
+        }
+        
+        var msg = "<p>Can't get your location (high accuracy attempt). Error = ";
+        if (error.code == 1)
+            msg += "PERMISSION_DENIED";
+        else if (error.code == 2)
+            msg += "POSITION_UNAVAILABLE";
+        msg += ", msg = "+error.message;
+        
+        $('#map_error_msg').append(msg);
+    }
+
+    function errorCallback_lowAccuracy(error) {
+        var msg = "<p>Can't get your location (low accuracy attempt). Error = ";
+        if (error.code == 1)
+            msg += "PERMISSION_DENIED";
+        else if (error.code == 2)
+            msg += "POSITION_UNAVAILABLE";
+        else if (error.code == 3)
+            msg += "TIMEOUT";
+        msg += ", msg = "+error.message;
+        
+        $('#map_error_msg').append(msg);
+    }
+
+    function successCallback(position) {
+        var latitude = position.coords.latitude;
+        var longitude = position.coords.longitude;
+        $('#map_error_msg').append("<p>Your location is: " + latitude + "," + longitude+" </p><p>Accuracy="+position.coords.accuracy+"m");
+        $('#id_preview_pre_inspection_form-latitude').val(latitude);
+        $('#id_preview_pre_inspection_form-longitude').val(longitude);
+        $('#id_preview_pre_inspection_form-accuracy').val(position.coords.accuracy);
+    }
+</script>
+

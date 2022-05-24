@@ -1,0 +1,122 @@
+{% extends "material/frontend/base.html" %}
+{% load material_form material_frontend %}
+{% block extrahead %}
+{% endblock %}
+{% load org_tags %}
+{% block content %}
+
+<style>
+	@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;600;700;800&display=swap');
+	body{font-family: 'Montserrat'; }
+	.photo_block { position: relative;}
+	.photo_block label{ font-size: 1rem; color: #263238; font-family: 'Nunito Sans', sans-serif; font-weight: 500; }
+	.photo_block .hidden-field{ opacity: 0; position: absolute; }
+	.uppy-Dashboard-inner{ width:200px !important; height: 150px !important;}
+	.uppy-Dashboard-inner{ width: 100% !important;}
+	.card-profile {
+		float: left;
+		width: 100%;
+	}
+
+	.card-profile-image {
+		position: relative
+	}
+
+	.card-profile-image img {
+		position: absolute;
+		left: 50%;
+		width: 140px;
+		height: 140px;
+		transition: all .15s ease;
+		transform: translate(-50%, -50%) scale(1);
+		border: 3px solid #fff;
+		border-radius: .375rem
+	}
+
+	.card-profile-image img:hover {
+		transform: translate(-50%, -50%) scale(1.03)
+	}
+
+	.card-profile-stats {
+		padding: 1rem 0
+	}
+
+	.card-profile-stats>div {
+		margin-right: 1rem;
+		padding: .875rem;
+		text-align: center
+	}
+
+	.card-profile-stats>div:last-child {
+		margin-right: 0
+	}
+
+	.card-profile-stats>div .heading {
+		font-size: 1.1rem;
+		font-weight: 700;
+		display: block
+	}
+
+	.card-profile-stats>div .description {
+		font-size: .875rem;
+		color: #adb5bd
+	}
+
+	.card-profile-actions {
+		padding: .875rem
+	}
+	.card_body_form .form-horizontal .form-group .form-control, .card_body_form .form-horizontal .form-group .form-select {
+		background-color: rgba(0,0,0,0);
+		background-position: center bottom,center calc(99%);
+		background-repeat: no-repeat;
+		background-size: 0 2px,100% 1px;
+		padding: 0;
+		-webkit-transition: background 0s ease-out 0s;
+		transition: background 0s ease-out 0s;
+		font-family: 'Nunito Sans', sans-serif;
+	}
+	input[placeholder], [placeholder], *[placeholder] {
+		color: #999 !important;
+	}
+	::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+		color: #999;
+		opacity: 1; /* Firefox */
+	}
+
+	:-ms-input-placeholder { /* Internet Explorer 10-11 */
+		color: #999;
+	}
+
+	::-ms-input-placeholder { /* Microsoft Edge */
+		color: #999;
+	}
+	.card_body_form .form-group input{ height: 2rem; }
+</style>
+
+<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" >
+<link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.css" >
+<link rel="stylesheet" href="https://arungas.com/public/ujwalla/css/signature-pad.css">
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.js"></script>
+	{% if wizard.steps.current == 'customer_kitchen_form' %}
+	<div class="card-block">
+		{% include "ujjwala/pre-Inspection-form/steps/customer-kitchen.html" %}
+	</div>
+	{% endif %}
+
+	{% if wizard.steps.current == 'witness_form' %}
+	<div class="card-block">
+		{% include "ujjwala/pre-Inspection-form/steps/witness.html" %}
+	</div>
+	{% endif %}
+
+	{% if wizard.steps.current == 'preview_pre_inspection_form' %}
+	<div class="card-block">
+		{% include "ujjwala/pre-Inspection-form/steps/preview_pre_inspection.html" %}
+	</div>
+	{% endif %}
+</div>
+
+{% endblock %}

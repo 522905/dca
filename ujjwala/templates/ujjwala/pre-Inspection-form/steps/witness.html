@@ -1,0 +1,239 @@
+<link rel="stylesheet" href="https://arungas.com/public/ujwalla/css/signature-pad.css">
+<script src="https://arungas.com/public/ujwalla/js/signature_pad.umd.js"></script>
+<style>
+    .signature-pad{ padding: 2px !important;}
+</style>
+<div class="row p-2 m-0 pt-0" style="max-width:800px; overflow-x: hidden;">
+	<div class="card card-profile pt-0 mt-0">
+		<div class="card-img-top" style="background-color: #f33155; height:120px;"></div>
+		<div class="row justify-content-center">
+			<div class="col-lg-3 order-lg-2">
+				<div class="card-profile-image">
+					<a href="#">
+						<img src="{{obj.document_self}}" class="rounded-circle">
+					</a>
+				</div>
+			</div>
+		</div>
+		<div class="card-body pt-0" style="margin-top: 50px;">
+			<div class="text-center">
+				<h5 class="h3">{{ obj.name }}<span class="font-weight-light"></span></h5>
+				<div class="h5 font-weight-300">
+					<i class="ni location_pin mr-2"></i>{{ obj.contact_mobile }}
+				</div>
+				<div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
+					<i class="ni business_briefcase-24 mr-2"></i>
+					{% for key,data in obj.address_json.items %}
+					{{data}},
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+	</div>
+    <div class="card card_body_form">
+        <form action="" method="post">
+            {% csrf_token %}
+            <table>
+                {{ wizard.management_form }}
+                {% if wizard.form.forms %}
+                    {{ wizard.form.management_form }}
+                    {% for form in wizard.form.forms %}
+                {% endfor %}
+                {% else %}
+                <!-- {{ wizard.form}} -->
+                <div class="photo_block">
+                    <span class="hidden-field">{{ wizard.form.application_id }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="form-group ">
+                        <div class="row">
+                            <div class="col-sm-12  photo_block mb-3 p-0">
+                                    <input type="text" class="hidden-field" id="witness_form-witness_name" value="">
+                                    <label>Name of Witness</label>
+                                    <input placeholder="गवाह का नाम" type="text" id="witness_form-witness_name" name="witness_form-witness_name" value="">
+                                </div>
+                            <div class="col-sm-12  photo_block p-0">
+                                <input class="hidden-field" id="witness_form-witness_mobile_number" name="mobile_number" value=""/>
+                                <label>Witness Mobile Number</label>
+                                <input placeholder="गवाह का मोबाइल नंबर" type="tel" id="witness_form-witness_mobile_number" name="witness_form-witness_mobile_number" value=""/>
+                            </div>
+                            <div class="col-sm-12 photo_block p-0">
+                                <span class="hidden-field">{{ wizard.form.witness_photo }}</span>
+                                <label>Photo of witness(गवाह की तस्वीर)</label>
+                                <p id="witness_form-witness_photo"></p>
+                            </div>
+                            <div class="col-sm-12 p-0">
+                                <div class="photo_block">
+                                    <span class="hidden-field">{{ wizard.form.witness_signature_photo }}</span>
+                                    </div>
+                                    <div id="witness_signature_photo" class="signature-pad" >
+                                        <div class="signature-pad--body">
+                                            <canvas></canvas>
+                                        </div>
+                                        <div class="signature-pad--footer">
+                                            <div class="signature-pad--actions">
+                                                <div>
+                                                    <button type="button" class="btn button-primary clear" data-action="clear">Clear</button>
+                                                </div>
+                                                <div>
+                                                    <button type="button" id="submit" name="submit" onclick="upload_sign_and_submit()" class="btn btn-success">Upload Signature & Submit</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </table>
+            <div class="card-footer">
+                {% if wizard.steps.prev %}
+                <button class="btn btn-secondary rounded-0" name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">first</button>
+                <button class="btn btn-secondary rounded-0" name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">Next</button>
+                {% endif %}
+                <input class="btn btn-secondary rounded-0" type="submit" value="submit"/>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+
+window.witness_photoUppy = new Uppy.Core({
+		debug: true,
+		autoProceed: true,
+		restrictions: {
+			maxFileSize: 50000000,
+			maxNumberOfFiles: 1,
+			minNumberOfFiles: 1,
+			allowedFileTypes: ['image/*'],
+		}
+	})
+	.use(Uppy.Dashboard, {
+		trigger: '#witness_form-witness_photo',
+		inline: true,
+		target: '#witness_form-witness_photo',
+		showProgressDetails: true,
+		note: 'Images and video only, 2–3 files, up to 10 MB',
+		height: 200,
+		metaFields: [],
+		id: 'witness_form-witness_photo',
+		browserBackButtonClose: false
+	})
+	.use(Uppy.Tus, {
+		endpoint: 'https://tus.dca.arungas.com/files/',
+	})
+	witness_photoUppy.on('complete', result => {
+		$('#id_witness_form-witness_photo').val(result.successful[0].uploadURL);
+	})
+
+    // signature upload
+    function upload_sign_and_submit() {
+    
+    if (signaturePad.isEmpty()) {
+        alert("Please provide a signature first.");
+    } else {
+        var dataURL = signaturePad.toDataURL();
+        var blob = dataURLToBlob(dataURL);
+        let sign_uppy = new Uppy.Core({
+            debug: true,
+            autoProceed: true,
+            restrictions: {
+                maxFileSize: 50000000,
+                maxNumberOfFiles: 1,
+                minNumberOfFiles: 1,
+                allowedFileTypes: ['image/*'],
+            }
+        })
+        .use(Uppy.Tus, {
+            endpoint: 'https://tus.dca.arungas.com/files/',
+        });
+        
+        sign_uppy.addFile({
+            name: `signature_${new Date().getTime()}_${(Math.random() + 1).toString(36).substring(7)}.png`,
+            type: 'image/png',
+            data: blob,
+            source: 'Local', // optional, determines the source of the file, for example, Instagram.
+            isRemote: false, // optional, set to true if actual file is not in the browser, but on some remote server, for example,
+        });
+        sign_uppy.upload().then((result) => {
+            if (result.failed.length > 0) {
+                alert("Error Uploading Signature, try again");
+                console.error('Errors:')
+                result.failed.forEach((file) => {
+                    console.error(file.error)
+                })
+            } else {
+                console.info('Successful uploads:', result.successful);
+                // submit_form(result.successful[0].uploadURL)
+                    $('#id_witness_form-witness_signature_photo').val(result.successful[0].uploadURL);
+            }
+        });
+
+    }
+}
+
+var wrapper = document.getElementById("witness_signature_photo");
+var clearButton = wrapper.querySelector("[data-action=clear]");
+
+var canvas = wrapper.querySelector("canvas");
+var signaturePad = new SignaturePad(canvas, {
+    backgroundColor: 'rgb(255, 255, 255)'
+});
+window.signaturePad = signaturePad;
+
+function resizeCanvas() {
+var ratio =  Math.max(window.devicePixelRatio || 1, 1);
+
+    // This part causes the canvas to be cleared
+    canvas.width = canvas.offsetWidth * ratio;
+    canvas.height = canvas.offsetHeight * ratio;
+    canvas.getContext("2d").scale(ratio, ratio);
+        signaturePad.clear();
+    }
+
+window.onresize = resizeCanvas;
+resizeCanvas();
+
+    function download(dataURL, filename) {
+    if (navigator.userAgent.indexOf("Safari") > -1 && navigator.userAgent.indexOf("Chrome") === -1) {
+        window.open(dataURL);
+    } else {
+        var blob = dataURLToBlob(dataURL);
+        var url = window.URL.createObjectURL(blob);
+
+        var a = document.createElement("a");
+        a.style = "display: none";
+        a.href = url;
+        a.download = filename;
+
+        document.body.appendChild(a);
+        a.click();
+
+        window.URL.revokeObjectURL(url);
+    }
+    }
+
+    // One could simply use Canvas#toBlob method instead, but it's just to show
+    // that it can be done using result of SignaturePad#toDataURL.
+    function dataURLToBlob(dataURL) {
+    // Code taken from https://github.com/ebidel/filer.js
+    var parts = dataURL.split(';base64,');
+    var contentType = parts[0].split(":")[1];
+    var raw = window.atob(parts[1]);
+    var rawLength = raw.length;
+    var uInt8Array = new Uint8Array(rawLength);
+
+    for (var i = 0; i < rawLength; ++i) {
+        uInt8Array[i] = raw.charCodeAt(i);
+    }
+
+    return new Blob([uInt8Array], { type: contentType });
+    }
+
+    clearButton.addEventListener("click", function (event) {
+    signaturePad.clear();
+});
+</script>
+
