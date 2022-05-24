@@ -360,6 +360,7 @@ class FamilyMembers(models.Model):
 	uid_back_compressed = models.BooleanField(default=False)
 	uid_front_file_size = models.CharField(max_length=16, default='0')
 	uid_back_file_size = models.CharField(max_length=16, default='0')
+	additional_details = models.JSONField(null=True, blank=True)
 
 	def get_gender(self):
 		if self.relation in (
