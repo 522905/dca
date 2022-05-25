@@ -1,3 +1,4 @@
+{% load static %}
 <link rel="stylesheet" href="https://arungas.com/public/ujwalla/css/signature-pad.css">
 <script src="https://arungas.com/public/ujwalla/js/signature_pad.umd.js"></script>
 <style>
@@ -40,12 +41,12 @@
             {% csrf_token %}
             <table>
                 {{ wizard.management_form }}
-                {% if wizard.form.forms %}
-                    {{ wizard.form.management_form }}
-                    {% for form in wizard.form.forms %}
-                {% endfor %}
+                    {% if wizard.form.forms %}
+                        {{ wizard.form.management_form }}
+                        {% for form in wizard.form.forms %}
+                    {% endfor %}
                 {% else %}
-                 {{ wizard.form.non_field_errors }}
+                <!-- <p class="text-danger">{{ wizard.form.non_field_errors }}</p> -->
                 <div class="photo_block">
                     <span class="hidden-field">{{ wizard.form.application_id }}</span>
                 </div>
@@ -56,16 +57,19 @@
                                     <input type="text" class="hidden-field" id="witness_form-witness_name" value="">
                                     <label>Name of Witness</label>
                                     <input placeholder="गवाह का नाम" type="text" id="witness_form-witness_name" name="witness_form-witness_name" value="">
+                                    {{ wizard.form.witness_name.errors }}
                                 </div>
                             <div class="col-sm-12  photo_block p-0">
                                 <input class="hidden-field" id="witness_form-witness_mobile_number" name="mobile_number" value=""/>
                                 <label>Witness Mobile Number</label>
                                 <input placeholder="गवाह का मोबाइल नंबर" type="tel" id="witness_form-witness_mobile_number" name="witness_form-witness_mobile_number" value=""/>
+                               {{ wizard.form.witness_mobile_number.errors }}
                             </div>
                             <div class="col-sm-12 photo_block p-0">
                                 <span class="hidden-field">{{ wizard.form.witness_photo }}</span>
                                 <label>Photo of witness(गवाह की तस्वीर)</label>
                                 <p id="witness_form-witness_photo"></p>
+                                {{ wizard.form.witness_photo.errors }}
                             </div>
                             <div class="col-sm-12 p-0">
                                 <div class="photo_block">
@@ -81,11 +85,12 @@
                                                     <button type="button" class="btn button-primary clear" data-action="clear">Clear</button>
                                                 </div>
                                                 <div>
-                                                    <!-- <button type="button"  name="submit" value="submit" class="btn btn-success">Upload Signature & Submit</button> -->
+                                                    <!-- <button type="button" onclick="upload_sign_and_submit()" value="submit" class="btn btn-success">Upload Signature & Submit</button> -->
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+                                    {{ wizard.form.witness_signature_photo.errors }}
                                 </div>
                             </div>
                         </div>
@@ -98,13 +103,12 @@
                 <button class="btn btn-secondary rounded-0" name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">first</button>
                 <button class="btn btn-secondary rounded-0" name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">Previous</button>
                 {% endif %}
-                <input class="btn btn-secondary rounded-0" id="submit" id="submit" onclick="upload_sign_and_submit()"  type="submit" />
+                <input class="btn btn-secondary rounded-0" type="submit" onclick="upload_sign_and_submit()" value="Upload Signature & Submit"/>
             </div>
         </form>
     </div>
 </div>
 <script>
-
 window.witness_photoUppy = new Uppy.Core({
 		debug: true,
 		autoProceed: true,

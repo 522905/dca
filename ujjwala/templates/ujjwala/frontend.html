@@ -5,27 +5,60 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <style>
     body {
-    background: #eee
-}
-.ico {
-    width: 70px;
-}
-.action > div {
-    width: 120px;
-}
-.action > div .btn {
-    border-radius: 70px !important;
-}
+        background: #eee
+    }
+
+    .ico {
+        width: 70px;
+    }
+
+    .action>div {
+        width: 120px;
+    }
+
+    .action>div .btn {
+        border-radius: 70px !important;
+    }
+
+    #parent {
+        display: table
+    }
+
+    #child {
+        display: table-cell;
+        vertical-align: middle;
+    }
 </style>
-<div class="card">
-    <div class="card-body d-flex justify-content-between">
+<div class="card" style="display: table; margin: 0 auto;">
+    <div class="card-body d-flex justify-content-between" style=" display: table-cell; vertical-align: middle;">
         <div class="content d-flex align-items-center justify-content-between">
-            <div class="ico">
-                <span class="material-icons" style="font-size: 5rem;">face</span>
-            </div>
             <div class="main ml-3">
-                <h1 class="m-0 font-weight-light h3">Welcome</h1>
-                <p class="mb-1 small"></p>
+                <form action="" method="post">
+                    {% csrf_token %}
+                    <table>
+                        {{ wizard.management_form }}
+                        {% if wizard.form.forms %}
+                        {{ wizard.form.management_form }}
+                        {% for form in wizard.form.forms %}
+                        {% endfor %}
+                        {% else %}
+                        {{ wizard.form.non_field_errors }}
+                        <div id="parent">
+                            <div id="child">
+                                <div class="ico" style="margin:0 auto; text-align:center;">
+                                    <span class="material-icons" style="font-size: 5rem;">face</span>
+                                </div>
+                                <div class="photo_block">
+                                    <span class="hidden-field">{{ wizard.form.application_id }}</span>
+                                </div>
+                                <h1 class="m-0 font-weight-light h3 text-center text-success">Thanks Your Pre Delivery
+                                    Inspection <br> Successfully Completed</h1>
+                                <p class="mb-1 small"></p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </table>
+                </form>
             </div>
         </div>
 

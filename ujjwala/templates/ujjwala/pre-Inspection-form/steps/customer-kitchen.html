@@ -59,11 +59,13 @@
 										<span class="hidden-field">{{ wizard.form.customer_in_kitchen }}</span>
 										<label>Photo of customer with kitchen<br> (रसोईघर के साथ ग्राहक की तस्वीर)</label>
 										<p id="customer_kitchen_form-customer_in_kitchen"></p>
+										{{ wizard.form.customer_in_kitchen.errors }}
 									</div>
 									<div class="col-sm-6 photo_block">
 										<span class="hidden-field">{{ wizard.form.kitchen_photo }}</span>
 										<label>Photo of Kitchen <br>(रसोईघर की तस्वीर)</label>
 										<p id="customer_kitchen_form-kitchen_photo"></p>
+										{{ wizard.form.kitchen_photo.errors }}
 									</div>
 								</div>
 							</div>

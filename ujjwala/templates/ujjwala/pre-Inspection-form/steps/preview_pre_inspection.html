@@ -1,5 +1,8 @@
 <link rel="stylesheet" href="https://arungas.com/public/ujwalla/css/signature-pad.css">
 <script src="https://arungas.com/public/ujwalla/js/signature_pad.umd.js"></script>
+<style>
+    .lacation_field span{ float: left; width: 100px; }
+</style>
 <div class="row p-2 m-0 pt-0" style="max-width:800px; overflow-x: hidden;">
     <style>
         .location_display input{ float: left; width: 100px !important; margin-right: 10px !important;}
@@ -35,6 +38,7 @@
 			
 		</div>
 	</div>
+  
     <div class="card card_body_form">
         <form action="" method="post">
             {% csrf_token %}
@@ -49,18 +53,37 @@
                     <div class="photo_block">
                         <span class="hidden-field">{{ wizard.form.application_id }}</span>
                     </div>
+                      
                     <div class="card-body">
                         <div class="form-group ">
+                            <div class="row border-bottom mb-2">
+                                <div class="lacation_field col-sm-8">
+                                    <span>{{ wizard.form.latitude }}</span>
+                                    <span>{{ wizard.form.longitude }}</span>
+                                    <span>{{ wizard.form.accuracy }}</span>
+                                </div>
+                                <div class="col-sm-4 photo_block pl-lg-0 mb-3">
+                                    <div class="allowLocationNav">
+                                        <button class="btn btn-primary" onClick="allowLocationNav();">
+                                            Capture Location
+                                        </button>
+                                    </div>
+                                    <p id="map_error_msg"></p>
+                                    {{ wizard.form.latitude.errors }} {{ wizard.form.longitude.errors }} {{ wizard.form.accuracy.errors }}
+                                </div>
+                            </div>
                             <div class="row">
                                 <div class="col-sm-6 photo_block pl-lg-0">
                                     <span class="hidden-field">{{ wizard.form.main_gate }}</span>
                                     <label>Photo of main Gate(मुख्य द्वार की तस्वीर)</label>
                                     <p id="preview_pre_inspection_form-main_gate"></p>
+                                    {{ wizard.form.main_gate.errors }}
                                 </div>
                                 <div class="col-sm-6 photo_block pr-lg-0">
                                     <span class="hidden-field">{{ wizard.form.mechanic_photo }}</span>
                                     <label>Photo of Mechanic (मैकेनिक की तस्वीर)</label>
                                     <p id="preview_pre_inspection_form-mechanic_photo"></p>
+                                    {{ wizard.form.mechanic_photo.errors }}
                                 </div>
                             </div>
                             <div class="row">
@@ -68,15 +91,11 @@
                                     <span class="hidden-field">{{ wizard.form.otp }}</span>
                                     <label>Enter OTP</label>
                                     <input placeholder="ओटीपी दर्ज करें" type="text" id="preview_pre_inspection_form-otp" name="preview_pre_inspection_form-otp" value=""/>
+                                    {{ wizard.form.otp.errors }}
                                 </div>
-                                <div class="col-sm-12 photo_block p-0">
-                                    <label>Click button Capture Location</label>
-                                    <p id="map_error_msg"></p>
-                                </div>
-                                <div class="col-sm-12 photo_block p-0">
 
-                                </div>
                             </div>
+                            
                         </div>
                     </div>
                 {% endif %}
@@ -89,11 +108,7 @@
                 <input class="btn btn-secondary rounded-0" type="submit" value="submit"/>
             </div>
         </form>
-        <div class="allowLocationNav">
-            <button class="btn btn-primary" onClick="allowLocationNav();">
-                Capture Location
-            </button>
-        </div>
+
     </div>
 </div>
 <script src="https://arungas.com/public/ujwalla/js/signature_pad.umd.js"></script>
@@ -207,10 +222,15 @@
     function successCallback(position) {
         var latitude = position.coords.latitude;
         var longitude = position.coords.longitude;
-        $('#map_error_msg').append("<p>Your location is: " + latitude + "," + longitude+" </p><p>Accuracy="+position.coords.accuracy+"m");
+
+        var meter = Math.round(position.coords.accuracy);
+
+        $('#map_error_msg').append("<p>Your location is: " + latitude + "," + longitude+" </p><p>Accuracy="+meter+"m");
         $('#id_preview_pre_inspection_form-latitude').val(latitude);
         $('#id_preview_pre_inspection_form-longitude').val(longitude);
         $('#id_preview_pre_inspection_form-accuracy').val(position.coords.accuracy);
+        console.log(successCallback);
+
     }
 </script>
 
