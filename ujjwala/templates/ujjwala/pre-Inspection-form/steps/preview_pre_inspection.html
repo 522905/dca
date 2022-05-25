@@ -61,6 +61,7 @@
                                     <span>{{ wizard.form.latitude }}</span>
                                     <span>{{ wizard.form.longitude }}</span>
                                     <span>{{ wizard.form.accuracy }}</span>
+                                    <p id="map_error_msg"></p>
                                 </div>
                                 <div class="col-sm-4 photo_block pl-lg-0 mb-3">
                                     <div class="allowLocationNav">
@@ -113,6 +114,9 @@
 </div>
 <script src="https://arungas.com/public/ujwalla/js/signature_pad.umd.js"></script>
 <script>
+    $("#id_preview_pre_inspection_form-latitude").prop("readonly", true);
+    $("#id_preview_pre_inspection_form-longitude").prop("readonly", true);
+    $("#id_preview_pre_inspection_form-accuracy").prop("readonly", true);
     // main gate
     window.main_gateUppy = new Uppy.Core({
         debug: true,
