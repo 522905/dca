@@ -361,6 +361,7 @@ class FamilyMembers(models.Model):
 	uid_front_file_size = models.CharField(max_length=16, default='0')
 	uid_back_file_size = models.CharField(max_length=16, default='0')
 	additional_details = models.JSONField(null=True, blank=True)
+	is_valid_uid = models.BooleanField(null=True, blank=True)
 
 	def get_gender(self):
 		if self.relation in (

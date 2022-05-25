@@ -95,11 +95,22 @@ class PreInspectionWizardForm(SessionWizardView):
 		if obj:
 			obj = obj.filter(contact_mobile=contact_mobile).first()
 			if obj:
-				if obj.status != UjjwalaV2ApplicationStatus.NIC_CLEARED:
+				if obj.status in (
+						UjjwalaV2ApplicationStatus.PRE_INSPECTION_SUBMITTED,
+						UjjwalaV2ApplicationStatus.PRE_INSPECTION_ACCEPTED
+				):
 					return render(
 						request,
 						template_name="ujjwala/pre_inspection_search.html",
-						context={"msg": "Application is not ready for Pre-Inspection stage"}
+						context={"msg": "Pre-Inspection already done."}
+					)
+				elif obj.status not in (
+						UjjwalaV2ApplicationStatus.NIC_CLEARED
+				):
+					return render(
+						request,
+						template_name="ujjwala/pre_inspection_search.html",
+						context={"msg": "Application is not ready for Pre-Inspection stage."}
 					)
 				return super(PreInspectionWizardForm, self).dispatch(request, *args, **kwargs)
 			else:
