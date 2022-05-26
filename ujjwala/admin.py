@@ -33,8 +33,8 @@ class UjjwalaApplicationDocumentsInline(admin.TabularInline):
 class FamilyMembersInline(admin.TabularInline):
 	extra = 0
 	model = FamilyMembers
-	fields = ('name', 'relation', 'dob', 'uid_no', 'download_links', 'uid_check_result')
-	readonly_fields = ('download_links', 'uid_check_result')
+	fields = ('name', 'relation', 'dob', 'uid_no', 'download_links', 'uid_check_result', 'is_valid_uid')
+	readonly_fields = ('download_links', 'uid_check_result', 'is_valid_uid')
 
 
 @admin.register(UjjwalaV2Application)
