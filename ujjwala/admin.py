@@ -24,7 +24,7 @@ from .ujjwala_functions import download_ujjwala_documents
 class UjjwalaApplicationDocumentsInline(admin.TabularInline):
 	extra = 0
 	model = UjjwalaApplicationDocuments
-	fields = ('type', 'download_links', 'file_size')
+	fields = ('type', 'download_links', 'link', 'file_size')
 	readonly_fields = ('download_links',)
 # template = 'connection_app/admin/document-inline.html'
 
@@ -32,7 +32,7 @@ class UjjwalaApplicationDocumentsInline(admin.TabularInline):
 class FamilyMembersInline(admin.TabularInline):
 	extra = 0
 	model = FamilyMembers
-	fields = ('name', 'relation', 'dob', 'uid_no', 'download_links',
+	fields = ('name', 'relation', 'dob', 'uid_no', 'download_links', 'uid_front_link', 'uid_back_link',
 	          'uid_check_result', 'uid_front_file_size', 'uid_back_file_size',)
 	readonly_fields = ('download_links', 'uid_check_result', 'uid_front_file_size',
 	                   'uid_back_file_size',
