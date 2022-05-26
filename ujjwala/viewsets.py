@@ -124,7 +124,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
         application = UjjwalaV2Application.objects.filter(contact_mobile=contact_mobile).first()
 
-        if application.exists():
+        if application:
             # status_url = reverse('application_status', kwargs={'pk': application.first().pk})
             return JsonResponse({
                 "status": False,
@@ -142,7 +142,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
         family_member = FamilyMembers.objects.filter(uid_no=uid).first()
 
-        if family_member.exists():
+        if family_member:
             return JsonResponse({
                 "status": False,
                 "msg": "UID associated with application id: {}".format(family_member.parent.id)
@@ -150,7 +150,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
         return JsonResponse({
             "status": True,
-            "msg": "UID not associated with any application.".format(family_member.parent.id)
+            "msg": "UID not associated with any application."
         })
 
     @action(methods=['get'], detail=False, url_path='get_aadhar_list')
