@@ -14,7 +14,6 @@ from django_fsm_log.admin import StateLogInline
 from import_export.admin import ExportActionMixin
 from rangefilter.filters import DateRangeFilter
 
-
 from fsm_admin2_custom.admin import FSMTransitionCustomMixin
 from .enums import ResidentialStatusEnum, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, MaritalStatusEnum
 from .models import UjjwalaV2Application, FamilyMembers, UjjwalaApplicationDocuments, UjjwalaV2ApplicationStatus, \
@@ -25,16 +24,19 @@ from .ujjwala_functions import download_ujjwala_documents
 class UjjwalaApplicationDocumentsInline(admin.TabularInline):
 	extra = 0
 	model = UjjwalaApplicationDocuments
-	fields = ('type', 'download_links', )
-	readonly_fields = ('download_links', )
-	# template = 'connection_app/admin/document-inline.html'
+	fields = ('type', 'download_links', 'file_size')
+	readonly_fields = ('download_links',)
+# template = 'connection_app/admin/document-inline.html'
 
 
 class FamilyMembersInline(admin.TabularInline):
 	extra = 0
 	model = FamilyMembers
-	fields = ('name', 'relation', 'dob', 'uid_no', 'download_links', 'uid_check_result', 'is_valid_uid')
-	readonly_fields = ('download_links', 'uid_check_result', 'is_valid_uid')
+	fields = ('name', 'relation', 'dob', 'uid_no', 'download_links',
+	          'uid_check_result', 'uid_front_file_size', 'uid_back_file_size',)
+	readonly_fields = ('download_links', 'uid_check_result', 'uid_front_file_size',
+	                   'uid_back_file_size',
+	                   )
 
 
 @admin.register(UjjwalaV2Application)
@@ -88,10 +90,10 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 				'uid_linked_mobile',
 				'uid_mobile_status',
 				'fsm_display_status',
+				'referral_code',
 			]
 		else:
 			return super().get_fields(request, obj)
-
 
 	def get_readonly_fields(self, request, obj=None):
 		readonly_fields = super().get_readonly_fields(request, obj)
@@ -123,5 +125,5 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 
 @admin.register(UserDocuments)
 class UserDocumentsAdmin(admin.ModelAdmin):
-	list_display = ('id', 'parent', 'type', 'link')
+	list_display = ('id', 'parent', 'type', 'link',)
 	list_filter = ('parent',)

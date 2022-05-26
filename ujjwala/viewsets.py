@@ -122,17 +122,35 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     def check_phone(self, request, *args, **kwargs):
         contact_mobile = request.GET.get('contact_mobile')
 
-        application = UjjwalaV2Application.objects.objects().filter(mobile=contact_mobile)
+        application = UjjwalaV2Application.objects.filter(contact_mobile=contact_mobile).first()
 
         if application.exists():
-            status_url = reverse('application_status', kwargs={'pk': application.first().pk})
+            # status_url = reverse('application_status', kwargs={'pk': application.first().pk})
             return JsonResponse({
                 "status": False,
-                "application_url": request.build_absolute_uri(status_url)
+                "msg": "Application Id: {} exist with contact number: {}".format(application.pk, contact_mobile)
             })
 
         return JsonResponse({
-            "status": True
+            "status": True,
+            "msg": "Contact number does not exist. You can proceed with application."
+        })
+
+    @action(methods=['get'], detail=False, url_path='check_uid')
+    def check_uid(self, request, *args, **kwargs):
+        uid = request.GET.get('uid')
+
+        family_member = FamilyMembers.objects.filter(uid_no=uid).first()
+
+        if family_member.exists():
+            return JsonResponse({
+                "status": False,
+                "msg": "UID associated with application id: {}".format(family_member.parent.id)
+            })
+
+        return JsonResponse({
+            "status": True,
+            "msg": "UID not associated with any application.".format(family_member.parent.id)
         })
 
     @action(methods=['get'], detail=False, url_path='get_aadhar_list')

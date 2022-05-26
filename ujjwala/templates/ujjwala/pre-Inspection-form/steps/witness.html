@@ -37,7 +37,7 @@
 		</div>
 	</div>
     <div class="card card_body_form">
-        <form action="" method="post">
+        <form action="" method="post" id="upload_sign_and_submit_form">
             {% csrf_token %}
             <table>
                 {{ wizard.management_form }}
@@ -53,13 +53,13 @@
                 <div class="card-body">
                     <div class="form-group ">
                         <div class="row">
-                            <div class="col-sm-12  photo_block mb-3 p-0">
+                            <div class="col-sm-12  photo_block mb-3 p-0" style="line-height: 0;">
                                     <input type="text" class="hidden-field" id="witness_form-witness_name" value="">
                                     <label>Name of Witness</label>
                                     <input placeholder="गवाह का नाम" type="text" id="witness_form-witness_name" name="witness_form-witness_name" value="">
                                     {{ wizard.form.witness_name.errors }}
                                 </div>
-                            <div class="col-sm-12  photo_block p-0">
+                            <div class="col-sm-12  photo_block p-0" style="line-height: 0;">
                                 <input class="hidden-field" id="witness_form-witness_mobile_number" name="mobile_number" value=""/>
                                 <label>Witness Mobile Number</label>
                                 <input placeholder="गवाह का मोबाइल नंबर" type="tel" id="witness_form-witness_mobile_number" name="witness_form-witness_mobile_number" value=""/>
@@ -103,7 +103,8 @@
                 <button class="btn btn-secondary rounded-0" name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">first</button>
                 <button class="btn btn-secondary rounded-0" name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">Previous</button>
                 {% endif %}
-                <input class="btn btn-secondary rounded-0" type="submit" onclick="upload_sign_and_submit()" value="Upload Signature & Submit"/>
+                <input class="btn btn-secondary rounded-0" type="submit" id="upload_sign_and_submit_hidden" value="Upload Signature & Submit" style="display:none">
+                <input class="btn btn-secondary rounded-0" type="button" id="upload_sign_and_submit_action" onclick="upload_sign_and_submit()" value="Upload Signature & Submit"/>
             </div>
         </form>
     </div>
@@ -177,6 +178,7 @@ window.witness_photoUppy = new Uppy.Core({
                 console.info('Successful uploads:', result.successful);
                 // submit_form(result.successful[0].uploadURL)
                     $('#id_witness_form-witness_signature_photo').val(result.successful[0].uploadURL);
+                    $('#upload_sign_and_submit_hidden').trigger('click');
             }
         });
 
