@@ -67,6 +67,12 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
         application.sdms_last_updated_on = timezone.now()
         application.product = request.data.get('product')
         nic_status = request.data.get('nic_status')
+        legal_docs_uploaded = request.data.get('legal_docs_uploaded')
+
+        if legal_docs_uploaded and application.status == UjjwalaV2ApplicationStatus.EKYC_ACCEPTED:
+            application.legal_documents_upload(description='Status Updated By Bot, Uploaded by unknown person')
+        elif not legal_docs_uploaded and application.status == UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD:
+            application.status == UjjwalaV2ApplicationStatus.EKYC_ACCEPTED
 
         if application.status == UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD:
             if request.data.get('omc_status') == 'OMC Clear':
@@ -87,11 +93,11 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
         aadhar_list = UjjwalaV2Application.objects.filter(
             Q(status=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD) |
             Q(status=UjjwalaV2ApplicationStatus.OMC_CLEARED)
-        ).exclude(consumer_id__isnull=True).order_by('-id')
+        ).exclude(consumer_id__isnull=True).order_by('id')
 #.filter(sdms_last_updated_on__lte=datetime.datetime.today()-datetime.timedelta(hours=6))
 #.exclude(version='V1')
 #.order_by('-id')
-
+        aadhar_list = UjjwalaV2Application.objects.filter(id__in=["1273","2120","2534","32","1265","323","76","601","2148","37"]).exclude(consumer_id__isnull=True).order_by('id')
         return JsonResponse([
             {
                 'id': record.id,
@@ -162,8 +168,8 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD
             ),
             robo_sdms_dedup=RoboSdmsDedeupStatusEnum.NOT_PROCESSED
-        ).exclude(version='V1').order_by('-id')
-
+        ).exclude(family_members__uid_no__in=("0","1")).order_by('-id')
+        #aadhar_list = UjjwalaV2Application.objects.filter(id__in=["1273","2120","2534","32","1265","323","76","601","2148","37"])
         return JsonResponse([
             {
                 'id': record.id,
@@ -186,8 +192,8 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         ).filter(
 		Q(sdms_last_updated_on__lte=datetime.datetime.today()-datetime.timedelta(hours=12)) |
 		Q(sdms_last_updated_on__isnull=True)
-	).exclude(version='V1').order_by('-id')
-
+	).exclude(family_members__uid_no__in=("0","1")).exclude(id__in=['113','33','157','138','37','32','259','299','295','301']).order_by('id')
+        #aadhar_list = UjjwalaV2Application.objects.filter(id='1022')
         return JsonResponse([
             {
                 'id': record.id,
@@ -480,4 +486,3 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         )
         application.save()
         return HttpResponse('OK')
-    

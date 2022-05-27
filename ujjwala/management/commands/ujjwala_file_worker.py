@@ -66,7 +66,8 @@ def upload_compressed_file_to_tus(file_url):
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        for application in UjjwalaV2Application.objects.all().order_by('id')[:20]:
+        #5361, 4978, 4743, 3880, 3250, 2676, 1765, 1567, 1384, 673
+        for application in UjjwalaV2Application.objects.filter(id__lte=5361, id__gt=4978).order_by('-id'):
             print("\n\n\nProcessing Files For : {} {}".format(application.id, application.name))
             for customer_doc in application.documents.all():
                 print("Customer Doc {} {}".format(customer_doc.type, customer_doc.link))

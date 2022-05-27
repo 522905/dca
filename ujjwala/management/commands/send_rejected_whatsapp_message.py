@@ -14,4 +14,5 @@ class Command(BaseCommand):
         )
 
         for rejected_application in rejected_applications:
+            print('{}\n'.format(str(rejected_application.pk)))
             rejected_application.event_reject_channel_whatsapp()

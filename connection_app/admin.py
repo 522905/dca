@@ -70,7 +70,7 @@ class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionCustomMixin, ad
         'referral_code',
     )
 
-    search_fields = ('name', 'referral_code', 'mobile')
+    search_fields = ('id', 'name', 'referral_code', 'mobile')
     ordering = ('id',)
 
     list_filter = (

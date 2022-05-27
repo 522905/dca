@@ -18,14 +18,16 @@ from django.template.defaulttags import url
 from django.urls import path, include
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic import RedirectView
+from material.frontend import urls as frontend_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
     path(r'connection-app/', include('connection_app.urls')),
     path(r'commlog/', include('communication_log.urls')),
-    path(r'', RedirectView.as_view(url='/connection-app/', permanent=False)),
-    path(r'ujjwala/', include('ujjwala.urls'))
+    path(r'', RedirectView.as_view(url='https://www.arungas.com/info', permanent=False)),
+    # path(r'ujjwala/', include('ujjwala.urls')),
+    path(r'', include(frontend_urls)),
 ]
 
 
