@@ -3,10 +3,12 @@ import io
 import requests
 import track
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.template import loader
 from django.utils.safestring import mark_safe
+from django_currentuser.middleware import get_current_user
 from django_fsm import transition, FSMField, GET_STATE
 from django_fsm_log.decorators import fsm_log_description, fsm_log_by
 from minio import Minio
@@ -21,7 +23,7 @@ from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, S
 from domestic_app.utils import get_minio_public_url
 
 minio_client = Minio(
-	settings.MINIO_ENDPOINT,
+	settings.MINIO_API_ENDPOINT,
 	access_key=settings.MINIO_CREDENTIAL.get("access_key"),
 	secret_key=settings.MINIO_CREDENTIAL.get("secret_key"),
 	secure=False
@@ -122,56 +124,6 @@ class ConnectionApplication(models.Model):
 		self.documents_required_for_reupload = kwargs.get('documents_required_for_reupload')
 		self.event_reupload_channel_whatsapp()
 
-	
-	# @fsm_log_description
-	# @fsm_log_by
-	# @transition(
-	# 	field=status,
-	# 	source='*',
-	# 	target=ConnectionApplicationLeadStatus.KITCHEN_PHOTO_UPLOAD,
-	# 	custom=dict(
-	# 		short_description='Upload Kitchen Photo', admin=True, form=KitchenPhotoUploadForm
-	# 	),
-	# )
-	# def send_for_kitchen_photo_upload(self, *args, **kwargs):
-	# 	self.last_execution_state = self.status
-	# 	self.documents_reupload_remarks = kwargs.get('remarks')
-	# 	self.documents_required_for_reupload = kwargs.get('kitchen_photo')
-	# 	self.event_installation_upload_channel_whatsapp()
-
-
-	# @fsm_log_description
-	# @fsm_log_by
-	# @transition(
-	# 	field=installation_status,
-	# 	source=ConnectionApplicationLeadStatus.REUPLOAD,
-	# 	target=GET_STATE(
-	# 		lambda self, **kwargs: self.last_execution_state,
-	# 	),
-	# 	custom=dict(
-	# 		short_description='Application Uploaded By Customer'
-	# 	),
-	# )
-	# def reuploaded_by_customer(self, *args, **kwargs):
-	# 	pass
-
-
-	# @fsm_log_description
-	# @fsm_log_by
-	# @transition(
-	# 	field=status,
-	# 	source=ConnectionApplicationLeadStatus.KITCHEN_PHOTO_UPLOAD,
-	# 	target=GET_STATE(
-	# 		lambda self, **kwargs: self.last_execution_state,
-	# 	),
-	# 	custom=dict(
-	# 		short_description='Kitchen Photo Uploaded By Customer'
-	# 	),
-	# )
-	# def kitchen_photo_uploaded_by_customer(self, *args, **kwargs):
-	# 	pass
-
-
 	def send_reminder_for_installation_upload(self):
 		if self.installation_status in (
 				ConnectionInstallationStatus.REUPLOAD,
@@ -209,10 +161,11 @@ class ConnectionApplication(models.Model):
 			]
 		),
 		custom=dict(
-			short_description='Review Installation', admin=True, form=InstallationReviewForm
+			short_description='Review Pre-Inspection', admin=True, form=InstallationReviewForm
 		),
 	)
 	def accept_installation(self, *args, **kwargs):
+
 		self.documents_reupload_remarks = kwargs.get('remarks')
 		self.documents_required_for_reupload = kwargs.get('documents_required_for_reupload')
 

@@ -3,6 +3,8 @@ from django.conf.urls import url
 from django.urls import path, include
 from django.contrib import admin
 from email.mime import application
+
+from django.views import generic
 from rest_framework import routers
 
 from connection_app.viewsets import ConnectionApplicationViewSet
@@ -42,5 +44,5 @@ urlpatterns = [
         views.installation_upload_process_gleam_entry_gate_completed,
         name="application_installation_gleam_complete"
     ), 
-    path('', include(router.urls))
+    path('', include(router.urls)),
 ]

@@ -1,6 +1,6 @@
 asgiref==3.5.0
 backports.zoneinfo==0.2.1
-Django==4.0.2
+Django~=3.2.12
 django-extensions==3.1.5
 djangorestframework==3.13.1
 drf-writable-nested==0.6.3
@@ -11,3 +11,7 @@ interakt-track-python==1.0.7
 minio==7.1.3
 python-magic==0.4.25
 git+https://github.com/trustfactors/camunda-external-task-client-python3.git/#egg=camunda-external-task-client-python3
+django-organizations==2.0.2
+requests~=2.24.0
+django-filter~=21.1
+django-material

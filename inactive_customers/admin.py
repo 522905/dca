@@ -36,7 +36,6 @@ class InactiveCustomerAdmin(ImportMixin, admin.ModelAdmin):
         'distributor_code',
         'consumer_id',
         'consumer_name',
-	'inactive_type',
     )
     search_fields = ('consumer_name', 'consumer_number', 'consumer_id',)
     list_filter = (

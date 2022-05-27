@@ -299,43 +299,42 @@
 			$("#mobile_detail").html('<img style="width:18px; margin-left:10px;" src="{% static "img/pre.gif"  %}" align="left">&nbsp;Checking application...');
 			
 
-// 			http://dca.arungas.com/connection-app/connection-application/check_phone/?mobile=6393700696
-//  http://dca.arungas.com/connection-app/connection-application/9/status/
-
 		jQuery.ajax({
 			url: '/connection-app/connection-application/check_phone/',
 			type: "GET",
 			data: {'mobile': mobile},
-			success: function (data) {
-				
-				response = data;
-				if (response.status === true) {
-					$("#mobile_detail").show();
-					$("#mobile_detail").html('✔ Available for New Application').css({'color': 'green', 'margin-left':'22px', 'font-size' : '17px'});
-					return true;	
-				} else {
-					var proceed = confirm(
-						`You already Fill the Application.
-If you want to change your mobile number click on cancel otherwise click on OK! to check the application status.
-
-आप पहले ही आवेदन भर चुके हैं। अगर आप अपना मोबाइल नंबर बदलना चाहते हैं तो कैंसिल पर क्लिक करें अन्यथा ओके पर क्लिक करें!
-आवेदन भरे हुए स्थिति की जांच करने के लिए।)`
-
-					);
+				success: function (data) {
 					
-					if (proceed) {
-						window.location.href = response.application_url;
-						return false;
-					} else {
-						$('#mobile').val('');
-						$('#mobile').focus();
+					response = data;
+					if (response.status === true) {
 						$("#mobile_detail").show();
-						$("#mobile_detail").html('Please Provide New Mobile Number').css({'color': 'green', 'margin-left':'20px', 'font-size' : '17px'});
+						$("#mobile_detail").html('✔ Available for New Application').css({'color': 'green', 'margin-left':'22px', 'font-size' : '17px'});
+						return true;	
+					} 
+					else {
+						var proceed = confirm(
+							`You already Fill the Application.
+							If you want to change your mobile number click on cancel otherwise click on OK! to check the application status.
+
+							आप पहले ही आवेदन भर चुके हैं। अगर आप अपना मोबाइल नंबर बदलना चाहते हैं तो कैंसिल पर क्लिक करें अन्यथा ओके पर क्लिक करें!
+							आवेदन भरे हुए स्थिति की जांच करने के लिए।)`
+
+						);
+						
+						if (proceed) {
+							window.location.href = response.application_url;
+							return false;
+						}
+						else {
+							$('#mobile').val('');
+							$('#mobile').focus();
+							$("#mobile_detail").show();
+							$("#mobile_detail").html('Please Provide New Mobile Number').css({'color': 'green', 'margin-left':'20px', 'font-size' : '17px'});
+						}
 					}
-					}
-					},	
-					});	
-			});
+				},	
+			});	
+		});
 
 		window.customerpictureuppy = new Uppy.Core({
 			debug: true,
@@ -630,8 +629,8 @@ If you want to change your mobile number click on cancel otherwise click on OK! 
 	}
 
 	.register-heading {
-		text-align: center;
-		margin-top: 8%;
-		margin-bottom: -15%;
-		color: #495057;
-	
+        text-align: center;
+        margin-top: 8%;
+        margin-bottom: -15%;
+        color: #495057;
+    }

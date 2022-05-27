@@ -134,7 +134,9 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             # status_url = reverse('application_status', kwargs={'pk': application.first().pk})
             return JsonResponse({
                 "status": False,
-                "msg": "Application Id: {} exist with contact number: {}".format(application.pk, contact_mobile)
+                "msg": "Application Id: {} exist with contact number: {} status: {}".format(
+                    application.pk, contact_mobile, application.status
+                )
             })
 
         return JsonResponse({
@@ -156,7 +158,9 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         if family_member:
             return JsonResponse({
                 "status": False,
-                "msg": "UID associated with application id: {}".format(family_member.parent.id)
+                "msg": "UID associated with application id: {} status: {}".format(
+                    family_member.parent.id, family_member.parent.status
+                )
             })
 
         return JsonResponse({

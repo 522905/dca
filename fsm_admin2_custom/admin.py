@@ -8,6 +8,7 @@ from django_fsm import TransitionNotAllowed
 from fsm_admin2.admin import FSMTransitionMixin, _get_transition_title
 from django.utils.translation import gettext as _
 
+
 def _get_transition_form(transition, obj=None):
     form = transition.custom.get('form')
     if not form:
@@ -89,7 +90,6 @@ class FSMTransitionCustomMixin(FSMTransitionMixin):
 
 def _get_display_func_name(fsm_field_name):
     return f'fsm_display_{fsm_field_name}'
-
 
 
 def _get_display_func(field_name):

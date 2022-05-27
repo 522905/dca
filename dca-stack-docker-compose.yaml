@@ -47,3 +47,10 @@ services:
     volumes:
       - ./data/tus-data:/srv/tusd-data
     working_dir: /srv/tusd-data
+
+  thumbor:
+    container_name: thumbor
+    image: minimalcompact/thumbor
+    ports:
+      - 58888:80/tcp
+    restart: unless-stopped

@@ -12,7 +12,7 @@ from .serializers import ConnectionApplicationSerializer
 
 class ConnectionApplicationViewSet(viewsets.ModelViewSet):
     queryset = models.ConnectionApplication.objects.all()
-    serializer_class = ConnectionApplicationSerializer
+    # serializer_class = ConnectionApplicationSerializer
 
     @action(methods=['post'], detail=False, url_path='wf')
     def web_form(self, request, *args, **kwargs):
