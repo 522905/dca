@@ -145,6 +145,11 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=False, url_path='check_uid')
     def check_uid(self, request, *args, **kwargs):
         uid = request.GET.get('uid')
+        if uid in ('999999999999', '666666666666'):
+            return JsonResponse({
+                "status": True,
+                "msg": "UID not associated with any application."
+            })
 
         family_member = FamilyMembers.objects.filter(uid_no=uid).first()
 
@@ -239,6 +244,8 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         for member in request.data['family_members']:
             try:
                 family_member_obj = FamilyMembers.objects.get(pk=member.get('id'))
+                if family_member_obj.uid_no in ('999999999999', '666666666666'): continue
+
                 family_member_obj.uid_check_result = member['result']
 
                 family_member_obj.save()
