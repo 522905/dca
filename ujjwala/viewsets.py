@@ -97,7 +97,7 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
 #.filter(sdms_last_updated_on__lte=datetime.datetime.today()-datetime.timedelta(hours=6))
 #.exclude(version='V1')
 #.order_by('-id')
-        aadhar_list = UjjwalaV2Application.objects.filter(id__in=["1273","2120","2534","32","1265","323","76","601","2148","37"]).exclude(consumer_id__isnull=True).order_by('id')
+#        aadhar_list = UjjwalaV2Application.objects.filter(id__in=["1273","2120","2534","32","1265","323","76","601","2148","37"]).exclude(consumer_id__isnull=True).order_by('id')
         return JsonResponse([
             {
                 'id': record.id,
@@ -124,6 +124,28 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     #     obj.transition_pre_inspection_submit(**serializer.data)
     #     return HttpResponse('Ok')
 
+    @action(methods=['get'], detail=False, url_path='check_ujjwala_application')
+    def check_ujjwala_application(self, request, *args, **kwargs):
+        contact_mobile = request.GET.get('contact_mobile')
+
+        application = UjjwalaV2Application.objects.filter(contact_mobile=contact_mobile).first()
+
+        if application:
+            return JsonResponse({
+                "status": False,
+                "application_id": str(application.pk),
+                "date": application.created_on.strftime('%d-%m-%Y'),
+                "application": "Ujjwala Application Id: {} {}".format(
+                    application.pk, application.name
+                ),
+                "state": application.status
+            })
+        else:
+            return JsonResponse({
+                "status": False
+            })
+
+
     @action(methods=['get'], detail=False, url_path='check_phone')
     def check_phone(self, request, *args, **kwargs):
         contact_mobile = request.GET.get('contact_mobile')
@@ -131,13 +153,14 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         application = UjjwalaV2Application.objects.filter(contact_mobile=contact_mobile).first()
 
         if application:
+            if application.status != 'DOCUMENTS_REUPLOAD':
             # status_url = reverse('application_status', kwargs={'pk': application.first().pk})
-            return JsonResponse({
-                "status": False,
-                "msg": "Application Id: {} exist with contact number: {} status: {}".format(
-                    application.pk, contact_mobile, application.status
-                )
-            })
+                return JsonResponse({
+                    "status": False,
+                    "msg": "Application Id: {} exist with contact number: {} status: {}".format(
+                        application.pk, contact_mobile, application.status
+                    )
+                })
 
         return JsonResponse({
             "status": True,
@@ -156,12 +179,13 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         family_member = FamilyMembers.objects.filter(uid_no=uid).first()
 
         if family_member:
-            return JsonResponse({
-                "status": False,
-                "msg": "UID associated with application id: {} status: {}".format(
-                    family_member.parent.id, family_member.parent.status
-                )
-            })
+            if family_member.parent.status != 'DOCUMENTS_REUPLOAD':
+                return JsonResponse({
+                    "status": False,
+                    "msg": "UID associated with application id: {} status: {}".format(
+                        family_member.parent.id, family_member.parent.status
+                    )
+                })
 
         return JsonResponse({
             "status": True,
@@ -196,12 +220,12 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             Q(status=UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED) |
             (
                 Q(status=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED) &
-                Q(consumer_id__isnull=True)
+                (Q(consumer_id__isnull=True)|Q(consumer_id=''))
             )
         ).filter(
-		Q(sdms_last_updated_on__lte=datetime.datetime.today()-datetime.timedelta(hours=12)) |
+		Q(sdms_last_updated_on__lte=datetime.datetime.today()-datetime.timedelta(hours=12))|
 		Q(sdms_last_updated_on__isnull=True)
-	).exclude(family_members__uid_no__in=("0","1")).exclude(id__in=['113','33','157','138','37','32','259','299','295','301']).order_by('id')
+	).exclude(family_members__uid_no__in=("0","1")).exclude(id__in=['113','33','157','138','37','32','259','299','295','301']).order_by('-id')
         #aadhar_list = UjjwalaV2Application.objects.filter(id='1022')
         return JsonResponse([
             {
