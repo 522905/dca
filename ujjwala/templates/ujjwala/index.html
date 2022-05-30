@@ -22,6 +22,7 @@
     
 </head>
 <style>
+    .fa-whatsapp{ color: green; font-size: 20px; font-weight: bold; position: relative; top: 3px;}
     .reno-bg{
 		background-image: url("https://www.arungas.com/wp-content/uploads/2022/04/reno-bg-2.png");
         background-repeat: no-repeat;
@@ -41,16 +42,12 @@
         position: absolute;
         width: 73px;
         top: -26px;}
-   #family_members_tree .uppy-StatusBar-actions:after{ padding: 0 17px;
-    content: "Re-upload";
+   #family_members_tree .uppy-StatusBar-actions:after{ padding: 0 17px; content: "Re-upload";
     z-index: 9999;
     position: absolute;
     height: 30px;
-    width: 200px;
-    left: 77px;
-    top: -34px;
-    color: #222;     font-weight: bold;
-    text-transform: uppercase; }
+    width: 200px;left: 77px; top: -34px;
+    color: #222; font-weight: bold; text-transform: uppercase; }
    #family_members_tree  .uppy-StatusBar-actions{ position: relative;}
    #family_members_tree .uppy-Dashboard-inner {
         border: 0;
@@ -104,7 +101,7 @@
     .text-center {
         text-align: center !important;
     }
-    label{ font-weight: 600;}
+    label{ font-weight: 500; font-size: 14px;}
     .header3 {
         text-transform: uppercase;
         text-align: center;
@@ -175,6 +172,41 @@
             <div class=" p-4">
                 <div class="row">
                     <div class="col-sm-12">
+
+                        <div class="form-group">
+                            <div class="col-sm-12 p-0">
+                                <label>Enter Applicant Aadhaar No. (प्रवासी ज़रूरतमंद महिला का आधार संख्या)<strong style="color:red">*</strong></label>
+                                <div class="" id="selfAadharValidation">
+                                    <input required maxlength="12" minlength="12" onblur="checkApplicantsAadhaarValidity();" type="tel" class="form-control" name="applicant-uid_no" id="applicant-uid_no"  pattern="[0-9]{12}"></input>
+                                    <div id="self-uid-msg"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Applicant Mobile Number. (आवेदक का मोबाइल नंबर)<strong style="color:red">*</strong></label>
+                            <input type="tel" class="form-control" id="contact_mobile" onblur="checkMobileValidity();" pattern="[6789][0-9]{9}"
+                            name="contact_mobile"
+                            required />
+                            <span id="mobile_detail" class="text-danger"></span>
+                        </div>
+                        
+                        <div id="uid_linked_mobile_form_group" class="form-group">
+                            <label style="margin-bottom: 0;">Own or Family Whatsapp Number(अपना या परिवार के किसी सदस्य का व्हाट्सएप नंबर) <i class="fa fa-whatsapp" aria-hidden="true"></i> <strong style="color:red">*</strong></label>
+                            <span style="color:red; font-size:12px; display: block; width: 100%;">जो कि कनेक्शन मिलने तक चलता रहे ताकि हम आपको संपर्क कर सके</span>
+                            <input type="tel" class="form-control" id="uid_linked_mobile" onblur="this.reportValidity();" pattern="[6789][0-9]{9}"
+                                name="uid_linked_mobile" maxlength="10" required />
+                        </div>
+
+                        <!-- <div class="form-group">
+                            <label>Select Aadhaar Registered Mobile (आधार पंजीकृत मोबाइल का चयन करें)<strong style="color:red">*</strong></label>
+                            <select id="uid_mobile_status" class="selectpicker form-control " name="uid_mobile_status" required>
+                                <option  value="" selected>Select</option>
+                                <option value="LINKED_WITH_SAME_MOBILE">Provided Mobile number is Same on Aadhaar(आधार पर मोबाइल नंबर समान है)</option>
+                                <option value="MOBILE_NOT_AVAILABLE">I don't know the registered mobile number(मुझे आधार पंजीकृत मोबाइल नंबर नहीं पता)</option>
+                                <option value="LINKED_WITH_OTHER_MOBILE">Aadhaar registered mobile number is different(आधार पंजीकृत मोबाइल नंबर अलग है)
+                                </option>
+                            </select>
+                        </div> -->
                         <div class="form-group">
                             <label>Marital Status (वैवाहिक स्थिति)<strong style="color:red">*</strong></label>
                             <select required
@@ -190,9 +222,11 @@
                                 <option value="WIDOW">WIDOW ()</option> -->
                             </select>
                         </div>
-
+                        <input type="hidden" id="occupancy_status" name="residential_status" value="LIVING_WITH_FAMILY">
+                        <!-- 
                         <div class="form-group">
                             <label>Residence Occupancy Status (निवास स्थिति)<strong style="color:red">*</strong></label>
+                            
                             <select
                                 class="selectpicker form-control"
                                 id="occupancy_status"
@@ -202,14 +236,15 @@
                                 <option value="" selected="selected" id="status">
                                     Select Residence Occupancy Status (चुनें निवास स्थिति)
                                 </option>
-<!--                                <option value="LIVING_ALONE">
+                                <option value="LIVING_ALONE">
                                     Living Alone (अकेले)
                                 </option>
--->                                    <option value="LIVING_WITH_FAMILY" selected>
+                                <option value="LIVING_WITH_FAMILY" selected>
                                     Living With Family (परिवार के साथ )
                                 </option>
-                            </select>
+                            </select> 
                         </div>
+-->
 
                         <div class="form-group">
                             <label for="house_no">Current Address (वर्तमान पता)<strong style="color:red">*</strong></label>
@@ -255,33 +290,6 @@
                             <input type="tel" class="form-control" id="pincode" name="pincode" onblur="validate_pincode();"  pattern="[1-9]{1}[0-9]{5}" required />
                         </div>  
 
-                        <div class="form-group">
-                            <label>Current Mobile Number / Whatsapp Number  (फोन नंबर)<strong style="color:red">*</strong></label>
-                              <input type="tel" class="form-control" id="contact_mobile" onblur="checkMobileValidity();" pattern="[6789][0-9]{9}"
-                                name="contact_mobile"
-                                required />
-                                <span id="mobile_detail" class="text-danger"></span>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Select Aadhaar Registered Mobile (आधार पंजीकृत मोबाइल का चयन करें
-                                )<strong style="color:red">*</strong></label>
-                            <select id="uid_mobile_status" class="selectpicker form-control " name="uid_mobile_status" required>
-                                <option  value="" selected>Select</option>
-                                <option value="LINKED_WITH_SAME_MOBILE">Provided Mobile number is Same on Aadhaar(आधार पर मोबाइल नंबर समान है)</option>
-                                <option value="MOBILE_NOT_AVAILABLE">I don't know the registered mobile number(मुझे आधार पंजीकृत मोबाइल नंबर नहीं पता)</option>
-                                <option value="LINKED_WITH_OTHER_MOBILE">Aadhaar registered mobile number is different(आधार पंजीकृत मोबाइल नंबर अलग है)
-                                </option>
-                            </select>
-                        </div>
-
-                        <div id="uid_linked_mobile_form_group" class="form-group">
-                            <label>Registered with Aadhaar Mobile Number. (आधार मोबाइल नंबर के साथ पंजीकृत)<strong style="color:red">*</strong></label>
-                            <input type="tel" class="form-control" id="uid_linked_mobile" onblur="this.reportValidity();" pattern="[6789][0-9]{9}"
-                                name="uid_linked_mobile" maxlength="10" required />
-                        </div>
-                    
-
                         <div class="form-group" class="container">
                             <div class="row">
                                 <div class="col-sm-4 col">
@@ -299,7 +307,6 @@
                                 </div>
                             </div>
                         </div>
-
 
                         <div id="family_members_tree" class="container p-0">
                         </div>
@@ -345,9 +352,46 @@
 </html>
 
 <script>
-    function checkMobileValidity() {
+    //aadhaar check 
+    function checkApplicantsAadhaarValidity() {
+        var e = document.getElementById('applicant-uid_no');
+        var uid = e.value;
+    
+        if(!validateAadhaar(uid)) {
+            e.setCustomValidity("Invalid aadhaar, please check again.");
+        } else {
+            if($('#family_members_tree .aadhar_no_blur:not([id="SELF-uid_no"]').get().map((e)=> e.value).indexOf(uid) >= 0) {
+                e.setCustomValidity("Aadhaar already entered in Family Members List");
+            } else {
+                $("#self-uid-msg").html('Checking Aadhaar...');
+                jQuery.ajax({
+                    url: '/ujjwala/ujjwala-application/check_uid/',
+                    type: "GET",
+                    data: {'uid': uid},
+                    success: function (data) {
+                        response = data;
+                        if (response.status === true) {
+                            e.setCustomValidity("");
+                            $('#family_members_tree [id="SELF-uid_no"]').val(uid);
+                            $("#self-uid-msg").html('<p style=" color:green; "> ✔ आप आवेदन कर सकते है। </p>');
+                        } else {
+                            e.setCustomValidity(`ID: ${data.data.applications[0].id} Name: ${data.data.applications[0].name}`);
+                            e.focus();
 
+                            msg = data.data.applications.map(e=>`<p>आपका आवेदन पहले से मौजूद है ${e.id} Name: ${e.name}</p>`).join('');
+                            $("#self-uid-msg").html(msg).css({'color': 'red', 'font-size' : '17px'});
+
+                        }
+                    },
+                });
+            }
+        }
+        e.reportValidity();
+    }
+
+    function checkMobileValidity() {
         var mobile = $("#contact_mobile").val();
+        $("#mobile_detail").html('');
         if (!mobile){
             document.getElementById("contact_mobile").setCustomValidity("Invalid mobile number.");
             document.getElementById("contact_mobile").reportValidity();
@@ -361,9 +405,8 @@
             document.getElementById("contact_mobile").focus();
             return;
         }
-
         $("#mobile_detail").show();
-        $("#mobile_detail").html('<img style="width:18px; margin-left:10px;" align="left">&nbsp;Checking application...');
+        $("#mobile_detail").html('<img style="width:18px; margin-left:10px;" align="left">&nbsp;Checking Mobile...');
 
         jQuery.ajax({
 			url: '/ujjwala/ujjwala-application/check_phone/',
@@ -371,27 +414,35 @@
 			data: {'contact_mobile': mobile},
 			success: function (data) {
 				response = data;
-
 				if (response.status === true) {
 					$("#mobile_detail").show();
 					$("#mobile_detail").html('✔ Available for New Application').css({'color': 'green', 'margin-left':'22px', 'font-size' : '17px'});
-
 					document.getElementById("contact_mobile").setCustomValidity("")
                     document.getElementById("contact_mobile").reportValidity();
 					return true;
 				} else {
-				    document.getElementById("contact_mobile").setCustomValidity(data.msg);
-				    document.getElementById("contact_mobile").reportValidity();
-				    document.getElementById("contact_mobile").focus();
+                    console.log(response);
+                    var datas = response.data;
+                    var msg = response.msg;
+                    var status = response.status;
+                    var applications = datas.applications;
+                    window.alert(`आपका आवेदन पहले से मौजूद है ID: ${applications[0].id} and Name ${applications[0].name} आपका आवेदन ` + msg);
+                    
+                    document.getElementById("contact_mobile").setCustomValidity(`ID: ${applications[0].id} Name: ${applications[0].name}`);
+                    document.getElementById("contact_mobile").reportValidity();
+
+                    msg = applications.map(e=>`<p>आपका आवेदन पहले से मौजूद है ${e.id} Name: ${e.name}</p>`).join('');
+
+                    $("#mobile_detail").html(msg).css({'color': 'red', 'font-size' : '17px'});
 				}
 			},	
 		});
     };
 
-
     function init_sign_document() {
         $('#signature-pad').addClass("show-sign-block");
     }
+
     function close_sign_document() {
         $('#signature-pad').removeClass("show-sign-block");
     }
@@ -406,6 +457,23 @@
         }
         alert("We don't provide service this Pin code area. हम इस पिन कोड क्षेत्र में सेवा प्रदान नहीं करते हैं");
         return false;
+    }
+
+    function validateAadhaarrUniquness() {
+        let uid_list = $('.familyMemberLineItem .aadhar_no_blur').get().map(e=>e.value);
+        let uid_length =uid_list.length
+        let uid_uniq_length = uid_list.filter((item, i, ar) => ar.indexOf(item) === i).length;
+
+        if (uid_length != uid_uniq_length) {
+            alert("Duplicate UID entered for family members, please check.");
+            return false;
+        }
+
+        if ($('[id="applicant-uid_no"]').val() != $('[id="SELF-uid_no"]').val()) {
+            alert("Applicant UID mismatch, please enter UID again");
+            return false;
+        }
+
     }
 
     function validate_terms_condtions(){
@@ -427,6 +495,10 @@
         }
 
         if (!validate_terms_condtions()) {
+            return;
+        }
+
+        if(!validateAadhaarrUniquness()) {
             return;
         }
 
@@ -452,7 +524,7 @@
             })
             .use(Uppy.Tus, {
                 endpoint: 'https://tus.dca.arungas.com/files/',
-            });
+            }); 
 
             sign_uppy.addFile({
                 name: `signature_${new Date().getTime()}_${(Math.random() + 1).toString(36).substring(7)}.png`,
@@ -535,11 +607,11 @@
             link: signature_url
         });
 
-        if(formdata.uid_mobile_status == 'LINKED_WITH_SAME_MOBILE') {
-            formdata.uid_linked_mobile = formdata.contact_mobile;
-        } else if (formdata.uid_mobile_status == 'LINKED_WITH_OTHER_MOBILE') {
-            formdata.uid_linked_mobile = '';
-        }
+        // if(formdata.uid_mobile_status == 'LINKED_WITH_SAME_MOBILE') {
+        //     formdata.uid_linked_mobile = formdata.contact_mobile;
+        // } else if (formdata.uid_mobile_status == 'LINKED_WITH_OTHER_MOBILE') {
+        //     formdata.uid_linked_mobile = '';
+        // }
         let self = formdata.family_members.filter(
             (e) => {return e.relation == 'SELF'}
         )[0]
@@ -662,176 +734,6 @@
         return documentsRelationArray;
     }
 
-    $(document).ready(function () {
-        let setMaritalStatus = '';
-        let setOccupancyStatus = '';
-
-        $('#customername').on('blur', function () {
-            if (document.getElementById("SELF-name") != null) {
-                $('#SELF-name').val($('#customername').val());
-            }
-        });
-
-        $('#occupancy_status,#marital_status').on('change', function () {
-            occupancy_status = $('#occupancy_status').val();
-            marital_status = $('#marital_status').val();
-
-            if (setMaritalStatus == marital_status && setOccupancyStatus == occupancy_status) return;
-            setMaritalStatus = marital_status;
-            setOccupancyStatus = occupancy_status;
-
-            removeAllFamilyMembersExceptSelf();
-            addFamilyMember('SELF', 'Self');
-
-            if (setMaritalStatus == 'UNMARRIED' && occupancy_status == 'LIVING_WITH_FAMILY') {
-                addFamilyMember('FATHER', 'Father');
-                addFamilyMember('MOTHER', 'Mother');
-            } else if (setMaritalStatus == 'MARRIED' && occupancy_status == 'LIVING_WITH_FAMILY') {
-                addFamilyMember('HUSBAND', 'Husband');
-            } else {
-            }
-        });
-
-        $('#uid_mobile_status').change(function () {
-            $(this).find("option:selected").each(function () {
-                var optionValue = $(this).attr("value");
-
-                if (optionValue === 'LINKED_WITH_SAME_MOBILE') {
-                    $("#uid_linked_mobile_form_group").show();
-                    $("#uid_linked_mobile").val($("#contact_mobile").val());
-                    $('#uid_linked_mobile').prop('disabled', true);
-                } else if (optionValue == 'MOBILE_NOT_AVAILABLE') {
-                    $("#uid_linked_mobile_form_group").hide();
-                    $('#uid_linked_mobile').prop('disabled', true);
-                } else {
-                    $('#uid_linked_mobile').prop('disabled', false);
-                    $("#uid_linked_mobile_form_group").show();
-                }
-
-            });
-        }).change();
-
-
-        window.customerpictureuppy = new Uppy.Core({
-            debug: true,
-            autoProceed: true,
-            restrictions: {
-                maxFileSize: 50000000,
-                maxNumberOfFiles: 1,
-                minNumberOfFiles: 1,
-                allowedFileTypes: ['image/*'],
-            }
-        })
-        .use(Uppy.Dashboard, {
-            trigger: '#customerpicture',
-            inline: true,
-            target: '#customerpicture',
-            showProgressDetails: true,
-            note: 'Images and video only, 2–3 files, up to 10 MB',
-            height: 250,
-            metaFields: [],
-            id: 'customerpicture',
-            browserBackButtonClose: false
-        })
-        .use(Uppy.Tus, {
-            endpoint: 'https://tus.dca.arungas.com/files/',
-        })
-        customerpictureuppy.on('complete', result => {
-            console.log('successful files:', result.successful)
-            console.log('failed files:', result.failed)
-        })
-
-        window.bankdetailuppy = new Uppy.Core({
-            debug: true,
-            autoProceed: true,
-            restrictions: {
-                maxFileSize: 50000000,
-                maxNumberOfFiles: 1,
-                minNumberOfFiles: 1,
-                allowedFileTypes: ['image/*'],
-            }
-        })
-            .use(Uppy.Dashboard, {
-                trigger: '#bankdetail',
-                inline: true,
-                target: '#bankdetail',
-                showProgressDetails: true,
-                note: 'Images and video only, 2–3 files, up to 10 MB',
-                height: 250,
-                metaFields: [],
-                id: 'bankdetail',
-                browserBackButtonClose: false
-            })
-            .use(Uppy.Tus, {
-                endpoint: 'https://tus.dca.arungas.com/files/',
-            })
-        bankdetailuppy.on('complete', result => {
-            console.log('successful files:', result.successful)
-            console.log('failed files:', result.failed)
-        })
-
-
-        window.fatheraadharcarduppy = new Uppy.Core({
-            debug: true,
-            autoProceed: true,
-            restrictions: {
-                maxFileSize: 50000000,
-                maxNumberOfFiles: 1,
-                minNumberOfFiles: 1,
-                allowedFileTypes: ['image/*'],
-            }
-        })
-        .use(Uppy.Dashboard, {
-            trigger: '#fatheraadharcard',
-            inline: true,
-            target: '#fatheraadharcard',
-            showProgressDetails: true,
-            note: 'Images and video only, 2–3 files, up to 10 MB',
-            height: 250,
-            metaFields: [],
-            id: 'fatheraadharcard',
-            browserBackButtonClose: false
-        })
-        .use(Uppy.Tus, {
-            endpoint: 'https://tus.dca.arungas.com/files/',
-        })
-        fatheraadharcarduppy.on('complete', result => {
-            console.log('successful files:', result.successful)
-            console.log('failed files:', result.failed)
-        })
-
-        window.fatheraadharcardbackuppy = new Uppy.Core({
-            debug: true,
-            autoProceed: true,
-            restrictions: {
-                maxFileSize: 50000000,
-                maxNumberOfFiles: 1,
-                minNumberOfFiles: 1,
-                allowedFileTypes: ['image/*'],
-            }
-        })
-            .use(Uppy.Dashboard, {
-                trigger: '#fatheraadharcardback',
-                inline: true,
-                target: '#fatheraadharcardback',
-                showProgressDetails: true,
-                note: 'Images and video only, 2–3 files, up to 10 MB',
-                height: 250,
-                metaFields: [],
-                id: 'fatheraadharcardback',
-                browserBackButtonClose: false
-            })
-            .use(Uppy.Tus, {
-                endpoint: 'https://tus.dca.arungas.com/files/',
-            })
-        fatheraadharcardbackuppy.on('complete', result => {
-            console.log('successful files:', result.successful)
-            console.log('failed files:', result.failed)
-        })
-
-
-    });
-
     function validateFamilyMembersFiles() {
 
         members = $.map($('.familyMemberLineItem'), member => {
@@ -892,6 +794,11 @@
 
             memberMap.uid_front_link = Object.values(window[`${memberMap.relation}-uid_front_link_uppy`].state.files)[0].uploadURL;
             memberMap.uid_back_link = Object.values(window[`${memberMap.relation}-uid_back_link_uppy`].state.files)[0].uploadURL;
+
+            memberMap.additional_details = {
+                profession: memberMap.profession,
+                company_name: memberMap.company_name
+            };
 
             return memberMap;
 
@@ -1026,29 +933,35 @@
     }
 
     $('#family_members_tree').on("blur", ".aadhar_no_blur", function() {
-        if(!validateAadhaar(this.value)) {
+        var e = this
+        var uid = this.value;
+
+        if(!validateAadhaar(e.value)) {
             this.setCustomValidity("Invalid aadhaar, please check again.");
         } else {
-            var e = this
-            var uid = this.value;
+            if($(`#family_members_tree .aadhar_no_blur:not([id="${e.getAttribute('id')}"])`).get().map((i)=> i.value).indexOf(uid) >= 0) {
+                    this.setCustomValidity("Aadhaar already entered in Family Members List");
+            } else {
+                jQuery.ajax({
+                    url: '/ujjwala/ujjwala-application/check_uid/',
+                    type: "GET",
+                    data: {'uid': uid},
+                    success: function (data) {
+                        response = data;
 
-            jQuery.ajax({
-                url: '/ujjwala/ujjwala-application/check_uid/',
-                type: "GET",
-                data: {'uid': uid},
-                success: function (data) {
-                    response = data;
-
-                    if (response.status === true) {
-                        e.setCustomValidity("");
-                    } else {
-                        e.setCustomValidity(data.msg);
-                        e.focus();
-                    }
-                },
-            });
+                        if (response.status === true) {
+                            e.setCustomValidity("");
+                        } else {
+                            e.setCustomValidity(data.msg);
+                            e.focus();
+                        }
+                    },
+                });
+            }
         }
-        this.reportValidity();
+
+        e.reportValidity();
+
     });
 
     // The multiplication table
@@ -1102,7 +1015,124 @@
         } else {
             return false;
         }
-    };
+    }
+
+    
+
+    $(document).ready(function() {
+        let setMaritalStatus = '';
+        let setOccupancyStatus = '';
+
+        $('#customername').on('blur', function() {
+            if (document.getElementById("SELF-name") != null) {
+                $('#SELF-name').val($('#customername').val());
+            }
+        });
+
+        $('#occupancy_status,#marital_status').on('change', function() {
+            occupancy_status = $('#occupancy_status').val();
+            marital_status = $('#marital_status').val();
+
+            if (setMaritalStatus == marital_status && setOccupancyStatus == occupancy_status) return;
+            setMaritalStatus = marital_status;
+            setOccupancyStatus = occupancy_status;
+
+            removeAllFamilyMembersExceptSelf();
+            addFamilyMember('SELF', 'Self');
+
+            if (setMaritalStatus == 'UNMARRIED' && occupancy_status == 'LIVING_WITH_FAMILY') {
+                addFamilyMember('FATHER', 'Father');
+                addFamilyMember('MOTHER', 'Mother');
+            } else if (setMaritalStatus == 'MARRIED' && occupancy_status == 'LIVING_WITH_FAMILY') {
+                addFamilyMember('HUSBAND', 'Husband');
+            }
+            $('#family_members_tree [id="SELF-uid_no"]').attr("readonly", true);
+            
+            $('#family_members_tree [id="SELF-uid_no"]').val(
+                $('input[id="applicant-uid_no"]').val()
+            );
+
+        });
+
+        // $('#uid_mobile_status').change(function() {
+        //     $(this).find("option:selected").each(function() {
+        //         var optionValue = $(this).attr("value");
+
+        //         if (optionValue === 'LINKED_WITH_SAME_MOBILE') {
+        //             $("#uid_linked_mobile_form_group").show();
+        //             $("#uid_linked_mobile").val($("#contact_mobile").val());
+        //             $('#uid_linked_mobile').prop('disabled', true);
+        //         } else if (optionValue == 'MOBILE_NOT_AVAILABLE') {
+        //             $("#uid_linked_mobile_form_group").hide();
+        //             $('#uid_linked_mobile').prop('disabled', true);
+        //         } else {
+        //             $('#uid_linked_mobile').prop('disabled', false);
+        //             $("#uid_linked_mobile_form_group").show();
+        //         }
+
+        //     });
+        // }).change();
+
+        window.customerpictureuppy = new Uppy.Core({
+            debug: true,
+            autoProceed: true,
+            restrictions: {
+                maxFileSize: 50000000,
+                maxNumberOfFiles: 1,
+                minNumberOfFiles: 1,
+                allowedFileTypes: ['image/*'],
+            }
+        })
+        .use(Uppy.Dashboard, {
+            trigger: '#customerpicture',
+            inline: true,
+            target: '#customerpicture',
+            showProgressDetails: true,
+            note: 'Images and video only, 2–3 files, up to 10 MB',
+            height: 250,
+            metaFields: [],
+            id: 'customerpicture',
+            browserBackButtonClose: false
+        })
+        .use(Uppy.Tus, {
+            endpoint: 'https://tus.dca.arungas.com/files/',
+        })
+        customerpictureuppy.on('complete', result => {
+            console.log('successful files:', result.successful)
+            console.log('failed files:', result.failed)
+        })
+
+        window.bankdetailuppy = new Uppy.Core({
+            debug: true,
+            autoProceed: true,
+            restrictions: {
+                maxFileSize: 50000000,
+                maxNumberOfFiles: 1,
+                minNumberOfFiles: 1,
+                allowedFileTypes: ['image/*'],
+            }
+        })
+        .use(Uppy.Dashboard, {
+            trigger: '#bankdetail',
+            inline: true,
+            target: '#bankdetail',
+            showProgressDetails: true,
+            note: 'Images and video only, 2–3 files, up to 10 MB',
+            height: 250,
+            metaFields: [],
+            id: 'bankdetail',
+            browserBackButtonClose: false
+        })
+        .use(Uppy.Tus, {
+            endpoint: 'https://tus.dca.arungas.com/files/',
+        })
+        
+        bankdetailuppy.on('complete', result => {
+            console.log('successful files:', result.successful)
+            console.log('failed files:', result.failed)
+        });
+    });
+    
 
 </script>
 <script src="https://arungas.com/public/ujwalla/js/app.js"></script>

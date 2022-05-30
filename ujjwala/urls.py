@@ -35,5 +35,10 @@ urlpatterns = [
         '^ujjwala-application/(?P<pk>[^/.]+)/reupload/$',
         views.UjjwalaApplicationReuploadView.as_view(),
         name="application_reupload"
+    ),
+    url(
+        '^ujjwala-application/(?P<pk>[^/.]+)/status/$',
+        views.ApplicationStatusView.as_view(),
+        name="application_status"
     )
 ]

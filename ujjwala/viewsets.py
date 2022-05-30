@@ -18,7 +18,8 @@ from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, FamilyM
 from .forms import ApplicationRejected
 from .models import UjjwalaV2Application, FamilyMembers
 from .serializers import UjjwalaV2ApplicationSerializer
-from .ujjwala_functions import download_ujjwala_documents, get_salutation, download_pre_installation_documents
+from .ujjwala_functions import download_ujjwala_documents, get_salutation, download_pre_installation_documents, \
+    is_valid_application
 
 
 class CustomPagePagination(PageNumberPagination):
@@ -116,13 +117,6 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         request.PERFORM_SUBMIT = True
         return super().create(request, *args, **kwargs)
 
-    # @action(methods=['post'], detail=True, url_path='submit_pre_inspection')
-    # def submit_pre_inspection(self, request, *args, **kwargs):
-    #     obj: UjjwalaV2Application = self.get_object()
-    #     serializer = SubmitPreInspectionSerializer(instance=obj, data=request.data, partial=True)
-    #     serializer.is_valid(raise_exception=True)
-    #     obj.transition_pre_inspection_submit(**serializer.data)
-    #     return HttpResponse('Ok')
 
     @action(methods=['get'], detail=False, url_path='check_ujjwala_application')
     def check_ujjwala_application(self, request, *args, **kwargs):
@@ -133,7 +127,6 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         if application:
             return JsonResponse({
                 "status": False,
-                "application_id": str(application.pk),
                 "date": application.created_on.strftime('%d-%m-%Y'),
                 "application": "Ujjwala Application Id: {} {}".format(
                     application.pk, application.name
@@ -145,26 +138,42 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 "status": False
             })
 
+    # @action(methods=['post'], detail=True, url_path='submit_pre_inspection')
+    # def submit_pre_inspection(self, request, *args, **kwargs):
+    #     obj: UjjwalaV2Application = self.get_object()
+    #     serializer = SubmitPreInspectionSerializer(instance=obj, data=request.data, partial=True)
+    #     serializer.is_valid(raise_exception=True)
+    #     obj.transition_pre_inspection_submit(**serializer.data)
+    #     return HttpResponse('Ok')
+
 
     @action(methods=['get'], detail=False, url_path='check_phone')
     def check_phone(self, request, *args, **kwargs):
         contact_mobile = request.GET.get('contact_mobile')
 
-        application = UjjwalaV2Application.objects.filter(contact_mobile=contact_mobile).first()
+        applications = UjjwalaV2Application.objects.filter(contact_mobile=contact_mobile).order_by('-id')
 
-        if application:
-            if application.status != 'DOCUMENTS_REUPLOAD':
+        if applications:
+            # if application.status != 'DOCUMENTS_REUPLOAD':
             # status_url = reverse('application_status', kwargs={'pk': application.first().pk})
-                return JsonResponse({
-                    "status": False,
-                    "msg": "Application Id: {} exist with contact number: {} status: {}".format(
-                        application.pk, contact_mobile, application.status
-                    )
-                })
+            result = {
+                "status": False,
+            }
+            msg = is_valid_application(applications)
+            result.update(msg)
+            return JsonResponse(result)
+
+            # return JsonResponse({
+            #         "status": False,
+            #         "msg": "Application Id: {} exist with contact number: {} status: {}".format(
+            #             application.pk, contact_mobile, application.status
+            #         )
+            #     })
 
         return JsonResponse({
             "status": True,
-            "msg": "Contact number does not exist. You can proceed with application."
+            "msg": "VALID_APPLICATION",
+            "data": ''
         })
 
     @action(methods=['get'], detail=False, url_path='check_uid')
@@ -173,23 +182,26 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         if uid in ('999999999999', '666666666666'):
             return JsonResponse({
                 "status": True,
-                "msg": "UID not associated with any application."
+                "msg": "VALID_APPLICATION",
+                "data": ''
             })
 
-        family_member = FamilyMembers.objects.filter(uid_no=uid).first()
+        family_members = FamilyMembers.objects.filter(uid_no=uid)
 
-        if family_member:
-            if family_member.parent.status != 'DOCUMENTS_REUPLOAD':
-                return JsonResponse({
-                    "status": False,
-                    "msg": "UID associated with application id: {} status: {}".format(
-                        family_member.parent.id, family_member.parent.status
-                    )
-                })
+        if family_members:
+            result = {
+                "status": False,
+            }
+            pk_list = [family_member.parent.pk for family_member in family_members]
+            applications = UjjwalaV2Application.objects.filter(pk__in=pk_list)
+            msg = is_valid_application(applications)
+            result.update(msg)
+            return JsonResponse(result)
 
         return JsonResponse({
             "status": True,
-            "msg": "UID not associated with any application."
+            "msg": "VALID_APPLICATION",
+            "data": ''
         })
 
     @action(methods=['get'], detail=False, url_path='get_aadhar_list')

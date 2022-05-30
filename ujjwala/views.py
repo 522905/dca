@@ -16,6 +16,13 @@ def index(request):
     return render(request, 'ujjwala/index.html')
 
 
+class ApplicationStatusView(DetailView):
+    model = UjjwalaV2Application
+
+    def get_template_names(self):
+        return 'ujjwala/status.html'
+
+
 @method_decorator(login_required, 'dispatch')
 class UjjwalaPreInspectionListView(ListView):
     model = UjjwalaV2Application

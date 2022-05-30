@@ -11,7 +11,8 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 
 from ujjwala.enums import UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, ResidentialStatusEnum, \
-    MaritalStatusEnum
+    MaritalStatusEnum, UjjwalaV2ApplicationStatus
+from ujjwala.models import UjjwalaV2Application
 
 
 def valid_file_size(file):
@@ -197,3 +198,52 @@ def get_salutation(family_member):
         else:
             return 'Miss'
     return ''
+
+
+def is_valid_application(applications):
+    count = applications.count()
+
+    if count > 1:
+        applications = applications.exclude(status=UjjwalaV2ApplicationStatus.APPLICATION_REJECTED)
+        if applications.count == 1:
+            application = applications.first()
+            if application.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
+                return {
+                    "msg": "EKYC_PENDING",
+                    "data": {
+                        "applications": [
+                            {"id": application.id, "name": application.name}
+                        ]
+                    }
+                }
+        else:
+            return {
+                "msg": "MULTIPLE_APPLICATIONS",
+                "data": {
+                    "applications": [
+                        {"id": application.id, "name": application.name, "status": application.status} for application in applications
+                    ]
+                }
+            }
+    else:
+        application = applications.first()
+        if application.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED or \
+                (application.status == UjjwalaV2ApplicationStatus.EKYC_ACCEPTED and
+                 not application.consumer_id):
+            return {
+                "msg": "EKYC_PENDING",
+                "data": {
+                    "applications": [
+                        {"id": application.id, "name": application.name}
+                    ]
+                }
+            }
+
+        return {
+            "msg": application.status,
+            "data": {
+                "applications": [
+                    {"id": application.id, "name": application.name}
+                ]
+            }
+        }
