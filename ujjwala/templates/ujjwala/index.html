@@ -187,7 +187,7 @@
                             <input type="tel" class="form-control" id="contact_mobile" onblur="checkMobileValidity();" pattern="[6789][0-9]{9}"
                             name="contact_mobile"
                             required />
-                            <span id="mobile_detail" class="text-danger"></span>
+                            <span id="mobile_detail"></span>
                         </div>
                         
                         <div id="uid_linked_mobile_form_group" class="form-group">
@@ -416,7 +416,7 @@
 				response = data;
 				if (response.status === true) {
 					$("#mobile_detail").show();
-					$("#mobile_detail").html('✔ Available for New Application').css({'color': 'green', 'margin-left':'22px', 'font-size' : '17px'});
+					$("#mobile_detail").html('✔ आप आवेदन कर सकते है।').css({'color': 'green', 'margin-left':'22px', 'font-size' : '17px'});
 					document.getElementById("contact_mobile").setCustomValidity("")
                     document.getElementById("contact_mobile").reportValidity();
 					return true;
@@ -473,6 +473,7 @@
             alert("Applicant UID mismatch, please enter UID again");
             return false;
         }
+	return true;
 
     }
 

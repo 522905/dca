@@ -33,7 +33,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	contact_mobile = models.CharField(max_length=10)
 	consumer_id = models.CharField(max_length=16, null=True, blank=True)
 	uid_linked_mobile = models.CharField(max_length=10, null=True, blank=True)
-	uid_mobile_status = models.CharField(max_length=25, choices=UjjwalaUidMobileStatusEnum.choices)
+	uid_mobile_status = models.CharField(max_length=25, choices=UjjwalaUidMobileStatusEnum.choices, blank=True, null=True)
 	application_id_kyc_no = models.CharField(max_length=24, null=True, blank=True)
 	referral_code = models.CharField(max_length=64, null=True, blank=True)
 	service_team = models.ForeignKey(Organization, on_delete=models.CASCADE, null=True, blank=True)
