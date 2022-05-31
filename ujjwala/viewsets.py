@@ -11,15 +11,14 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 
-from communication_log.jobs import add_lead_to_vicidial
 from . import models
 from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, FamilyMemberRelationEnum, \
     ManualOperationCodeEnum
 from .forms import ApplicationRejected
 from .models import UjjwalaV2Application, FamilyMembers
 from .serializers import UjjwalaV2ApplicationSerializer
-from .ujjwala_functions import download_ujjwala_documents, get_salutation, download_pre_installation_documents, \
-    is_valid_application
+from .ujjwala_functions import download_ujjwala_documents, get_salutation, \
+    download_pre_installation_documents, get_existing_duplicate_applications_detail
 
 
 class CustomPagePagination(PageNumberPagination):
@@ -77,12 +76,12 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
 
         if application.status == UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD:
             if request.data.get('omc_status') == 'OMC Clear':
-                application.transition_omc_clear(description="Bot Processed")
+                application.transition_omc_clear(description="Bot Processed: OMC Clear")
             elif request.data.get('omc_status') == 'OMC Reject':
-                application.transition_omc_reject(description="Bot Processed")
+                application.transition_omc_reject(description="Bot Processed: OMC Reject")
         if application.status == UjjwalaV2ApplicationStatus.OMC_CLEARED and nic_status not in ('Pending', 'Awaited'):
             if nic_status == 'Cleared':
-                application.transition_nic_cleared(description="Bot Processed")
+                application.transition_nic_cleared(description="Bot Processed: NIC Cleared")
 #            elif nic_status == 'NIC Rejected':
             else:
                 application.transition_nic_error(error_code='', description=nic_status)
@@ -148,10 +147,13 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
 
     @action(methods=['get'], detail=False, url_path='check_phone')
-    def check_phone(self, request, *args, **kwargs):
+    def dedup_phone_for_new_application(self, request, *args, **kwargs):
         contact_mobile = request.GET.get('contact_mobile')
 
-        applications = UjjwalaV2Application.objects.filter(contact_mobile=contact_mobile).order_by('-id')
+        applications = UjjwalaV2Application.objects.filter(
+            Q(contact_mobile=contact_mobile) |
+            Q(uid_linked_mobile=contact_mobile)
+        ).order_by('-id')
 
         if applications:
             # if application.status != 'DOCUMENTS_REUPLOAD':
@@ -159,7 +161,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             result = {
                 "status": False,
             }
-            msg = is_valid_application(applications)
+            msg = get_existing_duplicate_applications_detail(applications)
             result.update(msg)
             return JsonResponse(result)
 
@@ -173,39 +175,35 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         return JsonResponse({
             "status": True,
             "msg": "VALID_APPLICATION",
-            "data": ''
+            "data": {}
         })
 
     @action(methods=['get'], detail=False, url_path='check_uid')
-    def check_uid(self, request, *args, **kwargs):
+    def dedup_uid_for_new_application(self, request, *args, **kwargs):
         uid = request.GET.get('uid')
         if uid in ('999999999999', '666666666666'):
             return JsonResponse({
                 "status": True,
                 "msg": "VALID_APPLICATION",
-                "data": ''
+                "data": {}
             })
 
-        family_members = FamilyMembers.objects.filter(uid_no=uid)
+        exiting_applications = UjjwalaV2Application.objects.filter(family_members__uid_no=uid).order_by('-id')
+        if not exiting_applications.exists():
+            return JsonResponse({
+                "status": True,
+                "msg": "VALID_APPLICATION",
+                "data": {}
+            })
 
-        if family_members:
-            result = {
-                "status": False,
-            }
-            pk_list = [family_member.parent.pk for family_member in family_members]
-            applications = UjjwalaV2Application.objects.filter(pk__in=pk_list)
-            msg = is_valid_application(applications)
-            result.update(msg)
-            return JsonResponse(result)
-
-        return JsonResponse({
-            "status": True,
-            "msg": "VALID_APPLICATION",
-            "data": ''
+        result = get_existing_duplicate_applications_detail(exiting_applications)
+        result.update({
+            "status": False,
         })
+        return JsonResponse(result)
 
     @action(methods=['get'], detail=False, url_path='get_aadhar_list')
-    def get_aadhar_list(self, request, *args, **kwargs):
+    def get_aadhar_list_for_iocl_sdms_dedup(self, request, *args, **kwargs):
         aadhar_list = UjjwalaV2Application.objects.filter(
             status__in=(
                 UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
@@ -213,7 +211,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD
             ),
             robo_sdms_dedup=RoboSdmsDedeupStatusEnum.NOT_PROCESSED
-        ).exclude(family_members__uid_no__in=("0","1")).order_by('-id')
+        ).exclude(family_members__uid_no__in=("0", "1")).order_by('-id')
         #aadhar_list = UjjwalaV2Application.objects.filter(id__in=["1273","2120","2534","32","1265","323","76","601","2148","37"])
         return JsonResponse([
             {
@@ -225,61 +223,15 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             } for record in aadhar_list
         ], safe=False)
 
-    @action(methods=['get'], detail=False, url_path='get_ekyc_accepted_list')
-    def get_ekyc_accepted_list(self, request, *args, **kwargs):
-        # .filter(robo_sdms_dedup=RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE) \
-        aadhar_list = UjjwalaV2Application.objects.filter(
-            Q(status=UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED) |
-            (
-                Q(status=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED) &
-                (Q(consumer_id__isnull=True)|Q(consumer_id=''))
-            )
-        ).filter(
-		Q(sdms_last_updated_on__lte=datetime.datetime.today()-datetime.timedelta(hours=12))|
-		Q(sdms_last_updated_on__isnull=True)
-	).exclude(family_members__uid_no__in=("0","1")).exclude(id__in=['113','33','157','138','37','32','259','299','295','301']).order_by('-id')
-        #aadhar_list = UjjwalaV2Application.objects.filter(id='1022')
-        return JsonResponse([
-            {
-                'id': record.id,
-                'uid': record.family_members.filter(relation=FamilyMemberRelationEnum.SELF).first().uid_no
-            } for record in aadhar_list
-        ], safe=False)
-
-    @action(methods=['post'], detail=False, url_path='update_consumer_id')
-    def update_consumer_id(self, request, *args, **kwargs):
-        result = request.data.get('result')
-        application = UjjwalaV2Application.objects.filter(pk=request.data.get('id')).first()
-        application.sdms_last_updated_on = timezone.now()
-        application.save()
-
-        if 'arun indane' not in result.get('distributor_name', '').lower():
-            return HttpResponse('OK')
-
-        self_family_member = application.family_members.filter(relation=FamilyMemberRelationEnum.SELF).first()
-
-        self_family_member.uid_check_result = result
-        self_family_member.save()
-
-        application.consumer_id = result.get('consumer_id', '')
-
-        if application.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
-            application.ekyc_accepted_or_rejected(description="Bot Processed")
-            # application.status = UjjwalaV2ApplicationStatus.EKYC_ACCEPTED
-
-        application.save()
-
-        return HttpResponse('OK')
-
-
     @action(methods=['post'], detail=False, url_path='update_result')
-    def update_result(self, request, *args, **kwargs):
+    def update_iocl_sdms_dedup_results(self, request, *args, **kwargs):
         record_valid = True
         invalid_result = {}
         invalid_result_relation = ''
         family_member_obj = {}
 
         consumer_id = ''
+        application_obj = UjjwalaV2Application.objects.get(pk=request.data.get('id'))
 
         for member in request.data['family_members']:
             try:
@@ -294,7 +246,6 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                     if 'SBL-BPR-00131' in request.data.get('alert'):
                         continue
                     else:
-                        application_obj = UjjwalaV2Application.objects.get(pk=request.data.get('id'))
                         application_obj.status = UjjwalaV2ApplicationStatus.PROCESS_MANUAL
                         application_obj.save()
                         return HttpResponse('OK')
@@ -302,7 +253,8 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 if not member['result'].get('distributor_name', ''):
                     continue
                 else:
-                    if 'arun indane' not in member['result'].get('distributor_name').lower():
+                    is_our_record = 'arun indane' not in member['result'].get('distributor_name').lower()
+                    if is_our_record:
                         if member['result'].get('relationship_status') != 'CANCELLED':
                             record_valid = False
                             invalid_result = member['result']
@@ -311,11 +263,12 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                         record_valid = False
                         invalid_result = member['result']
                         invalid_result_relation = family_member_obj.relation
+                    elif family_member_obj.relation == 'SELF' and is_our_record:
+                        application_obj.consumer_id = member['consumer_id']
+
 
             except FamilyMembers.DoesNotExist:
                 pass
-
-        application_obj = UjjwalaV2Application.objects.get(pk=request.data.get('id'))
 
         if not record_valid:
             try:
@@ -335,11 +288,69 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 print(e)
                 pass
         else:
-            self_member = FamilyMembers
             application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE
             application_obj.event_invite_for_ekyc_channel_whatsapp()
+            if application_obj.consumer_id and \
+                    application_obj.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
+                application_obj.ekyc_accepted_or_rejected(description="Bot Processed")
 
         application_obj.save()
+        return HttpResponse('OK')
+
+    @action(methods=['get'], detail=False, url_path='get_ekyc_accepted_list')
+    def get_list_to_fetch_consumer_id(self, request, *args, **kwargs):
+        # .filter(robo_sdms_dedup=RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE) \
+        aadhar_list = UjjwalaV2Application.objects.filter(
+            Q(status=UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED) |
+            (
+                (
+                        Q(status=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED) |
+                        Q(status=UjjwalaV2ApplicationStatus.APPLICATION_REJECTED)
+                ) &
+                (
+                        Q(consumer_id__isnull=True) |
+                        Q(consumer_id='')
+                )
+            )
+        ).filter(
+            Q(sdms_last_updated_on__lte=datetime.datetime.today()-datetime.timedelta(hours=12)) |
+            Q(sdms_last_updated_on__isnull=True)
+	    ).\
+            exclude(family_members__uid_no__in=("0", "1")).\
+            exclude(id__in=['113', '33', '157', '138', '37', '32', '259', '299', '295', '301']).\
+            order_by('-id')
+
+        #aadhar_list = UjjwalaV2Application.objects.filter(id='1022')
+
+        return JsonResponse([
+            {
+                'id': record.id,
+                'uid': record.family_members.filter(relation=FamilyMemberRelationEnum.SELF).first().uid_no
+            } for record in aadhar_list
+        ], safe=False)
+
+    @action(methods=['post'], detail=False, url_path='update_consumer_id')
+    def update_consumer_id(self, request, *args, **kwargs):
+        result = request.data.get('result')
+        application = UjjwalaV2Application.objects.get(pk=request.data.get('id'))
+        application.sdms_last_updated_on = timezone.now()
+        application.save()
+
+        if 'arun indane' not in result.get('distributor_name', '').lower():
+            return HttpResponse('OK')
+
+        self_family_member = application.family_members.filter(relation=FamilyMemberRelationEnum.SELF).first()
+
+        self_family_member.uid_check_result = result
+        self_family_member.save()
+
+        application.consumer_id = result.get('consumer_id', '')
+
+        if application.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
+            application.ekyc_accepted_or_rejected(description="Bot Processed")
+
+        application.save()
+
         return HttpResponse('OK')
 
     def perform_create(self, serializer):

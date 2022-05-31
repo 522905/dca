@@ -1,3 +1,4 @@
+import requests
 import track
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -52,6 +53,13 @@ class UjjwalaWhatsappCommunication(object):
 				event="submit", channel="whatsapp",
 				message_id=data.get('id')
 			)
+		res = requests.post(
+			"http://vici.hawabadlo.in/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+			"&function=add_lead&phone_number={}&list_id=1006&first_name={}&last_name={}".format(
+				self.contact_mobile, self.name, self.pk
+			)
+		)
+
 	def event_ioc_dedupe_reject_channel_whatsapp(self):
 		from ujjwala.models import FamilyMembers
 
@@ -105,6 +113,7 @@ class UjjwalaWhatsappCommunication(object):
 				content_type=ujjwala_v2_application_content_type,
 				object_id=self.pk,
 				event="ioc_dedupe_reject", channel="whatsapp",
+				channel_subscriber=self.contact_mobile,
 				message_id=data.get('id')
 			)
 

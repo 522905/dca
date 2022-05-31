@@ -325,6 +325,7 @@ class ConnectionApplication(models.Model):
 				content_type=connection_application_content_type,
 				object_id=self.pk,
 				event="completed", channel="whatsapp",
+				channel_subscriber=self.mobile,
 				message_id=data.get('id')
 			)
 

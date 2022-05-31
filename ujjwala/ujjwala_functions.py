@@ -6,13 +6,13 @@ from functools import wraps
 import magic
 import requests
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 
 from ujjwala.enums import UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, ResidentialStatusEnum, \
     MaritalStatusEnum, UjjwalaV2ApplicationStatus
-from ujjwala.models import UjjwalaV2Application
+
 
 
 def valid_file_size(file):
@@ -200,50 +200,46 @@ def get_salutation(family_member):
     return ''
 
 
-def is_valid_application(applications):
-    count = applications.count()
+def is_ekyc_required(application):
+    if application.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
+        return True
+    if application.status == UjjwalaV2ApplicationStatus.EKYC_ACCEPTED and not application.consumer_id:
+        return True
+    return False
 
-    if count > 1:
-        applications = applications.exclude(status=UjjwalaV2ApplicationStatus.APPLICATION_REJECTED)
-        if applications.count == 1:
-            application = applications.first()
-            if application.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
-                return {
-                    "msg": "EKYC_PENDING",
-                    "data": {
-                        "applications": [
-                            {"id": application.id, "name": application.name}
-                        ]
-                    }
-                }
-        else:
-            return {
-                "msg": "MULTIPLE_APPLICATIONS",
-                "data": {
-                    "applications": [
-                        {"id": application.id, "name": application.name, "status": application.status} for application in applications
-                    ]
-                }
-            }
-    else:
+
+def get_existing_duplicate_applications_detail(all_applications):
+    applications = all_applications.exclude(
+        status__in=(
+            UjjwalaV2ApplicationStatus.APPLICATION_REJECTED,
+            UjjwalaV2ApplicationStatus.OMC_REJECTED,
+            UjjwalaV2ApplicationStatus.EKYC_REJECTED
+        )
+    )
+    if not applications.exists():
+        applications = all_applications
+
+    return_data = {
+        "applications": [
+            {
+                "id": application.id,
+                "name": application.name,
+                "status": application.status
+            } for application in applications
+        ]
+    }
+
+    if applications.count() > 1:
+        return {
+            "msg": "MULTIPLE_APPLICATIONS",
+            "ekyc_required": True,
+            "data": return_data
+        }
+
+    elif applications.count() == 1:
         application = applications.first()
-        if application.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED or \
-                (application.status == UjjwalaV2ApplicationStatus.EKYC_ACCEPTED and
-                 not application.consumer_id):
-            return {
-                "msg": "EKYC_PENDING",
-                "data": {
-                    "applications": [
-                        {"id": application.id, "name": application.name}
-                    ]
-                }
-            }
-
         return {
             "msg": application.status,
-            "data": {
-                "applications": [
-                    {"id": application.id, "name": application.name}
-                ]
-            }
+            "ekyc_required": is_ekyc_required(application),
+            "data": return_data
         }

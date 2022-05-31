@@ -3,7 +3,7 @@ import json
 import django_rq
 from django.http import HttpResponse
 from django.shortcuts import render
-from communication_log.jobs import interakt_webhook_job_processing, infobip_webhook_job_processing, add_lead_to_vicidial
+from communication_log.jobs import interakt_webhook_job_processing, infobip_webhook_job_processing
 from django.views.decorators.csrf import csrf_exempt
 
 

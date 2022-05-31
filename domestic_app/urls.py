@@ -25,9 +25,9 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     path(r'connection-app/', include('connection_app.urls')),
     path(r'commlog/', include('communication_log.urls')),
-    path(r'', RedirectView.as_view(url='https://www.arungas.com/info', permanent=False)),
+    # path(r'', RedirectView.as_view(url='https://www.arungas.com/info', permanent=False)),
     # path(r'ujjwala/', include('ujjwala.urls')),
-    # path(r'', RedirectView.as_view(url='/connection-app/', permanent=False)),
+    path(r'', RedirectView.as_view(url='/connection-app/', permanent=False)),
     path(r'', include(frontend_urls)),
 ]
 
