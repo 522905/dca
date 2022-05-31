@@ -184,29 +184,19 @@
                         </div>
                         <div class="form-group">
                             <label>Applicant Mobile Number. (आवेदक का मोबाइल नंबर)<strong style="color:red">*</strong></label>
-                            <input type="tel" class="form-control" id="contact_mobile" onblur="checkMobileValidity();" pattern="[6789][0-9]{9}"
-                            name="contact_mobile"
-                            required />
-                            <span id="mobile_detail"></span>
+                            <input type="tel" class="form-control" id="uid_linked_mobile" onblur="checkContactMobileValidity();" pattern="[6789][0-9]{9}"
+                            name="uid_linked_mobile" maxlength="10" required />
+                            <span id="contact_mobile_detail"></span>
+                           
                         </div>
                         
                         <div id="uid_linked_mobile_form_group" class="form-group">
                             <label style="margin-bottom: 0;">Own or Family Whatsapp Number(अपना या परिवार के किसी सदस्य का व्हाट्सएप नंबर) <i class="fa fa-whatsapp" aria-hidden="true"></i> <strong style="color:red">*</strong></label>
                             <span style="color:red; font-size:12px; display: block; width: 100%;">जो कि कनेक्शन मिलने तक चलता रहे ताकि हम आपको संपर्क कर सके</span>
-                            <input type="tel" class="form-control" id="uid_linked_mobile" onblur="this.reportValidity();" pattern="[6789][0-9]{9}"
-                                name="uid_linked_mobile" maxlength="10" required />
+                            <input type="tel" class="form-control" id="contact_mobile" onblur="checkMobileValidity();" pattern="[6789][0-9]{9}" name="contact_mobile" maxlength="10" required />
+                            <span id="mobile_detail"></span>
                         </div>
 
-                        <!-- <div class="form-group">
-                            <label>Select Aadhaar Registered Mobile (आधार पंजीकृत मोबाइल का चयन करें)<strong style="color:red">*</strong></label>
-                            <select id="uid_mobile_status" class="selectpicker form-control " name="uid_mobile_status" required>
-                                <option  value="" selected>Select</option>
-                                <option value="LINKED_WITH_SAME_MOBILE">Provided Mobile number is Same on Aadhaar(आधार पर मोबाइल नंबर समान है)</option>
-                                <option value="MOBILE_NOT_AVAILABLE">I don't know the registered mobile number(मुझे आधार पंजीकृत मोबाइल नंबर नहीं पता)</option>
-                                <option value="LINKED_WITH_OTHER_MOBILE">Aadhaar registered mobile number is different(आधार पंजीकृत मोबाइल नंबर अलग है)
-                                </option>
-                            </select>
-                        </div> -->
                         <div class="form-group">
                             <label>Marital Status (वैवाहिक स्थिति)<strong style="color:red">*</strong></label>
                             <select required
@@ -223,28 +213,6 @@
                             </select>
                         </div>
                         <input type="hidden" id="occupancy_status" name="residential_status" value="LIVING_WITH_FAMILY">
-                        <!-- 
-                        <div class="form-group">
-                            <label>Residence Occupancy Status (निवास स्थिति)<strong style="color:red">*</strong></label>
-                            
-                            <select
-                                class="selectpicker form-control"
-                                id="occupancy_status"
-                                data-style="warning"
-                                name="residential_status" required
-                            >
-                                <option value="" selected="selected" id="status">
-                                    Select Residence Occupancy Status (चुनें निवास स्थिति)
-                                </option>
-                                <option value="LIVING_ALONE">
-                                    Living Alone (अकेले)
-                                </option>
-                                <option value="LIVING_WITH_FAMILY" selected>
-                                    Living With Family (परिवार के साथ )
-                                </option>
-                            </select> 
-                        </div>
--->
 
                         <div class="form-group">
                             <label for="house_no">Current Address (वर्तमान पता)<strong style="color:red">*</strong></label>
@@ -356,7 +324,8 @@
     function checkApplicantsAadhaarValidity() {
         var e = document.getElementById('applicant-uid_no');
         var uid = e.value;
-    
+        if($("#applicant-uid_no" ).attr("validated_value")==uid) return;
+        
         if(!validateAadhaar(uid)) {
             e.setCustomValidity("Invalid aadhaar, please check again.");
         } else {
@@ -364,6 +333,9 @@
                 e.setCustomValidity("Aadhaar already entered in Family Members List");
             } else {
                 $("#self-uid-msg").html('Checking Aadhaar...');
+
+                $("#applicant-uid_no" ).attr("validated_value", uid);
+
                 jQuery.ajax({
                     url: '/ujjwala/ujjwala-application/check_uid/',
                     type: "GET",
@@ -389,24 +361,86 @@
         e.reportValidity();
     }
 
+    function checkContactMobileValidity() {
+
+        var mobile = $("#uid_linked_mobile").val();
+
+        if($("#uid_linked_mobile" ).attr("validated_value")==mobile) return;
+
+        $("#contact_mobile_detail").html('');
+        if (!mobile){
+            document.getElementById("uid_linked_mobile").setCustomValidity("Invalid mobile number.");
+            document.getElementById("uid_linked_mobile").reportValidity();
+            // document.getElementById("uid_linked_mobile").focus();
+            return;
+        }
+
+        if (!(mobile.match(/^[6789][0-9]{9}$/))){
+            document.getElementById("uid_linked_mobile").setCustomValidity("Invalid mobile number.");
+            document.getElementById("uid_linked_mobile").reportValidity();
+            // document.getElementById("uid_linked_mobile").focus();
+            return;
+        }
+        $("#contact_mobile_detail").show();
+        $("#contact_mobile_detail").html('<img style="width:18px; margin-left:10px;" align="left">&nbsp;Checking Mobile...');
+
+        $("#uid_linked_mobile" ).attr("validated_value", mobile);
+
+        jQuery.ajax({
+			url: '/ujjwala/ujjwala-application/check_phone/',
+			type: "GET",
+			data: {'contact_mobile': mobile},
+			success: function (data) {
+				response = data;
+				if (response.status === true) {
+					$("#contact_mobile_detail").show();
+					$("#contact_mobile_detail").html('✔ Available for New Application').css({'color': 'green', 'font-size' : '14px'});
+					document.getElementById("uid_linked_mobile").setCustomValidity("")
+                    document.getElementById("uid_linked_mobile").reportValidity();
+					return true;
+				} else {
+                    console.log(response);
+                    var datas = response.data;
+                    var msg = response.msg;
+                    var status = response.status;
+                    var applications = datas.applications;
+
+                                        
+                    window.alert(`आपका आवेदन पहले से मौजूद है आइ डी: ${applications[0].id} और नाम ${applications[0].name} स्टेटस ` + msg);
+                    document.getElementById("uid_linked_mobile").setCustomValidity(`ID: ${applications[0].id} Name: ${applications[0].name}`);
+                    document.getElementById("uid_linked_mobile").reportValidity();
+
+                    msg = applications.map(e=>`<p>आपका आवेदन पहले से मौजूद है ${e.id} Name: ${e.name}</p>`).join('');
+
+                    $("#contact_mobile_detail").html(msg).css({'color': 'red', 'font-size' : '17px'});
+				}
+			},	
+		});
+    };
+    
     function checkMobileValidity() {
         var mobile = $("#contact_mobile").val();
+
+        if($("#mobile_detail" ).attr("validated_value")==mobile) return;
+
         $("#mobile_detail").html('');
         if (!mobile){
             document.getElementById("contact_mobile").setCustomValidity("Invalid mobile number.");
             document.getElementById("contact_mobile").reportValidity();
-            document.getElementById("contact_mobile").focus();
+            // document.getElementById("contact_mobile").focus();
             return;
         }
 
         if (!(mobile.match(/^[6789][0-9]{9}$/))){
             document.getElementById("contact_mobile").setCustomValidity("Invalid mobile number.");
             document.getElementById("contact_mobile").reportValidity();
-            document.getElementById("contact_mobile").focus();
+            // document.getElementById("contact_mobile").focus();
             return;
         }
         $("#mobile_detail").show();
         $("#mobile_detail").html('<img style="width:18px; margin-left:10px;" align="left">&nbsp;Checking Mobile...');
+
+        $("#mobile_detail" ).attr("validated_value", mobile);
 
         jQuery.ajax({
 			url: '/ujjwala/ujjwala-application/check_phone/',
@@ -416,7 +450,7 @@
 				response = data;
 				if (response.status === true) {
 					$("#mobile_detail").show();
-					$("#mobile_detail").html('✔ आप आवेदन कर सकते है।').css({'color': 'green', 'margin-left':'22px', 'font-size' : '17px'});
+					$("#mobile_detail").html('✔ Available for New Application').css({'color': 'green', 'font-size' : '14px'});
 					document.getElementById("contact_mobile").setCustomValidity("")
                     document.getElementById("contact_mobile").reportValidity();
 					return true;
@@ -426,12 +460,12 @@
                     var msg = response.msg;
                     var status = response.status;
                     var applications = datas.applications;
-                    window.alert(`आपका आवेदन पहले से मौजूद है ID: ${applications[0].id} and Name ${applications[0].name} आपका आवेदन ` + msg);
+                    window.alert(`आपका व्हाट्सएप नंबर पहले से मौजूद है ID: ${applications[0].id} and Name ${applications[0].name} `);
                     
                     document.getElementById("contact_mobile").setCustomValidity(`ID: ${applications[0].id} Name: ${applications[0].name}`);
                     document.getElementById("contact_mobile").reportValidity();
 
-                    msg = applications.map(e=>`<p>आपका आवेदन पहले से मौजूद है ${e.id} Name: ${e.name}</p>`).join('');
+                    msg = applications.map(e=>`<p>आपका व्हाट्सएप नंबर पहले से मौजूद है ${e.id} Name: ${e.name}</p>`).join('');
 
                     $("#mobile_detail").html(msg).css({'color': 'red', 'font-size' : '17px'});
 				}
@@ -473,7 +507,7 @@
             alert("Applicant UID mismatch, please enter UID again");
             return false;
         }
-	return true;
+	    return true;
 
     }
 
@@ -952,7 +986,7 @@
 
                         if (response.status === true) {
                             e.setCustomValidity("");
-                        } else {
+                        } else {    
                             e.setCustomValidity(data.msg);
                             e.focus();
                         }
