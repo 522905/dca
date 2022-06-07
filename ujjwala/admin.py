@@ -17,8 +17,9 @@ from rangefilter.filters import DateRangeFilter
 from fsm_admin2_custom.admin import FSMTransitionCustomMixin
 from .enums import ResidentialStatusEnum, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, MaritalStatusEnum
 from .models import UjjwalaV2Application, FamilyMembers, UjjwalaApplicationDocuments, UjjwalaV2ApplicationStatus, \
-	UserDocuments
+	UserDocuments, PreInspectionDocuments, PreInspection
 from .ujjwala_functions import download_ujjwala_documents
+from advanced_filters.admin import AdminAdvancedFiltersMixin
 
 
 class UjjwalaApplicationDocumentsInline(admin.TabularInline):
@@ -33,14 +34,14 @@ class FamilyMembersInline(admin.TabularInline):
 	extra = 0
 	model = FamilyMembers
 	fields = ('name', 'relation', 'dob', 'uid_no', 'download_links', 'uid_front_link', 'uid_back_link',
-	          'uid_check_result', 'uid_front_file_size', 'uid_back_file_size',)
+			  'uid_check_result', 'uid_front_file_size', 'uid_back_file_size',)
 	readonly_fields = ('download_links', 'uid_check_result', 'uid_front_file_size',
-	                   'uid_back_file_size',
-	                   )
+					   'uid_back_file_size',
+					   )
 
 
 @admin.register(UjjwalaV2Application)
-class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdmin):
+class UjjwalaV2Admin(AdminAdvancedFiltersMixin, ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdmin):
 	fsm_transition_form_template = 'ujjwala/transaction_form_template.html'
 	list_display = (
 		'id',
@@ -63,6 +64,18 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 		('status', DropdownFilter),
 		('version', DropdownFilter),
 		('robo_sdms_dedup', DropdownFilter)
+	)
+
+	advanced_filter_fields = (
+		'created_on',
+		'updated_on',
+		'status',
+		'version',
+		'robo_sdms_dedup',
+		'id',
+		'consumer_id',
+		'referral_code',
+		'name'
 	)
 
 	inlines = [
@@ -127,3 +140,30 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 class UserDocumentsAdmin(admin.ModelAdmin):
 	list_display = ('id', 'parent', 'type', 'link',)
 	list_filter = ('parent',)
+
+
+class PreInspectionDocumentsAdmin(admin.TabularInline):
+	fields = (
+		'type',
+		'link',
+		'compressed',
+		'file_size',
+	)
+	model = PreInspectionDocuments
+	extra = 0
+
+
+@admin.register(PreInspection)
+class PreInspectionAdmin(admin.ModelAdmin):
+	list_display = (
+		'id',
+		'parent',
+		'witness_mobile_number',
+		'mechanic',
+		'status',
+	)
+	list_filter = ('parent', 'mechanic')
+	inlines = (PreInspectionDocumentsAdmin,)
+
+
+

@@ -2,6 +2,7 @@ from rest_framework import serializers
 from drf_writable_nested.serializers import WritableNestedModelSerializer
 
 from ujjwala.models import UjjwalaApplicationDocuments, UjjwalaV2Application, FamilyMembers
+from ujjwala.ujjwala_functions import valid_file_uploaded
 
 
 class UjjwalaApplicationDocumentsSerializer(serializers.ModelSerializer):
@@ -9,11 +10,25 @@ class UjjwalaApplicationDocumentsSerializer(serializers.ModelSerializer):
         model = UjjwalaApplicationDocuments
         fields = '__all__'
 
+    def validate(self, attrs):
+        is_valid_file_size = valid_file_uploaded(attrs.get('link'))
+        if is_valid_file_size:
+            return attrs
+        raise serializers.ValidationError("Ujjwala Application Invalid Documents Size")
+
 
 class FamilyMembersSerializer(serializers.ModelSerializer):
     class Meta:
         model = FamilyMembers
         fields = '__all__'
+
+    def validate(self, attrs):
+        is_valid_file_size = valid_file_uploaded(attrs.get('uid_front_link'))
+        if is_valid_file_size:
+            is_valid_file_size = valid_file_uploaded(attrs.get('uid_back_link'))
+            if is_valid_file_size:
+                return attrs
+        raise serializers.ValidationError("Family Member Documents Invalid Size")
 
 
 class UjjwalaV2ApplicationSerializer(WritableNestedModelSerializer):

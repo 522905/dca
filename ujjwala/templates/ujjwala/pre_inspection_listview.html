@@ -1,11 +1,45 @@
 {% extends "material/frontend/base_module.html" %}
+{% load static %}
 {% block content %}
-    <table>
-        <tr>
-            <th colspan="2">
-                <b>List of Pre-Inspection Records</b>
-            </th>
-        </tr>
+
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<style>
+    body{ font-family: 'muli', sans-serif !important; font-weight: 500;}
+    .form_label{ max-width:1000px !important}
+</style>
+<div class="p-2 pt-0 form_label" style="width: 100%;">
+    <div class="card ml-3">
+        <div class="card-header">
+            <b>List of Pre-Inspection Records</b>
+        </div>
+        <div class="card-body" style="padding:0;">
+            <table>
+                <tr>
+                    <!-- <th>Id</th> -->
+                    <th>Application Id</th>
+                    <th>Name</th>
+                    <th>Contact </th>
+                    <th>Address</th>
+                    <th style="text:right">Status</th>
+                </tr>
+                {% for obj in object_list %}
+                    <tr>
+                        <!-- <td><a href="{% url 'ujjwala:pre_inspection_form_view' pk=obj.id %}">{{ obj.pk }}</a></td> -->
+                        <td><a href="{% url 'ujjwala:pre_inspection_form_view' pk=obj.id %}">{{ obj.parent_id }}</a></td>
+                        <td>{{ obj.parent.name }}</td>
+                        <td>{{ obj.parent.mobile }} / {{ obj.parent.uid_linked_mobile }}</td>
+                        <td style="width:200px">{{ obj.parent.formatted_address }}</td>
+                        <td style="text:right">{{ obj.status }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+    <!-- <table>
+
         <tr>
             <td colspan="2">
                 <div class="pagination">
@@ -14,7 +48,6 @@
                             <a href="?page=1">&laquo; first</a>
                             <a href="?page={{ page_obj.previous_page_number }}">previous</a>
                         {% endif %}
-
                         <span class="current">
                             <input class="searchfield" id="searchbox" type="search" placeholder="Search..."/>
                             Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
@@ -29,13 +62,15 @@
             </td>
         </tr>
         <tr>
+            <th>Id</th>
             <th>Application Id</th>
-            <th>Name</th>
+            <th>Status</th>
         </tr>
         {% for obj in object_list %}
             <tr>
-                <td><a href="{% url 'ujjwala:pre_inspection_detail_view' pk=obj.id %}">{{ obj.pk }}</a><td>
-                <td>{{ obj.name }}</td>
+                <td><a href="{% url 'ujjwala:pre_inspection_form_view' pk=obj.id %}">{{ obj.pk }}</a><td>
+                <td>{{ obj.parent_id }}</td>
+                <td>{{ obj.status }}</td>
             </tr>
         {% endfor %}
         <tr>
@@ -59,13 +94,12 @@
                 </div>
             </td>
         </tr>
-    </table>
+    </table> -->
     <script>
         window.onload=function(){
 
         const input = document.getElementById("input");
         const getName = document.getElementById("getName");
-
 
         getName.addEventListener("submit", e =>{
             // Prevent the form from submission
@@ -84,9 +118,7 @@
                     // Catch error - for example, the user doesn't input a valid name
                     .catch(error => console.log("not ok")); // TO BE IMPROVED
                 })
-
-            
-        };
+            };
         });
      };
     </script>

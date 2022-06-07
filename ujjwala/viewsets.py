@@ -106,7 +106,6 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
         ], safe=False)
 
 
-
 class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     queryset = models.UjjwalaV2Application.objects.all()
     serializer_class = UjjwalaV2ApplicationSerializer

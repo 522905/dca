@@ -10,7 +10,7 @@ from rest_framework import routers
 from connection_app.viewsets import ConnectionApplicationViewSet
 
 from . import views
-from .forms import PreInspectionWizardForm
+from . import views
 from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet
 
 router = routers.DefaultRouter()
@@ -20,17 +20,28 @@ router.register(r'ujjwala-bot', UjjwalaApplicationAPIViewSet)
 urlpatterns = [
     path('', views.index),
     path('', include(router.urls)),
-    path('frontend/', generic.TemplateView.as_view(template_name="ujjwala/frontend.html"), name="index"),
-    url(
-        '^pre_inspection/(?P<pk>[^/.]+)/$',
-        PreInspectionWizardForm.as_view(),
-        name="pre_inspection_detail_view"
-    ),
-    # path('pre_inspection_listview/', views.UjjwalaPreInspectionListView.as_view(), name="pre_inspection_listview"),
+    # path('portal/', generic.TemplateView.as_view(template_name="ujjwala/frontend.html"), name="index"),
+
+    path('portal/pre-inspection/', views.UjjwalaPreInspectionListView.as_view(), name="index"),
+
     path(
-        'pre_inspection_search/', generic.TemplateView.as_view(
-            template_name="ujjwala/pre_inspection_search.html"
-        ), name="pre_inspection_search"),
+        'portal/pre-inspection/create/',
+        views.PreInspectionCreateView.as_view(),
+        name="pre_inspection_create"
+    ),
+
+    url(
+        '^portal/pre-inspection/(?P<pk>[^/.]+)/$',
+        views.PreInspectionView.as_view(),
+        name="pre_inspection_form_view"
+    ),
+
+    # url(
+    #     '^pre_inspection_allocated/(?P<pk>[^/.]+)/$',
+    #     PreInspectionAllocatedOtpView.as_view(),
+    #     name="pre_inspection_allocated"
+    # ),
+
     url(
         '^ujjwala-application/(?P<pk>[^/.]+)/reupload/$',
         views.UjjwalaApplicationReuploadView.as_view(),
@@ -40,5 +51,13 @@ urlpatterns = [
         '^ujjwala-application/(?P<pk>[^/.]+)/status/$',
         views.ApplicationStatusView.as_view(),
         name="application_status"
-    )
+    ),
+
+    # Deprecated Create URL
+    # path(
+    #     'portal/pre-inspection/deprecated-create/', generic.TemplateView.as_view(
+    #         template_name="ujjwala/pre_inspection_search.html"
+    #     ), name="pre_inspection_search"
+    # ),
+
 ]

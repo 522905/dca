@@ -1,3 +1,9 @@
+.height-100{height:100vh}
+body{font-family: 'Montserrat' !important; }
+button{ font-family: 'Montserrat' !important;}
+.errorlist li{ color: red; font-size: 14px; font-weight: 500;}
+.form_label{ max-width: 600px;}
+.form_label label{ font-size: 14px; font-weight: 600; color: #333;}
 .uppy-Dashboard-innerWrap
 {
     width:200px;
@@ -50,12 +56,7 @@
 .actions_img{ border-bottom: 1px solid #ddd; position: absolute; padding: 5px; background-color: #fff; border-radius: 2px; margin: 5px; z-index: 1000;}
 .actions_img i{ font-size: 20px; color: #999; }
 #rotate_btn{ border:0; background-color: transparent; }
-.form-control{margin-left:15px;}
-p{margin-left:15px;}
-input[type="radio"],
-input[type="checkbox"] {
-  margin: 4px 0 0 15px;
-}
+
 .register .btn{  padding: 10px 15px; border: none; border-radius: 4px; margin-left:15px !important;  cursor: pointer; margin-left: 0; color: #fff;}
 .register .btn:hover{ background-color: #417690;} */
 .js-inline-admin-formset.inline-group{ border:1px solid #ececec}
@@ -67,8 +68,140 @@ input[type="checkbox"] {
 }
 #content-main .btn{ background-color: #417690; color: #fff;  padding: 10px; border-radius: 5px;}
 #content-main .btn:hover{background-color:#79aec8}
-ul.errorlist{ background-color: transparent; margin-left: 110px; display: block;}
+ul.errorlist{ background-color: transparent; display: block;}
 .helptext{ margin-left: 110px; float: left; width: 100%;}
 .cotainer form input,.cotainer form select,.cotainer form textarea{ display: block;}
 
-.breadcrumbs{ display: none !important;}
+
+/* **************************************** */
+            /* Ujjwala Index Page */
+/* **************************************** */
+
+.fa-whatsapp{ color: green; font-size: 20px; font-weight: bold; position: relative; top: 3px;}
+.reno-bg{
+    background-image: url("https://www.arungas.com/wp-content/uploads/2022/04/reno-bg-2.png");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 100% 100%;
+}
+
+.uppy-Dashboard-AddFiles .uppy-Dashboard-AddFiles-title{ font-size: 12px !important; margin: 0 !important;}
+.uppy-Dashboard-inner .uppy-Dashboard-files{ padding: 0 !important;}
+#family_members_tree .uppy-Dashboard-inner .uppy-StatusBar.is-complete{ width: 50% !important;}
+#family_members_tree .uppy-Dashboard-inner .uppy-StatusBar-actions{ right: -100px !important; top: -65px;}
+#family_members_tree .uppy-DashboardContent-title{ color: #fff; top: -6px;}
+#family_members_tree .uppy-StatusBar-actionBtn--done{left: 91px;
+    z-index: 99999;
+    opacity: 0;
+    padding: 10px;
+    position: absolute;
+    width: 73px;
+    top: -26px;}
+#family_members_tree .uppy-StatusBar-actions:after{ padding: 0 17px; content: "Re-upload";
+z-index: 9999;
+position: absolute;
+height: 30px;
+width: 200px;left: 77px; top: -34px;
+color: #222; font-weight: bold; text-transform: uppercase; }
+#family_members_tree  .uppy-StatusBar-actions{ position: relative;}
+#family_members_tree .uppy-Dashboard-inner {
+    border: 0;
+    border-radius: 3px;
+}
+#family_members_tree p{
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 13px;
+    font-weight: 500;
+}
+.uppy-Dashboard-Add -title {
+    font-size: 12px;
+    margin: auto;
+
+}
+#family_members_tree .uppy-DashboardContent-bar {
+    height: 30px;
+}
+
+.content-inner {
+    padding: 25px 30px;
+    padding-bottom: 5px;
+    margin: 15px -25px;
+    border-top: 1px solid #efefef;
+    border-bottom: 1px solid #efefef;
+}
+.featured-icon-box.icon-align-top-content.style4 {
+    margin: auto;
+    padding: 30px 25px 25px;
+    background-color: #fff;
+    margin-top: 50px;
+}
+
+.bor_rad_5 {
+    border-radius: 5px;
+}
+
+.featured-icon-box {
+    position: relative;
+    margin: 15px 0;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
+.header3 {
+    text-transform: uppercase;
+    text-align: center;
+    padding: 0;
+    font-family: 'Roboto Slab', serif;
+    text-align: center;
+    font-size: 2.5rem;
+    margin: 0;
+    font-weight: bold;
+}
+.header2 {
+    text-transform: uppercase;
+    text-align: center;
+    padding: 0;
+    font-family: 'Roboto Slab', serif;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+    margin-bottom: 20px;
+}
+.cust-border{ border-bottom: 2px dotted #000;}
+.show-sign-block{ display: block; }
+#family_members_tree .uppy-DashboardContent-bar {
+    border-radius: 5px !important;
+    width: 50%;
+    border-right: 1px solid #ddd;
+    background: green;
+}
+.term_link:hover {
+    color: #2275d7e6 !important;
+}
+.custom-file-input{ opacity: 1;}
+.nav-wrapper{ margin: 0 !important;}
+
+
+/* **************************************** */
+            /* pre-inspection-OTP */
+/* **************************************** */
+
+#pre-inspection-OTP .card{width:400px;border:none;height:300px;box-shadow: 0px 5px 20px 0px #d2dae3;z-index:1;display:flex;justify-content:center;align-items:center}
+#pre-inspection-OTP .card h6{color:red;font-size:20px}.inputs input{width:40px;height:40px}
+#pre-inspection-OTP input[type=number]::-webkit-inner-spin-button, #pre-inspection-OTP input[type=number]::-webkit-outer-spin-button{-webkit-appearance: none;-moz-appearance: none;appearance: none;margin: 0}
+#pre-inspection-OTP .card-2{background-color:#fff;padding:10px;width:350px;height:100px;bottom:-50px;left:20px;position:absolute;border-radius:5px}
+#pre-inspection-OTP .card-2 .content{margin-top:50px}
+#pre-inspection-OTP .card-2 .content a{color:red}
+#pre-inspection-OTP .form-control:focus{box-shadow:none;border:2px solid red}
+#pre-inspection-OTP .validate{border-radius:20px;height:40px;background-color:red; border:1px solid red;width:140px}
+
+
+/* **************************************** */
+            /* pre-inspection-select mobile */
+/* **************************************** */
+
+#id_mobile_container label{ color: #9e9e9e; font-weight: 500;}

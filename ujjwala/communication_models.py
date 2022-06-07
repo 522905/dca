@@ -17,9 +17,8 @@ class UjjwalaWhatsappCommunication(object):
 			},
 			# "callbackData": "some_callback_data",
 			"template": {
-				"name": "ujjwala_application_submitted_",
-				# "name": "domestic_application_sub_8v",
-				# "languageCode": "en_GB",
+				# "name": "ujjwala_application_submitted_",
+				"name": "ujjwala_application_submitted_300522",
 				"languageCode": "hi",
 				"headerValues": [
 					# "Alert",  #
@@ -128,7 +127,8 @@ class UjjwalaWhatsappCommunication(object):
 			},
 			# "callbackData": "some_callback_data",
 			"template": {
-				"name": "sdms_kyc_dedupe_approved_without_location_dw",
+				# "name": "sdms_kyc_dedupe_approved_without_location_dw",
+				"name": "sdms_omc_dedupe_approved_300522",
 				"languageCode": "hi",
 				"headerValues": [
 					# "Alert",  #

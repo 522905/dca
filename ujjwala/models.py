@@ -14,7 +14,7 @@ from teams.models import ServiceLocations
 from ujjwala.communication_models import UjjwalaWhatsappCommunication
 from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMobileStatusEnum, \
 	UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, \
-	RejectionTypeEnum, RoboSdmsDedeupStatusEnum, UserDocumentsEnum, OtpStatusEnum
+	RejectionTypeEnum, RoboSdmsDedeupStatusEnum, UserDocumentsEnum, OtpStatusEnum, PreInspectionStatusEnum
 from ujjwala.forms import LegalDocumentsCollected, LegalDocumentsUpload, \
 	ConnectionRelease, PostInstallationUpload, ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewForm
@@ -81,6 +81,16 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			html = template.render({'obj': self})
 			return mark_safe(html)
 		return mark_safe("")
+
+	@property
+	def formatted_address(self):
+		if self.version in ('V1', 'V2'):
+			return self.address
+		return ' '.join([self.address_json.get(r, '') for r in self.address_json])
+
+	@property
+	def get_contacts(self):
+		return list({self.contact_mobile, self.uid_linked_mobile})
 
 	def document_self(self):
 		return self.documents.filter(type=UjjwalaApplicationDocumentsEnum.CUSTOMER_PHOTO).first().link
@@ -406,3 +416,97 @@ class UserDocuments(models.Model):
 		<a href="{}" target="blank">View</a>&nbsp||&nbsp<a href="{}" target="blank">Download Comp.</a>
 		'''.format(self.link, self.link)
 		return mark_safe(html)
+
+
+class PreInspection(models.Model):
+	parent = models.ForeignKey(
+		UjjwalaV2Application, on_delete=models.PROTECT, related_name='pre_inspection'
+	)
+	latitude = models.CharField(max_length=16, null=True, blank=True)
+	longitude = models.CharField(max_length=16, null=True, blank=True)
+	accuracy = models.CharField(max_length=24, null=True, blank=True)
+	witness_name = models.CharField(max_length=256, null=True, blank=True)
+	witness_mobile_number = models.CharField(max_length=10, null=True, blank=True)
+	mechanic = models.ForeignKey(User, on_delete=models.PROTECT)
+
+	status = FSMField(
+		default=PreInspectionStatusEnum.ALLOCATED,
+		choices=PreInspectionStatusEnum.choices
+	)
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=PreInspectionStatusEnum.ALLOCATED,
+		target=PreInspectionStatusEnum.KITCHEN_PHOTO,
+		custom=dict(short_description='Verify Otp', admin=False),
+	)
+	def pre_inspection_otp_verified(self, *args, **kwargs):
+		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=PreInspectionStatusEnum.KITCHEN_PHOTO,
+		target=PreInspectionStatusEnum.SAFETY_AUDIO,
+		custom=dict(short_description='Upload Safety Audio', admin=False),
+	)
+	def pre_inspection_kitchen_photo_uploaded(self, *args, **kwargs):
+		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=PreInspectionStatusEnum.SAFETY_AUDIO,
+		target=PreInspectionStatusEnum.PREVIEW_INSPECTION,
+		custom=dict(short_description='Preview Inspection', admin=False),
+	)
+	def pre_inspection_safety_audio_uploaded(self, *args, **kwargs):
+		pass
+
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=PreInspectionStatusEnum.PREVIEW_INSPECTION,
+		target=PreInspectionStatusEnum.SUBMITTED,
+		custom=dict(short_description='Submit Pre-Inspection', admin=False),
+	)
+	def pre_inspection_pre_inspection_preview(self, *args, **kwargs):
+		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=PreInspectionStatusEnum.SUBMITTED,
+		target=PreInspectionStatusEnum.ACCEPTED,
+		custom=dict(short_description='Pre-Inspection Accepted', admin=False),
+	)
+	def pre_inspection_accepted(self, *args, **kwargs):
+		pass
+
+
+class PreInspectionDocuments(models.Model):
+	parent = models.ForeignKey(PreInspection, on_delete=models.CASCADE, related_name='documents', null=True)
+	type = models.CharField(max_length=25, choices=UjjwalaApplicationDocumentsEnum.choices)
+	link = models.URLField()
+	compressed = models.BooleanField(default=False)
+	file_size = models.CharField(max_length=16, default='0')
+
+	def download_links(self):
+		html = '''
+		<a href="{}" target="blank">Ori. File</a>&nbsp||&nbsp<a href="{}{}" target="blank">Download Comp.</a>
+		'''.format(self.link, settings.THUMBOR_URL, self.link)
+		return mark_safe(html)
+
+
+class Evykati(models.Model):
+	parent = models.ForeignKey(
+		UjjwalaV2Application, on_delete=models.PROTECT, related_name='evyakti'
+	)
+	information = models.JSONField(null=True, blank=True)

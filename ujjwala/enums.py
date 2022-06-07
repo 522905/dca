@@ -13,8 +13,10 @@ class UjjwalaApplicationDocumentsEnum(models.TextChoices):
 	WITNESS_PHOTO = 'WITNESS_PHOTO', 'Witness Photo'
 	MECHANIC_PHOTO = 'MECHANIC_PHOTO', 'Mechanic Photo'
 	CUSTOMER_SIGNATURE = 'CUSTOMER_SIGNATURE', 'Customer Signature'
+	WITNESS_SIGNATURE = 'WITNESS_SIGNATURE', 'Witness Signature'
 	DEATH_CERTIFICATE = 'DEATH_CERTIFICATE', 'Death Certificate'
 	DIVORCE_DOCUMENT = 'DIVORCE_DOCUMENT', 'Divorce Document'
+	SAFETY_AUDIO = 'SAFETY_AUDIO', 'Safety Audio'
 
 	@classmethod
 	def get_skipped_additional_choices(cls):
@@ -120,4 +122,16 @@ class OtpStatusEnum(models.TextChoices):
 	RESENT = 'RESENT', 'Resent'
 	SUBMITTED = 'SUBMITTED', 'Submitted'
 	ACCEPTED = 'ACCEPTED', 'Accepted'
+	REJECTED = 'REJECTED', 'Rejected'
+
+
+class PreInspectionStatusEnum(models.TextChoices):
+	ALLOCATED = 'ALLOCATED', 'Allocated'
+	OTP_VERIFIED = 'OTP_VERIFIED', 'Otp Verified'
+	KITCHEN_PHOTO = 'KITCHEN_PHOTO', 'Kitchen Photo'
+	SAFETY_AUDIO = 'SAFETY_AUDIO', 'Safety Audio'
+	PREVIEW_INSPECTION = 'PREVIEW_INSPECTION', 'Preview Inspection'
+	SUBMITTED = 'SUBMITTED', 'Submitted'
+	ACCEPTED = 'ACCEPTED', 'Accepted'
+	REUPLOAD = 'REUPLOAD', 'Reupload'
 	REJECTED = 'REJECTED', 'Rejected'

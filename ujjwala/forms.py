@@ -1,17 +1,25 @@
+import datetime
 import json
 import logging
+import string
+from datetime import timedelta
+from time import timezone
 
+import track
 from django import forms
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.forms import NumberInput
 from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 
-from ujjwala.enums import UjjwalaV2ApplicationStatus
+from otp.models import Otp
+from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum
 from ujjwala.models import UjjwalaApplicationDocumentsEnum
 from formtools.wizard.views import SessionWizardView
 
+from ujjwala.ujjwala_functions import __get_ref_no__, id_generator
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -22,114 +30,189 @@ logging.basicConfig(
     ]
 )
 
-class CustomerKitchenPreInspectionForm(forms.Form):
+
+class KitchenPreInspectionForm(forms.Form):
 	# widget=forms.HiddenInput,
-	application_id = forms.CharField( max_length=8)
+	# form_type = forms.CharField(widget=forms.HiddenInput, initial='kitchen_pre_inspection_form')
+	# application_id = forms.CharField(widget=forms.HiddenInput)
 	kitchen_photo = forms.CharField(
-		widget=forms.TextInput, max_length=256, label='Kitchen Photo', required=True
+		widget=forms.TextInput, label='Kitchen Photo', required=True
 	)
-	customer_in_kitchen = forms.CharField(
-		widget=forms.TextInput, max_length=256, label='Customer In Kitchen', required=True
-	)
-
-	def clean(self):
-		data = self.cleaned_data
-		return data
-
-
-class WitnessPreInspectionForm(forms.Form):
+	# customer_in_kitchen = forms.CharField(
+	# 	widget=forms.TextInput, max_length=256, label='Customer In Kitchen', required=True
+	# )
 	witness_name = forms.CharField(
-		widget=forms.TextInput, max_length=256, label='Witness Name', required=True
+		widget=forms.TextInput, label='Witness Name', required=True
 	)
 	witness_mobile_number = forms.CharField(
 		widget=forms.TextInput, max_length=10, label='Witness Mobile', required=True
 	)
-	witness_photo = forms.CharField(
-		widget=forms.TextInput, max_length=256, label='Witness Photo', required=True
-	)
+	# witness_photo = forms.CharField(
+	# 	widget=forms.TextInput, max_length=256, label='Witness Photo', required=True
+	# )
 	witness_signature_photo = forms.CharField(
-		widget=forms.TextInput, max_length=256, label='Witness Signature', required=True
+		widget=forms.TextInput, label='Witness Signature', required=True
 	)
 
-	def clean(self):
+	def __init__(self, pre_inspection=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.pre_inspection = pre_inspection
+
+	def save(self):
 		data = self.cleaned_data
-		return data
+		obj = self.pre_inspection
+
+		obj.documents.create(
+			type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO,
+            link=data['kitchen_photo']
+		)
+		obj.documents.create(
+			type=UjjwalaApplicationDocumentsEnum.WITNESS_SIGNATURE,
+			link=data['witness_signature_photo']
+		)
+
+		obj.witness_name = data['witness_name']
+		obj.witness_mobile_number = data['witness_mobile_number']
+		obj.status = PreInspectionStatusEnum.SAFETY_AUDIO
+		obj.save()
+
+
+
+# class WitnessPreInspectionForm(forms.Form):
+# 	witness_name = forms.CharField(
+# 		widget=forms.TextInput, max_length=256, label='Witness Name', required=True
+# 	)
+# 	witness_mobile_number = forms.CharField(
+# 		widget=forms.TextInput, max_length=10, label='Witness Mobile', required=True
+# 	)
+# 	# witness_photo = forms.CharField(
+# 	# 	widget=forms.TextInput, max_length=256, label='Witness Photo', required=True
+# 	# )
+# 	witness_signature_photo = forms.CharField(
+# 		widget=forms.TextInput, max_length=256, label='Witness Signature', required=True
+# 	)
+#
+# 	def clean(self):
+# 		data = self.cleaned_data
+# 		return data
+
+
+class AudioOnSafetyForm(forms.Form):
+	# form_type = forms.CharField(widget=forms.HiddenInput, initial='audio_on_safety_form')
+	# application_id = forms.CharField(widget=forms.HiddenInput)
+	audio_file = forms.CharField(
+		widget=forms.TextInput, label='Kitchen Photo', required=True
+	)
+
+	def __init__(self, pre_inspection=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.pre_inspection = pre_inspection
+
+	def save(self):
+		data = self.cleaned_data
+		obj = self.pre_inspection
+
+		obj.documents.create(type=UjjwalaApplicationDocumentsEnum.SAFETY_AUDIO,
+		                     link=data['audio_file'])
+		obj.status = PreInspectionStatusEnum.PREVIEW_INSPECTION
+		obj.save()
 
 
 class PreviewPreInspectionForm(forms.Form):
+	# form_type = forms.CharField(widget=forms.HiddenInput, initial='preview_pre_inspection_form')
+	# application_id = forms.CharField(widget=forms.HiddenInput)
 	latitude = forms.CharField(widget=forms.TextInput, max_length=16, label='Latitude', required=True)
 	longitude = forms.CharField(widget=forms.TextInput, max_length=16, label='Longitude', required=True)
 	accuracy = forms.CharField(widget=forms.TextInput, max_length=24, label='Accuracy', required=True)
 	main_gate = forms.CharField(
-		widget=forms.TextInput, max_length=256, label='Main Gate Photo', required=True
+		widget=forms.TextInput, label='Main Gate Photo', required=True
 	)
-	otp = forms.CharField(
-		widget=forms.TextInput, max_length=6, label='Otp', required=False
-	)
-	mechanic_photo = forms.CharField(
-		widget=forms.TextInput, max_length=256, label='Mechanic Photo', required=True
-	)
+	# otp = forms.CharField(
+	# 	widget=forms.TextInput, max_length=6, label='Otp', required=False
+	# )
+	# mechanic_photo = forms.CharField(
+	# 	widget=forms.TextInput, max_length=256, label='Mechanic Photo', required=True
+	# )
+
+	def __init__(self, pre_inspection=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.pre_inspection = pre_inspection
 
 	def clean(self):
 		data = self.cleaned_data
 		return data
 
+	def save(self):
+		data = self.cleaned_data
+		obj = self.pre_inspection
 
-@method_decorator(login_required, 'dispatch')
-class PreInspectionWizardForm(SessionWizardView):
-	template_name = "ujjwala/pre-Inspection-form/index.html"
-	form_list = [
-		('customer_kitchen_form', CustomerKitchenPreInspectionForm),
-		('witness_form', WitnessPreInspectionForm),
-		('preview_pre_inspection_form', PreviewPreInspectionForm),
-	]
+		obj.documents.create(
+			type=UjjwalaApplicationDocumentsEnum.MAIN_GATE,
+            link=data['main_gate']
+		)
 
-	def dispatch(self, request, *args, **kwargs):
-		from ujjwala.models import UjjwalaV2Application
+		obj.latitude = data['latitude']
+		obj.longitude = data['longitude']
+		obj.accuracy = data['accuracy']
 
-		application_id = kwargs.get('pk')
-		contact_mobile = request.GET.get('contact_mobile')
+		obj.status = PreInspectionStatusEnum.SUBMITTED
+		obj.save()
 
-		obj = UjjwalaV2Application.objects.filter(id=application_id)
-
-		if obj:
-			obj = obj.filter(contact_mobile=contact_mobile).first()
-			if obj:
-				if obj.status in (
-						UjjwalaV2ApplicationStatus.PRE_INSPECTION_SUBMITTED,
-						UjjwalaV2ApplicationStatus.PRE_INSPECTION_ACCEPTED
-				):
-					return render(
-						request,
-						template_name="ujjwala/pre_inspection_search.html",
-						context={"msg": "Pre-Inspection already done."}
-					)
-				elif obj.status not in (
-						UjjwalaV2ApplicationStatus.NIC_CLEARED
-				):
-					return render(
-						request,
-						template_name="ujjwala/pre_inspection_search.html",
-						context={"msg": "Application is not ready for Pre-Inspection stage."}
-					)
-				return super(PreInspectionWizardForm, self).dispatch(request, *args, **kwargs)
-			else:
-				return render(
-					request,
-					template_name="ujjwala/pre_inspection_search.html",
-					context={"msg": "Contact Mobile: {} Not Found.".format(contact_mobile)}
-				)
-		else:
-			return render(
-				request,
-				template_name="ujjwala/pre_inspection_search.html",
-				context={"msg": "Application Id: {} Not Found".format(application_id)}
-			)
-
-	def render(self, form=None, **kwargs):
-		if form and not form.is_valid():
-			logger.warning(form.errors.as_text())
-		return super().render(form=form, **kwargs)
+# @method_decorator(login_required, 'dispatch')
+# class PreInspectionWizardForm(SessionWizardView):
+# 	template_name = "ujjwala/pre-Inspection-form/index.html"
+# 	form_list = [
+# 		('customer_kitchen_form', CustomerKitchenPreInspectionForm),
+# 		('witness_form', WitnessPreInspectionForm),
+# 		('preview_pre_inspection_form', PreviewPreInspectionForm),
+# 	]
+#
+# 	def dispatch(self, request, *args, **kwargs):
+# 		from ujjwala.models import UjjwalaV2Application
+#
+# 		application_id = kwargs.get('pk')
+# 		contact_mobile = request.GET.get('contact_mobile')
+#
+# 		obj = UjjwalaV2Application.objects.filter(id=application_id)
+#
+# 		if obj:
+# 			obj = obj.filter(contact_mobile=contact_mobile).first()
+# 			if obj:
+# 				if obj.status in (
+# 						UjjwalaV2ApplicationStatus.PRE_INSPECTION_SUBMITTED,
+# 						UjjwalaV2ApplicationStatus.PRE_INSPECTION_ACCEPTED
+# 				):
+# 					return render(
+# 						request,
+# 						template_name="ujjwala/pre_inspection_search.html",
+# 						context={"msg": "Pre-Inspection already done."}
+# 					)
+# 				elif obj.status not in (
+# 						UjjwalaV2ApplicationStatus.NIC_CLEARED
+# 				):
+# 					return render(
+# 						request,
+# 						template_name="ujjwala/pre_inspection_search.html",
+# 						context={"msg": "Application is not ready for Pre-Inspection stage."}
+# 					)
+# 				return super(PreInspectionWizardForm, self).dispatch(request, *args, **kwargs)
+# 			else:
+# 				return render(
+# 					request,
+# 					template_name="ujjwala/pre_inspection_search.html",
+# 					context={"msg": "Contact Mobile: {} Not Found.".format(contact_mobile)}
+# 				)
+# 		else:
+# 			return render(
+# 				request,
+# 				template_name="ujjwala/pre_inspection_search.html",
+# 				context={"msg": "Application Id: {} Not Found".format(application_id)}
+# 			)
+#
+# 	def render(self, form=None, **kwargs):
+# 		if form and not form.is_valid():
+# 			logger.warning(form.errors.as_text())
+# 		return super().render(form=form, **kwargs)
 
 
 	def get_form_initial(self, step):
@@ -159,6 +242,196 @@ class PreInspectionWizardForm(SessionWizardView):
 		return HttpResponseRedirect('/ujjwala/frontend/')
 
 
+class PreInspectionInitialForm(forms.Form):
+	form_type = forms.CharField(widget=forms.HiddenInput, initial='initial_form')
+	application_id = forms.IntegerField()
+
+	def clean_application_id(self):
+		from ujjwala.models import UjjwalaV2Application
+		value = self.cleaned_data.get('application_id')
+
+		application = UjjwalaV2Application.objects.filter(
+			pk=value, status=UjjwalaV2ApplicationStatus.NIC_CLEARED
+		)
+		if not application:
+			raise forms.ValidationError("Invalid Application Id")
+		return value
+
+
+class PreInspectionGenerateOtpForm(forms.Form):
+	form_type = forms.CharField(widget=forms.HiddenInput, initial='generate_otp_form')
+	application_id = forms.IntegerField(widget=forms.HiddenInput)
+	mobile = forms.ChoiceField(widget=forms.RadioSelect,label='Select Mobile Number for Sending OTP(ओटीपी भेजने के लिए मोबाइल नंबर चुनें)')
+
+	def __init__(self, mobile_nos=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		if mobile_nos:
+			self.fields['mobile'].choices = [(i, i) for i in mobile_nos]
+
+	def send_otp(self):
+
+		ref_no = None
+
+		while True:
+			ref_no = __get_ref_no__()
+			try:
+				Otp.objects.get(reference_number=ref_no)
+			except Otp.DoesNotExist:
+				break
+
+		otp = id_generator(4, chars=string.digits)
+		valid_till = datetime.datetime.now() + timedelta(minutes=15)
+		closed = False
+
+		otp_obj = Otp.objects.create(
+			reference_number=ref_no,
+			mobile=self.data.get('mobile'),
+			otp=otp,
+			valid_till=valid_till,
+			closed=closed,
+			extra={
+				"application_id": self.data.get('application_id')
+			}
+		)
+
+		body_text = {
+			"countryCode": "+91",
+			"phoneNumber": otp_obj.mobile,
+			"type": "Template",
+			"traits": {
+				"name": otp_obj.mobile,
+			},
+			# "callbackData": "some_callback_data",
+			"template": {
+				# "name": "ujjwala_application_submitted_",
+				"name": "ujjwala_pre_inspection_otp",
+				"languageCode": "hi",
+				"headerValues": [
+					# "Alert",  #
+				],
+				"bodyValues": [
+					otp
+				]
+			}
+		}
+
+		# data = track.client.post(
+		# 	api_key=settings.INTERAKT_API_KEY,
+		# 	path="/v1/public/message/",
+		# 	body=body_text
+		# ).json()
+		return otp_obj
+
+
+class PreInspectionValidateOtpForm(forms.Form):
+	form_type = forms.CharField(widget=forms.HiddenInput, initial='validate_otp_form')
+	application_id = forms.IntegerField(widget=forms.HiddenInput)
+	reference_number = forms.CharField()
+	otp = forms.CharField(max_length=4)
+
+	def clean(self):
+		data = super().clean()
+		otp_obj = Otp.objects.filter(reference_number=data['reference_number']).first()
+		if otp_obj:
+			status, message = otp_obj.verify_and_close(data.get('otp'))
+			if not status:
+				raise forms.ValidationError(message)
+			return data
+		else:
+			raise forms.ValidationError("Invalid Reference Code")
+
+
+######################################
+# Allocated Pre Inspection OTP Forms #
+######################################
+class PreInspectionAllocatedGenerateOtpForm(forms.Form):
+	form_type = forms.CharField(widget=forms.HiddenInput, initial='generate_otp_form')
+	pre_inspection_id = forms.IntegerField(widget=forms.HiddenInput)
+	application_id = forms.IntegerField(widget=forms.HiddenInput)
+	mobile = forms.ChoiceField(
+		widget=forms.RadioSelect,
+		label='Select Mobile Number for Sending OTP(ओटीपी भेजने के लिए मोबाइल नंबर चुनें)'
+	)
+
+	def __init__(self, mobile_nos=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		if mobile_nos:
+			self.fields['mobile'].choices = [(i, i) for i in mobile_nos]
+
+	def send_otp(self):
+
+		ref_no = None
+
+		while True:
+			ref_no = __get_ref_no__()
+			try:
+				Otp.objects.get(reference_number=ref_no)
+			except Otp.DoesNotExist:
+				break
+
+		otp = id_generator(4, chars=string.digits)
+		valid_till = datetime.datetime.now() + timedelta(minutes=15)
+		closed = False
+
+		otp_obj = Otp.objects.create(
+			reference_number=ref_no,
+			mobile=self.data.get('mobile'),
+			otp=otp,
+			valid_till=valid_till,
+			closed=closed,
+			extra={
+				"pre_inspection_id": self.data.get('pre_inspection_id'),
+				"ujjwala_application_id": self.data.get('application_id')
+			}
+		)
+
+		body_text = {
+			"countryCode": "+91",
+			"phoneNumber": otp_obj.mobile,
+			"type": "Template",
+			"traits": {
+				"name": otp_obj.mobile,
+			},
+			# "callbackData": "some_callback_data",
+			"template": {
+				# "name": "ujjwala_application_submitted_",
+				"name": "ujjwala_pre_inspection_otp",
+				"languageCode": "hi",
+				"headerValues": [
+					# "Alert",  #
+				],
+				"bodyValues": [
+					otp
+				]
+			}
+		}
+
+		# data = track.client.post(
+		# 	api_key=settings.INTERAKT_API_KEY,
+		# 	path="/v1/public/message/",
+		# 	body=body_text
+		# ).json()
+		return otp_obj
+
+
+class PreInspectionAllocatedValidateOtpForm(forms.Form):
+	form_type = forms.CharField(widget=forms.HiddenInput, initial='validate_otp_form')
+	application_id = forms.IntegerField(widget=forms.HiddenInput)
+	reference_number = forms.CharField()
+	otp = forms.CharField(max_length=4)
+
+	def clean(self):
+		data = super().clean()
+		otp_obj = Otp.objects.filter(reference_number=data['reference_number']).first()
+		if otp_obj:
+			status, message = otp_obj.verify_and_close(data.get('otp'))
+			if not status:
+				raise forms.ValidationError(message)
+			return data
+		else:
+			raise forms.ValidationError("Invalid Reference Code")
+
+
 class PreInspectionReviewForm(forms.Form):
 	verified = forms.BooleanField(
 		required=False,
@@ -174,11 +447,9 @@ class PreInspectionReviewForm(forms.Form):
 	def clean(self):
 		data = self.cleaned_data
 		if not data.get('verified'):
-			data['documents_required_for_reupload'] = json.dumps(
-				[
-					UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO
-				]
-			)
+			data['documents_required_for_reupload'] = json.dumps([
+				UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO
+			])
 		else:
 			data['documents_required_for_reupload'] = '[]'
 		return data

@@ -1,7 +1,10 @@
 import io
+import random
+import string
 import zipfile
 from datetime import datetime
 from functools import wraps
+from time import timezone
 
 import magic
 import requests
@@ -13,6 +16,17 @@ from django.template import loader
 from ujjwala.enums import UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, ResidentialStatusEnum, \
     MaritalStatusEnum, UjjwalaV2ApplicationStatus
 
+
+def valid_file_uploaded(url):
+    res = requests.head(url, headers={"Tus-Resumable": "1.0.0"})
+    header_info = res.headers
+
+    if int(header_info['Upload-Length']) == 0 or int(header_info['Upload-Offset']) == 0:
+        return False
+    elif header_info['Upload-Length'] != header_info['Upload-Offset']:
+        return False
+    else:
+        return True
 
 
 def valid_file_size(file):
@@ -115,7 +129,7 @@ def download_ujjwala_documents(obj):
             occupancy_template_html = "ujjwala/forms/family_occupancy_form.html"
             occupancy_file_name = "family_occupancy"
 
-        if obj.version == 'V3':
+        if obj.version not in ('V1', 'V2'):
             obj.address = ' '.join([obj.address_json.get(r, '') for r in obj.address_json])
 
         occupancy_form_html_template = loader.get_template(occupancy_template_html)
@@ -243,3 +257,14 @@ def get_existing_duplicate_applications_detail(all_applications):
             "ekyc_required": is_ekyc_required(application),
             "data": return_data
         }
+
+
+def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
+    return ''.join(random.choice(chars) for _ in range(size))
+
+
+def __get_ref_no__():
+    return 'PI{}{}'.format(
+		datetime.now().strftime('%y%m%d'),
+		id_generator(4, chars=string.ascii_uppercase)
+	).upper()
