@@ -440,7 +440,7 @@ class PreInspection(models.Model):
 		field=status,
 		source=PreInspectionStatusEnum.ALLOCATED,
 		target=PreInspectionStatusEnum.KITCHEN_PHOTO,
-		custom=dict(short_description='Verify Otp', admin=False),
+		custom=dict(short_description='Verify Otp', admin=True),
 	)
 	def pre_inspection_otp_verified(self, *args, **kwargs):
 		pass
@@ -451,7 +451,7 @@ class PreInspection(models.Model):
 		field=status,
 		source=PreInspectionStatusEnum.KITCHEN_PHOTO,
 		target=PreInspectionStatusEnum.SAFETY_AUDIO,
-		custom=dict(short_description='Upload Safety Audio', admin=False),
+		custom=dict(short_description='Upload Safety Audio', admin=True),
 	)
 	def pre_inspection_kitchen_photo_uploaded(self, *args, **kwargs):
 		pass
@@ -462,7 +462,7 @@ class PreInspection(models.Model):
 		field=status,
 		source=PreInspectionStatusEnum.SAFETY_AUDIO,
 		target=PreInspectionStatusEnum.PREVIEW_INSPECTION,
-		custom=dict(short_description='Preview Inspection', admin=False),
+		custom=dict(short_description='Preview Inspection', admin=True),
 	)
 	def pre_inspection_safety_audio_uploaded(self, *args, **kwargs):
 		pass
@@ -474,7 +474,7 @@ class PreInspection(models.Model):
 		field=status,
 		source=PreInspectionStatusEnum.PREVIEW_INSPECTION,
 		target=PreInspectionStatusEnum.SUBMITTED,
-		custom=dict(short_description='Submit Pre-Inspection', admin=False),
+		custom=dict(short_description='Submit Pre-Inspection', admin=True),
 	)
 	def pre_inspection_pre_inspection_preview(self, *args, **kwargs):
 		pass
@@ -485,9 +485,20 @@ class PreInspection(models.Model):
 		field=status,
 		source=PreInspectionStatusEnum.SUBMITTED,
 		target=PreInspectionStatusEnum.ACCEPTED,
-		custom=dict(short_description='Pre-Inspection Accepted', admin=False),
+		custom=dict(short_description='Pre-Inspection Accept', admin=True),
 	)
 	def pre_inspection_accepted(self, *args, **kwargs):
+		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=PreInspectionStatusEnum.SUBMITTED,
+		target=PreInspectionStatusEnum.REJECTED,
+		custom=dict(short_description='Pre-Inspection Reject', admin=True),
+	)
+	def pre_inspection_rejected(self, *args, **kwargs):
 		pass
 
 

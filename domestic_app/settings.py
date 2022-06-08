@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'fsm_admin2_custom',
     'import_export',
     'django_filters',
+    'advanced_filters',
 
     'connection_app',
     'inactive_customers',
@@ -64,6 +65,7 @@ INSTALLED_APPS = [
     'referral',
     'teams',
     'formtools',
+    'otp',
     'ujjwala.apps.UjjwalaAppConfig',
 ]
 
@@ -209,3 +211,5 @@ SUBMIT_SMS_TEMPLATE = \
 
 VERIFIED_SMS_TEMPLATE = \
     ""
+
+UJJWALA_PRE_INSPECTION_OTP = 'ujjwala_pre_inspection_otp'

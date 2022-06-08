@@ -1,33 +1,27 @@
+<style>
+    p{ margin:0;}
+    #select_number_for_otp .radio-field .col{ flex: none; }
+    .user_profile img{ height:100px; }
+    .user_profile{margin: 0 auto;display: block;text-align: center;}
+    .username{ font-size:15px; font-weight:600; color:#ff5c6c !important;}
+    .user_address{ font-size:12px; font-weight:500}
+</style>
 <div class="row p-2 m-0 pt-0">
-	<div class="card card-profile pt-0 mt-0" >
-		<div class="row justify-content-center m-0" style="max-width: 400px; margin: 0 auto !important; padding: 10px;">
-			<div style="width: 50%; float:left">
-				<div class="card-profile-image">
-					<a href="#">
-						<img src="{{obj.document_self}}">
-					</a>
-				</div>
-			</div>
-			<div style="width: 50%; float:right">
-				<div class="card-body pt-0" style="margin-top: 50px;">
-					<div class="text-center">
-						<h5 class="h3">{{ obj.name }}<span class="font-weight-light"></span></h5>
-						<div class="h5 font-weight-300">
-							<i class="ni location_pin mr-2"></i>{{ obj.contact_mobile }}
-						</div>
-						<div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
-							{% if address_json == address_json  %}
-								{% for key,data in obj.address_json.items %}
-									{{data}},
-								{% endfor %}
-							{% else %}
-								{{ obj.address }}
-							{% endif%}
-						</div>
-					</div>
-				</div>
-			</div>
-			
+	<div class="row pt-2 border-bottom">
+		<div class="col user_profile">
+			<img src="{{application.document_self}}"> 
+		</div>
+		<div class="col">
+			<p class="username mt-2"> {{application.name}}</p>
+			<p class="user_address">
+				{% if address_json == address_json  %}
+					{% for key,data in application.address_json.items %}
+						{{data}},
+					{% endfor %}
+				{% else %}
+					{{ obj.address }}
+				{% endif%}
+			</p> 
 		</div>
 	</div>
 	<div class="card mt-0" style="width: 100%;">
@@ -54,6 +48,7 @@
 								<div class="photo_block">
 									<span class="hidden-field">{{ wizard.form.application_id }}</span>
 								</div>
+								
 								<div class="row">
 									<div class="col-sm-6 photo_block">
 										<span class="hidden-field">{{ wizard.form.customer_in_kitchen }}</span>
@@ -68,6 +63,7 @@
 										{{ wizard.form.kitchen_photo.errors }}
 									</div>
 								</div>
+								
 							</div>
 							<p class="text-danger">{{ wizard.form.errors }}</p>
 						{% endif %}

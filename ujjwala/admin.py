@@ -145,16 +145,18 @@ class UserDocumentsAdmin(admin.ModelAdmin):
 class PreInspectionDocumentsAdmin(admin.TabularInline):
 	fields = (
 		'type',
-		'link',
+		'download_links',
 		'compressed',
 		'file_size',
 	)
 	model = PreInspectionDocuments
 	extra = 0
 
+	readonly_fields = ('type', 'download_links', 'compressed', 'file_size',)
+
 
 @admin.register(PreInspection)
-class PreInspectionAdmin(admin.ModelAdmin):
+class PreInspectionAdmin(FSMTransitionCustomMixin, admin.ModelAdmin):
 	list_display = (
 		'id',
 		'parent',
@@ -164,6 +166,14 @@ class PreInspectionAdmin(admin.ModelAdmin):
 	)
 	list_filter = ('parent', 'mechanic')
 	inlines = (PreInspectionDocumentsAdmin,)
+	fsm_fields = ['status', ]
+
+	def has_change_permission(self, request, obj=None):
+		if not obj:
+			return True
+
+	# def fsm_transition_view_extra_context(self, obj):
+	# 	return {'obj': obj}
 
 
 

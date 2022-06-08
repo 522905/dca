@@ -5,111 +5,37 @@
 {% load org_tags %}
 {% block content %}
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <style>
-	@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;600;700;800&display=swap');
-	body{font-family: 'Montserrat'; }
-	.photo_block { position: relative;}
-	.photo_block label{ font-size: 1rem; color: #263238; font-family: 'Nunito Sans', sans-serif; font-weight: 500; }
-	.photo_block .hidden-field{ opacity: 0; position: absolute; }
-	.uppy-Dashboard-inner{ width:200px !important; height: 150px !important;}
-	.uppy-Dashboard-inner{ width: 100% !important;}
-	.card-profile {
-		float: left;
-		width: 100%;
-	}
-
-	.card-profile-image {
-		position: relative
-	}
-
-	.card-profile-image img {
-		height: 250px;
-		object-fit: contain;
-		width: 100%;
-	}
-
-	.card-profile-stats {
-		padding: 1rem 0
-	}
-
-	.card-profile-stats>div {
-		margin-right: 1rem;
-		padding: .875rem;
-		text-align: center
-	}
-
-	.card-profile-stats>div:last-child {
-		margin-right: 0
-	}
-
-	.card-profile-stats>div .heading {
-		font-size: 1.1rem;
-		font-weight: 700;
-		display: block
-	}
-
-	.card-profile-stats>div .description {
-		font-size: .875rem;
-		color: #adb5bd
-	}
-
-	.card-profile-actions {
-		padding: .875rem
-	}
-	.card_body_form .form-horizontal .form-group .form-control, .card_body_form .form-horizontal .form-group .form-select {
-		background-color: rgba(0,0,0,0);
-		background-position: center bottom,center calc(99%);
-		background-repeat: no-repeat;
-		background-size: 0 2px,100% 1px;
-		padding: 0;
-		-webkit-transition: background 0s ease-out 0s;
-		transition: background 0s ease-out 0s;
-		font-family: 'Nunito Sans', sans-serif;
-	}
-	input[placeholder], [placeholder], *[placeholder] {
-		color: #999 !important;
-	}
-	::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
-		color: #999;
-		opacity: 1; /* Firefox */
-	}
-
-	:-ms-input-placeholder { /* Internet Explorer 10-11 */
-		color: #999;
-	}
-
-	::-ms-input-placeholder { /* Microsoft Edge */
-		color: #999;
-	}
-	/* .card_body_form .form-group input{ height: 2rem; } */
-	.errorlist li{ color: red !important;}
-	input:-internal-autofill-selected{ background-color: #fff !important;}
+	
 </style>
-
-<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" >
-<link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.css" >
-<link rel="stylesheet" href="https://arungas.com/public/ujwalla/css/signature-pad.css">
-
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.js"></script>
-	{% if wizard.steps.current == 'customer_kitchen_form' %}
-	<div class="card-block">
-		{% include "ujjwala/pre-Inspection-form/steps/customer-kitchen.html" %}
+<div id="pre-inspection-OTP" class="height-100 d-flex justify-content-center align-items-center">
+	<div class="position-relative">
+		<div class="card p-2 text-center">
+			<h6>Please enter the one time password <br> to verify your account</h6>
+			<div> <span>A code has been sent to</span> <small>*******9897</small> </div>
+			<div id="otp" class="inputs d-flex flex-row justify-content-center mt-2"> 
+				<input class="m-2 text-center form-control rounded border" type="text" id="first" maxlength="1" /> 
+				<input class="m-2 text-center form-control rounded border" type="text" id="second" maxlength="1" /> 
+				<input class="m-2 text-center form-control rounded border" type="text" id="third" maxlength="1" /> 
+				<input class="m-2 text-center form-control rounded border" type="text" id="fourth" maxlength="1" /> 
+			</div>
+			<div class="mt-4"> <button class="btn btn-danger px-4 validate">Validate</button> </div>
+		</div>
+		<div class="card-2">
+			<div class="content d-flex justify-content-center align-items-center"> <span>Didn't get the code</span> <a
+					href="#" class="text-decoration-none ms-3">Resend(1/3)</a> </div>
+		</div>
 	</div>
-	{% endif %}
-
-	{% if wizard.steps.current == 'witness_form' %}
-	<div class="card-block">
-		{% include "ujjwala/pre-Inspection-form/steps/witness.html" %}
-	</div>
-	{% endif %}
-
-	{% if wizard.steps.current == 'preview_pre_inspection_form' %}
-	<div class="card-block">
-		{% include "ujjwala/pre-Inspection-form/steps/preview_pre_inspection.html" %}
-	</div>
-	{% endif %}
 </div>
-
+<script>
+	document.addEventListener("DOMContentLoaded", function(event) {
+		function OTPInput() {
+		const inputs = document.querySelectorAll('#otp > *[id]');
+		for (let i = 0; i < inputs.length; i++) { inputs[i].addEventListener('keydown', function(event) { if (event.key==="Backspace" ) { inputs[i].value='' ; if (i !==0) inputs[i - 1].focus(); } else { if (i===inputs.length - 1 && inputs[i].value !=='' ) { return true; } else if (event.keyCode> 47 && event.keyCode < 58) { inputs[i].value=event.key; if (i !==inputs.length - 1) inputs[i + 1].focus(); event.preventDefault(); } else if (event.keyCode> 64 && event.keyCode < 91) { inputs[i].value=String.fromCharCode(event.keyCode); if (i !==inputs.length - 1) inputs[i + 1].focus(); event.preventDefault(); } } }); } } OTPInput();
+	});
+</script>
 {% endblock %}

@@ -10,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, FormView, ListView
 from django_currentuser.middleware import get_current_user
 
+import ujjwala.forms
 from otp.models import Otp
 from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum
 from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm, \
@@ -210,10 +211,13 @@ class PreInspectionCreateView(View):
                     'form': form
                 })
             app_id = form.data.get('application_id')
+
             pre_inspection_obj = PreInspection.objects.filter(
                 parent_id=app_id
             ).exclude(
-                status__in=[PreInspectionStatusEnum.ACCEPTED, PreInspectionStatusEnum.REJECTED]
+                status__in=[
+                    PreInspectionStatusEnum.REJECTED
+                ]
             ).first()
 
             if pre_inspection_obj:

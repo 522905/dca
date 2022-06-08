@@ -50,8 +50,8 @@
                 <div class="form-group mb-4">
                     <label class="col-md-12 p-0">Enter Application Id</label>
                     <input class="searchfield" id="input_application_id" type="tel" placeholder="Enter Application Id" />
-
                 </div>
+                <p>application_name {{application.name}}</p>
                 <div class="form-group">
                     <label class="col-md-12 p-0">Mobile No</label>
                     <input class="searchfield " id="input_contact_mobile" type="tel" placeholder="Enter Contact Mobile" />
@@ -78,5 +78,51 @@
             + contact_mobile;
         window.location.replace(api_url);
     });
+
+    // signature upload
+    function upload_sign_and_submit() {
+        if (signaturePad.isEmpty()) {
+            alert("Please provide a signature first.");
+        } else {
+            var dataURL = signaturePad.toDataURL();
+            var blob = dataURLToBlob(dataURL);
+            let sign_uppy = new Uppy.Core({
+                debug: true,
+                autoProceed: true,
+                restrictions: {
+                    maxFileSize: 50000000,
+                    maxNumberOfFiles: 1,
+                    minNumberOfFiles: 1,
+                    allowedFileTypes: ['image/*'],
+                }
+            })
+            .use(Uppy.Tus, {
+                endpoint: 'https://tus.dca.arungas.com/files/',
+            });
+            
+            sign_uppy.addFile({
+                name: `signature_${new Date().getTime()}_${(Math.random() + 1).toString(36).substring(7)}.png`,
+                type: 'image/png',
+                data: blob,
+                source: 'Local', // optional, determines the source of the file, for example, Instagram.
+                isRemote: false, // optional, set to true if actual file is not in the browser, but on some remote server, for example,
+            });
+            sign_uppy.upload().then((result) => {
+                if (result.failed.length > 0) {
+                    alert("Error Uploading Signature, try again");
+                    console.error('Errors:')
+                    result.failed.forEach((file) => {
+                        console.error(file.error)
+                    })
+                } else {
+                    console.info('Successful uploads:', result.successful);
+                    // submit_form(result.successful[0].uploadURL)
+                        $('#id_witness_form-witness_signature_photo').val(result.successful[0].uploadURL);
+                        $('#upload_sign_and_submit_hidden').trigger('click');
+                }
+            });
+        }
+    }
 </script>
+
 {% endblock %}

@@ -70,7 +70,7 @@ class KitchenPreInspectionForm(forms.Form):
 
 class AudioOnSafetyForm(forms.Form):
 	audio_file = forms.CharField(
-		widget=forms.TextInput, label='Kitchen Photo', required=True
+		widget=forms.TextInput, label='Kitchen Photo', required=False
 	)
 
 	def __init__(self, pre_inspection=None, *args, **kwargs):
