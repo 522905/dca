@@ -54,11 +54,6 @@ class UjjwalaApplicationReuploadView(DetailView):
         return 'ujjwala/ujjwala_documents_reupload.html'
 
 
-# class PreInspectionWizardFormView(FormView):
-#     form_class = PreInspectionWizardForm
-#
-#
-
 @method_decorator(login_required, 'dispatch')
 class UjjwalaApplicationReuploadFormView(FormView):
     form_class = UjjwalaDocumentsReuploadForm
@@ -89,6 +84,9 @@ class PreInspectionView(FormView):
         pre_inspection = PreInspection.objects.get(pk=kwargs.get('pk'))
         if pre_inspection.status == PreInspectionStatusEnum.ALLOCATED:
             return self.otp_verification(pre_inspection)
+        elif pre_inspection.status == PreInspectionStatusEnum.SUBMITTED:
+            return redirect("ujjwala:index")
+
         return super().dispatch(request, *args, **kwargs)
 
     def otp_verification(self, pre_inspection):
@@ -174,15 +172,6 @@ class PreInspectionView(FormView):
     def form_valid(self, form):
         form.save()
         return HttpResponseRedirect(self.get_success_url())
-
-    # def get_form(self, form_class=None):
-    #     application = self.get_object()
-    #     if application.status == PreInspectionStatusEnum.KITCHEN_PHOTO:
-    #         return KitchenPreInspectionForm(data=self.request.POST)
-    #     elif application.status == PreInspectionStatusEnum.SAFETY_AUDIO:
-    #         return AudioOnSafetyForm(data=self.request.POST)
-    #     elif application.status == PreInspectionStatusEnum.PREVIEW_INSPECTION:
-    #         return PreviewPreInspectionForm(data=self.request.POST)
 
     def get_template_names(self):
         preinspection_obj = self.get_object()
@@ -283,89 +272,3 @@ class PreInspectionCreateView(View):
             )
             obj.save()
             return redirect('ujjwala:pre_inspection_form_view', pk=obj.pk)
-
-
-# class PreInspectionAllocatedOtpView(View):
-
-
-    # def get(self, request, *args, **kwargs):
-    #     preinspection_obj = PreInspection.objects.filter(pk=kwargs.get('pk')).first()
-    #     app = preinspection_obj.parent
-    #     return render(self.request, self.stage_1_template, {
-    #         'form': PreInspectionAllocatedGenerateOtpForm(
-    #             mobile_nos=list({app.contact_mobile, app.uid_linked_mobile}),
-    #             data=request.POST,
-    #         )
-    #     })
-    #
-    # def post(self, request, *args, **kwargs):
-    #     if self.request.POST.get('form_type') == 'generate_otp_form':
-    #         app_id = self.request.POST.get('application_id')
-    #         app = UjjwalaV2Application.objects.filter(pk=app_id).first()
-    #         form = PreInspectionAllocatedGenerateOtpForm(
-    #             mobile_nos=list({app.contact_mobile, app.uid_linked_mobile}),
-    #             data=request.POST
-    #         )
-    #         if not form.is_valid():
-    #             return render(self.request, self.stage_2_template, {
-    #                 'form': form,
-    #                 'application': app
-    #             })
-    #         otp_obj = form.send_otp()
-    #         app_id = form.data.get('application_id')
-    #         return render(self.request, self.stage_3_template, {
-    #             'form': PreInspectionValidateOtpForm(
-    #                 initial={
-    #                     'application_id': app_id,
-    #                     'reference_number': otp_obj.reference_number,
-    #                     'mobile': otp_obj.mobile
-    #                 }
-    #             )
-    #         })
-    #     elif self.request.POST.get('form_type') == 'validate_otp_form':
-    #         form = PreInspectionAllocatedValidateOtpForm(data=request.POST)
-    #         if not form.is_valid():
-    #             otp_obj = Otp.objects.filter(reference_number=request.POST['reference_number']).first()
-    #             return render(self.request, self.stage_3_template, {
-    #                 'form': form,
-    #                 'reference_number': otp_obj.reference_number,
-    #                 'mobile': otp_obj.mobile
-    #             })
-    #         app_id = form.data.get('application_id')
-    #         obj = PreInspection.objects.create(
-    #             parent_id=app_id,
-    #             status=PreInspectionStatusEnum.KITCHEN_PHOTO,
-    #             mechanic=get_current_user()
-    #         )
-    #         return redirect('ujjwala:pre_inspection', pk=obj.pk)
-
-# @method_decorator(login_required, 'dispatch')
-# class PreInspectionStep1(FormView):
-#     model = PreInspection
-#
-#     def get_template_names(self):
-#         return 'ujjwala/customer-kitchen.html'
-#
-#
-# @method_decorator(login_required, 'dispatch')
-# class PreInspectionStep2(FormView):
-#     model = PreInspection
-#
-#     def get_template_names(self):
-#         return 'ujjwala/witness.html'
-#
-#
-# @method_decorator(login_required, 'dispatch')
-# class PreInspectionStep3(FormView):
-#     model = PreInspection
-#
-#     def get_template_names(self):
-#         return 'ujjwala/ujjwala_documents_reupload.html'
-#
-#
-# @method_decorator(login_required, 'dispatch')
-# class PreInspectionStep4(FormView):
-#     model = PreInspection
-#
-#     def get_template_names(self):
-#         return 'ujjwala/preview_pre_inspection.html'

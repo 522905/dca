@@ -11,3 +11,4 @@ class InactiveCustomer(models.Model):
 	consumer_number = models.CharField(max_length=12, null=True)
 	consumer_name = models.CharField(max_length=50)
 	order_type = models.CharField(max_length=10, null=True)
+	inactive_type = models.CharField(max_length=15, default="DEACTIVATED")

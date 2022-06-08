@@ -32,24 +32,15 @@ logging.basicConfig(
 
 
 class KitchenPreInspectionForm(forms.Form):
-	# widget=forms.HiddenInput,
-	# form_type = forms.CharField(widget=forms.HiddenInput, initial='kitchen_pre_inspection_form')
-	# application_id = forms.CharField(widget=forms.HiddenInput)
 	kitchen_photo = forms.CharField(
 		widget=forms.TextInput, label='Kitchen Photo', required=True
 	)
-	# customer_in_kitchen = forms.CharField(
-	# 	widget=forms.TextInput, max_length=256, label='Customer In Kitchen', required=True
-	# )
 	witness_name = forms.CharField(
 		widget=forms.TextInput, label='Witness Name', required=True
 	)
 	witness_mobile_number = forms.CharField(
 		widget=forms.TextInput, max_length=10, label='Witness Mobile', required=True
 	)
-	# witness_photo = forms.CharField(
-	# 	widget=forms.TextInput, max_length=256, label='Witness Photo', required=True
-	# )
 	witness_signature_photo = forms.CharField(
 		widget=forms.TextInput, label='Witness Signature', required=True
 	)
@@ -77,29 +68,7 @@ class KitchenPreInspectionForm(forms.Form):
 		obj.save()
 
 
-
-# class WitnessPreInspectionForm(forms.Form):
-# 	witness_name = forms.CharField(
-# 		widget=forms.TextInput, max_length=256, label='Witness Name', required=True
-# 	)
-# 	witness_mobile_number = forms.CharField(
-# 		widget=forms.TextInput, max_length=10, label='Witness Mobile', required=True
-# 	)
-# 	# witness_photo = forms.CharField(
-# 	# 	widget=forms.TextInput, max_length=256, label='Witness Photo', required=True
-# 	# )
-# 	witness_signature_photo = forms.CharField(
-# 		widget=forms.TextInput, max_length=256, label='Witness Signature', required=True
-# 	)
-#
-# 	def clean(self):
-# 		data = self.cleaned_data
-# 		return data
-
-
 class AudioOnSafetyForm(forms.Form):
-	# form_type = forms.CharField(widget=forms.HiddenInput, initial='audio_on_safety_form')
-	# application_id = forms.CharField(widget=forms.HiddenInput)
 	audio_file = forms.CharField(
 		widget=forms.TextInput, label='Kitchen Photo', required=True
 	)
@@ -119,20 +88,12 @@ class AudioOnSafetyForm(forms.Form):
 
 
 class PreviewPreInspectionForm(forms.Form):
-	# form_type = forms.CharField(widget=forms.HiddenInput, initial='preview_pre_inspection_form')
-	# application_id = forms.CharField(widget=forms.HiddenInput)
-	latitude = forms.CharField(widget=forms.TextInput, max_length=16, label='Latitude', required=True)
-	longitude = forms.CharField(widget=forms.TextInput, max_length=16, label='Longitude', required=True)
-	accuracy = forms.CharField(widget=forms.TextInput, max_length=24, label='Accuracy', required=True)
+	latitude = forms.CharField(widget=forms.TextInput(attrs={'readonly': 1}), max_length=32, label='Latitude', required=True)
+	longitude = forms.CharField(widget=forms.TextInput(attrs={'readonly': 1}), max_length=32, label='Longitude', required=True)
+	accuracy = forms.CharField(widget=forms.TextInput(attrs={'readonly': 1}), max_length=24, label='Accuracy', required=True)
 	main_gate = forms.CharField(
-		widget=forms.TextInput, label='Main Gate Photo', required=True
+		widget=forms.HiddenInput, label='Main Gate Photo', required=True
 	)
-	# otp = forms.CharField(
-	# 	widget=forms.TextInput, max_length=6, label='Otp', required=False
-	# )
-	# mechanic_photo = forms.CharField(
-	# 	widget=forms.TextInput, max_length=256, label='Mechanic Photo', required=True
-	# )
 
 	def __init__(self, pre_inspection=None, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -157,63 +118,6 @@ class PreviewPreInspectionForm(forms.Form):
 
 		obj.status = PreInspectionStatusEnum.SUBMITTED
 		obj.save()
-
-# @method_decorator(login_required, 'dispatch')
-# class PreInspectionWizardForm(SessionWizardView):
-# 	template_name = "ujjwala/pre-Inspection-form/index.html"
-# 	form_list = [
-# 		('customer_kitchen_form', CustomerKitchenPreInspectionForm),
-# 		('witness_form', WitnessPreInspectionForm),
-# 		('preview_pre_inspection_form', PreviewPreInspectionForm),
-# 	]
-#
-# 	def dispatch(self, request, *args, **kwargs):
-# 		from ujjwala.models import UjjwalaV2Application
-#
-# 		application_id = kwargs.get('pk')
-# 		contact_mobile = request.GET.get('contact_mobile')
-#
-# 		obj = UjjwalaV2Application.objects.filter(id=application_id)
-#
-# 		if obj:
-# 			obj = obj.filter(contact_mobile=contact_mobile).first()
-# 			if obj:
-# 				if obj.status in (
-# 						UjjwalaV2ApplicationStatus.PRE_INSPECTION_SUBMITTED,
-# 						UjjwalaV2ApplicationStatus.PRE_INSPECTION_ACCEPTED
-# 				):
-# 					return render(
-# 						request,
-# 						template_name="ujjwala/pre_inspection_search.html",
-# 						context={"msg": "Pre-Inspection already done."}
-# 					)
-# 				elif obj.status not in (
-# 						UjjwalaV2ApplicationStatus.NIC_CLEARED
-# 				):
-# 					return render(
-# 						request,
-# 						template_name="ujjwala/pre_inspection_search.html",
-# 						context={"msg": "Application is not ready for Pre-Inspection stage."}
-# 					)
-# 				return super(PreInspectionWizardForm, self).dispatch(request, *args, **kwargs)
-# 			else:
-# 				return render(
-# 					request,
-# 					template_name="ujjwala/pre_inspection_search.html",
-# 					context={"msg": "Contact Mobile: {} Not Found.".format(contact_mobile)}
-# 				)
-# 		else:
-# 			return render(
-# 				request,
-# 				template_name="ujjwala/pre_inspection_search.html",
-# 				context={"msg": "Application Id: {} Not Found".format(application_id)}
-# 			)
-#
-# 	def render(self, form=None, **kwargs):
-# 		if form and not form.is_valid():
-# 			logger.warning(form.errors.as_text())
-# 		return super().render(form=form, **kwargs)
-
 
 	def get_form_initial(self, step):
 		init_data = self.initial_dict.get(step, {})
@@ -315,11 +219,11 @@ class PreInspectionGenerateOtpForm(forms.Form):
 			}
 		}
 
-		# data = track.client.post(
-		# 	api_key=settings.INTERAKT_API_KEY,
-		# 	path="/v1/public/message/",
-		# 	body=body_text
-		# ).json()
+		data = track.client.post(
+			api_key=settings.INTERAKT_API_KEY,
+		 	path="/v1/public/message/",
+		 	body=body_text
+		).json()
 		return otp_obj
 
 
@@ -406,11 +310,11 @@ class PreInspectionAllocatedGenerateOtpForm(forms.Form):
 			}
 		}
 
-		# data = track.client.post(
-		# 	api_key=settings.INTERAKT_API_KEY,
-		# 	path="/v1/public/message/",
-		# 	body=body_text
-		# ).json()
+		data = track.client.post(
+		 	api_key=settings.INTERAKT_API_KEY,
+		 	path="/v1/public/message/",
+		 	body=body_text
+		).json()
 		return otp_obj
 
 
@@ -456,16 +360,6 @@ class PreInspectionReviewForm(forms.Form):
 
 
 class EkycAcceptedOrRejected(forms.Form):
-	# ekyc_accepted = forms.ChoiceField(
-	# 	label="Ekyc Status Update ?",
-	# 	required=True,
-	# 	help_text="",
-	# 	choices=[
-	# 		('', '-- Select If Ekyc Accepted Or Rejected --'),
-	# 		('ACCEPTED', 'Accepted'),
-	# 		('REJECTED', 'Rejected')
-	# 	]
-	# )
 
 	description = forms.CharField(
 		widget=forms.Textarea, label='Remarks', required=True

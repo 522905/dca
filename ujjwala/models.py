@@ -39,8 +39,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	service_team = models.ForeignKey(Organization, on_delete=models.CASCADE, null=True, blank=True)
 	service_location = models.ForeignKey(ServiceLocations, on_delete=models.CASCADE, null=True, blank=True)
 	version = models.CharField(max_length=2, default='V1')
-	latitude = models.CharField(max_length=16, null=True, blank=True)
-	longitude = models.CharField(max_length=16, null=True, blank=True)
+	latitude = models.CharField(max_length=32, null=True, blank=True)
+	longitude = models.CharField(max_length=32, null=True, blank=True)
 	accuracy = models.CharField(max_length=24, null=True, blank=True)
 	product = models.CharField(max_length=256, null=True, blank=True)
 	witness_name = models.CharField(max_length=256, null=True, blank=True)
@@ -422,8 +422,8 @@ class PreInspection(models.Model):
 	parent = models.ForeignKey(
 		UjjwalaV2Application, on_delete=models.PROTECT, related_name='pre_inspection'
 	)
-	latitude = models.CharField(max_length=16, null=True, blank=True)
-	longitude = models.CharField(max_length=16, null=True, blank=True)
+	latitude = models.CharField(max_length=32, null=True, blank=True)
+	longitude = models.CharField(max_length=32, null=True, blank=True)
 	accuracy = models.CharField(max_length=24, null=True, blank=True)
 	witness_name = models.CharField(max_length=256, null=True, blank=True)
 	witness_mobile_number = models.CharField(max_length=10, null=True, blank=True)

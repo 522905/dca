@@ -33,13 +33,13 @@
                     {{ form.audio_file.errors }}
                     <div id="buttons" class="row mt-2 action-button">
                         <div class="col">
-                            <button id="record" class="btns record btn btn-dark">Record</button>
+                            <button id="record" class="btns record btn btn-dark" type="button">Record</button>
                         </div>
                         <div class="col">
-                            <button id="stop" class="btns stop btn btn-dark">Stop</button>
+                            <button id="stop" class="btns stop btn btn-dark" type="button">Stop</button>
                         </div>
                         <div class="col">
-                            <button id="play" class="btns play btn btn-dark">Play</button>
+                            <button id="play" class="btns play btn btn-dark" type="button">Play</button>
                         </div>
                       </div>
                   </section>
@@ -51,7 +51,7 @@
             </div>
 
             <div class="card-footer float-right">
-                <button class="btn btn-success float-right rounded-3" onclick="upload_audio_and_submit_form()">Submit</button>
+                <button class="btn btn-success float-right rounded-3" onclick="upload_audio_and_submit_form()" type="button">Submit</button>
             </div>
         </div>
     </form>
@@ -98,8 +98,7 @@
 
 
 
-    window.upload_audio_and_submit_form = function (e) {
-        e.preventDefault();
+    window.upload_audio_and_submit_form = function () {
 
         window.audioFileUppy.addFile({
             name: `safety_audio_${new Date().getTime()}_${(Math.random() + 1).toString(36).substring(7)}.ogg`,
