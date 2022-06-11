@@ -71,8 +71,28 @@ button{ font-family: 'Montserrat' !important;}
 ul.errorlist{ background-color: transparent; display: block;}
 .helptext{ margin-left: 110px; float: left; width: 100%;}
 .cotainer form input,.cotainer form select,.cotainer form textarea{ display: block;}
+.bg-theme{ background-color: #e35d2d !important;}
+.bg-heading{ background-color: #2957A4  !important;}
 
+/* **************************************** */
+            /* SideBar */
+/* **************************************** */
+.sidenav .user-view{ margin-bottom: 0 !important;}
+.sidenav .collapsible-body>ul:not(.collapsible)>li.active, .sidenav.sidenav-fixed .collapsible-body>ul:not(.collapsible)>li.active{ background-color:#2957A4  !important}
 
+/* **************************************** */
+            /* Navbar */
+/* **************************************** */
+nav{ background-color: #e35d2d !important;}
+nav.topbar .brand-logo{ font-size: 1.6rem;}
+nav.topbar .brand-logo{ top: 0;}
+nav.topbar, nav.topbar a.button-collapse, nav.topbar a.button-collapse i, nav.topbar i{ line-height: 50px !important; height: 50px!important;}
+.breadcrumbs{ display: none;}
+main .content{     display: block;
+    float: left;
+    width: 100%;
+    position: relative;
+    top: -5px; }
 /* **************************************** */
             /* Ujjwala Index Page */
 /* **************************************** */

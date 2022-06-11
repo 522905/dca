@@ -13,6 +13,7 @@ from django.forms import NumberInput
 from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
+from django_currentuser.middleware import get_current_user
 
 from otp.models import Otp
 from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum
@@ -70,7 +71,7 @@ class KitchenPreInspectionForm(forms.Form):
 
 class AudioOnSafetyForm(forms.Form):
 	audio_file = forms.CharField(
-		widget=forms.TextInput, label='Kitchen Photo', required=False
+		widget=forms.TextInput, label='Audio File', required=False
 	)
 
 	def __init__(self, pre_inspection=None, *args, **kwargs):
@@ -116,7 +117,9 @@ class PreviewPreInspectionForm(forms.Form):
 		obj.longitude = data['longitude']
 		obj.accuracy = data['accuracy']
 
-		obj.status = PreInspectionStatusEnum.SUBMITTED
+		obj.transition_pre_inspection_submit(
+			by=get_current_user()
+		)
 		obj.save()
 
 	def get_form_initial(self, step):
@@ -140,9 +143,9 @@ class PreviewPreInspectionForm(forms.Form):
 
 		data = self.get_all_cleaned_data()
 
-		obj: UjjwalaV2Application = UjjwalaV2Application.objects.filter(id=data.get('application_id')).first()
-		obj.transition_pre_inspection_submit(**data)
-		obj.save()
+		# obj: UjjwalaV2Application = UjjwalaV2Application.objects.filter(id=data.get('application_id')).first()
+		# obj.transition_pre_inspection_submit(**data)
+		# obj.save()
 		return HttpResponseRedirect('/ujjwala/frontend/')
 
 
@@ -155,17 +158,22 @@ class PreInspectionInitialForm(forms.Form):
 		value = self.cleaned_data.get('application_id')
 
 		application = UjjwalaV2Application.objects.filter(
-			pk=value, status=UjjwalaV2ApplicationStatus.NIC_CLEARED
-		)
+			pk=value
+		).first()
 		if not application:
 			raise forms.ValidationError("Invalid Application Id")
+		elif not application.status == UjjwalaV2ApplicationStatus.NIC_CLEARED:
+			raise forms.ValidationError("Application Status: {}".format(application.status))
 		return value
 
 
 class PreInspectionGenerateOtpForm(forms.Form):
 	form_type = forms.CharField(widget=forms.HiddenInput, initial='generate_otp_form')
 	application_id = forms.IntegerField(widget=forms.HiddenInput)
-	mobile = forms.ChoiceField(widget=forms.RadioSelect,label='Select Mobile Number for Sending OTP(ओटीपी भेजने के लिए मोबाइल नंबर चुनें)')
+	mobile = forms.ChoiceField(
+		widget=forms.RadioSelect,
+	    label='Select Mobile Number for Sending OTP(ओटीपी भेजने के लिए मोबाइल नंबर चुनें)'
+	)
 
 	def __init__(self, mobile_nos=None, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -381,21 +389,31 @@ class EkycAccepted(forms.Form):
 
 
 class LegalDocumentsUpload(forms.Form):
-	# legal_documents_uploaded = forms.ChoiceField(
-	# 	label="Legal Documents Uploaded ?",
-	# 	required=True,
-	# 	help_text="",
-	# 	choices=[
-	# 		('', '-- Select If Legal Documents Uploaded --'),
-	# 		('VERIFIED', 'Verified'),
-	# 		('NOT VERIFIED', 'Not Verified')
-	# 	]
+	# pre_inspection = forms.CharField(
+	# 	widget=forms.TextInput, label='Pre Inspection', required=True
 	# )
-	consumer_id = forms.CharField(
-		widget=forms.TextInput, max_length=16, label='Consumer Id', required=True
+	# family_occupancy = forms.CharField(
+	# 	widget=forms.TextInput, label='Family Occupancy', required=True
+	# )
+	# annexure_14_points = forms.CharField(
+	# 	widget=forms.TextInput, label='Annexure 14 Points', required=True
+	# )
+	#
+	# def clean(self):
+	# 	data = self.cleaned_data
+	# 	return data
+	pass
+
+
+class UjjwalaLegalDocumentsUpload(forms.Form):
+	pre_inspection = forms.CharField(
+		widget=forms.TextInput, label='Pre Inspection', required=True
 	)
-	description = forms.CharField(
-		widget=forms.Textarea, label='Remarks', required=True
+	family_occupancy = forms.CharField(
+		widget=forms.TextInput, label='Family Occupancy', required=True
+	)
+	annexure_14_points = forms.CharField(
+		widget=forms.TextInput, label='Annexure 14 Points', required=True
 	)
 
 	def clean(self):
@@ -410,6 +428,31 @@ class ConnectionStatusApproved(forms.Form):
 
 	def clean(self):
 		data = self.cleaned_data
+		return data
+
+
+class LegalDocumentsReview(forms.Form):
+	review_status = forms.ChoiceField(
+		label="Review Status",
+		required=True,
+		help_text="Please Select Review Status",
+		choices=[
+			('', '-- Select Review Status --'),
+			('ACCEPTED', 'Accepted'),
+			('REUPLOAD', 'Reupload'),
+		]
+	)
+
+	description = forms.CharField(
+		widget=forms.Textarea, label='Remarks', required=True
+	)
+
+	def clean(self):
+		data = self.cleaned_data
+		if data:
+			data = {'description': '{}: {}'.format(
+				data.get('review_status'), data.get('description', '')
+			)}
 		return data
 
 
@@ -464,26 +507,6 @@ class ConnectionStatusRejected(forms.Form):
 		return data
 
 
-class LegalDocumentsCollected(forms.Form):
-	legal_documents_verified = forms.ChoiceField(
-		label="Legal Documents Collected ?",
-		required=True,
-		help_text="",
-		choices=[
-			('', '-- Select If Legal Documents Collected --'),
-			('COLLECTED', 'Collected'),
-			('NOT COLLECTED', 'Not Collected')
-		]
-	)
-	description = forms.CharField(
-		widget=forms.Textarea, label='Remarks', required=True
-	)
-
-	def clean(self):
-		data = self.cleaned_data
-		return data
-
-
 class ConnectionRelease(forms.Form):
 	sv = forms.CharField(
 		widget=forms.TextInput, max_length=15, required=True, help_text="Enter SV Document No. "
@@ -519,4 +542,64 @@ class UjjwalaDocumentsReuploadForm(forms.Form):
 		data = self.cleaned_data
 		if data.get('documents_required_for_reupload', []):
 			data['documents_required_for_reupload'] = json.dumps(data['documents_required_for_reupload'])
+		return data
+
+
+class PreInspectionReviewAdminForm(forms.Form):
+	review_status = forms.ChoiceField(
+		label="Select Review Status ?",
+		required=True,
+		help_text="",
+		choices=[
+			('', '-- Select Review Status --'),
+			('ACCEPTED', 'Accepted'),
+			('REJECTED', 'Rejected')
+		]
+	)
+	rejected_reason = forms.CharField(
+		widget=forms.TextInput, max_length=255, label='Rejected Reason', required=False
+	)
+	description = forms.CharField(
+		widget=forms.Textarea, label='Remarks', required=False
+	)
+
+	def clean(self):
+		data = self.cleaned_data
+		if data:
+			if data.get('review_status', '') == 'REJECTED' and not data['rejected_reason']:
+				raise forms.ValidationError("Please enter a reason for rejection.")
+			data.update({'description': '{} - {}: {}'.format(
+					data.get('review_status'), data.get('rejected_reason'), data.get('description', '')
+				)
+			})
+		return data
+
+
+class LegalDocumentsReviewAdminForm(forms.Form):
+	review_status = forms.ChoiceField(
+		label="Select Review Status ?",
+		required=True,
+		help_text="",
+		choices=[
+			('', '-- Select Review Status --'),
+			('ACCEPTED', 'Accepted'),
+			('REJECTED', 'Rejected')
+		]
+	)
+	rejected_reason = forms.CharField(
+		widget=forms.TextInput, max_length=255, label='Rejected Reason', required=False
+	)
+	description = forms.CharField(
+		widget=forms.Textarea, label='Remarks', required=False
+	)
+
+	def clean(self):
+		data = self.cleaned_data
+		if data:
+			if data.get('review_status', '') == 'REJECTED' and not data['rejected_reason']:
+				raise forms.ValidationError("Please enter a reason for rejection.")
+			data.update({'description': '{} - {}: {}'.format(
+					data.get('review_status'), data.get('rejected_reason'), data.get('description', '')
+				)
+			})
 		return data

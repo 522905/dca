@@ -17,6 +17,9 @@ class UjjwalaApplicationDocumentsEnum(models.TextChoices):
 	DEATH_CERTIFICATE = 'DEATH_CERTIFICATE', 'Death Certificate'
 	DIVORCE_DOCUMENT = 'DIVORCE_DOCUMENT', 'Divorce Document'
 	SAFETY_AUDIO = 'SAFETY_AUDIO', 'Safety Audio'
+	LEGAL_DOC_ANNEXURE_14_POINTS = 'LEGAL_DOC_ANNEXURE_14_POINTS', 'Legal Doc Annexure 14 Points'
+	LEGAL_DOC_FAMILY_OCCUPANCY = 'LEGAL_DOC_FAMILY_OCCUPANCY', 'Legal Doc Family Occupancy'
+	LEGAL_DOC_PRE_INSPECTION = 'LEGAL_DOC_PRE_INSPECTION', 'Legal Doc Pre Inspection'
 
 	@classmethod
 	def get_skipped_additional_choices(cls):
@@ -84,8 +87,6 @@ class UjjwalaV2ApplicationStatus(models.TextChoices):
 	EKYC_ACCEPTED = 'EKYC_ACCEPTED', 'E-KYC Accepted'
 	LEGAL_DOCUMENTS_UPLOAD = 'LEGAL_DOCUMENTS_UPLOAD', 'Legal Documents Upload'
 	MANUAL_LEGAL_DOCUMENTS_UPLOAD = 'MANUAL_LEGAL_DOCUMENTS_UPLOAD', 'Manual Legal Documents Upload'
-	# CONNECTION_APPROVED = 'CONNECTION_APPROVED', 'Connection Approved'
-	# CONNECTION_REJECTED = 'CONNECTION_REJECTED', 'Connection Rejected'
 	LEGAL_DOCUMENTS_COLLECTED = 'LEGAL_DOCUMENTS_COLLECTED', 'Legal Documents Collected'
 	EDIT_APPLICATION = 'EDIT_APPLICATION', 'Edit Application'
 	APPLICATION_REJECTED = 'APPLICATION_REJECTED', 'Application Rejected'
@@ -95,8 +96,6 @@ class UjjwalaV2ApplicationStatus(models.TextChoices):
 	NIC_CLEARED = 'NIC_CLEARED', 'NIC Cleared'
 	INSUFFICIENT_ADDRESS = 'INSUFFICIENT_ADDRESS', 'Insufficient Address'
 	DO_MANUAL_OPERATION = 'DO_MANUAL_OPERATION', 'Do Manual Operation'
-	PRE_INSPECTION_SUBMITTED = 'PRE_INSPECTION_SUBMITTED', 'Pre Inspection Submitted'
-	PRE_INSPECTION_REUPLOAD = 'PRE_INSPECTION_REUPLOAD', 'Pre Inspection Reupload'
 	PRE_INSPECTION_ACCEPTED = 'PRE_INSPECTION_ACCEPTED', 'Pre Inspection Accepted'
 	CONNECTION_RELEASED = 'CONNECTION_RELEASED', 'Connection Released'
 	POST_INSTALLATION_UPLOAD = 'POST_INSTALLATION_UPLOAD', 'Post Installation Upload'
@@ -135,3 +134,16 @@ class PreInspectionStatusEnum(models.TextChoices):
 	ACCEPTED = 'ACCEPTED', 'Accepted'
 	REUPLOAD = 'REUPLOAD', 'Reupload'
 	REJECTED = 'REJECTED', 'Rejected'
+
+
+class ConnectionDisbursementStatusEnum(models.TextChoices):
+	LEGAL_DOCUMENTS_PENDING = 'LEGAL_DOCUMENTS_PENDING', 'Legal Documents Pending'
+	LEGAL_DOCUMENTS_REVIEW = 'LEGAL_DOCUMENTS_REVIEW', 'Legal Documents Review'
+	LEGAL_DOCUMENTS_ACCEPTED = 'LEGAL_DOCUMENTS_ACCEPTED', 'Legal Documents Accepted'
+	LEGAL_DOCUMENTS_REJECTED = 'LEGAL_DOCUMENTS_REUPLOAD', 'Legal Documents Reupload'
+	INVITED = 'INVITED', 'Invited'
+	SV_LABEL_PRINT = 'SV_LABEL_PRINT', 'SV Label Print'
+	DISBURSEMENT_PHOTO_UPLOAD = 'DISBURSEMENT_PHOTO_UPLOAD', 'Disbursement Photo Upload'
+	SOCIAL_MEDIA_UPDATES = 'SOCIAL_MEDIA_UPDATES', 'Social Media Updates'
+	MATERIAL_DELIVERED = 'MATERIAL_DELIVERED', 'Material Delivered'
+

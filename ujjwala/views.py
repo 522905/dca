@@ -1,6 +1,7 @@
 import json
 
 import django_rq
+from django import forms
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect
@@ -9,19 +10,23 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, FormView, ListView
 from django_currentuser.middleware import get_current_user
-
+from django.forms import formset_factory
 import ujjwala.forms
 from otp.models import Otp
-from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum
+from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum
 from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm, \
     PreInspectionGenerateOtpForm, PreInspectionValidateOtpForm, \
     KitchenPreInspectionForm, AudioOnSafetyForm, PreviewPreInspectionForm, PreInspectionAllocatedGenerateOtpForm, \
-    PreInspectionAllocatedValidateOtpForm
-from ujjwala.models import UjjwalaV2Application, PreInspection
+    PreInspectionAllocatedValidateOtpForm, UjjwalaLegalDocumentsUpload
+from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement
 
 
 def index(request):
     return render(request, 'ujjwala/index.html')
+
+
+def legal_documents(request):
+    return render(request, 'ujjwala/legal_documents_upload.html')
 
 
 class ApplicationStatusView(DetailView):
@@ -45,6 +50,22 @@ class UjjwalaPreInspectionListView(ListView):
 
     def get_template_names(self):
         return 'ujjwala/pre_inspection_listview.html'
+
+
+@method_decorator(login_required, 'dispatch')
+class UjjwalaPreInspectionReviewListView(ListView):
+    model = PreInspection
+
+    paginate_by = 20
+    permission = 'has_view_permission'
+
+    def get_queryset(self):
+        return PreInspection.objects.filter(
+            status=PreInspectionStatusEnum.SUBMITTED
+        )
+
+    def get_template_names(self):
+        return 'ujjwala/pre_inspection_review_listview.html'
 
 
 @method_decorator(login_required, 'dispatch')
@@ -85,9 +106,14 @@ class PreInspectionView(FormView):
         pre_inspection = PreInspection.objects.get(pk=kwargs.get('pk'))
         if pre_inspection.status == PreInspectionStatusEnum.ALLOCATED:
             return self.otp_verification(pre_inspection)
-        elif pre_inspection.status == PreInspectionStatusEnum.SUBMITTED:
-            return redirect("ujjwala:index")
-
+        elif pre_inspection.status in (
+                PreInspectionStatusEnum.SUBMITTED,
+                PreInspectionStatusEnum.ACCEPTED,
+                PreInspectionStatusEnum.REJECTED,
+        ):
+            return render(self.request, 'ujjwala/pre_inspection_status.html', context={
+                'pre_inspection': pre_inspection
+            })
         return super().dispatch(request, *args, **kwargs)
 
     def otp_verification(self, pre_inspection):
@@ -276,3 +302,61 @@ class PreInspectionCreateView(View):
             )
             obj.save()
             return redirect('ujjwala:pre_inspection_form_view', pk=obj.pk)
+
+
+class ReviewForm(forms.ModelForm):
+    action = forms.ChoiceField(
+        widget=forms.Select,
+        choices=(
+            ("A", "Accept"),
+            ("R", "Reject")
+        ),
+        required=False
+    )
+    remarks = forms.CharField(widget=forms.TextInput)
+
+    class Meta:
+        from ujjwala.models import PreInspection
+        model = PreInspection
+        fields = ('id', 'action', 'remarks')
+
+
+class PreInspectionReviewView(FormView):
+    template_name = "ujjwala/pre_inspection_review.html"
+
+    def get_form_class(self):
+        return formset_factory(ReviewForm, extra=0)
+
+    def get_initial(self):
+        return [
+            {
+                'pre_inspection_id': obj.id
+            } for obj in PreInspection.objects.all()
+        ]
+
+
+class UjjwalaApplicationLegalDocumentsUpload(FormView):
+    form_class = UjjwalaLegalDocumentsUpload
+    template_name = "ujjwala/legal-document-upload-form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        connection_disbursement = ConnectionDisbursement.objects.get(pk=self.kwargs.get('pk'))
+
+        if connection_disbursement.status in (
+                ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
+                ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REJECTED,
+                ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
+        ):
+            return HttpResponse(content='Status: {}'.format(connection_disbursement.status))
+
+        return super().dispatch(request, *args, **kwargs)
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # application = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
+        connection_disbursement = ConnectionDisbursement.objects.get(pk=self.kwargs.get('pk'))
+        context.update({
+            "obj": connection_disbursement
+        })
+        return context

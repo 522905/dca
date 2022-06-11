@@ -1,7 +1,12 @@
+import datetime
+
+import requests
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.core import signals
 from django.db import models
+from django.dispatch import receiver
 from django.template import loader
 from django.utils.safestring import mark_safe
 from django_currentuser.middleware import get_current_user
@@ -14,10 +19,12 @@ from teams.models import ServiceLocations
 from ujjwala.communication_models import UjjwalaWhatsappCommunication
 from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMobileStatusEnum, \
 	UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, \
-	RejectionTypeEnum, RoboSdmsDedeupStatusEnum, UserDocumentsEnum, OtpStatusEnum, PreInspectionStatusEnum
-from ujjwala.forms import LegalDocumentsCollected, LegalDocumentsUpload, \
+	RejectionTypeEnum, RoboSdmsDedeupStatusEnum, UserDocumentsEnum, OtpStatusEnum, PreInspectionStatusEnum, \
+	ConnectionDisbursementStatusEnum
+from ujjwala.forms import UjjwalaLegalDocumentsUpload, \
 	ConnectionRelease, PostInstallationUpload, ConnectionStatusApproved, ApplicationRejected, \
-	EkycAccepted, PreInspectionReviewForm
+	EkycAccepted, PreInspectionReviewForm, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
+	LegalDocumentsReviewAdminForm
 
 
 class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
@@ -43,8 +50,6 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	longitude = models.CharField(max_length=32, null=True, blank=True)
 	accuracy = models.CharField(max_length=24, null=True, blank=True)
 	product = models.CharField(max_length=256, null=True, blank=True)
-	witness_name = models.CharField(max_length=256, null=True, blank=True)
-	witness_mobile_number = models.CharField(max_length=10, null=True, blank=True)
 	robo_sdms_dedup = models.CharField(
 		max_length=25, choices=RoboSdmsDedeupStatusEnum.choices,
 		default=RoboSdmsDedeupStatusEnum.NOT_PROCESSED
@@ -58,8 +63,9 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	sv = models.CharField(max_length=25, null=True, blank=True)
 	documents_required_for_reupload = models.JSONField(null=True, blank=True)
 	last_execution_state = models.CharField(max_length=50, null=True, blank=True)
-	pre_inspection_done_by = models.ForeignKey(
-		User, on_delete=models.CASCADE, related_name='pre_inspection_done_by', null=True
+	pre_inspection_accepted = models.ForeignKey("PreInspection", on_delete=models.CASCADE, null=True, blank=True)
+	connection_disbursement_obj = models.ForeignKey(
+		"ConnectionDisbursement", on_delete=models.CASCADE, null=True, blank=True
 	)
 
 	class Meta:
@@ -110,7 +116,6 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	def document_witness_photo(self):
 		return self.documents.filter(type=UjjwalaApplicationDocumentsEnum.WITNESS_PHOTO).first().link
 
-
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
@@ -152,9 +157,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		permission='ujjwala.can_upload_legal_docs',
 	)
 	def legal_documents_upload(self, *args, **kwargs):
-
 		pass
-		# self.consumer_id = kwargs.get('consumer_id')
 
 	@fsm_log_description
 	@fsm_log_by
@@ -224,6 +227,26 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	@fsm_log_by
 	@transition(
 		field=status,
+		source=UjjwalaV2ApplicationStatus.NIC_CLEARED,
+		target=UjjwalaV2ApplicationStatus.PRE_INSPECTION_ACCEPTED,
+		custom=dict(
+			short_description='Pre Inspection Accepted', admin=True, form=ConnectionStatusApproved
+		),
+	)
+	def transition_pre_inspection_accepted(self, *args, **kwargs):
+		pre_inspection_id = kwargs.get('pre_inspection_id')
+		pre_inspection = PreInspection.objects.get(pk=pre_inspection_id)
+		self.latitude = pre_inspection.latitude
+		self.longitude = pre_inspection.longitude
+		self.accuracy = pre_inspection.accuracy
+		self.pre_inspection_accepted = pre_inspection
+		self.save()
+		self.event_legal_documents_upload_channel_whatsapp()
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
 		source=UjjwalaV2ApplicationStatus.OMC_CLEARED,
 		target=UjjwalaV2ApplicationStatus.NIC_ERROR,
 		custom=dict(
@@ -238,79 +261,14 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=[
-			UjjwalaV2ApplicationStatus.NIC_CLEARED,
-			UjjwalaV2ApplicationStatus.PRE_INSPECTION_REUPLOAD,
-		],
-		target=UjjwalaV2ApplicationStatus.PRE_INSPECTION_SUBMITTED,
-		custom=dict(
-			short_description='Pre Inspection Submit', admin=True,
-		),
-		permission='ujjwala.can_approve_connection',
-	)
-	def transition_pre_inspection_submit(self, *args, **kwargs):
-		self.latitude = kwargs.get('latitude')
-		self.longitude = kwargs.get('longitude')
-		self.accuracy = kwargs.get('accuracy')
-		self.witness_name = kwargs.get('witness_name')
-		self.witness_mobile_number = kwargs.get('witness_mobile_number')
-
-		self.documents.create(
-			type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO,
-			link=kwargs.get('kitchen_photo')
-		)
-		self.documents.create(
-			type=UjjwalaApplicationDocumentsEnum.MAIN_GATE,
-			link=kwargs.get('main_gate')
-		)
-		self.documents.create(
-			type=UjjwalaApplicationDocumentsEnum.CUSTOMER_IN_KITCHEN,
-			link=kwargs.get('customer_in_kitchen')
-		)
-		self.documents.create(
-			type=UjjwalaApplicationDocumentsEnum.WITNESS_PHOTO,
-			link=kwargs.get('witness_photo')
-		)
-		self.documents.create(
-			type=UjjwalaApplicationDocumentsEnum.MECHANIC_PHOTO,
-			link=kwargs.get('mechanic_photo')
-		)
-
-	@fsm_log_description
-	@fsm_log_by
-	@transition(
-		field=status,
-		source=UjjwalaV2ApplicationStatus.PRE_INSPECTION_SUBMITTED,
-		target=GET_STATE(
-			lambda self, **kwargs: \
-					UjjwalaV2ApplicationStatus.PRE_INSPECTION_ACCEPTED \
-							if kwargs.get("verified") else UjjwalaV2ApplicationStatus.PRE_INSPECTION_REUPLOAD,
-			states=[
-				UjjwalaV2ApplicationStatus.PRE_INSPECTION_ACCEPTED,
-				UjjwalaV2ApplicationStatus.PRE_INSPECTION_REUPLOAD
-			]
-		),
-		custom=dict(
-			short_description='Review Pre Inspection', admin=True, form=PreInspectionReviewForm
-		),
-	)
-	def review_pre_inspection(self, *args, **kwargs):
-		self.pre_inspection_done_by = get_current_user()
-		self.documents_required_for_reupload = kwargs.get('documents_required_for_reupload')
-
-
-	@fsm_log_description
-	@fsm_log_by
-	@transition(
-		field=status,
 		source=UjjwalaV2ApplicationStatus.PRE_INSPECTION_ACCEPTED,
-		target=UjjwalaV2ApplicationStatus.CONNECTION_RELEASED,
+		target=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_COLLECTED,
 		custom=dict(
-			short_description='Pre Inspection Accept', admin=True,
+			short_description='Legal Documents Collection', admin=True,
 		),
 		permission='ujjwala.can_approve_connection',
 	)
-	def transition_pre_inspection_accept(self, *args, **kwargs):
+	def transition_legal_documents_collected(self, *args, **kwargs):
 		pass
 
 	@fsm_log_description
@@ -394,7 +352,7 @@ class FamilyMembers(models.Model):
 
 class UjjwalaApplicationDocuments(models.Model):
 	parent = models.ForeignKey(UjjwalaV2Application, on_delete=models.CASCADE, related_name='documents', null=True)
-	type = models.CharField(max_length=25, choices=UjjwalaApplicationDocumentsEnum.choices)
+	type = models.CharField(max_length=32, choices=UjjwalaApplicationDocumentsEnum.choices)
 	link = models.URLField()
 	compressed = models.BooleanField(default=False)
 	file_size = models.CharField(max_length=16, default='0')
@@ -408,7 +366,7 @@ class UjjwalaApplicationDocuments(models.Model):
 
 class UserDocuments(models.Model):
 	parent = models.ForeignKey(User, on_delete=models.CASCADE, related_name='documents', null=True)
-	type = models.CharField(max_length=25, choices=UserDocumentsEnum.choices)
+	type = models.CharField(max_length=32, choices=UserDocumentsEnum.choices)
 	link = models.URLField()
 
 	def download_links(self):
@@ -422,17 +380,26 @@ class PreInspection(models.Model):
 	parent = models.ForeignKey(
 		UjjwalaV2Application, on_delete=models.PROTECT, related_name='pre_inspection'
 	)
+	created_on = models.DateTimeField(auto_now_add=True, null=True)
+	updated_on = models.DateTimeField(auto_now=True, null=True)
 	latitude = models.CharField(max_length=32, null=True, blank=True)
 	longitude = models.CharField(max_length=32, null=True, blank=True)
 	accuracy = models.CharField(max_length=24, null=True, blank=True)
 	witness_name = models.CharField(max_length=256, null=True, blank=True)
 	witness_mobile_number = models.CharField(max_length=10, null=True, blank=True)
 	mechanic = models.ForeignKey(User, on_delete=models.PROTECT)
+	submitted_on = models.DateTimeField(null=True)
 
 	status = FSMField(
 		default=PreInspectionStatusEnum.ALLOCATED,
 		choices=PreInspectionStatusEnum.choices
 	)
+
+	def document_kitchen_photo(self):
+		return self.documents.filter(type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO).first().link
+
+	def document_main_gate_photo(self):
+		return self.documents.filter(type=UjjwalaApplicationDocumentsEnum.MAIN_GATE).first().link
 
 	@fsm_log_description
 	@fsm_log_by
@@ -476,43 +443,51 @@ class PreInspection(models.Model):
 		target=PreInspectionStatusEnum.SUBMITTED,
 		custom=dict(short_description='Submit Pre-Inspection', admin=True),
 	)
-	def pre_inspection_pre_inspection_preview(self, *args, **kwargs):
-		pass
+	def transition_pre_inspection_submit(self, *args, **kwargs):
+		self.submitted_on = datetime.datetime.now()
+		self.save()
+
 
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
 		field=status,
 		source=PreInspectionStatusEnum.SUBMITTED,
-		target=PreInspectionStatusEnum.ACCEPTED,
-		custom=dict(short_description='Pre-Inspection Accept', admin=True),
+		target=GET_STATE(
+			lambda self, **kwargs: \
+					PreInspectionStatusEnum.ACCEPTED \
+							if kwargs.get("review_status") == 'ACCEPTED' \
+							else PreInspectionStatusEnum.REJECTED,
+			states=[
+				PreInspectionStatusEnum.ACCEPTED,
+				PreInspectionStatusEnum.REJECTED
+			]
+		),
+		custom=dict(
+			short_description='Pre-Inspection Review', admin=True, form=PreInspectionReviewAdminForm
+		),
 	)
-	def pre_inspection_accepted(self, *args, **kwargs):
-		pass
-
-	@fsm_log_description
-	@fsm_log_by
-	@transition(
-		field=status,
-		source=PreInspectionStatusEnum.SUBMITTED,
-		target=PreInspectionStatusEnum.REJECTED,
-		custom=dict(short_description='Pre-Inspection Reject', admin=True),
-	)
-	def pre_inspection_rejected(self, *args, **kwargs):
-		pass
+	def pre_inspection_review(self, *args, **kwargs):
+		if kwargs.get('review_status') == 'ACCEPTED':
+			ConnectionDisbursement.objects.create(
+				parent=self.parent,
+			)
+			self.parent.save()
+			self.parent.transition_pre_inspection_accepted(pre_inspection_id=self.pk)
+		self.save()
 
 
 class PreInspectionDocuments(models.Model):
 	parent = models.ForeignKey(PreInspection, on_delete=models.CASCADE, related_name='documents', null=True)
-	type = models.CharField(max_length=25, choices=UjjwalaApplicationDocumentsEnum.choices)
+	type = models.CharField(max_length=32, choices=UjjwalaApplicationDocumentsEnum.choices)
 	link = models.URLField()
 	compressed = models.BooleanField(default=False)
 	file_size = models.CharField(max_length=16, default='0')
 
 	def download_links(self):
 		html = '''
-		<a href="{}" target="blank">Ori. File</a>&nbsp||&nbsp<a href="{}{}" target="blank">Download Comp.</a>
-		'''.format(self.link, settings.THUMBOR_URL, self.link)
+		<a href="{}" target="blank">View File</a>
+		'''.format(self.link)
 		return mark_safe(html)
 
 
@@ -521,3 +496,116 @@ class Evykati(models.Model):
 		UjjwalaV2Application, on_delete=models.PROTECT, related_name='evyakti'
 	)
 	information = models.JSONField(null=True, blank=True)
+
+
+class ConnectionDisbursement(models.Model):
+	parent = models.ForeignKey(
+		UjjwalaV2Application, on_delete=models.PROTECT, related_name='connection_disbursement'
+	)
+	created_on = models.DateTimeField(auto_now_add=True, null=True)
+	updated_on = models.DateTimeField(auto_now=True, null=True)
+	status = FSMField(
+		default=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
+		choices=ConnectionDisbursementStatusEnum.choices
+	)
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
+		target=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
+		custom=dict(short_description='Legal Documents Upload', admin=False),
+	)
+	def transition_legal_documents_uploaded(self, *args, **kwargs):
+		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
+		target=GET_STATE(
+					lambda self, **kwargs: \
+							ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED \
+									if kwargs.get('review_status') == 'ACCEPTED' \
+									else ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
+					states=[
+						ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
+						ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING
+					]
+				),
+		custom=dict(
+			short_description='Legal Documents Review', admin=True, form=LegalDocumentsReviewAdminForm
+		),
+	)
+	def transition_legal_documents_reviewed(self, *args, **kwargs):
+		if kwargs.get('review_status') == 'ACCEPTED':
+			self.parent.transition_legal_documents_collected(connection_disbursement_id=self.pk)
+			self.parent.save()
+		else:
+			self.delete()
+			# for doc in self.documents.all():
+			# 	if doc.link.find("tus"):
+			# 		del_req = requests.delete(doc.link, headers={"Tus-Resumable": "1.0.0"})
+			# 	doc.delete()
+			# self.save()
+
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
+		target=ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
+		custom=dict(short_description='SV & Label Print', admin=True),
+	)
+	def transition_sv_and_label_print(self, *args, **kwargs):
+		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
+		target=ConnectionDisbursementStatusEnum.DISBURSEMENT_PHOTO_UPLOAD,
+		custom=dict(short_description='Disbursement Photo', admin=True),
+	)
+	def transition_disbursement_photo_uploaded(self, *args, **kwargs):
+		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=ConnectionDisbursementStatusEnum.DISBURSEMENT_PHOTO_UPLOAD,
+		target=ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
+		custom=dict(short_description='Social Media Updates', admin=True),
+	)
+	def transition_social_media_updated(self, *args, **kwargs):
+		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
+		target=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
+		custom=dict(short_description='Material Deliver', admin=True),
+	)
+	def transition_material_delivered(self, *args, **kwargs):
+		pass
+
+
+class ConnectionDisbursementDocuments(models.Model):
+	parent = models.ForeignKey(ConnectionDisbursement, on_delete=models.CASCADE, related_name='documents', null=True)
+	type = models.CharField(max_length=32, choices=UjjwalaApplicationDocumentsEnum.choices)
+	link = models.URLField()
+	compressed = models.BooleanField(default=False)
+	file_size = models.CharField(max_length=16, default='0')
+
+	def download_links(self):
+		html = '''
+		<a href="{}" target="blank">View File</a>
+		'''.format(self.link)
+		return mark_safe(html)

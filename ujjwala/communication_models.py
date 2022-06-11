@@ -155,3 +155,111 @@ class UjjwalaWhatsappCommunication(object):
 				event="ujjwala_invite_for_ekyc", channel="whatsapp",
 				message_id=data.get('id')
 			)
+
+	def event_legal_documents_upload_channel_whatsapp(self):
+		from ujjwala.models import ConnectionDisbursement
+
+		connection_disbursement_id = ConnectionDisbursement.objects.get(parent=self.id).id
+		body_text = {
+			"countryCode": "+91",
+			"phoneNumber": self.contact_mobile,
+			"type": "Template",
+			"traits": {
+				"name": self.name,
+			},
+			# "callbackData": "some_callback_data",
+			"template": {
+				"name": "ujjwala_legal_documents_upload",
+				"languageCode": "hi",
+				"headerValues": [
+					# "Alert",  #
+				],
+				"bodyValues": [
+					self.name
+				],
+				"buttonValues": {
+					"0": [
+						"ujjwala/portal/legal_documents_upload/{}/".format(
+							connection_disbursement_id
+						)
+					]
+				}
+			}
+		}
+
+		ujjwala_v2_application_content_type = ContentType.objects.get(
+			app_label='ujjwala', model='ujjwalav2application'
+		)
+		data = track.client.post(
+			api_key=settings.INTERAKT_API_KEY,
+			path="/v1/public/message/",
+			body=body_text
+		).json()
+
+		if data['result']:
+			CommunicationLog.objects.create(
+				content_type=ujjwala_v2_application_content_type,
+				object_id=self.pk,
+				event="submit", channel="whatsapp",
+				message_id=data.get('id')
+			)
+
+		# res = requests.post(
+		# 	"http://vici.hawabadlo.in/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+		# 	"&function=add_lead&phone_number={}&list_id=1006&first_name={}&last_name={}".format(
+		# 		self.contact_mobile, self.name, self.pk
+		# 	)
+		# )
+
+
+	def event_legal_documents_reupload_channel_whatsapp(self):
+		body_text = {
+			"countryCode": "+91",
+			"phoneNumber": self.contact_mobile,
+			"type": "Template",
+			"traits": {
+				"name": self.name,
+			},
+			# "callbackData": "some_callback_data",
+			"template": {
+				"name": "ujjwala_legal_documents_reupload",
+				"languageCode": "hi",
+				"headerValues": [
+					# "Alert",  #
+				],
+				"bodyValues": [
+					self.name
+				],
+				"buttonValues": {
+					"0": [
+						"ujjwala/ujjwala-application/legal_documents_upload/{}/".format(
+							self.id
+						)
+					]
+				}
+			}
+		}
+
+		ujjwala_v2_application_content_type = ContentType.objects.get(
+			app_label='ujjwala', model='ujjwalav2application'
+		)
+		data = track.client.post(
+			api_key=settings.INTERAKT_API_KEY,
+			path="/v1/public/message/",
+			body=body_text
+		).json()
+
+		if data['result']:
+			CommunicationLog.objects.create(
+				content_type=ujjwala_v2_application_content_type,
+				object_id=self.pk,
+				event="submit", channel="whatsapp",
+				message_id=data.get('id')
+			)
+
+		# res = requests.post(
+		# 	"http://vici.hawabadlo.in/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+		# 	"&function=add_lead&phone_number={}&list_id=1006&first_name={}&last_name={}".format(
+		# 		self.contact_mobile, self.name, self.pk
+		# 	)
+		# )

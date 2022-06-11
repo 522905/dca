@@ -15,10 +15,10 @@ from . import models
 from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, FamilyMemberRelationEnum, \
     ManualOperationCodeEnum
 from .forms import ApplicationRejected
-from .models import UjjwalaV2Application, FamilyMembers
+from .models import UjjwalaV2Application, FamilyMembers, ConnectionDisbursement, ConnectionDisbursementDocuments
 from .serializers import UjjwalaV2ApplicationSerializer
 from .ujjwala_functions import download_ujjwala_documents, get_salutation, \
-    download_pre_installation_documents, get_existing_duplicate_applications_detail
+    download_pre_installation_documents, get_existing_duplicate_applications_detail, download_ujjwala_legal_docs
 
 
 class CustomPagePagination(PageNumberPagination):
@@ -115,6 +115,34 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         request.PERFORM_SUBMIT = True
         return super().create(request, *args, **kwargs)
 
+    @action(methods=['post'], detail=False, url_path='legal_documents_upload')
+    def legal_documents_upload(self, request, *args, **kwargs):
+        connection_disbursement_id = request.data.get('connection_disbursement_id')
+        documents = request.data.get('documents')
+
+        try:
+            connection_disbursement = ConnectionDisbursement.objects.get(id=connection_disbursement_id)
+
+            if connection_disbursement:
+                for document in documents:
+                    ConnectionDisbursementDocuments.objects.create(
+                        parent=connection_disbursement,
+                        type=document.get('type'),
+                        link=document.get('link')
+                    )
+                connection_disbursement.transition_legal_documents_uploaded(
+                    description="Submitted On: {}".format(timezone.now().strftime('%d-%M-%Y'))
+                )
+                connection_disbursement.save()
+                return JsonResponse({
+                    "status": True
+                })
+        except:
+            pass
+
+        return JsonResponse({
+            "status": False
+        })
 
     @action(methods=['get'], detail=False, url_path='check_ujjwala_application')
     def check_ujjwala_application(self, request, *args, **kwargs):
@@ -375,12 +403,13 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=True, url_path='download_ujjwala_legal_docs')
     def download_ujjwala_legal_docs(self, request, *args, **kwargs):
         obj = self.get_object()
-        return download_ujjwala_documents(obj)
+        return download_ujjwala_legal_docs(obj)
 
     @action(methods=['get'], detail=True, url_path='download_pre_inspection_docs')
     def download_pre_inspection_docs(self, request, *args, **kwargs):
         obj = self.get_object()
         return download_pre_installation_documents(obj)
+
 
     @action(methods=['post'], detail=True, url_path='validate_contacts')
     def validate_contacts(self, request: HttpRequest, *args, **kwargs):

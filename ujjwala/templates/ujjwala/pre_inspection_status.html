@@ -1,0 +1,90 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+
+<style>
+    .app_card a{ color: #333;}
+    .app_card a:hover{ text-decoration: none;}
+    p{ padding: 0; margin: 0;}
+    body{ font-family: 'muli', sans-serif !important; font-weight: 500;}
+    .form_label{ max-width:1000px !important}
+    .card, .card-panel{  display: inline-block; width: 100%;} 
+    .main-header { padding: 10px; border-radius: 3px;}
+    .card-body ul li{ display: inline-block; width: 100%; } 
+    .card-body ul li p { margin: 0;}
+    .card-body.pb-0{ padding-bottom: 0 !important; padding-top: 5px !important}
+    .status{ color: #2957A4; font-size: 0.9em;}
+    .app_card p{ font-size: 0.9em;}
+    .inspection_photo_block .border{ text-align: center; width: 100%;}
+    .inspection_photo_block img{ padding: 5px;}
+    .inspection_photo_block p{ height: 50px; border-top: 1px solid #ccc; text-align: center; vertical-align: middle; display: table-cell; width: 100%; padding: 0 12px;}
+</style>
+    <p> </p>
+    <div class="p-2 pt-0 form_label" style="width: 100%;">
+        <div class="main-header bg-heading text-center">
+            <h5 class="text-white mb-0">Pre Inspection ({{pre_inspection.id}}) <br><span style="font-size: 12px;" id="date"></span> </h5>
+        </div>
+        <div class="card mb-2 app_card">
+            <div class="card-header border-top p-2">
+                <div class="row m-0  text-center">
+                    <h5 class="text-center m-0" style="width: 100%;"><span>Customer</span></h5>
+                </div>
+            </div>
+            <div class="card-body pb-0 p-2 mb-3">
+                <ul class="m-0">
+                    <li>
+                        <p class="float-left">Name {{ pre_inspection.parent.name }}</p>
+                    </li>
+                    <li>
+                        <p><b>Address:</b>  {{ pre_inspection.parent.formatted_address }}</p>
+                    </li>
+                </ul>
+                <div class="row mt-3 m-0 inspection_photo_block">
+                    <div class="col align-center p-1">
+                        <div class="border">
+                            <img style="height: 100px; object-fit: contain; margin:0 auto" alt="Customer Photo"  src="{{ pre_inspection.parent.document_self }}">
+                            <p class="p-2">Customer Photo</p>
+                        </div>
+                    </div>
+                    <div class="col align-center  p-1">
+                        <div class="border">
+                        <img style="height: 100px; object-fit: contain; margin:0 auto"  alt="Kithen Photo with witenss & Machenic" src="{{ pre_inspection.document_kitchen_photo }}">
+                        <p>Kithen Photo</p>
+                        </div>
+                    </div>
+                    <div class="col align-center  p-1">
+                        <div class="border">
+                            <img style="height: 100px; object-fit: contain;"  alt="Main gate Photo" src="{{ pre_inspection.document_main_gate_photo }}">
+                            <p>Main gate Photo</p>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-header p-2 border-top">
+                <div class="row m-0  text-center">
+                    <h5 class="text-center m-0" style="width: 100%;"><span>Mechanic ({{ pre_inspection.mechanic }})</span></h5>
+                </div>
+            </div>
+        </div>
+        <div class="main-header text-center" style="background-color: #ddd;">
+            <h5 class="text-center m-0" style="width: 100%;"><span>{{ pre_inspection.status }}</span></h5>
+        </div>
+    </div>
+    <script>
+        const date = new Date();
+        const formattedDate = date.toLocaleString("en-GB", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit"
+        });
+        document.getElementById("date").innerHTML = formattedDate;
+          
+    </script>
+
+{% endblock %}

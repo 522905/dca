@@ -17,7 +17,7 @@ from rangefilter.filters import DateRangeFilter
 from fsm_admin2_custom.admin import FSMTransitionCustomMixin
 from .enums import ResidentialStatusEnum, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, MaritalStatusEnum
 from .models import UjjwalaV2Application, FamilyMembers, UjjwalaApplicationDocuments, UjjwalaV2ApplicationStatus, \
-	UserDocuments, PreInspectionDocuments, PreInspection
+	UserDocuments, PreInspectionDocuments, PreInspection, ConnectionDisbursementDocuments, ConnectionDisbursement
 from .ujjwala_functions import download_ujjwala_documents
 from advanced_filters.admin import AdminAdvancedFiltersMixin
 
@@ -165,7 +165,7 @@ class PreInspectionAdmin(FSMTransitionCustomMixin, admin.ModelAdmin):
 		'status',
 	)
 	list_filter = ('parent', 'mechanic')
-	inlines = (PreInspectionDocumentsAdmin,)
+	inlines = (PreInspectionDocumentsAdmin, StateLogInline,)
 	fsm_fields = ['status', ]
 
 	def has_change_permission(self, request, obj=None):
@@ -176,4 +176,31 @@ class PreInspectionAdmin(FSMTransitionCustomMixin, admin.ModelAdmin):
 	# 	return {'obj': obj}
 
 
+class ConnectionDisbursementDocumentsAdmin(admin.TabularInline):
+	fields = (
+		'type',
+		'download_links',
+		'compressed',
+		'file_size',
+	)
+	model = ConnectionDisbursementDocuments
+	extra = 0
 
+	readonly_fields = ('type', 'download_links', 'compressed', 'file_size',)
+
+
+@admin.register(ConnectionDisbursement)
+class ConnectionDisbursementAdmin(FSMTransitionCustomMixin, admin.ModelAdmin):
+	list_display = (
+		'id',
+		'created_on',
+		'updated_on',
+		'status',
+	)
+	list_filter = ('parent', 'status')
+	inlines = (ConnectionDisbursementDocumentsAdmin, StateLogInline,)
+	fsm_fields = ['status', ]
+
+	def has_change_permission(self, request, obj=None):
+		if not obj:
+			return True

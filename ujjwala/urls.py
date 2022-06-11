@@ -20,10 +20,14 @@ router.register(r'ujjwala-bot', UjjwalaApplicationAPIViewSet)
 urlpatterns = [
     path('', views.index),
     path('', include(router.urls)),
+    # path(
+    #     'portal/legal_documents/upload/',
+    #     generic.TemplateView.as_view(template_name="ujjwala/legal_documents_upload.html"),
+    #     name="legal_documents_upload"),
     # path('portal/', generic.TemplateView.as_view(template_name="ujjwala/frontend.html"), name="index"),
 
     path('portal/pre-inspection/', views.UjjwalaPreInspectionListView.as_view(), name="index"),
-
+    path('portal/pre-inspection/review/', views.PreInspectionReviewView.as_view(), name="review"),
     path(
         'portal/pre-inspection/create/',
         views.PreInspectionCreateView.as_view(),
@@ -34,6 +38,11 @@ urlpatterns = [
         '^portal/pre-inspection/(?P<pk>[^/.]+)/$',
         views.PreInspectionView.as_view(),
         name="pre_inspection_form_view"
+    ),
+    url(
+        '^portal/legal_documents_upload/(?P<pk>[^/.]+)/$',
+        views.UjjwalaApplicationLegalDocumentsUpload.as_view(),
+        name="legal_documents_upload"
     ),
 
     # url(

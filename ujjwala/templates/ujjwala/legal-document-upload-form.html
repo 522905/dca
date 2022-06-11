@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Legal Document Upload</title>
+    <meta charset="utf-8"></meta>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" >
+    <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.css" >
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,600,800&display=swap" >
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap" >
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <script src="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.js"></script>
+    
+</head>
+<style>
+    p{ margin: 0;}
+    .reno-bg{ background-image: url("https://www.arungas.com/wp-content/uploads/2022/04/reno-bg-2.png"); background-repeat: no-repeat; background-position: center center;
+        background-size: 100% 100%;}
+    body{font-family: 'Montserrat'; }
+    .uppy-Dashboard-AddFiles .uppy-Dashboard-AddFiles-title{ font-size: 12px !important; margin: 0 !important;}
+    .uppy-Dashboard-inner .uppy-Dashboard-files{ padding: 0 !important;}
+    .custom-file-input{ opacity: 1;}
+	.photo_block label{ min-height: 50px; margin-bottom: 5px; }
+    .user_profile img{ height:150px; }
+    .user_profile{margin: 0 auto;display: block;text-align: center;}
+    .container{ height: ;}
+</style>
+
+<body style="background-color: #efefef;">
+    <div class="container" style="background-color: #fff;">
+        <div class="">
+            <div class="row justify-content-start">
+                <div class="col-6">
+                    <h1 class="" style=" background-color: #fff;">
+                        <img style="max-width:200px; width: 100%; padding: 10px; margin-top: 18px;" 
+                        src="https://www.arungas.com/wp-content/uploads/2022/04/Arungas-new-logo.png" >
+                    </h1>
+                </div>
+               
+                <div class="col-6">
+                    <h4 class="header2" style="float: right; margin-bottom: 0;">
+                        <img width="100px" src="https://www.pmuy.gov.in/hi/assets/images/logo.png">
+                    </h4>
+                </div>
+            </div>
+            <div class="col-12" style="padding-top: 20px;">
+                <h3 class="" style="font-size: 20px; margin-top: 0px; text-align: center;">प्रधानमंत्री उज्ज्वला योजना 2.0<br><span
+                    style="font-size: 12px;">(फ्री गैस कनेक्शन पात्रता योग्य प्रवासी ज़रूरतमंद महिलाओं के लिए) </span>
+                </h3>
+            </div>
+        </div>
+    </div>
+    <div class="container border-top" style="background-color: #fff;">
+        <div id="main">
+            <div class="card mt-3">
+                <div class="row pt-2">
+                    <div class="col user_profile">
+                        <img src="{{obj.parent.document_self}}">
+                    </div>
+                    <div class="col">
+                        <p class="username mt-2"> {{obj.parent.name}}</p>
+                        <p class="user_address">
+                            {{obj.parent.uid_linked_mobile}} / {{obj.parent.contact_mobile}}
+                        </p> 
+                    </div>
+                </div>
+            </div>
+            <div class="card mt-1">
+                <form action="" class="form-horizontal reno-bg p-4 " id="form" method="POST">
+                    <input type="hidden" id="connection_disbursement_id" name="connection_disbursement_id" value="{{obj.id}}" >
+                    <div class="row">
+                        <div class="col-sm-4 col">
+                            <label>Pre inspection <b>(Form A)</b><strong style="color:red">*</strong></label>
+                            <span class="custom-file-input" name="pre_inspection" id="pre_inspection"></span><br>
+                        </div>
+
+                        <div class="col-sm-4 col">
+                            <label>Family Occupancy <b>(Form B)</b><strong style="color:red">*</strong></label>
+                            <span class="custom-file-input" id="familyOccupancy" name="familyOccupancy"></span><br>
+                        </div>
+
+                        <div class="col-sm-4 col">
+                            <label>Annexure Form 14 <b>(Form C)</b><strong style="color:red">*</strong>
+                            </label>
+                            <span class="custom-file-input" id="annexureForm" name="annexureForm"></span><br>
+                        </div>
+                    </div>
+                    <div class="submit">
+                        <button type="button" onclick="submit_form()" id="submit" class="btn btn-dark">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div id="message"></div>
+    </div>
+</body>
+<script>
+    $(document).ready(function () {
+        window.preInspectionUppy = new Uppy.Core({
+            debug: true,
+            autoProceed: true,
+            restrictions: {
+                maxFileSize: 50000000,
+                maxNumberOfFiles: 1,
+                minNumberOfFiles: 1,
+                allowedFileTypes: ['image/*'],
+                //requiredMetaFields: ['caption'],
+            }
+        })
+        .use(Uppy.Dashboard, {
+            trigger: '#pre_inspection',
+            inline: true,
+            target: '#pre_inspection',
+            showProgressDetails: true,
+            note: 'Images and video only, 2–3 files, up to 10 MB',
+            height: 250,
+            metaFields: [],
+            id: 'pre_inspection',
+            browserBackButtonClose: false
+        })
+        .use(Uppy.Tus, {
+            endpoint: 'https://tus.dca.arungas.com/files/',
+        })
+            preInspectionUppy.on('complete', result => {
+            console.log('successful files:', result.successful)
+        })
+
+        window.familyOccupancyUppy = new Uppy.Core({
+            debug: true,
+            autoProceed: true,
+            restrictions: {
+                maxFileSize: 50000000,
+                maxNumberOfFiles: 1,
+                minNumberOfFiles: 1,
+                allowedFileTypes: ['image/*'],
+                //requiredMetaFields: ['caption'],
+            }
+        })
+        .use(Uppy.Dashboard, {
+            trigger: '#familyOccupancy',
+            inline: true,
+            target: '#familyOccupancy',
+            showProgressDetails: true,
+            note: 'Images and video only, 2–3 files, up to 10 MB',
+            height: 250,
+            metaFields: [],
+            id: 'familyOccupancy',
+            browserBackButtonClose: false
+        })
+        .use(Uppy.Tus, {
+            endpoint: 'https://tus.dca.arungas.com/files/',
+        })
+        familyOccupancyUppy.on('complete', result => {
+            console.log('successful files:', result.successful)
+            console.log('failed files:', result.failed)
+        })
+
+        window.annexureFormUppy = new Uppy.Core({
+            debug: true,
+            autoProceed: true,
+            restrictions: {
+                maxFileSize: 50000000,
+                maxNumberOfFiles: 1,
+                minNumberOfFiles: 1,
+                allowedFileTypes: ['image/*'],
+                //requiredMetaFields: ['caption'],
+            }
+        })
+        .use(Uppy.Dashboard, {
+            trigger: '#annexureForm',
+            inline: true,
+            target: '#annexureForm',
+            showProgressDetails: true,
+            note: 'Images and video only, 2–3 files, up to 10 MB',
+            height: 250,
+            metaFields: [],
+            id: 'annexureForm',
+            browserBackButtonClose: false
+        })
+        .use(Uppy.Tus, {
+            endpoint: 'https://tus.dca.arungas.com/files/',
+        })
+        annexureFormUppy.on('complete', result => {
+            console.log('successful files:', result.successful)
+            console.log('failed files:', result.failed)
+        })
+
+    });
+
+    function valid() {
+        let files = [
+            validateUppy(annexureFormUppy, 'LEGAL_DOC_ANNEXURE_14_POINTS', 'Form C', false),
+            validateUppy(familyOccupancyUppy, 'LEGAL_DOC_FAMILY_OCCUPANCY', 'Form B ', false),
+            validateUppy(preInspectionUppy, 'LEGAL_DOC_PRE_INSPECTION', 'Form A', false)
+        ]
+
+        if (!files.reduce((aggr, current) => {
+            return current.valid && aggr
+        }, true)) {
+            let error = files.reduce((aggr, current) => {
+                if (current.msg) {
+                    return aggr + '\n' + current.msg
+                } else {
+                    return aggr
+                }
+            }, '');
+            window.alert(error);
+            return null;
+        }
+        let documentArray = files.filter(e => e.url).map(e => {
+            return {type: e.key, link: e.url}
+        });
+        console.log(documentArray);
+        return documentArray;
+    }
+
+    function validateUppy(uppyObj, key, label, fileMandatory) {
+        if (!uppyObj.state || uppyObj.state.totalProgress == 0) {
+            if (fileMandatory) {
+                return {
+                    valid: false, key: key,
+                    msg: `${label} is required`
+                };
+            }
+            return {valid: true};
+        } else if (uppyObj.state.totalProgress < 100) {
+            return {valid: false, key: key, msg: `${label} upload in Progress(अपलोड प्रगति पर है)`};
+        } else {
+            return {valid: true, key: key, url: Object.values(uppyObj.state.files)[0].uploadURL};
+        }
+    }
+
+    function submit_form() {
+        event.preventDefault();
+        let documentArray = valid();
+        let formdata = $('form').serializeArray()
+            .reduce(function (accum, item) {
+                if (-1 === ['ignoreThis', 'andThat'].indexOf(item.name)) {
+                    if (item.value !== null) {
+                        accum[item.name] = item.value;
+                    }
+                }
+                return accum;
+                },{}
+            );
+        formdata.documents = documentArray;
+
+        console.log(formdata);
+
+        jQuery('#submit').attr('disabled', true);
+
+        var formData = new FormData($('#form')[0]);
+
+        jQuery.ajax({
+            url: '/ujjwala/ujjwala-application/legal_documents_upload/',
+            type: 'POST',
+            data: JSON.stringify(formdata),
+            contentType: "application/json; charset=utf-8",
+            dataType: 'JSON',
+            headers: {'X-CSRFToken': getCookie('csrftoken')},
+
+            processData: false,
+            success: function (result) {
+                    response = result;
+                    if (response.status === true) {
+                        $('#main').hide();
+                        $("#message").html('<div class="alert alert-success" style="color:red; text-align:center; margin-top:250px;"><strong>SUCCESS!</strong> Your application has been Submitted</div>');
+                        jQuery('#form')['0'].reset();
+                        jQuery('#submit').val('Submit');
+                        jQuery('#submit').attr('disabled', false);
+                    } else {    
+                        $("#message").html('<div class="alert alert-danger" style="color:red; text-align:center; margin-top:250px;"><strong>Failed! </strong>Please upload again</div>');
+                    }
+                },
+            error: function (error) {
+                console.log(error);
+                alert('Please Check input data and try.');
+                jQuery('#submit').html('Submit');
+                jQuery('#submit').attr('disabled', false);
+            }
+
+        });
+    }
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+
+</script>
+</html>

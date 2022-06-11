@@ -38,9 +38,6 @@
                         <div class="col">
                             <button id="stop" class="btns stop btn btn-dark" type="button">Stop</button>
                         </div>
-                        <div class="col">
-                            <button id="play" class="btns play btn btn-dark" type="button">Play</button>
-                        </div>
                       </div>
                   </section>
                 
@@ -55,9 +52,6 @@
             </div>
         </div>
     </form>
-
-   
-
 </div>
 <script src="{% static '/js/recorder.js' %}"></script>
 <script>
@@ -95,7 +89,6 @@
         $("[name='audio_file']").val(audio_url);
         $('form#safety_audio_form').submit();
     }
-
 
 
     window.upload_audio_and_submit_form = function () {
