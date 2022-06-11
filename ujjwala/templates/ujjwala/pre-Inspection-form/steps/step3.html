@@ -19,11 +19,13 @@
                 {{form.application_id}}
                 <div class="row border-bottom mb-2">
                     <div class="lacation_field col-sm-8">
-                        <span>{{ form.latitude }}</span>
-                        <span>{{ form.longitude }}</span>
-                        <span>{{ form.accuracy }}</span>
-                        <p id="map_error_msg"></p>
+                        <div class="" style="width: 100%; clear:both;">
+                            <span>{{ form.latitude }}</span>
+                            <span>{{ form.longitude }}</span>
+                            <span>{{ form.accuracy }}</span>
+                        </div>
                     </div>
+                   
                     <div class="col-sm-4 photo_block pl-lg-0 mb-3">
                         <div class="allowLocationNav">
                             <button type="button" class="btn btn-primary" onClick="allowLocationNav();">
@@ -32,6 +34,7 @@
                         </div>
                         {{ form.latitude.errors }} {{ form.longitude.errors }} {{ form.accuracy.errors }}
                     </div>
+                    <p class="text-danger" style="font-weight: 500;" id="map_error_msg"></p>
                     <div class="col-sm-12 photo_block">
                         <span class="hidden-field">{{ form.main_gate }}</span>
                         <label>Photo of Main Gate with customer<br> (ग्राहक के साथ मेन गेट का फोटो)</label>
@@ -39,6 +42,8 @@
                         {{ form.main_gate.errors }}
                     </div>
                 </div>
+               
+                
             </div>
             <div class="card-footer float-right">
                 <input class="btn btn-success float-right rounded-0" type="submit" value="Submit" />
@@ -126,6 +131,11 @@
         var longitude = position.coords.longitude;
 
         var meter = Math.round(position.coords.accuracy);
+
+        if (meter > 300) {
+            $('#map_error_msg').append("<p>Move to an open area and capture location again. Location accuracy not precise enough!</p>");
+            return;
+        }
 
         $('#map_error_msgs').append("<p>Your location is: " + latitude + "," + longitude+" </p><p>Accuracy="+meter+"m");
         $('#id_latitude').val(latitude);
