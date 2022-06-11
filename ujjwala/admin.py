@@ -156,7 +156,7 @@ class PreInspectionDocumentsAdmin(admin.TabularInline):
 
 
 @admin.register(PreInspection)
-class PreInspectionAdmin(FSMTransitionCustomMixin, admin.ModelAdmin):
+class PreInspectionAdmin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdmin):
 	list_display = (
 		'id',
 		'parent',
