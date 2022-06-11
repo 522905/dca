@@ -95,7 +95,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		return ' '.join([self.address_json.get(r, '') for r in self.address_json])
 
 	@property
-	def get_contacts(self):
+	def all_contacts(self):
 		return list({self.contact_mobile, self.uid_linked_mobile})
 
 	def document_self(self):

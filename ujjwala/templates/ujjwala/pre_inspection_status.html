@@ -25,7 +25,7 @@
     <p> </p>
     <div class="p-2 pt-0 form_label" style="width: 100%;">
         <div class="main-header bg-heading text-center">
-            <h5 class="text-white mb-0">Pre Inspection ({{pre_inspection.id}}) <br><span style="font-size: 12px;" id="date"></span> </h5>
+            <h5 class="text-white mb-0">Pre Inspection ({{pre_inspection.id}}) <br><span style="font-size: 12px;"> {{ pre_inspection.submitted_on }}</span> </h5>
         </div>
         <div class="card mb-2 app_card">
             <div class="card-header border-top p-2">
@@ -42,27 +42,6 @@
                         <p><b>Address:</b>  {{ pre_inspection.parent.formatted_address }}</p>
                     </li>
                 </ul>
-                <div class="row mt-3 m-0 inspection_photo_block">
-                    <div class="col align-center p-1">
-                        <div class="border">
-                            <img style="height: 100px; object-fit: contain; margin:0 auto" alt="Customer Photo"  src="{{ pre_inspection.parent.document_self }}">
-                            <p class="p-2">Customer Photo</p>
-                        </div>
-                    </div>
-                    <div class="col align-center  p-1">
-                        <div class="border">
-                        <img style="height: 100px; object-fit: contain; margin:0 auto"  alt="Kithen Photo with witenss & Machenic" src="{{ pre_inspection.document_kitchen_photo }}">
-                        <p>Kithen Photo</p>
-                        </div>
-                    </div>
-                    <div class="col align-center  p-1">
-                        <div class="border">
-                            <img style="height: 100px; object-fit: contain;"  alt="Main gate Photo" src="{{ pre_inspection.document_main_gate_photo }}">
-                            <p>Main gate Photo</p>
-                            
-                        </div>
-                    </div>
-                </div>
             </div>
             <div class="card-header p-2 border-top">
                 <div class="row m-0  text-center">
@@ -73,18 +52,7 @@
         <div class="main-header text-center" style="background-color: #ddd;">
             <h5 class="text-center m-0" style="width: 100%;"><span>{{ pre_inspection.status }}</span></h5>
         </div>
+        
     </div>
-    <script>
-        const date = new Date();
-        const formattedDate = date.toLocaleString("en-GB", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-            hour: "numeric",
-            minute: "2-digit"
-        });
-        document.getElementById("date").innerHTML = formattedDate;
-          
-    </script>
-
+    
 {% endblock %}
