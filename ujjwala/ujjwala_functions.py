@@ -85,7 +85,7 @@ def download_pre_installation_documents(obj):
     return resp
 
 
-def download_ujjwala_legal_documents(obj):
+def download_ujjwala_documents(obj):
     attachments = []
 
     if obj.version != 'V1':
