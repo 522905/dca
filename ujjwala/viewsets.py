@@ -16,8 +16,7 @@ from .forms import ApplicationRejected
 from .models import UjjwalaV2Application, FamilyMembers, ConnectionDisbursement, ConnectionDisbursementDocuments
 from .serializers import UjjwalaV2ApplicationSerializer
 from .ujjwala_functions import download_ujjwala_documents, get_salutation, \
-    download_pre_installation_documents, get_existing_duplicate_applications_detail, \
-    download_ujjwala_physical_legal_docs
+    download_pre_installation_documents, get_existing_duplicate_applications_detail, download_ujjwala_legal_documents
 
 
 class CustomPagePagination(PageNumberPagination):
@@ -402,13 +401,14 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=True, url_path='download_ujjwala_legal_docs')
     def download_ujjwala_legal_docs(self, request, *args, **kwargs):
         obj = self.get_object()
-        return download_ujjwala_physical_legal_docs(obj)
+        return download_ujjwala_legal_documents(obj)
+        # return download_ujjwala_physical_legal_docs(obj)
 
 
     @action(methods=['get'], detail=True, url_path='download_ujjwala_documents')
-    def download_ujjwala_documents(self,request, *args, **kwargs):
+    def download_ujjwala_documents(self, request, *args, **kwargs):
         obj = self.get_object()
-        return download_ujjwala_documents
+        return download_ujjwala_documents(obj)
 
     @action(methods=['get'], detail=True, url_path='download_pre_inspection_docs')
     def download_pre_inspection_docs(self, request, *args, **kwargs):
