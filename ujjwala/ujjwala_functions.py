@@ -201,7 +201,7 @@ def download_ujjwala_documents(obj):
     return resp
 
 
-def download_ujjwala_legal_docs(obj):
+def download_ujjwala_physical_legal_docs(obj):
     attachments = []
 
     if obj.version != 'V1':
@@ -212,6 +212,7 @@ def download_ujjwala_legal_docs(obj):
         self_doc = obj.family_members.filter(relation=FamilyMemberRelationEnum.SELF).first()
 
         from ujjwala.models import PreInspection
+
         pre_inspection = PreInspection.objects.get(
             parent_id=obj.id, status=PreInspectionStatusEnum.SUBMITTED
         )
@@ -403,3 +404,100 @@ def __get_ref_no__():
 		datetime.now().strftime('%y%m%d'),
 		id_generator(4, chars=string.ascii_uppercase)
 	).upper()
+
+
+def get_ujjwala_legal_docs_temp_path(obj):
+    attachments = []
+
+    if obj.version != 'V1':
+        # customer_signature_file = obj.documents.filter(
+        #     type=UjjwalaApplicationDocumentsEnum.CUSTOMER_SIGNATURE
+        # ).first().link
+
+        self_doc = obj.family_members.filter(relation=FamilyMemberRelationEnum.SELF).first()
+
+        from ujjwala.models import PreInspection
+        pre_inspection = PreInspection.objects.get(
+            parent_id=obj.id, status=PreInspectionStatusEnum.SUBMITTED
+        )
+
+        relationship_name = ''
+
+        if obj.residential_status == ResidentialStatusEnum.LIVING_WITH_FAMILY:
+            if obj.marital_status == MaritalStatusEnum.MARRIED:
+                relationship_name = obj.family_members.filter(relation=FamilyMemberRelationEnum.HUSBAND).first().name
+            elif obj.marital_status == MaritalStatusEnum.UNMARRIED:
+                relationship_name = obj.family_members.filter(relation=FamilyMemberRelationEnum.FATHER).first().name
+
+        ujjwala_declaration_html_template = loader.get_template("ujjwala/forms/ujjwala_declaration_form.html")
+        ujjwala_declaration_html = ujjwala_declaration_html_template.render({
+            'name': obj.name,
+            'uid': list(self_doc.uid_no),
+            'age': '{}'.format(str(datetime.now().year - self_doc.dob.year)),
+            'relation_name': relationship_name,
+            # 'customer_signature_file': customer_signature_file,
+            'customer_signature_file': '',
+            'date': datetime.now().strftime("%d-%m-%Y")
+        })
+
+        ujjwala_declaration_pdf = requests.post(
+            settings.HTML_TO_PDF_SERVER_URL,
+            json={
+                "content": ujjwala_declaration_html,
+                "options": {"pageSize": "A4"}
+            }
+        )
+        attachments.append(('annexure_14_points.pdf', ujjwala_declaration_pdf))
+
+        if obj.residential_status == ResidentialStatusEnum.LIVING_ALONE:
+            occupancy_template_html = "ujjwala/forms/single_occupancy_form.html"
+            occupancy_file_name = "single_occupancy"
+        else:
+            occupancy_template_html = "ujjwala/forms/family_occupancy_form.html"
+            occupancy_file_name = "family_occupancy"
+
+        if obj.version not in ('V1', 'V2'):
+            obj.address = ' '.join([obj.address_json.get(r, '') for r in obj.address_json])
+
+        occupancy_form_html_template = loader.get_template(occupancy_template_html)
+        occupancy_form_html = occupancy_form_html_template.render({
+            'obj': obj,
+            # 'customer_signature_file': customer_signature_file
+            'customer_signature_file': ''
+        })
+
+        occupancy_form_pdf = requests.post(
+            settings.HTML_TO_PDF_SERVER_URL,
+            json={
+                "content": occupancy_form_html,
+                "options": {"pageSize": "A4"}
+            }
+        )
+
+        attachments.append(('{}.pdf'.format(occupancy_file_name), occupancy_form_pdf))
+        ujjwala_pre_inspection_html_template = loader.get_template("ujjwala/forms/pre_inspection_form.html")
+        ujjwala_pre_inspection_html = ujjwala_pre_inspection_html_template.render({
+            'obj': pre_inspection
+        })
+
+        ujjwala_pre_inspection_pdf = requests.post(
+            settings.HTML_TO_PDF_SERVER_URL,
+            json={
+                "content": ujjwala_pre_inspection_html,
+                "options": {"pageSize": "A4"}
+            }
+        )
+        attachments.append(('pre_inspection.pdf', ujjwala_pre_inspection_pdf))
+
+    # documents_zip = io.BytesIO()
+
+    # with zipfile.ZipFile(documents_zip, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
+    #     for key, value in attachments:
+    #         zf.writestr(key, value.content)
+    #
+    # # Grab ZIP file from in-memory, make response with correct MIME-type
+    # resp = HttpResponse(documents_zip.getvalue(), content_type="application/x-zip-compressed")
+    # # ..and correct content-disposition
+    # resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_{}_legal_docs.zip'.format(obj.id)
+
+    return attachments
