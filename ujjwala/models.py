@@ -395,6 +395,9 @@ class PreInspection(models.Model):
 		choices=PreInspectionStatusEnum.choices
 	)
 
+	def mechanic_name(self):
+		return self.mechanic.get_full_name()
+
 	def document_kitchen_photo(self):
 		return self.documents.filter(type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO).first().link
 

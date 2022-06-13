@@ -161,7 +161,7 @@ class PreInspectionAdmin(ExportActionMixin, FSMTransitionCustomMixin, admin.Mode
 		'id',
 		'parent',
 		'witness_mobile_number',
-		'mechanic',
+		'mechanic_name',
 		'status',
 	)
 	list_filter = ('parent', 'mechanic')
