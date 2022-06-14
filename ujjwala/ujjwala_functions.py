@@ -30,6 +30,16 @@ def valid_file_uploaded(url):
         return True
 
 
+def file_needs_compression(url):
+    res = requests.head(url, headers={"Tus-Resumable": "1.0.0"})
+    header_info = res.headers
+
+    if int(header_info['Upload-Length']) <= 499000:
+        return False
+    else:
+        return True
+
+
 def valid_file_size(file):
     return len(file.content) <= 499000
 
@@ -268,24 +278,24 @@ def download_ujjwala_legal_docs_to_upload(obj, signature=True):
 
     attachments.append(('{}.pdf'.format(occupancy_file_name), occupancy_form_pdf))
 
-    customer_docs = obj.documents.exclude(
-        type=UjjwalaApplicationDocumentsEnum.CUSTOMER_SIGNATURE
-    ).all()
-
-    for customer_doc in customer_docs:
-        doc_file = requests.get("{}{}".format(settings.THUMBOR_URL, customer_doc.link))
-        doc_file_bytes = io.BytesIO(doc_file.content)
-        descriptor = magic.detect_from_content(doc_file_bytes.read(2048))
-        file_extension = descriptor.mime_type.split('/')[-1]
-        attachments.append(('{}.{}'.format(customer_doc.type, file_extension), doc_file))
+    # customer_docs = obj.documents.exclude(
+    #     type=UjjwalaApplicationDocumentsEnum.CUSTOMER_SIGNATURE
+    # ).all()
+    #
+    # for customer_doc in customer_docs:
+    #     doc_file = requests.get("{}{}".format(settings.THUMBOR_URL, customer_doc.link))
+    #     doc_file_bytes = io.BytesIO(doc_file.content)
+    #     descriptor = magic.detect_from_content(doc_file_bytes.read(2048))
+    #     file_extension = descriptor.mime_type.split('/')[-1]
+    #     attachments.append(('{}.{}'.format(customer_doc.type, file_extension), doc_file))
 
     family_members_doc = obj.family_members.exclude(relation=FamilyMemberRelationEnum.SELF)
 
     for family_member in family_members_doc:
-
-        uid_front_doc_file = requests.get(family_member.uid_front_link)
-        if not valid_file_size(uid_front_doc_file):
+        if file_needs_compression(family_member.uid_front_link):
             uid_front_doc_file = requests.get("{}{}".format(settings.THUMBOR_URL, family_member.uid_front_link))
+        else:
+            uid_front_doc_file = requests.get(family_member.uid_front_link)
 
         # uid_back_doc_file = requests.get(family_member.uid_back_link)
         # if not valid_file_size(uid_back_doc_file):
