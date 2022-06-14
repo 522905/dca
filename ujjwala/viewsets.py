@@ -11,7 +11,7 @@ from rest_framework.pagination import PageNumberPagination
 
 from . import models
 from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, FamilyMemberRelationEnum, \
-    ManualOperationCodeEnum
+    ManualOperationCodeEnum, MaritalStatusEnum
 from .forms import ApplicationRejected
 from .models import UjjwalaV2Application, FamilyMembers, ConnectionDisbursement, ConnectionDisbursementDocuments
 from .serializers import UjjwalaV2ApplicationSerializer
@@ -37,7 +37,11 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
     def get_work_items_for_doc_upload(self, request: HttpRequest, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         # queryset.filter(status=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED)
-        queryset = queryset.filter(status=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED, consumer_id__isnull=False)
+        queryset = queryset.filter(
+            status=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED, consumer_id__isnull=False
+        ).exclude(marital_status__in=[
+            MaritalStatusEnum.DIVORCED, MaritalStatusEnum.WIDOW
+        ])
         page = self.paginate_queryset(queryset)
         return self.get_paginated_response([
             {
@@ -440,6 +444,10 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         # Probably EKYC not done
         primary_record = primary_record[0]
 
+        primary_record.update({
+            "Category": "Gen"
+        })
+
         uid_record = [
             i for i in primary_record['identities'] \
             if i["Identity Method"] == "Aadhaar(UID)"
@@ -521,7 +529,8 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 "DOB": applicant.dob.strftime("%d-%b-%Y"),
                 "Migrated": "Y",
                 "Relationship": "SELF",
-                "Category": primary_record.get('Category') or "Gen",
+                # "Category": primary_record.get('Category') or "Gen",
+                "Category": "Gen",
                 "identities": [{
                     "Identity Type": "INTERNAL-UJJWALA",
                     "Identity Method": "ANNEXURE 1",
@@ -553,7 +562,8 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 "DOB": family_member.dob.strftime("%d-%b-%Y"),
                 "Migrated": "Y",
                 "Relationship": family_member.relation.upper(),
-                "Category": primary_record.get('Category') or "Gen",
+                # "Category": primary_record.get('Category') or "Gen",
+                "Category": "Gen",
                 "identities": [{
                     "Identity Type": "POA-POI",
                     "Identity Method": "Aadhaar(UID)",
