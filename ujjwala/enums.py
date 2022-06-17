@@ -20,6 +20,7 @@ class UjjwalaApplicationDocumentsEnum(models.TextChoices):
 	LEGAL_DOC_ANNEXURE_14_POINTS = 'LEGAL_DOC_ANNEXURE_14_POINTS', 'Legal Doc Annexure 14 Points'
 	LEGAL_DOC_FAMILY_OCCUPANCY = 'LEGAL_DOC_FAMILY_OCCUPANCY', 'Legal Doc Family Occupancy'
 	LEGAL_DOC_PRE_INSPECTION = 'LEGAL_DOC_PRE_INSPECTION', 'Legal Doc Pre Inspection'
+	PHYSICAL_LEGAL_DOCUMENT = 'PHYSICAL_LEGAL_DOCUMENT', 'Physical Legal Document'
 
 	@classmethod
 	def get_skipped_additional_choices(cls):
@@ -127,6 +128,7 @@ class OtpStatusEnum(models.TextChoices):
 class PreInspectionStatusEnum(models.TextChoices):
 	ALLOCATED = 'ALLOCATED', 'Allocated'
 	OTP_VERIFIED = 'OTP_VERIFIED', 'Otp Verified'
+	CHANGE_ADDRESS = 'CHANGE_ADDRESS', 'Change Address'
 	KITCHEN_PHOTO = 'KITCHEN_PHOTO', 'Kitchen Photo'
 	SAFETY_AUDIO = 'SAFETY_AUDIO', 'Safety Audio'
 	PREVIEW_INSPECTION = 'PREVIEW_INSPECTION', 'Preview Inspection'

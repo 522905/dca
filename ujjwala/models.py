@@ -25,6 +25,8 @@ from ujjwala.forms import UjjwalaLegalDocumentsUpload, \
 	ConnectionRelease, PostInstallationUpload, ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewForm, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
 	LegalDocumentsReviewAdminForm
+from ujjwala.ujjwala_functions import download_ujjwala_physical_legal_docs
+from utils.global_functions import move_file_to_minio_bucket, upload_file_to_minio_bucket
 
 
 class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
@@ -230,7 +232,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		source=UjjwalaV2ApplicationStatus.NIC_CLEARED,
 		target=UjjwalaV2ApplicationStatus.PRE_INSPECTION_ACCEPTED,
 		custom=dict(
-			short_description='Pre Inspection Accepted', admin=True, form=ConnectionStatusApproved
+			short_description='Pre Inspection Accepted', admin=True
 		),
 	)
 	def transition_pre_inspection_accepted(self, *args, **kwargs):
@@ -409,11 +411,24 @@ class PreInspection(models.Model):
 	@transition(
 		field=status,
 		source=PreInspectionStatusEnum.ALLOCATED,
-		target=PreInspectionStatusEnum.KITCHEN_PHOTO,
+		target=PreInspectionStatusEnum.CHANGE_ADDRESS,
 		custom=dict(short_description='Verify Otp', admin=True),
 	)
 	def pre_inspection_otp_verified(self, *args, **kwargs):
 		pass
+
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=PreInspectionStatusEnum.CHANGE_ADDRESS,
+		target=PreInspectionStatusEnum.KITCHEN_PHOTO,
+		custom=dict(short_description='Change Address', admin=True),
+	)
+	def pre_inspection_change_address(self, *args, **kwargs):
+		pass
+
 
 	@fsm_log_description
 	@fsm_log_by
@@ -476,6 +491,18 @@ class PreInspection(models.Model):
 				parent=self.parent,
 			)
 			self.parent.save()
+			# Bucket Name: ujjwaladocuments
+			physical_legal_document = download_ujjwala_physical_legal_docs(self.parent)
+			upload_url = upload_file_to_minio_bucket(
+				physical_legal_document,
+				"ujjwaladocuments",
+				"ujjwala_{}_physical_legal_document".format(self.parent_id)
+			)
+			PreInspectionDocuments.objects.create(
+				type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT,
+				link=upload_url,
+				parent=self
+			)
 			self.parent.transition_pre_inspection_accepted(pre_inspection_id=self.pk)
 		self.save()
 
@@ -492,6 +519,7 @@ class PreInspectionDocuments(models.Model):
 		<a href="{}" target="blank">View File</a>
 		'''.format(self.link)
 		return mark_safe(html)
+
 
 
 class Evykati(models.Model):

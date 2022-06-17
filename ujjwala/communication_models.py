@@ -1,9 +1,14 @@
+import io
+
 import requests
 import track
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.template import loader
 
 from communication_log.models import CommunicationLog
+from connection_app.models import minio_client
+from ujjwala.enums import UjjwalaApplicationDocumentsEnum
 
 
 class UjjwalaWhatsappCommunication(object):
@@ -159,7 +164,12 @@ class UjjwalaWhatsappCommunication(object):
 	def event_legal_documents_upload_channel_whatsapp(self):
 		from ujjwala.models import ConnectionDisbursement
 
-		connection_disbursement_id = ConnectionDisbursement.objects.get(parent=self.id).id
+		connection_disbursement = ConnectionDisbursement.objects.get(parent_id=self.pk)
+
+		physical_legal_doc_link = self.pre_inspection_accepted.documents.filter(
+			type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT
+		).first().link
+
 		body_text = {
 			"countryCode": "+91",
 			"phoneNumber": self.contact_mobile,
@@ -169,10 +179,10 @@ class UjjwalaWhatsappCommunication(object):
 			},
 			# "callbackData": "some_callback_data",
 			"template": {
-				"name": "ujjwala_legal_documents_upload",
+				"name": "ujjwala_legal_documents_upload__10062022",
 				"languageCode": "hi",
 				"headerValues": [
-					# "Alert",  #
+					physical_legal_doc_link,  #
 				],
 				"bodyValues": [
 					self.name
@@ -180,7 +190,7 @@ class UjjwalaWhatsappCommunication(object):
 				"buttonValues": {
 					"0": [
 						"ujjwala/portal/legal_documents_upload/{}/".format(
-							connection_disbursement_id
+							connection_disbursement.pk
 						)
 					]
 				}
@@ -200,7 +210,7 @@ class UjjwalaWhatsappCommunication(object):
 			CommunicationLog.objects.create(
 				content_type=ujjwala_v2_application_content_type,
 				object_id=self.pk,
-				event="submit", channel="whatsapp",
+				event="physcial_legal_document", channel="whatsapp",
 				message_id=data.get('id')
 			)
 
