@@ -11,9 +11,10 @@ from rest_framework.pagination import PageNumberPagination
 
 from . import models
 from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, FamilyMemberRelationEnum, \
-    ManualOperationCodeEnum, MaritalStatusEnum
+    ManualOperationCodeEnum, MaritalStatusEnum, PreInspectionStatusEnum
 from .forms import ApplicationRejected
-from .models import UjjwalaV2Application, FamilyMembers, ConnectionDisbursement, ConnectionDisbursementDocuments
+from .models import UjjwalaV2Application, FamilyMembers, ConnectionDisbursement, ConnectionDisbursementDocuments, \
+    PreInspection
 from .serializers import UjjwalaV2ApplicationSerializer
 from .ujjwala_functions import download_ujjwala_documents, get_salutation, \
     download_pre_installation_documents, get_existing_duplicate_applications_detail, \
@@ -410,8 +411,14 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
     @action(methods=['get'], detail=True, url_path='download_ujjwala_physical_legal_documents')
     def download_ujjwala_physical_legal_documents(self, request, *args, **kwargs):
-        obj = self.get_object()
-        return download_ujjwala_physical_legal_docs(obj)
+        pre_inspection_obj = PreInspection.objects.filter(id=kwargs.get('pk')).first()
+        if pre_inspection_obj:
+            if pre_inspection_obj.status == PreInspectionStatusEnum.ACCEPTED:
+                obj = pre_inspection_obj.parent
+                return download_ujjwala_physical_legal_docs(obj)
+
+            return HttpResponse("Not Valid Status: {}".format(pre_inspection_obj.status))
+        return HttpResponse("No Valid Record Found")
         # return download_ujjwala_physical_legal_docs(obj)
 
     @action(methods=['get'], detail=True, url_path='download_ujjwala_documents')
