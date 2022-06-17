@@ -581,13 +581,7 @@ class ConnectionDisbursement(models.Model):
 			self.parent.transition_legal_documents_collected(connection_disbursement_id=self.pk)
 			self.parent.save()
 		else:
-			self.delete()
-			# for doc in self.documents.all():
-			# 	if doc.link.find("tus"):
-			# 		del_req = requests.delete(doc.link, headers={"Tus-Resumable": "1.0.0"})
-			# 	doc.delete()
-			# self.save()
-
+			self.documents.all().delete()
 
 	@fsm_log_description
 	@fsm_log_by
