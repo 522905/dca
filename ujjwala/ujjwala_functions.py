@@ -430,58 +430,10 @@ def download_ujjwala_physical_legal_docs(obj):
         [f.close() for f in temp_files]
 
         myio.seek(0)
-        return myio
-    # customer_docs = obj.documents.exclude(
-    #     type=UjjwalaApplicationDocumentsEnum.CUSTOMER_SIGNATURE
-    # ).all()
-    #
-    # for customer_doc in customer_docs:
-    #     doc_file = requests.get("{}{}".format(settings.THUMBOR_URL, customer_doc.link))
-    #     doc_file_bytes = io.BytesIO(doc_file.content)
-    #     descriptor = magic.detect_from_content(doc_file_bytes.read(2048))
-    #     file_extension = descriptor.mime_type.split('/')[-1]
-    #     attachments.append(('{}.{}'.format(customer_doc.type, file_extension), doc_file))
-    #
-    # family_members_doc = obj.family_members.all()
-    #
-    # for family_member in family_members_doc:
-    #
-    #     uid_front_doc_file = requests.get(family_member.uid_front_link)
-    #     if not valid_file_size(uid_front_doc_file):
-    #         uid_front_doc_file = requests.get("{}{}".format(settings.THUMBOR_URL, family_member.uid_front_link))
-    #
-    #     uid_back_doc_file = requests.get(family_member.uid_back_link)
-    #     if not valid_file_size(uid_back_doc_file):
-    #         uid_back_doc_file = requests.get("{}{}".format(settings.THUMBOR_URL, family_member.uid_back_link))
-    #
-    #     uid_front_doc_file_bytes = io.BytesIO(uid_front_doc_file.content)
-    #     uid_back_doc_file_bytes = io.BytesIO(uid_back_doc_file.content)
-    #
-    #     uid_front_descriptor = magic.detect_from_content(uid_front_doc_file_bytes.read(2048))
-    #     uid_back_descriptor = magic.detect_from_content(uid_back_doc_file_bytes.read(2048))
-    #
-    #     uid_front_doc_file_extension = uid_front_descriptor.mime_type.split('/')[-1]
-    #     uid_back_doc_file_extension = uid_back_descriptor.mime_type.split('/')[-1]
-    #
-    #     attachments.append(
-    #         ('{}_uid_front.{}'.format(family_member.relation, uid_front_doc_file_extension), uid_front_doc_file)
-    #     )
-    #     attachments.append(
-    #         ('{}_uid_back.{}'.format(family_member.relation, uid_back_doc_file_extension), uid_back_doc_file)
-    #     )
 
-    # documents_zip = io.BytesIO()
-    #
-    # with zipfile.ZipFile(documents_zip, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
-    #     for key, value in attachments:
-    #         zf.writestr(key, value.content)
-    #
-    # # Grab ZIP file from in-memory, make response with correct MIME-type
-    # resp = HttpResponse(documents_zip.getvalue(), content_type="application/x-zip-compressed")
-    # # ..and correct content-disposition
-    # resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_{}_legal_docs.zip'.format(obj.id)
-    #
-    # return resp
+    resp = HttpResponse(myio.getvalue(), content_type="application/pdf")
+    resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_physical_{}_legal_docs.pdf'.format(obj.id)
+    return resp
 
 
 def get_salutation(family_member):
