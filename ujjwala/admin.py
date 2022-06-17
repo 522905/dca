@@ -209,7 +209,7 @@ class ConnectionDisbursementDocumentsAdmin(admin.TabularInline):
 	model = ConnectionDisbursementDocuments
 	extra = 0
 
-	readonly_fields = ('type', 'download_links', 'compressed', 'file_size',)
+	readonly_fields = ('type', 'download_links', 'compressed', 'file_size', )
 
 
 @admin.register(ConnectionDisbursement)
@@ -223,6 +223,12 @@ class ConnectionDisbursementAdmin(FSMTransitionCustomMixin, admin.ModelAdmin):
 	list_filter = ('parent', 'status')
 	inlines = (ConnectionDisbursementDocumentsAdmin, StateLogInline,)
 	fsm_fields = ['status', ]
+	readonly_fields = ['legal_document_upload_link',]
+
+	def get_fields(self, request, obj=None):
+		fields = super().get_fields(request, obj=obj)
+		fields = fields + ['legal_document_upload_link',]
+		return fields
 
 	def has_change_permission(self, request, obj=None):
 		if not obj:

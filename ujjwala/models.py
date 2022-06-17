@@ -540,6 +540,12 @@ class ConnectionDisbursement(models.Model):
 		choices=ConnectionDisbursementStatusEnum.choices
 	)
 
+	def legal_document_upload_link(self):
+		html = '''
+		<a href="https://dca.arungas.com/ujjwala/portal/legal_documents_upload/{}/" target="blank">Upload Physical Legal Documents</a>				
+		'''.format(self.pk)
+		return mark_safe(html)
+
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
