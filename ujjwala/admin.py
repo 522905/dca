@@ -15,10 +15,11 @@ from import_export.admin import ExportActionMixin
 from rangefilter.filters import DateRangeFilter
 
 from fsm_admin2_custom.admin import FSMTransitionCustomMixin
-from .enums import ResidentialStatusEnum, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, MaritalStatusEnum
+from .enums import ResidentialStatusEnum, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, MaritalStatusEnum, \
+	PreInspectionStatusEnum
 from .models import UjjwalaV2Application, FamilyMembers, UjjwalaApplicationDocuments, UjjwalaV2ApplicationStatus, \
 	UserDocuments, PreInspectionDocuments, PreInspection, ConnectionDisbursementDocuments, ConnectionDisbursement
-from .ujjwala_functions import download_ujjwala_documents
+from .ujjwala_functions import download_ujjwala_documents, download_ujjwala_physical_legal_docs
 from advanced_filters.admin import AdminAdvancedFiltersMixin
 
 
@@ -168,12 +169,34 @@ class PreInspectionAdmin(ExportActionMixin, FSMTransitionCustomMixin, admin.Mode
 	inlines = (PreInspectionDocumentsAdmin, StateLogInline,)
 	fsm_fields = ['status', ]
 
+	def get_readonly_fields(self, request, obj=None):
+		readonly_fields = super().get_readonly_fields(request, obj=obj)
+		if obj:
+			if obj.status == PreInspectionStatusEnum.ACCEPTED:
+				readonly_fields = readonly_fields + ['download_physical_legal_docs']
+
+		return readonly_fields
+
 	def has_change_permission(self, request, obj=None):
 		if not obj:
 			return True
 
-	# def fsm_transition_view_extra_context(self, obj):
-	# 	return {'obj': obj}
+	def download_physical_legal_docs(self, obj=None):
+		return mark_safe("""
+			<input type="submit" value="Download Physical Legal Docs" name="_download-physical-legal-doc-pdf">
+		""")
+
+	def download_physical_legal_documents_pdf(self, obj):
+		return download_ujjwala_physical_legal_docs(obj)
+
+	def change_view(self, request, object_id, form_url='', extra_context=None):
+		if "_download-physical-legal-doc-pdf" in request.POST:
+			pre_inspection_obj = PreInspection.objects.get(pk=object_id)
+			return self.download_physical_legal_documents_pdf(pre_inspection_obj.parent)
+		return super().change_view(request, object_id, form_url=form_url, extra_context=extra_context)
+
+	def fsm_transition_view_extra_context(self, obj):
+		return {'obj': obj}
 
 
 class ConnectionDisbursementDocumentsAdmin(admin.TabularInline):

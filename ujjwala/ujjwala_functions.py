@@ -338,9 +338,7 @@ def download_ujjwala_physical_legal_docs(obj):
 
     from ujjwala.models import PreInspection
 
-    pre_inspection = PreInspection.objects.get(
-        parent_id=obj.id, status=PreInspectionStatusEnum.SUBMITTED
-    )
+    pre_inspection = PreInspection.objects.get(parent_id=obj.id)
 
     relationship_name = ''
 
