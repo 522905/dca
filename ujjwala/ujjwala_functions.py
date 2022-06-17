@@ -394,19 +394,19 @@ def download_ujjwala_physical_legal_docs(obj):
     )
 
     attachments.append(('{}.pdf'.format(occupancy_file_name), occupancy_form_pdf))
-    # ujjwala_pre_inspection_html_template = loader.get_template("ujjwala/forms/pre_inspection_form.html")
-    # ujjwala_pre_inspection_html = ujjwala_pre_inspection_html_template.render({
-    #     'obj': pre_inspection
-    # })
-    #
-    # ujjwala_pre_inspection_pdf = requests.post(
-    #     settings.HTML_TO_PDF_SERVER_URL,
-    #     json={
-    #         "content": ujjwala_pre_inspection_html,
-    #         "options": {"pageSize": "A4"}
-    #     }
-    # )
-    # attachments.append(('pre_inspection.pdf', ujjwala_pre_inspection_pdf))
+    ujjwala_pre_inspection_html_template = loader.get_template("ujjwala/forms/pre_inspection_form.html")
+    ujjwala_pre_inspection_html = ujjwala_pre_inspection_html_template.render({
+        'obj': pre_inspection
+    })
+
+    ujjwala_pre_inspection_pdf = requests.post(
+        settings.HTML_TO_PDF_SERVER_URL,
+        json={
+            "content": ujjwala_pre_inspection_html,
+            "options": {"pageSize": "A4"}
+        }
+    )
+    attachments.append(('pre_inspection.pdf', ujjwala_pre_inspection_pdf))
 
     merger = PdfFileMerger()
     temp_files = []
