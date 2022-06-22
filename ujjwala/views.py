@@ -241,7 +241,7 @@ class PreInspectionView(FormView):
             app = pre_inspection.parent
             context.update({
                 'form': PreInspectionAllocatedGenerateOtpForm(
-                    mobile_nos=list({app.contact_mobile, app.uid_linked_mobile}),
+                    mobile_nos=app.all_contacts,
                     initial={
                         'pre_inspection_id': pre_inspection.id,
                         'application_id': pre_inspection.parent_id
@@ -253,7 +253,7 @@ class PreInspectionView(FormView):
             if self.request.POST.get('form_type') == 'generate_otp_form':
                 app = UjjwalaV2Application.objects.get(pk=pre_inspection.parent_id)
                 form = PreInspectionAllocatedGenerateOtpForm(
-                    mobile_nos=list({app.contact_mobile, app.uid_linked_mobile}),
+                    mobile_nos=app.all_contacts,
                     data=self.request.POST,
                 )
                 if not form.is_valid():
@@ -383,7 +383,7 @@ class PreInspectionCreateView(View):
             app = UjjwalaV2Application.objects.filter(pk=app_id).first()
             return render(self.request, self.stage_2_template, {
                 'form': PreInspectionGenerateOtpForm(
-                    mobile_nos=list({app.contact_mobile, app.uid_linked_mobile}),
+                    mobile_nos=app.all_contacts,
                     initial={
                         'application_id': app_id
                     }
@@ -394,7 +394,7 @@ class PreInspectionCreateView(View):
             app_id = self.request.POST.get('application_id')
             app = UjjwalaV2Application.objects.filter(pk=app_id).first()
             form = PreInspectionGenerateOtpForm(
-                mobile_nos=list({app.contact_mobile, app.uid_linked_mobile}),
+                mobile_nos=app.all_contacts,
                 data=request.POST
             )
             if not form.is_valid():
@@ -530,7 +530,7 @@ class ConnectionDisbursementLabelPrintView(View):
             app = UjjwalaV2Application.objects.filter(pk=app_id).first()
             return render(self.request, self.stage_2_template, {
                 'form': PreInspectionGenerateOtpForm(
-                    mobile_nos=list({app.contact_mobile, app.uid_linked_mobile}),
+                    mobile_nos=app.all_contacts,
                     initial={
                         'application_id': app_id
                     }
@@ -541,7 +541,7 @@ class ConnectionDisbursementLabelPrintView(View):
             app_id = self.request.POST.get('application_id')
             app = UjjwalaV2Application.objects.filter(pk=app_id).first()
             form = PreInspectionGenerateOtpForm(
-                mobile_nos=list({app.contact_mobile, app.uid_linked_mobile}),
+                mobile_nos=app.all_contacts,
                 data=request.POST
             )
             if not form.is_valid():
@@ -618,7 +618,7 @@ class ConnectionDisbursementMaterialDeliveryView(View):
             app = UjjwalaV2Application.objects.filter(pk=app_id).first()
             return render(self.request, self.stage_2_template, {
                 'form': UjjwalaApplicationGenerateOtpForm(
-                    mobile_nos=list({app.contact_mobile, app.uid_linked_mobile}),
+                    mobile_nos=app.all_contacts,
                     initial={
                         'application_id': app_id
                     }
@@ -629,7 +629,7 @@ class ConnectionDisbursementMaterialDeliveryView(View):
             app_id = self.request.POST.get('application_id')
             app = UjjwalaV2Application.objects.filter(pk=app_id).first()
             form = PreInspectionGenerateOtpForm(
-                mobile_nos=list({app.contact_mobile, app.uid_linked_mobile}),
+                mobile_nos=app.all_contacts,
                 data=request.POST
             )
             if not form.is_valid():
@@ -703,7 +703,7 @@ class ConnectionDisbursementView(FormView):
             app = connection_disbursement.parent
             context.update({
                 'form': UjjwalaApplicationGenerateOtpForm(
-                    mobile_nos=list({app.contact_mobile, app.uid_linked_mobile}),
+                    mobile_nos=app.all_contacts,
                     initial={
                         'connection_disbursement_id': connection_disbursement.id,
                         'application_id': connection_disbursement.parent_id,
@@ -717,7 +717,7 @@ class ConnectionDisbursementView(FormView):
             if self.request.POST.get('form_type') == 'generate_otp_form':
                 app = UjjwalaV2Application.objects.get(pk=connection_disbursement.parent_id)
                 form = UjjwalaApplicationGenerateOtpForm(
-                    mobile_nos=list({app.contact_mobile, app.uid_linked_mobile}),
+                    mobile_nos=app.all_contacts,
                     data=self.request.POST,
                 )
                 if not form.is_valid():

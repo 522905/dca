@@ -42,6 +42,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	contact_mobile = models.CharField(max_length=10)
 	consumer_id = models.CharField(max_length=16, null=True, blank=True)
 	uid_linked_mobile = models.CharField(max_length=10, null=True, blank=True)
+	sdms_mobile_number = models.CharField(max_length=10, null=True, blank=True)
 	uid_mobile_status = models.CharField(max_length=25, choices=UjjwalaUidMobileStatusEnum.choices, blank=True, null=True)
 	application_id_kyc_no = models.CharField(max_length=24, null=True, blank=True)
 	referral_code = models.CharField(max_length=64, null=True, blank=True)
@@ -98,7 +99,12 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 
 	@property
 	def all_contacts(self):
-		return list({self.contact_mobile, self.uid_linked_mobile})
+		phones = set([i for i in [
+			self.contact_mobile,
+			self.uid_linked_mobile,
+			self.sdms_mobile_number
+		] if not i])
+		return list(phones)
 
 	def document_self(self):
 		return self.documents.filter(type=UjjwalaApplicationDocumentsEnum.CUSTOMER_PHOTO).first().link
@@ -519,7 +525,6 @@ class PreInspectionDocuments(models.Model):
 		<a href="{}" target="blank">View File</a>
 		'''.format(self.link)
 		return mark_safe(html)
-
 
 
 class Evykati(models.Model):
