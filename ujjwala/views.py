@@ -71,6 +71,17 @@ class UjjwalaConnectionDisbursementListView(ListView):
     def get_template_names(self):
         return 'ujjwala/connection_disbursement_listview.html'
 
+    def get(self, request, *args, **kwargs):
+        application_id = request.GET.get('application_id', '')
+        if application_id:
+            object_list = self.get_queryset()
+            object = object_list.filter(parent_id=application_id).first()
+            if object:
+                return redirect('ujjwala:connection_disbursement_form_view',
+                    pk=object.pk
+                )
+        return super().get(request, *args, **kwargs)
+
 
 @method_decorator(login_required, 'dispatch')
 class UjjwalaPreInspectionReviewListView(ListView):
