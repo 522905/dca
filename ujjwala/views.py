@@ -2,6 +2,7 @@ import json
 
 import django_rq
 from django import forms
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect
@@ -74,11 +75,19 @@ class UjjwalaConnectionDisbursementListView(ListView):
     def get(self, request, *args, **kwargs):
         application_id = request.GET.get('application_id', '')
         if application_id:
-            object_list = self.get_queryset()
-            object = object_list.filter(parent_id=application_id).first()
+            object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
             if object:
-                return redirect('ujjwala:connection_disbursement_form_view',
-                    pk=object.pk
+                if object.status == ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED:
+                    return redirect('ujjwala:connection_disbursement_form_view',
+                        pk=object.pk
+                    )
+                else:
+                    messages.add_message(
+                        request, messages.ERROR, "Application Id: {} - {}".format(application_id, object.status)
+                    )
+            else:
+                messages.add_message(
+                    request, messages.ERROR, "Application Id: {} not found".format(application_id)
                 )
         return super().get(request, *args, **kwargs)
 
