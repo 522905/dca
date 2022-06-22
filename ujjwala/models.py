@@ -22,7 +22,7 @@ from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMo
 	RejectionTypeEnum, RoboSdmsDedeupStatusEnum, UserDocumentsEnum, OtpStatusEnum, PreInspectionStatusEnum, \
 	ConnectionDisbursementStatusEnum
 from ujjwala.forms import UjjwalaLegalDocumentsUpload, \
-	ConnectionRelease, PostInstallationUpload, ConnectionStatusApproved, ApplicationRejected, \
+	ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewForm, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
 	LegalDocumentsReviewAdminForm
 from ujjwala.ujjwala_functions import download_ujjwala_physical_legal_docs
@@ -588,10 +588,21 @@ class ConnectionDisbursement(models.Model):
 	@transition(
 		field=status,
 		source=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
+		target=ConnectionDisbursementStatusEnum.OTP_VERIFIED,
+		custom=dict(short_description='Verify Otp', admin=True),
+	)
+	def transition_connection_disbursement_otp_verified(self, *args, **kwargs):
+		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=ConnectionDisbursementStatusEnum.OTP_VERIFIED,
 		target=ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
 		custom=dict(short_description='SV & Label Print', admin=True),
 	)
-	def transition_sv_and_label_print(self, *args, **kwargs):
+	def transition_sv_label_printed(self, *args, **kwargs):
 		pass
 
 	@fsm_log_description
@@ -600,7 +611,7 @@ class ConnectionDisbursement(models.Model):
 		field=status,
 		source=ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
 		target=ConnectionDisbursementStatusEnum.DISBURSEMENT_PHOTO_UPLOAD,
-		custom=dict(short_description='Disbursement Photo', admin=True),
+		custom=dict(short_description='Disbursement Photo Upload', admin=True),
 	)
 	def transition_disbursement_photo_uploaded(self, *args, **kwargs):
 		pass
@@ -610,21 +621,32 @@ class ConnectionDisbursement(models.Model):
 	@transition(
 		field=status,
 		source=ConnectionDisbursementStatusEnum.DISBURSEMENT_PHOTO_UPLOAD,
-		target=ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
-		custom=dict(short_description='Social Media Updates', admin=True),
+		target=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED_UPLOAD_INSTALLATION,
+		custom=dict(short_description='Disbursement Photo', admin=True),
 	)
-	def transition_social_media_updated(self, *args, **kwargs):
+	def transition_material_delivered(self, *args, **kwargs):
 		pass
 
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
-		target=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
-		custom=dict(short_description='Material Deliver', admin=True),
+		source=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED_UPLOAD_INSTALLATION,
+		target=ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE,
+		custom=dict(short_description='Upload Installation Kitchen Photo', admin=True),
 	)
-	def transition_material_delivered(self, *args, **kwargs):
+	def transition_installation_kitchen_upload(self, *args, **kwargs):
+		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE,
+		target=ConnectionDisbursementStatusEnum.INSTALLATION_UPLOADED,
+		custom=dict(short_description='Upload Main Gate Photo', admin=True),
+	)
+	def transition_main_gate(self, *args, **kwargs):
 		pass
 
 

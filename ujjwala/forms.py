@@ -16,11 +16,11 @@ from django.utils.decorators import method_decorator
 from django_currentuser.middleware import get_current_user
 
 from otp.models import Otp
-from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum
+from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum
 from ujjwala.models import UjjwalaApplicationDocumentsEnum
 from formtools.wizard.views import SessionWizardView
 
-from ujjwala.ujjwala_functions import __get_ref_no__, id_generator
+from ujjwala.ujjwala_functions import __get_ref_no__, id_generator, valid_file_uploaded
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -30,6 +30,66 @@ logging.basicConfig(
         logging.FileHandler("/tmp/debug.log"),
     ]
 )
+
+
+##################################################
+##################################################
+# Will be renamed to Address Change Form
+##################################################
+##################################################
+
+
+class ChangeAddressForm(forms.Form):
+	house_no = forms.CharField(
+		widget=forms.TextInput, label='House No.', required=True
+	)
+	room_no = forms.CharField(
+		widget=forms.TextInput, label='Room No', required=True
+	)
+	floor = forms.CharField(
+		widget=forms.TextInput, label='Floor', required=True
+	)
+	street_no = forms.CharField(
+		widget=forms.TextInput, label='Street No', required=True
+	)
+	landmark = forms.CharField(
+		widget=forms.TextInput, label='Landmark', required=True
+	)
+	village = forms.CharField(
+		widget=forms.TextInput, label='Village', required=True
+	)
+	ward_no = forms.CharField(
+		widget=forms.TextInput, label='House No.', required=True
+	)
+	post_office = forms.CharField(
+		widget=forms.TextInput, label='Post Office', required=True
+	)
+	pincode = forms.CharField(
+		widget=forms.TextInput, label='Pin Code', required=True
+	)
+
+	def __init__(self, pre_inspection=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.pre_inspection = pre_inspection
+
+
+# def save(self):
+# 	data = self.cleaned_data
+# 	obj = self.pre_inspection
+
+# 	obj.documents.create(
+# 		type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO,
+#         link=data['kitchen_photo']
+# 	)
+# 	obj.documents.create(
+# 		type=UjjwalaApplicationDocumentsEnum.WITNESS_SIGNATURE,
+# 		link=data['witness_signature_photo']
+# 	)
+
+# 	obj.witness_name = data['witness_name']
+# 	obj.witness_mobile_number = data['witness_mobile_number']
+# 	obj.status = PreInspectionStatusEnum.SAFETY_AUDIO
+# 	obj.save()
 
 
 class KitchenPreInspectionForm(forms.Form):
@@ -227,11 +287,11 @@ class PreInspectionGenerateOtpForm(forms.Form):
 			}
 		}
 
-		data = track.client.post(
-			api_key=settings.INTERAKT_API_KEY,
-		 	path="/v1/public/message/",
-		 	body=body_text
-		).json()
+		# data = track.client.post(
+		# 	api_key=settings.INTERAKT_API_KEY,
+		#  	path="/v1/public/message/",
+		#  	body=body_text
+		# ).json()
 		return otp_obj
 
 
@@ -416,6 +476,28 @@ class UjjwalaLegalDocumentsUpload(forms.Form):
 		widget=forms.TextInput, label='Annexure 14 Points', required=True
 	)
 
+	def clean_pre_inspection(self):
+		value = self.cleaned_data.get('pre_inspection')
+
+		if not valid_file_uploaded(value):
+			raise forms.ValidationError("Invalid Pre inspection File Upload")
+		return value
+
+	def clean_family_occupancy(self):
+		value = self.cleaned_data.get('family_occupancy')
+
+		if not valid_file_uploaded(value):
+			raise forms.ValidationError("Invalid family_occupancy File Upload")
+		return value
+
+	def clean_annexure_14_points(self):
+		value = self.cleaned_data.get('annexure_14_points')
+
+		if not valid_file_uploaded(value):
+			raise forms.ValidationError("Invalid annexure_14_points File Upload")
+		return value
+
+
 	def clean(self):
 		data = self.cleaned_data
 		return data
@@ -507,24 +589,6 @@ class ConnectionStatusRejected(forms.Form):
 		return data
 
 
-class ConnectionRelease(forms.Form):
-	sv = forms.CharField(
-		widget=forms.TextInput, max_length=15, required=True, help_text="Enter SV Document No. "
-	)
-	sv_doc_url = forms.URLField(widget=forms.HiddenInput)
-
-	def clean(self):
-		data = self.cleaned_data
-		return data
-
-
-class PostInstallationUpload(forms.Form):
-
-	def clean(self):
-		data = self.cleaned_data
-		return data
-
-
 class UjjwalaDocumentsReuploadForm(forms.Form):
 	documents_required_for_reupload = forms.MultipleChoiceField(
 		widget=forms.SelectMultiple,
@@ -603,3 +667,218 @@ class LegalDocumentsReviewAdminForm(forms.Form):
 				)
 			})
 		return data
+
+
+class ConnectionDisbursementLabelPrintForm(forms.Form):
+	application_id = forms.IntegerField(widget=forms.HiddenInput)
+	reference_number = forms.CharField()
+	otp = forms.CharField(max_length=4)
+
+	def clean(self):
+		data = self.cleaned_data
+		return data
+
+
+class ConnectionDisbursementPhotoUploadForm(forms.Form):
+	disbursement_photo = forms.CharField(
+		widget=forms.HiddenInput, label='Connection Disbursement', required=True
+	)
+
+	def __init__(self, connection_disbursement=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.connection_disbursement = connection_disbursement
+
+	def save(self):
+		data = self.cleaned_data
+		obj = self.connection_disbursement
+
+		obj.documents.create(
+			type=UjjwalaApplicationDocumentsEnum.DISBURSEMENT_PHOTO,
+            link=data['disbursement_photo']
+		)
+
+		obj.transition_disbursement_photo_uploaded(
+			by=get_current_user()
+		)
+		obj.save()
+
+
+class ConnectionDisbursementMaterialDeliveredForm(forms.Form):
+	application_id = forms.IntegerField(widget=forms.HiddenInput)
+	reference_number = forms.CharField()
+	material_delivered_photo = forms.CharField(
+		widget=forms.TextInput, label='Pre Inspection', required=True
+	)
+	otp = forms.CharField(max_length=4)
+
+	def clean(self):
+		data = self.cleaned_data
+		return data
+
+
+class ConnectionDisbursementLabelPrintInitialForm(forms.Form):
+	form_type = forms.CharField(widget=forms.HiddenInput, initial='initial_form')
+	application_id = forms.IntegerField()
+
+	def clean_application_id(self):
+		from ujjwala.models import UjjwalaV2Application
+		value = self.cleaned_data.get('application_id')
+
+		application = UjjwalaV2Application.objects.filter(
+			pk=value
+		).first()
+		if not application:
+			raise forms.ValidationError("Invalid Application Id")
+		elif not application.status == ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED:
+			raise forms.ValidationError("Application Status: {}".format(application.status))
+		return value
+
+
+class UjjwalaApplicationOtpInitialForm(forms.Form):
+	form_type = forms.CharField(widget=forms.HiddenInput, initial='initial_form')
+	otp_generated_for = forms.CharField(widget=forms.HiddenInput)
+	application_id = forms.IntegerField()
+	whatsapp_template_name = forms.CharField(widget=forms.HiddenInput)
+
+	def clean_application_id(self):
+		from ujjwala.models import UjjwalaV2Application
+		value = self.cleaned_data.get('application_id')
+
+		application = UjjwalaV2Application.objects.filter(
+			pk=value
+		).first()
+
+		if not application:
+			raise forms.ValidationError("Invalid Application Id")
+		elif not application.status == ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED:
+			raise forms.ValidationError("Application Status: {}".format(application.status))
+		return value
+
+
+class UjjwalaApplicationGenerateOtpForm(forms.Form):
+	form_type = forms.CharField(widget=forms.HiddenInput, initial='generate_otp_form')
+	otp_generated_for = forms.CharField(widget=forms.HiddenInput)
+	whatsapp_template_name = forms.CharField(widget=forms.HiddenInput)
+	application_id = forms.IntegerField(widget=forms.HiddenInput)
+
+	mobile = forms.ChoiceField(
+		widget=forms.RadioSelect,
+	    label='Select Mobile Number for Sending OTP(ओटीपी भेजने के लिए मोबाइल नंबर चुनें)'
+	)
+
+	def __init__(self, mobile_nos=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		if mobile_nos:
+			self.fields['mobile'].choices = [(i, i) for i in mobile_nos]
+
+
+	def send_otp(self):
+		ref_no = None
+		while True:
+			ref_no = __get_ref_no__()
+			try:
+				Otp.objects.get(reference_number=ref_no)
+			except Otp.DoesNotExist:
+				break
+		otp = id_generator(4, chars=string.digits)
+		valid_till = datetime.datetime.now() + timedelta(minutes=15)
+		closed = False
+
+		otp_obj = Otp.objects.create(
+			reference_number=ref_no,
+			mobile=self.data.get('mobile'),
+			otp=otp,
+			valid_till=valid_till,
+			closed=closed,
+			extra={
+				"application_id": self.data.get('application_id')
+			}
+		)
+
+		body_text = {
+			"countryCode": "+91",
+			"phoneNumber": otp_obj.mobile,
+			"type": "Template",
+			"traits": {
+				"name": otp_obj.mobile,
+			},
+			# "callbackData": "some_callback_data",
+			"template": {
+				# "name": "ujjwala_application_submitted_",
+				"name": self.data.get("whatsapp_template_name"),
+				"languageCode": "hi",
+				"headerValues": [
+					# "Alert",  #
+				],
+				"bodyValues": [
+					otp
+				]
+			}
+		}
+
+		data = track.client.post(
+			api_key=settings.INTERAKT_API_KEY,
+		 	path="/v1/public/message/",
+		 	body=body_text
+		).json()
+		return otp_obj
+
+
+class UjjwalaApplicationValidateOtpForm(forms.Form):
+	form_type = forms.CharField(widget=forms.HiddenInput, initial='validate_otp_form')
+	application_id = forms.IntegerField(widget=forms.HiddenInput)
+	reference_number = forms.CharField()
+	otp = forms.CharField(max_length=4)
+
+	def clean(self):
+		data = super().clean()
+		otp_obj = Otp.objects.filter(reference_number=data['reference_number']).first()
+		if otp_obj:
+			status, message = otp_obj.verify_and_close(data.get('otp'))
+			if not status:
+				raise forms.ValidationError(message)
+			return data
+		else:
+			raise forms.ValidationError("Invalid Reference Code")
+
+
+class InstallationKitchenUploadForm(forms.Form):
+	
+	kitchen_photo = forms.CharField(
+		widget=forms.HiddenInput, label='kitchen Photo', required=True
+	)
+
+	stove_photo = forms.CharField(
+		widget=forms.HiddenInput, label='Stove Photo', required=True
+	)
+
+	def __init__(self, installation=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.installation = installation
+	
+	def clean(self):
+		data = self.cleaned_data
+		return data
+
+	def save(self):
+		self.installation.transition_installation_kitchen_upload()
+		self.installation.save()
+
+
+class InstallationMainGateUploadForm(forms.Form):
+	latitude = forms.CharField(widget=forms.TextInput(attrs={'readonly': 1}), max_length=32, label='Latitude', required=True)
+	longitude = forms.CharField(widget=forms.TextInput(attrs={'readonly': 1}), max_length=32, label='Longitude', required=True)
+	accuracy = forms.CharField(widget=forms.TextInput(attrs={'readonly': 1}), max_length=24, label='Accuracy', required=True)
+
+	def __init__(self, installation=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.installation = installation
+	
+	def clean(self):
+		data = self.cleaned_data
+		return data
+
+	def save(self):
+		self.installation.transition_main_gate()
+		self.installation.save()
+

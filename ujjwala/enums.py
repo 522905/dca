@@ -21,6 +21,7 @@ class UjjwalaApplicationDocumentsEnum(models.TextChoices):
 	LEGAL_DOC_FAMILY_OCCUPANCY = 'LEGAL_DOC_FAMILY_OCCUPANCY', 'Legal Doc Family Occupancy'
 	LEGAL_DOC_PRE_INSPECTION = 'LEGAL_DOC_PRE_INSPECTION', 'Legal Doc Pre Inspection'
 	PHYSICAL_LEGAL_DOCUMENT = 'PHYSICAL_LEGAL_DOCUMENT', 'Physical Legal Document'
+	DISBURSEMENT_PHOTO = 'DISBURSEMENT_PHOTO', 'Disbursement Photo'
 
 	@classmethod
 	def get_skipped_additional_choices(cls):
@@ -142,10 +143,11 @@ class ConnectionDisbursementStatusEnum(models.TextChoices):
 	LEGAL_DOCUMENTS_PENDING = 'LEGAL_DOCUMENTS_PENDING', 'Legal Documents Pending'
 	LEGAL_DOCUMENTS_REVIEW = 'LEGAL_DOCUMENTS_REVIEW', 'Legal Documents Review'
 	LEGAL_DOCUMENTS_ACCEPTED = 'LEGAL_DOCUMENTS_ACCEPTED', 'Legal Documents Accepted'
-	LEGAL_DOCUMENTS_REJECTED = 'LEGAL_DOCUMENTS_REUPLOAD', 'Legal Documents Reupload'
 	INVITED = 'INVITED', 'Invited'
+	OTP_VERIFIED = 'OTP_VERIFIED', 'Otp Verified'
 	SV_LABEL_PRINT = 'SV_LABEL_PRINT', 'SV Label Print'
 	DISBURSEMENT_PHOTO_UPLOAD = 'DISBURSEMENT_PHOTO_UPLOAD', 'Disbursement Photo Upload'
-	SOCIAL_MEDIA_UPDATES = 'SOCIAL_MEDIA_UPDATES', 'Social Media Updates'
-	MATERIAL_DELIVERED = 'MATERIAL_DELIVERED', 'Material Delivered'
+	MATERIAL_DELIVERED_UPLOAD_INSTALLATION = 'MATERIAL_DELIVERED_UPLOAD_INSTALLATION', 'Material Delivered - Upload Installation'
+	INSTALLATION_MAIN_GATE = 'INSTALLATION_MAIN_GATE', 'Installation Main Gate'
+	INSTALLATION_UPLOADED = 'INSTALLATION_UPLOADED', 'Installation Uploaded'
 

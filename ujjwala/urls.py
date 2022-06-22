@@ -27,7 +27,15 @@ urlpatterns = [
     # path('portal/', generic.TemplateView.as_view(template_name="ujjwala/frontend.html"), name="index"),
 
     path('portal/pre-inspection/', views.UjjwalaPreInspectionListView.as_view(), name="index"),
+
+    path(
+        'portal/connection-disbursement/',
+        views.UjjwalaConnectionDisbursementListView.as_view(),
+        name="connection_disbursement_list"
+    ),
+
     path('portal/pre-inspection/review/', views.PreInspectionReviewView.as_view(), name="review"),
+
     path(
         'portal/pre-inspection/create/',
         views.PreInspectionCreateView.as_view(),
@@ -39,11 +47,23 @@ urlpatterns = [
         views.PreInspectionView.as_view(),
         name="pre_inspection_form_view"
     ),
+    
     url(
         '^portal/legal_documents_upload/(?P<pk>[^/.]+)/$',
         views.UjjwalaApplicationLegalDocumentsUpload.as_view(),
         name="legal_documents_upload"
     ),
+
+    url(
+        '^portal/connection-disbursement/(?P<pk>[^/.]+)/$',
+        views.ConnectionDisbursementView.as_view(),
+        name="connection_disbursement_form_view"
+    ),
+    # url(
+    #     '^portal/disbursement_photo_upload/(?P<pk>[^/.]+)/$',
+    #     views.ConnectionDisbursementMaterialDeliveryView.as_view(),
+    #     name="disbursement_photo_upload"
+    # ),
 
     # url(
     #     '^pre_inspection_allocated/(?P<pk>[^/.]+)/$',
@@ -68,5 +88,19 @@ urlpatterns = [
     #         template_name="ujjwala/pre_inspection_search.html"
     #     ), name="pre_inspection_search"
     # ),
+
+     path(
+         'portal/disbursement_photo_upload/', generic.TemplateView.as_view(
+             template_name="ujjwala/disbursement_photo_upload.html"
+         ), name="disbursement_photo_upload"
+     ),
+
+     path('portal/installation/', views.InstallationListView.as_view(), name="installation_list"),
+     
+     url(
+        '^portal/installation/(?P<pk>[^/.]+)/$',
+        views.InstallationView.as_view(),
+        name="installation_form_view"
+    ),
 
 ]

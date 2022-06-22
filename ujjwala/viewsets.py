@@ -296,8 +296,6 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                         invalid_result_relation = family_member_obj.relation
                     elif family_member_obj.relation == 'SELF' and is_our_record:
                         application_obj.consumer_id = member['consumer_id']
-
-
             except FamilyMembers.DoesNotExist:
                 pass
 
