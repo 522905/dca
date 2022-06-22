@@ -402,11 +402,16 @@ class PreInspectionCreateView(View):
                     'mobile': otp_obj.mobile
                 })
             app_id = form.data.get('application_id')
-            connection_disbursement_obj = ConnectionDisbursement.objects.filter(parent_id=app_id).first()
-            connection_disbursement_obj.transition_sv_label_print()
-            connection_disbursement_obj.save(by=get_current_user(),
-                 description="Instant Inspection Created, Customer Phone {}".format(otp_obj.mobile)
+            obj = PreInspection.objects.create(
+                parent_id=app_id,
+                status=PreInspectionStatusEnum.ALLOCATED,
+                mechanic=get_current_user()
             )
+            obj.pre_inspection_otp_verified(
+                by=get_current_user(),
+                description="Instant Inspection Created, Customer Phone {}".format(otp_obj.mobile)
+            )
+            obj.save()
 
             return redirect('ujjwala:pre_inspection_form_view', pk=obj.pk)
 
@@ -682,7 +687,7 @@ class ConnectionDisbursementView(FormView):
                     initial={
                         'connection_disbursement_id': connection_disbursement.id,
                         'application_id': connection_disbursement.parent_id,
-                        'whatsapp_template_name': 'ujjwala_pre_inspection_otp',
+                        'whatsapp_template_name': 'connection_disbursement_dac',
                         'otp_generated_for': 'ConnectionDisbursement',
                     }
                 )
