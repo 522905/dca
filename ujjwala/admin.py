@@ -248,6 +248,7 @@ class ConnectionDisbursementAdmin(FSMTransitionCustomMixin, admin.ModelAdmin):
 		if not obj:
 			return True
 
+	def get_urls(self):
 		urls = super().get_urls()
 		info = self.model._meta.app_label, self.model._meta.model_name
 
