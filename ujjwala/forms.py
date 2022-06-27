@@ -448,20 +448,15 @@ class EkycAccepted(forms.Form):
 
 
 class LegalDocumentsUpload(forms.Form):
-	# pre_inspection = forms.CharField(
-	# 	widget=forms.TextInput, label='Pre Inspection', required=True
-	# )
-	# family_occupancy = forms.CharField(
-	# 	widget=forms.TextInput, label='Family Occupancy', required=True
-	# )
-	# annexure_14_points = forms.CharField(
-	# 	widget=forms.TextInput, label='Annexure 14 Points', required=True
-	# )
-	#
-	# def clean(self):
-	# 	data = self.cleaned_data
-	# 	return data
-	pass
+	description = forms.CharField(
+		widget=forms.TextInput, label='Description', required=True,
+		help_text="Please mention issue faced while uploading the documents"
+	)
+
+	def clean(self):
+		data = self.cleaned_data
+		return data
+
 
 
 class UjjwalaLegalDocumentsUpload(forms.Form):

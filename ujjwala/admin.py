@@ -10,7 +10,7 @@ from django.conf.urls import url
 from django.contrib import admin
 from django.http import HttpResponse
 from django.template import loader
-from django.urls import path
+from django.urls import path, reverse
 from django.utils.safestring import mark_safe
 from django_admin_listfilter_dropdown.filters import DropdownFilter
 from django_fsm_log.admin import StateLogInline
@@ -116,16 +116,19 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 		readonly_fields = super().get_readonly_fields(request, obj)
 
 		if obj and obj.status in (
-				UjjwalaV2ApplicationStatus.EKYC_ACCEPTED, UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED
+				UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
+				UjjwalaV2ApplicationStatus.DO_MANUAL_OPERATION,
+				UjjwalaV2ApplicationStatus.MANUAL_LEGAL_DOCUMENTS_UPLOAD
 		):
 			readonly_fields = readonly_fields + ['download_legal_docs']
 
 		return readonly_fields
 
 	def download_legal_docs(self, obj=None):
+		url = reverse('ujjwala:ujjwalav2application-download-ujjwala-legal-docs', kwargs={'pk': obj.id})
 		return mark_safe("""
-			<input type="submit" value="Download Legal Docs" name="_download-legal-doc-pdf">
-		""")
+			<a href="{}" target="_blank">Download Legal Docs To Upload In SDMS</a>
+		""".format(url))
 
 	def download_legal_documents_pdf(self, obj):
 		return download_ujjwala_documents(obj)

@@ -9,6 +9,7 @@ from django.core import signals
 from django.db import models
 from django.dispatch import receiver
 from django.template import loader
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django_currentuser.middleware import get_current_user
 from django_fsm import FSMField, transition, GET_STATE
@@ -584,10 +585,11 @@ class ConnectionDisbursement(models.Model):
 		choices=ConnectionDisbursementStatusEnum.choices
 	)
 
-	def send_invitation(self):
+	def invite(self):
+		invite_url = reverse('admin:ujjwala_connectiondisbursement_invite', kwargs={'pk': self.pk})
 		html = '''
-		<a href="/ujjwala/portal/connection-disbursement/{}/send_invitation/">Send Invitation</a>
-		'''.format(self.pk)
+		<a href="{}">Send Invitation</a>
+		'''.format(invite_url)
 		return mark_safe(html)
 
 	def legal_document_upload_link(self):
