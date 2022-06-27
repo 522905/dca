@@ -6,6 +6,7 @@ from functools import update_wrapper
 import magic
 import requests
 from django.conf import settings
+from django.conf.urls import url
 from django.contrib import admin
 from django.http import HttpResponse
 from django.template import loader
@@ -241,7 +242,7 @@ class ConnectionDisbursementAdmin(FSMTransitionCustomMixin, admin.ModelAdmin):
 	list_filter = ('status',)
 	inlines = (ConnectionDisbursementDocumentsAdmin, ConnectionDisbursementInvitationAdmin, StateLogInline,)
 	fsm_fields = ['status', ]
-	readonly_fields = ['legal_document_upload_link', 'send_invitation', ]
+	readonly_fields = ['legal_document_upload_link', 'invite', ]
 	search_fields = ('id', 'parent__id', 'parent__consumer_id',)
 
 	def has_change_permission(self, request, obj=None):
@@ -260,7 +261,6 @@ class ConnectionDisbursementAdmin(FSMTransitionCustomMixin, admin.ModelAdmin):
 			return update_wrapper(wrapper, view)
 
 		my_urls = [
-			path('<path:pk>/submit/', wrap(SendInvitationView.as_view()), name='%s_%s_submit' % info),
-			# path('<path:pk>/close/', wrap(DepositSlipForceCloseView.as_view()), name='%s_%s_close' % info),
+			url('(?P<pk>[^/.]+)/invite/', wrap(SendInvitationView.as_view()), name='%s_%s_invite' % info),
 		]
 		return my_urls + urls

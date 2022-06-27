@@ -70,11 +70,11 @@ urlpatterns = [
         name="legal_documents_upload"
     ),
 
-    path(
-        '^portal/connection-disbursement/(?P<pk>[^/.]+)/send_invitation/$',
-        views.SendInvitationView.as_view(),
-        name="connection_disbursement_send_invitation_view"
-    ),
+    # url(
+    #     '^portal/connection-disbursement/(?P<pk>[^/.]+)/send_invitation/$',
+    #     views.SendInvitationView.as_view(),
+    #     name="connection_disbursement_send_invitation_view"
+    # ),
 
     url(
         '^portal/connection-disbursement/(?P<pk>[^/.]+)/barcode_label_print/$',
