@@ -23,7 +23,6 @@ from .models import UjjwalaV2Application, FamilyMembers, UjjwalaApplicationDocum
 	UserDocuments, PreInspectionDocuments, PreInspection, ConnectionDisbursementDocuments, ConnectionDisbursement, \
 	ConnectionDisbursementInvitation
 from .ujjwala_functions import download_ujjwala_documents, download_ujjwala_physical_legal_docs
-from advanced_filters.admin import AdminAdvancedFiltersMixin
 
 from .views import SendInvitationView
 
@@ -31,7 +30,7 @@ from .views import SendInvitationView
 class UjjwalaApplicationDocumentsInline(admin.TabularInline):
 	extra = 0
 	model = UjjwalaApplicationDocuments
-	fields = ('type', 'download_links', 'link', 'file_size')
+	fields = ('type', 'download_links', 'file_size')
 	readonly_fields = ('download_links',)
 # template = 'connection_app/admin/document-inline.html'
 
@@ -39,15 +38,13 @@ class UjjwalaApplicationDocumentsInline(admin.TabularInline):
 class FamilyMembersInline(admin.TabularInline):
 	extra = 0
 	model = FamilyMembers
-	fields = ('name', 'relation', 'dob', 'uid_no', 'download_links', 'uid_front_link', 'uid_back_link',
+	fields = ('name', 'relation', 'dob', 'uid_no', 'download_links',
 			  'uid_check_result', 'uid_front_file_size', 'uid_back_file_size',)
-	readonly_fields = ('download_links', 'uid_check_result', 'uid_front_file_size',
-					   'uid_back_file_size',
-					   )
+	readonly_fields = ('download_links', 'uid_check_result', 'uid_front_file_size', 'uid_back_file_size',)
 
 
 @admin.register(UjjwalaV2Application)
-class UjjwalaV2Admin(AdminAdvancedFiltersMixin, ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdmin):
+class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdmin):
 	fsm_transition_form_template = 'ujjwala/transaction_form_template.html'
 	list_display = (
 		'id',
@@ -170,9 +167,10 @@ class PreInspectionAdmin(ExportActionMixin, FSMTransitionCustomMixin, admin.Mode
 		'mechanic_name',
 		'status',
 	)
-	list_filter = ('parent', 'mechanic')
+	list_filter = ('mechanic', 'status')
 	inlines = (PreInspectionDocumentsAdmin, StateLogInline,)
 	fsm_fields = ['status', ]
+	search_fields = ('id', 'parent__id', 'parent__consumer_id')
 
 	def get_readonly_fields(self, request, obj=None):
 		readonly_fields = super().get_readonly_fields(request, obj=obj)
@@ -235,20 +233,21 @@ class ConnectionDisbursementInvitationAdmin(admin.TabularInline):
 class ConnectionDisbursementAdmin(FSMTransitionCustomMixin, admin.ModelAdmin):
 	list_display = (
 		'id',
+		'parent',
 		'created_on',
 		'updated_on',
 		'status',
 	)
-	list_filter = ('parent', 'status')
+	list_filter = ('status',)
 	inlines = (ConnectionDisbursementDocumentsAdmin, ConnectionDisbursementInvitationAdmin, StateLogInline,)
 	fsm_fields = ['status', ]
 	readonly_fields = ['legal_document_upload_link', 'send_invitation', ]
+	search_fields = ('id', 'parent__id', 'parent__consumer_id',)
 
 	def has_change_permission(self, request, obj=None):
 		if not obj:
 			return True
 
-	def get_urls(self):
 		urls = super().get_urls()
 		info = self.model._meta.app_label, self.model._meta.model_name
 
@@ -264,5 +263,3 @@ class ConnectionDisbursementAdmin(FSMTransitionCustomMixin, admin.ModelAdmin):
 			# path('<path:pk>/close/', wrap(DepositSlipForceCloseView.as_view()), name='%s_%s_close' % info),
 		]
 		return my_urls + urls
-
-

@@ -398,7 +398,7 @@ class PreInspectionCreateView(View):
                     }),
                 })
         elif self.request.POST.get('form_type') == 'validate_otp_form':
-            form = UjjwalaApplicationValidateOtpForm(data=request.POST)
+            form = PreInspectionAllocatedValidateOtpForm(data=request.POST)
             otp_obj = Otp.objects.filter(reference_number=request.POST['reference_number']).first()
             if not form.is_valid():
                 return render(self.request, self.stage_3_template, {
@@ -415,6 +415,12 @@ class PreInspectionCreateView(View):
             obj.pre_inspection_otp_verified(
                 by=get_current_user(),
                 description="Instant Inspection Created, Customer Phone {}".format(otp_obj.mobile)
+            )
+            obj.save()
+
+            obj.pre_inspection_change_address(
+                by=get_current_user(),
+                description="Allocated Inspection Otp Verified, Customer Phone {}".format(otp_obj.mobile)
             )
             obj.save()
 
@@ -459,10 +465,8 @@ class UjjwalaApplicationLegalDocumentsUpload(FormView):
     def dispatch(self, request, *args, **kwargs):
         connection_disbursement = ConnectionDisbursement.objects.get(pk=self.kwargs.get('pk'))
 
-        if connection_disbursement.status in (
-                ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
-                ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REJECTED,
-                ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
+        if connection_disbursement.status not in (
+                ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
         ):
             return HttpResponse(content='Status: {}'.format(connection_disbursement.status))
 
@@ -497,7 +501,7 @@ class ApplicationView(View):
 class UjjwalaConnectionDisbursementListView(ListView):
     model = ConnectionDisbursement
 
-    paginate_by = 20
+    paginate_by = 100
     permission = 'has_view_permission'
 
     def get_queryset(self):

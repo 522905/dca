@@ -71,6 +71,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	connection_disbursement_obj = models.ForeignKey(
 		"ConnectionDisbursement", on_delete=models.CASCADE, null=True, blank=True
 	)
+	sync_with_sdms = models.BooleanField(default=True)
 
 	class Meta:
 		permissions = (
@@ -86,10 +87,10 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		)
 
 	def pre_inspection_form(self):
-		if self.status == UjjwalaV2ApplicationStatus.PRE_INSPECTION_SUBMITTED:
-			template = loader.get_template("ujjwala/pre_inspection_form_view.html")
-			html = template.render({'obj': self})
-			return mark_safe(html)
+		# if self.status == UjjwalaV2ApplicationStatus.PRE_INSPECTION_SUBMITTED:
+		# 	template = loader.get_template("ujjwala/pre_inspection_form_view.html")
+		# 	html = template.render({'obj': self})
+		# 	return mark_safe(html)
 		return mark_safe("")
 
 	@property
@@ -450,7 +451,7 @@ class PreInspection(models.Model):
 		field=status,
 		source=PreInspectionStatusEnum.ALLOCATED,
 		target=PreInspectionStatusEnum.CHANGE_ADDRESS,
-		custom=dict(short_description='Verify Otp', admin=True),
+		custom=dict(short_description='Verify Otp', admin=False),
 	)
 	def pre_inspection_otp_verified(self, *args, **kwargs):
 		pass
@@ -462,7 +463,7 @@ class PreInspection(models.Model):
 		field=status,
 		source=PreInspectionStatusEnum.CHANGE_ADDRESS,
 		target=PreInspectionStatusEnum.KITCHEN_PHOTO,
-		custom=dict(short_description='Change Address', admin=True),
+		custom=dict(short_description='Change Address', admin=False),
 	)
 	def pre_inspection_change_address(self, *args, **kwargs):
 		pass
@@ -474,7 +475,7 @@ class PreInspection(models.Model):
 		field=status,
 		source=PreInspectionStatusEnum.KITCHEN_PHOTO,
 		target=PreInspectionStatusEnum.SAFETY_AUDIO,
-		custom=dict(short_description='Upload Safety Audio', admin=True),
+		custom=dict(short_description='Upload Safety Audio', admin=False),
 	)
 	def pre_inspection_kitchen_photo_uploaded(self, *args, **kwargs):
 		pass
@@ -485,7 +486,7 @@ class PreInspection(models.Model):
 		field=status,
 		source=PreInspectionStatusEnum.SAFETY_AUDIO,
 		target=PreInspectionStatusEnum.PREVIEW_INSPECTION,
-		custom=dict(short_description='Preview Inspection', admin=True),
+		custom=dict(short_description='Preview Inspection', admin=False),
 	)
 	def pre_inspection_safety_audio_uploaded(self, *args, **kwargs):
 		pass
@@ -497,7 +498,7 @@ class PreInspection(models.Model):
 		field=status,
 		source=PreInspectionStatusEnum.PREVIEW_INSPECTION,
 		target=PreInspectionStatusEnum.SUBMITTED,
-		custom=dict(short_description='Submit Pre-Inspection', admin=True),
+		custom=dict(short_description='Submit Pre-Inspection', admin=False),
 	)
 	def transition_pre_inspection_submit(self, *args, **kwargs):
 		self.submitted_on = datetime.datetime.now()
@@ -645,7 +646,7 @@ class ConnectionDisbursement(models.Model):
 		field=status,
 		source=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
 		target=ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
-		custom=dict(short_description='SV & Label Print', admin=True),
+		custom=dict(short_description='SV & Label Print', admin=False),
 	)
 	def transition_sv_label_printed(self, *args, **kwargs):
 		pass
@@ -656,7 +657,7 @@ class ConnectionDisbursement(models.Model):
 		field=status,
 		source=ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
 		target=ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
-		custom=dict(short_description='Social Media Updates', admin=True),
+		custom=dict(short_description='Social Media Updates', admin=False),
 	)
 	def transition_social_media_updates_done(self, *args, **kwargs):
 		pass
@@ -668,7 +669,7 @@ class ConnectionDisbursement(models.Model):
 		source=ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
 		# target=ConnectionDisbursementStatusEnum.DISBURSEMENT_PHOTO_UPLOAD,
 		target=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
-		custom=dict(short_description='Material Delivery OTP Verification', admin=True),
+		custom=dict(short_description='Material Delivery OTP Verification', admin=False),
 	)
 	def transition_material_delivery_otp_verified(self, *args, **kwargs):
 		pass
@@ -679,7 +680,7 @@ class ConnectionDisbursement(models.Model):
 		field=status,
 		source=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
 		target=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
-		custom=dict(short_description='Material Delivery', admin=True),
+		custom=dict(short_description='Material Delivery', admin=False),
 	)
 	def transition_material_delivered(self, *args, **kwargs):
 		pass
@@ -690,7 +691,7 @@ class ConnectionDisbursement(models.Model):
 		field=status,
 		source=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
 		target=ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE,
-		custom=dict(short_description='Upload Installation Kitchen Photo', admin=True),
+		custom=dict(short_description='Upload Installation Kitchen Photo', admin=False),
 	)
 	def transition_installation_kitchen_upload(self, *args, **kwargs):
 		pass
@@ -701,7 +702,7 @@ class ConnectionDisbursement(models.Model):
 		field=status,
 		source=ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE,
 		target=ConnectionDisbursementStatusEnum.INSTALLATION_UPLOADED,
-		custom=dict(short_description='Upload Main Gate Photo', admin=True),
+		custom=dict(short_description='Upload Main Gate Photo', admin=False),
 	)
 	def transition_main_gate(self, *args, **kwargs):
 		pass
