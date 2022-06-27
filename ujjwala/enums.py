@@ -22,6 +22,9 @@ class UjjwalaApplicationDocumentsEnum(models.TextChoices):
 	LEGAL_DOC_PRE_INSPECTION = 'LEGAL_DOC_PRE_INSPECTION', 'Legal Doc Pre Inspection'
 	PHYSICAL_LEGAL_DOCUMENT = 'PHYSICAL_LEGAL_DOCUMENT', 'Physical Legal Document'
 	DISBURSEMENT_PHOTO = 'DISBURSEMENT_PHOTO', 'Disbursement Photo'
+	SOCIAL_MEDIA_PHOTO = 'SOCIAL_MEDIA_PHOTO', 'Social Media Photo'
+	INSTALLATION_KITCHEN_PHOTO = 'INSTALLATION_KITCHEN_PHOTO', 'Installation Kitchen Photo'
+	INSTALLATION_STOVE_WITH_STICKER = 'INSTALLATION_STOVE_WITH_STICKER', 'Installation Stove With Sticker'
 
 	@classmethod
 	def get_skipped_additional_choices(cls):
@@ -97,10 +100,10 @@ class UjjwalaV2ApplicationStatus(models.TextChoices):
 	NIC_ERROR = 'NIC_ERROR', 'NIC Error'
 	NIC_CLEARED = 'NIC_CLEARED', 'NIC Cleared'
 	INSUFFICIENT_ADDRESS = 'INSUFFICIENT_ADDRESS', 'Insufficient Address'
+	MATERIAL_DELIVERED = 'MATERIAL_DELIVERED', 'Material Delivered'
+	INSTALLED = 'INSTALLED', 'Installed'
 	DO_MANUAL_OPERATION = 'DO_MANUAL_OPERATION', 'Do Manual Operation'
 	PRE_INSPECTION_ACCEPTED = 'PRE_INSPECTION_ACCEPTED', 'Pre Inspection Accepted'
-	CONNECTION_RELEASED = 'CONNECTION_RELEASED', 'Connection Released'
-	POST_INSTALLATION_UPLOAD = 'POST_INSTALLATION_UPLOAD', 'Post Installation Upload'
 	COMPLETED = 'COMPLETED', 'Completed'
 
 
@@ -143,11 +146,11 @@ class ConnectionDisbursementStatusEnum(models.TextChoices):
 	LEGAL_DOCUMENTS_PENDING = 'LEGAL_DOCUMENTS_PENDING', 'Legal Documents Pending'
 	LEGAL_DOCUMENTS_REVIEW = 'LEGAL_DOCUMENTS_REVIEW', 'Legal Documents Review'
 	LEGAL_DOCUMENTS_ACCEPTED = 'LEGAL_DOCUMENTS_ACCEPTED', 'Legal Documents Accepted'
-	INVITED = 'INVITED', 'Invited'
 	OTP_VERIFIED = 'OTP_VERIFIED', 'Otp Verified'
 	SV_LABEL_PRINT = 'SV_LABEL_PRINT', 'SV Label Print'
-	DISBURSEMENT_PHOTO_UPLOAD = 'DISBURSEMENT_PHOTO_UPLOAD', 'Disbursement Photo Upload'
-	MATERIAL_DELIVERED_UPLOAD_INSTALLATION = 'MATERIAL_DELIVERED_UPLOAD_INSTALLATION', 'Material Delivered - Upload Installation'
+	SOCIAL_MEDIA_UPDATES = 'SOCIAL_MEDIA_UPDATES', 'Social Media Updates'
+	# DISBURSEMENT_PHOTO_UPLOAD = 'DISBURSEMENT_PHOTO_UPLOAD', 'Disbursement Photo Upload'
+	MATERIAL_DELIVERY_OTP_VERIFIED = 'MATERIAL_DELIVERY_OTP_VERIFIED', 'Material Delivery Otp Verified'
+	MATERIAL_DELIVERED = 'MATERIAL_DELIVERED', 'Material Delivered'
 	INSTALLATION_MAIN_GATE = 'INSTALLATION_MAIN_GATE', 'Installation Main Gate'
 	INSTALLATION_UPLOADED = 'INSTALLATION_UPLOADED', 'Installation Uploaded'
-

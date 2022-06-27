@@ -1,6 +1,7 @@
 import io
 import zipfile
 from datetime import datetime
+from functools import update_wrapper
 
 import magic
 import requests
@@ -8,6 +9,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.http import HttpResponse
 from django.template import loader
+from django.urls import path
 from django.utils.safestring import mark_safe
 from django_admin_listfilter_dropdown.filters import DropdownFilter
 from django_fsm_log.admin import StateLogInline
@@ -18,9 +20,12 @@ from fsm_admin2_custom.admin import FSMTransitionCustomMixin
 from .enums import ResidentialStatusEnum, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, MaritalStatusEnum, \
 	PreInspectionStatusEnum
 from .models import UjjwalaV2Application, FamilyMembers, UjjwalaApplicationDocuments, UjjwalaV2ApplicationStatus, \
-	UserDocuments, PreInspectionDocuments, PreInspection, ConnectionDisbursementDocuments, ConnectionDisbursement
+	UserDocuments, PreInspectionDocuments, PreInspection, ConnectionDisbursementDocuments, ConnectionDisbursement, \
+	ConnectionDisbursementInvitation
 from .ujjwala_functions import download_ujjwala_documents, download_ujjwala_physical_legal_docs
 from advanced_filters.admin import AdminAdvancedFiltersMixin
+
+from .views import SendInvitationView
 
 
 class UjjwalaApplicationDocumentsInline(admin.TabularInline):
@@ -212,6 +217,20 @@ class ConnectionDisbursementDocumentsAdmin(admin.TabularInline):
 	readonly_fields = ('type', 'download_links', 'compressed', 'file_size', )
 
 
+class ConnectionDisbursementInvitationAdmin(admin.TabularInline):
+	fields = (
+		'parent',
+		'invited_for',
+		'invite_accepted',
+		'sv_link',
+		'sv_uploaded_on',
+		'booking_id',
+		'status'
+	)
+	model = ConnectionDisbursementInvitation
+	extra = 0
+
+
 @admin.register(ConnectionDisbursement)
 class ConnectionDisbursementAdmin(FSMTransitionCustomMixin, admin.ModelAdmin):
 	list_display = (
@@ -221,15 +240,29 @@ class ConnectionDisbursementAdmin(FSMTransitionCustomMixin, admin.ModelAdmin):
 		'status',
 	)
 	list_filter = ('parent', 'status')
-	inlines = (ConnectionDisbursementDocumentsAdmin, StateLogInline,)
+	inlines = (ConnectionDisbursementDocumentsAdmin, ConnectionDisbursementInvitationAdmin, StateLogInline,)
 	fsm_fields = ['status', ]
-	readonly_fields = ['legal_document_upload_link',]
-
-	def get_fields(self, request, obj=None):
-		fields = super().get_fields(request, obj=obj)
-		fields = fields + ['legal_document_upload_link',]
-		return fields
+	readonly_fields = ['legal_document_upload_link', 'send_invitation', ]
 
 	def has_change_permission(self, request, obj=None):
 		if not obj:
 			return True
+
+	def get_urls(self):
+		urls = super().get_urls()
+		info = self.model._meta.app_label, self.model._meta.model_name
+
+		def wrap(view):
+			def wrapper(*args, **kwargs):
+				return self.admin_site.admin_view(view)(*args, **kwargs)
+
+			wrapper.model_admin = self
+			return update_wrapper(wrapper, view)
+
+		my_urls = [
+			path('<path:pk>/submit/', wrap(SendInvitationView.as_view()), name='%s_%s_submit' % info),
+			# path('<path:pk>/close/', wrap(DepositSlipForceCloseView.as_view()), name='%s_%s_close' % info),
+		]
+		return my_urls + urls
+
+

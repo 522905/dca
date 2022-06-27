@@ -10,12 +10,12 @@ from rest_framework import routers
 from connection_app.viewsets import ConnectionApplicationViewSet
 
 from . import views
-from . import views
 from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet
 
 router = routers.DefaultRouter()
 router.register(r'ujjwala-application', UjjwalaApplicationViewSet)
 router.register(r'ujjwala-bot', UjjwalaApplicationAPIViewSet)
+
 
 urlpatterns = [
     path('', views.index),
@@ -29,11 +29,27 @@ urlpatterns = [
     path('portal/pre-inspection/', views.UjjwalaPreInspectionListView.as_view(), name="index"),
 
     path(
-        'portal/connection-disbursement/',
+        'portal/connection-disbursement/sv_label_print/',
+        views.UjjwalaConnectionDisbursementSvLabelPrintListView.as_view(),
+        name="connection_disbursement_sv_label_print_list"
+    ),
+
+    path(
+        'portal/connection-disbursement/social_media_updates/',
+        views.UjjwalaConnectionDisbursementSocialMediaUpdatesListView.as_view(),
+        name="connection_disbursement_social_media_updates_list"
+    ),
+    path(
+        'portal/connection-disbursement/material_delivery/',
+        views.UjjwalaConnectionDisbursementMaterialDeliveryListView.as_view(),
+        name="connection_disbursement_material_delivery_list"
+    ),
+
+    path(
+        'portal/connection-disbursement/list/',
         views.UjjwalaConnectionDisbursementListView.as_view(),
         name="connection_disbursement_list"
     ),
-
     path('portal/pre-inspection/review/', views.PreInspectionReviewView.as_view(), name="review"),
 
     path(
@@ -47,35 +63,60 @@ urlpatterns = [
         views.PreInspectionView.as_view(),
         name="pre_inspection_form_view"
     ),
-    
+
     url(
         '^portal/legal_documents_upload/(?P<pk>[^/.]+)/$',
         views.UjjwalaApplicationLegalDocumentsUpload.as_view(),
         name="legal_documents_upload"
     ),
 
+    path(
+        '^portal/connection-disbursement/(?P<pk>[^/.]+)/send_invitation/$',
+        views.SendInvitationView.as_view(),
+        name="connection_disbursement_send_invitation_view"
+    ),
+
+    url(
+        '^portal/connection-disbursement/(?P<pk>[^/.]+)/barcode_label_print/$',
+        views.BarCodeLabelPrintView.as_view(),
+        name="connection_disbursement_barcode_label_print_view"
+    ),
+
+    url(
+        '^portal/connection-disbursement/(?P<pk>[^/.]+)/sv_label_print/$',
+        views.ConnectionDisbursementSvLabelPrintView.as_view(),
+        name="connection_disbursement_sv_label_print_view"
+    ),
+
+    url(
+        '^portal/connection-disbursement/(?P<pk>[^/.]+)/social_media_updates/$',
+        views.ConnectionDisbursementSocialMediaUpdatesView.as_view(),
+        name="connection_disbursement_social_media_updates_view"
+    ),
+
+    url(
+        '^portal/connection-disbursement/(?P<pk>[^/.]+)/material_delivery/$',
+        views.ConnectionDisbursementMaterialDeliveryView.as_view(),
+        name="connection_disbursement_material_delivery_view"
+    ),
     url(
         '^portal/connection-disbursement/(?P<pk>[^/.]+)/$',
         views.ConnectionDisbursementView.as_view(),
         name="connection_disbursement_form_view"
     ),
-    # url(
-    #     '^portal/disbursement_photo_upload/(?P<pk>[^/.]+)/$',
-    #     views.ConnectionDisbursementMaterialDeliveryView.as_view(),
-    #     name="disbursement_photo_upload"
-    # ),
 
-    # url(
-    #     '^pre_inspection_allocated/(?P<pk>[^/.]+)/$',
-    #     PreInspectionAllocatedOtpView.as_view(),
-    #     name="pre_inspection_allocated"
-    # ),
+    url(
+        '^portal/pre-inspection/(?P<pk>[^/.]+)/$',
+        views.PreInspectionView.as_view(),
+        name="pre_inspection_form_view"
+    ),
 
     url(
         '^ujjwala-application/(?P<pk>[^/.]+)/reupload/$',
         views.UjjwalaApplicationReuploadView.as_view(),
         name="application_reupload"
     ),
+
     url(
         '^ujjwala-application/(?P<pk>[^/.]+)/status/$',
         views.ApplicationStatusView.as_view(),
@@ -102,5 +143,4 @@ urlpatterns = [
         views.InstallationView.as_view(),
         name="installation_form_view"
     ),
-
 ]

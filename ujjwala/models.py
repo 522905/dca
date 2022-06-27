@@ -1,4 +1,5 @@
 import datetime
+import re
 
 import requests
 from django.conf import settings
@@ -95,7 +96,10 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	def formatted_address(self):
 		if self.version in ('V1', 'V2'):
 			return self.address
-		return ' '.join([self.address_json.get(r, '') for r in self.address_json])
+		self.address_json['city'] = 'Ludhiana'
+		return ' '.join([self.address_json.get(r, '') for r in [
+			'room_no', 'floor', 'street_no', 'landmark', 'village', 'post_office', 'pincode'
+		]])
 
 	@property
 	def all_contacts(self):
@@ -103,7 +107,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			self.contact_mobile,
 			self.uid_linked_mobile,
 			self.sdms_mobile_number
-		] if not i])
+		] if i])
 		return list(phones)
 
 	def document_self(self):
@@ -123,6 +127,28 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 
 	def document_witness_photo(self):
 		return self.documents.filter(type=UjjwalaApplicationDocumentsEnum.WITNESS_PHOTO).first().link
+
+	def physical_legal_document_link(self):
+		return self.pre_inspection_accepted.documents.filter(
+			type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT
+		).first().link
+
+	def is_sv_uploaded(self):
+		connection_disbursement = ConnectionDisbursement.objects.filter(parent_id=self.id).first()
+		connection_disbursement_invitation = ConnectionDisbursementInvitation.objects.filter(
+			parent_id=connection_disbursement.id
+		).first()
+		if connection_disbursement_invitation:
+			if connection_disbursement_invitation.sv_link:
+				return "SV Uploaded"
+		return "SV Not Uploaded"
+
+	def get_consumer_number(self):
+		return re.sub('([0-9]{2})0*([0-9]*)', '\\1\\2', self.consumer_id)
+
+	def get_sdms_consumer_details(self):
+		return self.family_members.get(relation='SELF').uid_check_result
+
 
 	@fsm_log_description
 	@fsm_log_by
@@ -157,7 +183,11 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
+		source=[
+			UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
+			UjjwalaV2ApplicationStatus.DO_MANUAL_OPERATION,
+			UjjwalaV2ApplicationStatus.MANUAL_LEGAL_DOCUMENTS_UPLOAD,
+		],
 		target=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD,
 		custom=dict(
 			short_description='Legal Documents Upload', admin=True, form=LegalDocumentsUpload
@@ -188,6 +218,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	)
 	def do_manual_operations(self, *args, **kwargs):
 		self.manual_operation_code = kwargs.get('manual_operation_code')
+
 
 	@fsm_log_description
 	@fsm_log_by
@@ -398,6 +429,7 @@ class PreInspection(models.Model):
 	mechanic = models.ForeignKey(User, on_delete=models.PROTECT)
 	submitted_on = models.DateTimeField(null=True)
 
+
 	status = FSMField(
 		default=PreInspectionStatusEnum.ALLOCATED,
 		choices=PreInspectionStatusEnum.choices
@@ -540,16 +572,34 @@ class ConnectionDisbursement(models.Model):
 	)
 	created_on = models.DateTimeField(auto_now_add=True, null=True)
 	updated_on = models.DateTimeField(auto_now=True, null=True)
+	# sv_uploaded = models.BooleanField(default=False)
+	# sv_uploaded_on = models.DateTimeField(null=True, blank=True)
+	location_data = models.JSONField(null=True, blank=True)
+	walk_in_date = models.DateTimeField(null=True, blank=True)
+	sequence = models.CharField(max_length=16, null=True, blank=True)
+
 	status = FSMField(
 		default=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
 		choices=ConnectionDisbursementStatusEnum.choices
 	)
+
+	def send_invitation(self):
+		html = '''
+		<a href="/ujjwala/portal/connection-disbursement/{}/send_invitation/">Send Invitation</a>
+		'''.format(self.pk)
+		return mark_safe(html)
 
 	def legal_document_upload_link(self):
 		html = '''
 		<a href="https://dca.arungas.com/ujjwala/portal/legal_documents_upload/{}/" target="blank">Upload Physical Legal Documents</a>				
 		'''.format(self.pk)
 		return mark_safe(html)
+
+	def valid_sv_link(self):
+		valid_invitation = self.invitation.filter(parent=self).first()
+
+		if valid_invitation:
+			return valid_invitation.sv_link
 
 	@fsm_log_description
 	@fsm_log_by
@@ -588,22 +638,12 @@ class ConnectionDisbursement(models.Model):
 		else:
 			self.documents.all().delete()
 
-	@fsm_log_description
-	@fsm_log_by
-	@transition(
-		field=status,
-		source=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
-		target=ConnectionDisbursementStatusEnum.OTP_VERIFIED,
-		custom=dict(short_description='Verify Otp', admin=True),
-	)
-	def transition_connection_disbursement_otp_verified(self, *args, **kwargs):
-		pass
 
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=ConnectionDisbursementStatusEnum.OTP_VERIFIED,
+		source=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
 		target=ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
 		custom=dict(short_description='SV & Label Print', admin=True),
 	)
@@ -615,19 +655,31 @@ class ConnectionDisbursement(models.Model):
 	@transition(
 		field=status,
 		source=ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
-		target=ConnectionDisbursementStatusEnum.DISBURSEMENT_PHOTO_UPLOAD,
-		custom=dict(short_description='Disbursement Photo Upload', admin=True),
+		target=ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
+		custom=dict(short_description='Social Media Updates', admin=True),
 	)
-	def transition_disbursement_photo_uploaded(self, *args, **kwargs):
+	def transition_social_media_updates_done(self, *args, **kwargs):
 		pass
 
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=ConnectionDisbursementStatusEnum.DISBURSEMENT_PHOTO_UPLOAD,
-		target=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED_UPLOAD_INSTALLATION,
-		custom=dict(short_description='Disbursement Photo', admin=True),
+		source=ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
+		# target=ConnectionDisbursementStatusEnum.DISBURSEMENT_PHOTO_UPLOAD,
+		target=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
+		custom=dict(short_description='Material Delivery OTP Verification', admin=True),
+	)
+	def transition_material_delivery_otp_verified(self, *args, **kwargs):
+		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
+		target=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
+		custom=dict(short_description='Material Delivery', admin=True),
 	)
 	def transition_material_delivered(self, *args, **kwargs):
 		pass
@@ -636,7 +688,7 @@ class ConnectionDisbursement(models.Model):
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED_UPLOAD_INSTALLATION,
+		source=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
 		target=ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE,
 		custom=dict(short_description='Upload Installation Kitchen Photo', admin=True),
 	)
@@ -666,4 +718,20 @@ class ConnectionDisbursementDocuments(models.Model):
 		html = '''
 		<a href="{}" target="blank">View File</a>
 		'''.format(self.link)
+		return mark_safe(html)
+
+
+class ConnectionDisbursementInvitation(models.Model):
+	parent = models.ForeignKey(ConnectionDisbursement, on_delete=models.CASCADE, related_name='invitation', null=True)
+	invited_for = models.DateTimeField(null=True, blank=True)
+	invite_accepted = models.BooleanField(default=False)
+	sv_link = models.URLField(null=True, blank=True)
+	sv_uploaded_on = models.DateTimeField(null=True, blank=True)
+	booking_id = models.CharField(max_length=16, null=True, blank=True)
+	status = models.CharField(null=True, blank=True, max_length=32)
+
+	def download_links(self):
+		html = '''
+		<a href="{}" target="blank">View File</a>
+		'''.format(self.sv_link)
 		return mark_safe(html)

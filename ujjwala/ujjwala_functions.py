@@ -116,6 +116,7 @@ def download_ujjwala_documents(obj):
 
         ujjwala_declaration_html_template = loader.get_template("ujjwala/forms/ujjwala_declaration_form.html")
         ujjwala_declaration_html = ujjwala_declaration_html_template.render({
+            'app_id': obj.parent.parent_id,
             'name': obj.name,
             'uid': list(self_doc.uid_no),
             'age': '{}'.format(str(datetime.now().year - self_doc.dob.year)),
@@ -235,6 +236,7 @@ def download_ujjwala_legal_docs_to_upload(obj, signature=True):
 
     ujjwala_declaration_html_template = loader.get_template("ujjwala/forms/ujjwala_declaration_form.html")
     ujjwala_declaration_html = ujjwala_declaration_html_template.render({
+        'app_id': obj.parent.parent_id,
         'name': obj.name,
         'uid': list(self_doc.uid_no),
         'age': '{}'.format(str(datetime.now().year - self_doc.dob.year)),
@@ -350,6 +352,7 @@ def download_ujjwala_physical_legal_docs(obj):
 
     ujjwala_declaration_html_template = loader.get_template("ujjwala/forms/ujjwala_declaration_form.html")
     ujjwala_declaration_html = ujjwala_declaration_html_template.render({
+        'app_id': obj.id,
         'name': obj.name,
         'uid': list(self_doc.uid_no),
         'age': '{}'.format(str(datetime.now().year - self_doc.dob.year)),
@@ -523,6 +526,7 @@ def get_ujjwala_legal_docs_temp_path(obj):
 
         ujjwala_declaration_html_template = loader.get_template("ujjwala/forms/ujjwala_declaration_form.html")
         ujjwala_declaration_html = ujjwala_declaration_html_template.render({
+            'app_id': obj.parent.parent_id,
             'name': obj.name,
             'uid': list(self_doc.uid_no),
             'age': '{}'.format(str(datetime.now().year - self_doc.dob.year)),

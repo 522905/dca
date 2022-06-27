@@ -1,0 +1,54 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+
+<style>
+    .hidden-field{ display: none;}
+</style>
+<div class="row m-0 form_label p-2">
+    <div class="card card-profile pt-0 mt-0 " >
+		<div class="row justify-content-center m-0" style="max-width: 400px; margin: 0 auto !important; padding: 10px;">
+			<div style="width: 50%; float:left">
+				<div class="card-profile-image">
+					<a href="#">
+						<img style="max-height:200px" src="{{obj.parent.document_self}}">
+					</a>
+				</div>
+			</div>
+			<div style="width: 50%; float:right">
+				<div class="card-body pt-0">
+					<div class="text-center">
+						<h5 class="h3">{{ obj.parent.name }}<span class="font-weight-light"></span></h5>
+						<div class="h5 font-weight-300">
+							<i class="ni location_pin mr-2"></i>{{ obj.parent.contact_mobile }}
+						</div>
+						<div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
+							{% if address_json == address_json  %}
+								{% for key,data in obj.parent.address_json.items %}
+									{{data}},
+								{% endfor %}
+							{% else %}
+								{{ obj.parent.address }}
+							{% endif%}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+    {% csrf_token %}
+    <b>{{ obj.parent.is_sv_uploaded }}</b>
+    <b><h2>
+            <div class="card">
+                {% if bridge_available %}
+                    <a href="{{ bridge_link }}/print_pdf?url={{ obj.parent.physical_legal_document_link }}" target="_blank">Print Form A B C</a></br>
+                {% else %}
+                    <p>Bridge Not Available, Unable to print</p>
+                {% endif %}
+            </div>
+        </h2>
+    </b>
+</div>
+{% endblock %}

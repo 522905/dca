@@ -72,7 +72,6 @@ class ChangeAddressForm(forms.Form):
 		super().__init__(*args, **kwargs)
 		self.pre_inspection = pre_inspection
 
-
 # def save(self):
 # 	data = self.cleaned_data
 # 	obj = self.pre_inspection
@@ -287,11 +286,11 @@ class PreInspectionGenerateOtpForm(forms.Form):
 			}
 		}
 
-		# data = track.client.post(
-		# 	api_key=settings.INTERAKT_API_KEY,
-		#  	path="/v1/public/message/",
-		#  	body=body_text
-		# ).json()
+		data = track.client.post(
+			api_key=settings.INTERAKT_API_KEY,
+		 	path="/v1/public/message/",
+		 	body=body_text
+		).json()
 		return otp_obj
 
 
@@ -679,28 +678,9 @@ class ConnectionDisbursementLabelPrintForm(forms.Form):
 		return data
 
 
-class ConnectionDisbursementPhotoUploadForm(forms.Form):
-	disbursement_photo = forms.CharField(
-		widget=forms.HiddenInput, label='Connection Disbursement', required=True
-	)
 
-	def __init__(self, connection_disbursement=None, *args, **kwargs):
-		super().__init__(*args, **kwargs)
-		self.connection_disbursement = connection_disbursement
 
-	def save(self):
-		data = self.cleaned_data
-		obj = self.connection_disbursement
 
-		obj.documents.create(
-			type=UjjwalaApplicationDocumentsEnum.DISBURSEMENT_PHOTO,
-            link=data['disbursement_photo']
-		)
-
-		obj.transition_disbursement_photo_uploaded(
-			by=get_current_user()
-		)
-		obj.save()
 
 
 class ConnectionDisbursementMaterialDeliveredForm(forms.Form):
@@ -716,22 +696,66 @@ class ConnectionDisbursementMaterialDeliveredForm(forms.Form):
 		return data
 
 
-class ConnectionDisbursementLabelPrintInitialForm(forms.Form):
-	form_type = forms.CharField(widget=forms.HiddenInput, initial='initial_form')
-	application_id = forms.IntegerField()
+class ConnectionDisbursementSvLabelPrintForm(forms.Form):
+	def __init__(self, connection_disbursement=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.connection_disbursement = connection_disbursement
 
-	def clean_application_id(self):
-		from ujjwala.models import UjjwalaV2Application
-		value = self.cleaned_data.get('application_id')
+	def save(self):
+		data = self.cleaned_data
+		obj = self.connection_disbursement
+		obj.transition_sv_label_printed(
+			by=get_current_user()
+		)
+		obj.save()
 
-		application = UjjwalaV2Application.objects.filter(
-			pk=value
-		).first()
-		if not application:
-			raise forms.ValidationError("Invalid Application Id")
-		elif not application.status == ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED:
-			raise forms.ValidationError("Application Status: {}".format(application.status))
-		return value
+
+class ConnectionDisbursementSocialMediaUpdatesForm(forms.Form):
+	social_media_photo = forms.URLField(
+		widget=forms.HiddenInput, required=True
+	)
+
+	def __init__(self, connection_disbursement=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.connection_disbursement = connection_disbursement
+
+	def save(self):
+		data = self.cleaned_data
+		obj = self.connection_disbursement
+
+		obj.documents.create(
+			type=UjjwalaApplicationDocumentsEnum.SOCIAL_MEDIA_PHOTO,
+			link=data['social_media_photo']
+		)
+
+		obj.transition_social_media_updates_done(
+			by=get_current_user()
+		)
+		obj.save()
+
+
+class ConnectionDisbursementMaterialDeliveryForm(forms.Form):
+	disbursement_photo = forms.CharField(
+		widget=forms.HiddenInput, label='Connection Disbursement', required=True
+	)
+
+	def __init__(self, connection_disbursement=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.connection_disbursement = connection_disbursement
+
+	def save(self):
+		data = self.cleaned_data
+		obj = self.connection_disbursement
+
+		obj.documents.create(
+			type=UjjwalaApplicationDocumentsEnum.DISBURSEMENT_PHOTO,
+			link=data['disbursement_photo']
+		)
+
+		obj.transition_material_delivered(
+			by=get_current_user()
+		)
+		obj.save()
 
 
 class UjjwalaApplicationOtpInitialForm(forms.Form):
@@ -861,8 +885,23 @@ class InstallationKitchenUploadForm(forms.Form):
 		return data
 
 	def save(self):
-		self.installation.transition_installation_kitchen_upload()
-		self.installation.save()
+		data = self.cleaned_data
+		obj = self.installation
+
+		obj.documents.create(
+			type=UjjwalaApplicationDocumentsEnum.INSTALLATION_KITCHEN_PHOTO,
+			link=data['kitchen_photo']
+		)
+
+		obj.documents.create(
+			type=UjjwalaApplicationDocumentsEnum.INSTALLATION_STOVE_WITH_STICKER,
+			link=data['stove_photo']
+		)
+
+		obj.transition_installation_kitchen_upload(
+			by=get_current_user()
+		)
+		obj.save()
 
 
 class InstallationMainGateUploadForm(forms.Form):
@@ -879,6 +918,37 @@ class InstallationMainGateUploadForm(forms.Form):
 		return data
 
 	def save(self):
-		self.installation.transition_main_gate()
+		data = self.cleaned_data
+		self.installation.location_data = {
+			'latitude': data['latitude'],
+			'longitude': data['longitude'],
+			'accuracy': data['accuracy']
+		                                   }
+		self.installation.transition_main_gate(
+			by=get_current_user()
+		)
 		self.installation.save()
 
+
+class ConnectionDisbursementInvitationForm(forms.Form):
+	invited_for = forms.DateTimeField(widget=forms.HiddenInput, label='Invited For', required=False)
+	sv_link = forms.URLField(widget=forms.HiddenInput, label='SV Document', required=True)
+	booking_id = forms.CharField(widget=forms.TextInput, label='Booking Id', required=True)
+	sv_uploaded_on = forms.DateTimeField(widget=forms.HiddenInput, required=False)
+
+	def clean(self):
+		data = self.cleaned_data
+		return data
+
+	def save(self, obj):
+		data = self.cleaned_data
+		obj.invitation.create(
+			sv_link=data['sv_link'],
+			booking_id=data['booking_id'],
+			sv_uploaded_on=datetime.datetime.now()
+		)
+
+
+class ConnectionDisbursementSearchForm(forms.Form):
+	# from ujjwala.models import ConnectionDisbursement
+	application_id = forms.IntegerField()
