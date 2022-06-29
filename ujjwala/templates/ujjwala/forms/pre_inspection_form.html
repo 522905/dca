@@ -19,10 +19,11 @@
       </div>
       <h5 class="pt-3 mb-5" style="text-align: center; font-weight: 500; line-height: 40px;">अनुलग्नक -|| <br> यांत्रिकी एलपीजी कनेक्शन के लिए ग्राहकों के परिसर की पूर्व इंस्टालेशन जांच
         <br><span style="color:red"><b>जरुरी सुचना:</b> सभी सेवाएं निःशुल्क हैं </span>
+        <h2 style="text-align: center; font-weight: 600; line-height: 30px;">Form A ({{obj.parent.id}})</h2>
       </h5>
       <table style="width: 100%;">
         <tr>
-          <td class="float-right">दिनांक   <span class="border-dotted" style="width: 150px; display: inline-block;">{{obj.date}}</span></td>
+          <td class="float-right">दिनांक  <span class="border-dotted" style="width: 150px; display: inline-block;">{{obj.date}}</span></td>
         </tr>
         <tr>
           <table>
@@ -67,7 +68,7 @@
               <td style="float:right; width:200px;">
                 <ul class="img_block">
                   <li class="float-right">
-                    <img src="{{obj.parent.document_self}}">
+                    <img style="object-fit: contain; height: 150px;" src="{{obj.parent.document_self}}">
                   </li>
                 </ul>
               </td>
@@ -88,9 +89,9 @@
             <div class="row">
               <div class="label">मैं </div>
               <div class="text border-dotted" style="width:200px">{{obj.mechanic.first_name}} {{obj.mechanic.last_name}}</div>
-              <div class="label">तारीख पर है</div>
+              <div class="label">तारीख पर </div>
               <div class="text border-dotted" style="width:200px">{{obj.created_on}}</div>
-              <div class="label">ग्राहक के परिसर का निरीक्षण किया</div>
+              <div class="label">ग्राहक के परिसर का निरीक्षण किया है</div>
             </div>
           </td>
         </tr>
@@ -117,7 +118,7 @@
         </tr>
         <tr>
           <td>
-            <p>4. क्या रसोई घर एलपीजी स्थापना के लिए सुरक्षित है? यानी छत और दीवारें ज्वलनषील पदार्थ
+            <p>4. क्या रसोई घर एलपीजी स्थापना के लिए सुरक्षित है? यानी छत और दीवारें ज्वलनशील पदार्थ
               की नही हैं
               <span class="float-right">हॉं नही</span>
             </p>
@@ -132,10 +133,17 @@
         </tr>
         <tr>
           <td>
+            <p>6. आपको 14.5kg का 1 सिलिंडर या 5kg के 2 के दो सिलिंडर चाहिए
+              <span class="float-right">14.5kg / 5kg</span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td>
             <div class="col-6 col text-left pt-5 sign_img"  style="float:left;">
               <p><b>आवेदक के हस्ताक्षर/एलटीआई</b></p>
               <div class="img_block">
-{#                <img style="float: left;" src="{{obj.document_customer_signature}}">#}
+{#                <img style="float: left; object-fit: contain;" src="{{obj.document_customer_signature}}">#}
                 <div class="sign_right">
                   <p>{{obj.name}}</p>
                   <p>{{obj.mobile}}</p>
@@ -145,7 +153,7 @@
             <div class="col-6 col text-right pt-5 pr-0 sign_img" style="float:right;">
               <p><b>मैकेनिक का नाम हस्ताक्षर</b></p>
               <div class="img_block" style="float:right;">
-                <img style="float: left;" src="{{obj.document_kitchen_photo}}">
+                <img style="float: left; object-fit: contain;" src="{{obj.document_kitchen_photo}}">
                 <div class="sign_right">
                   <p>{{obj.mechanic.name}}</p>
                   <p>{{obj.mechanic.mobile}}</p>
@@ -158,10 +166,10 @@
       <table>
         <tr>
           <td>
-              <p style="margin: 30px 0 0 0 ;">उपरोतक प्रार्थी को मै जानता हूं आज इनके रसोई घर का निरीक्षण हुआ है।</p>
+              <p style="margin: 30px 0 0 0 ;">उपरोतक प्रार्थी को मै जानता हूँ आज इनके रसोई घर का निरीक्षण हुआ है।</p>
               <p><b>गवाह के हस्ताक्षर/नाम/मोबाइल</b></p>
               <div class="img_block sign_img">
-{#                <img style="float: left;" src="{{obj.document_witness_photo}}">#}
+{#                <img style="float: left; object-fit: contain;" src="{{obj.document_witness_photo}}">#}
                 <div class="sign_right">
                   <p>{{obj.witness_name}}</p>
                   <p>{{obj.witness_mobile_number}}</p>
@@ -175,6 +183,7 @@
 </body>
 </html>
 <style>
+  table tr td p{ line-height: 24px;}
   .img_block span{ display: block; }
   .sign_right{ float: left; margin-left: 30px;}
   .sign_img img{ width: 100px; height:100px; }

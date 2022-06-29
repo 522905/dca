@@ -19,77 +19,85 @@
       <div class="top_banner pt-3">
         <img src="https://arungas.com/public/ujwalla/banner.png" style="width: 100%;">
       </div>
-    <h2 style="text-align: center; font-weight: 600; line-height: 30px;">Form B</h2>
-    <h5 class="pt-3 mb-5" style="text-align: center; font-weight: 500; line-height: 40px;">पारिवारिक संरचना के लिए स्व.घोशाा और रिहाई के लिए पता <br> पीएमयूवाई के तहत नए कनेक्षन का (केवल प्रवासी के लिए) </h5>
-    <div class="form_block">
-      <div class="row">
-        <div class="label">1.नामः</div>
-        <div class="text border-dotted">{{obj.name}}</div>
+      <h2 style="text-align: center; font-weight: 600; line-height: 30px;">Form B ({{obj.id}})</h2>
+      <h5 class="pt-3 mb-5" style="text-align: center; font-weight: 500; line-height: 40px;">पारिवारिक संरचना के लिए स्व.घोषणा और रिहाई के लिए पता <br> पीएमयूवाई के तहत नए कनेक्शन का (केवल प्रवासी के लिए) </h5>
+      <div class="form_block">
+        <table>
+          <tr>
+            <table>
+              <tr>
+                <td>
+                  <table>
+                    <tr>
+                      <td style="width: 550px; display: inline-block;">
+                        <div class="row">
+                          <div class="label">1. नाम:</div>
+                          <div class="text border-dotted">{{obj.name}}</div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="width: 550px; display: inline-block;">
+                        <div class="row">
+                          <div class="label">2. आधार संख्या:</div>
+                          <div class="text border-dotted">{{obj.self.uid_no}}</div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="width: 550px; display: inline-block;">
+                        <div class="row">
+                          <div class="label">3. पता:</div>
+                          <div class="text border-dotted">{{obj.address}}</div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="width: 550px; display: inline-block;">
+                        <div class="row">
+                          <div class="label">4. मोबाईल नः</div>
+                          <div class="text border-dotted">{{obj.contact_mobile}}</div>
+                        </div>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+                <td style="float:right; width:200px; margin-left: 20px;">
+                  <ul class="img_block">
+                    <li class="float-right">
+                      <img style="object-fit: contain; height: 140px;" src="{{obj.document_self}}">
+                    </li>
+                  </ul>
+                </td>
+              </tr>
+            </table>
+          </tr>
+        </table>
+        <table class="border table-bordered p-2 text-center" style="width: 100%;">
+          <tr>
+            <th>क्र</th>
+            <th>लाभार्थी/परिवार के सदस्यो का नाम:</th>
+            <th>आधार संख्या:</th>
+            <th>संबंध</th>
+            <th>लिंग</th>
+            <th>जन्म तारीख</th>
+          </tr>
+          {% for data in obj.family_members.all %}
+          <tr>
+            <td>{{ forloop.counter }}.</td>
+            <td style="text-align: left;">{{data.name}}</td>
+            <td>{{data.uid_no}}</td>
+            <td>{{data.relation}}</td>
+            <td>{{data.get_gender}}</td>
+            <td>{{data.dob}}</td>
+          </tr>
+          {% endfor %}
+        </table>
       </div>
-      <div class="row">
-        <div class="label">2.आधार संख्या:</div>
-        <div class="text border-dotted"></div>
-      </div>
-{#      <div class="row">#}
-{#        <div class="label">3. जीवनसाथी का नाम:</div>#}
-{#        <div class="text border-dotted">{{husband_name}}</div>#}
-{#      </div>#}
-{#      <div class="row">#}
-{#        <div class="label">4. पिता का नाम:</div>#}
-{#        <div class="text border-dotted">{{father_name}}</div>#}
-{#      </div>#}
-      <div class="row">
-        <div class="label">3.पता:</div>
-        <div class="text border-dotted">{{obj.address}}</div>
-      </div>
-
-
-      <!-- <div class="row pl-3">
-        <div class="col" style="width: 48%;">
-          <div class="row">
-            <div class="label"> मकान संख्याफलैट का नाम:</div>
-            <div class="text border-dotted">{{obj.FATHER}}</div>
-          </div>
-        </div>
-        <div class="col" style="width: 48%;">
-          <div class="row">
-            <div class="label">मंजिल संख्या:</div>
-            <div class="text border-dotted">{{obj.FATHER}}</div>
-          </div>
-        </div>
-      </div> -->
-      <div class="row">
-        <div class="label">4.मोबाईल नः</div>
-        <div class="text border-dotted">{{obj.contact_mobile}}</div>
-      </div>
-      <table class="border table-bordered p-2 text-center" style="width: 100%;">
-        <tr>
-          <th>क्र</th>
-          <th>लाभार्थी/परिवार के सदस्यो का नाम:</th>
-          <th>आधार संख्या:</th>
-          <th>संबंध</th>
-          <th>लिंग</th>
-          <th>जन्म तारीख</th>
-        </tr>
-        {% for data in obj.family_members.all %}
-        <tr>
-          <td>{{ forloop.counter }}.</td>
-          <td style="text-align: left;">{{data.name}}</td>
-          <td>{{data.uid_no}}</td>
-          <td>{{data.relation}}</td>
-          <td>{{data.get_gender}}</td>
-          <td>{{data.dob}}</td>
-        </tr>
-        {% endfor %}
-      </table>
-    </div>
-      <div >
-        <p class="pt-5 " style="text-align: left;">मैं घोषणा करता हूँ कि उपर र्विात परिवार के सदस्य मेरे साथ उपरोक्त पते पर रह रहे है और
-          हमारे पास यहां उल्लेखित पते पर कोई
-          एलपीजी कनेक्शन नही है।</p>
-          <p class="pt-2 text-left">
-            मैं घोषणा करता हूँ कि मेरा मूल निवास स्थान  और वर्तमान पता अलग है।
-            </p>
+      <div>
+        <p class="pt-5 " style="text-align: left;">मैं घोषणा करता हूँ कि उपर वर्णित परिवार के सदस्य मेरे साथ उपरोक्त पते पर रह रहे है और
+          हमारे पास यहां उल्लेखित पते पर कोई एलपीजी कनेक्शन नही है।</p>
+        <p class="pt-2 text-left"> मैं घोषणा करता हूँ कि मेरा मूल निवास स्थान  और वर्तमान पता अलग है।</p>
       </div>
       <div class="row">
         <div class="col-6 col text-left pt-5" style="float:left;">
@@ -100,16 +108,15 @@
             <p class="pt-2">
               <b>Arun Indane</b><br>
               <img style="object-fit: contain;" src="https://www.arungas.com/public/arun_indane_sign.png"/>
+            </p>
             <p><b>Auth.</b></p>
-
         </div>
       </div>
-
-  </div>
-  </div>
+    </div>
 </body>
 </html>
 <style>
+  table tr td{ font-size: 13px;}
   .form_block ul{ float: left; width: 100%; padding: 0;}
   .form_block ul li{
     list-style: none;
