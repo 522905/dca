@@ -21,11 +21,11 @@
 </style>
 <div class="p-2 pt-0 form_label" style="width: 100%;">
     <div class="main-header bg-heading">
-        <span class="text-white">List of Pre-Inspection Records</span>
+        <span class="text-white">List of Pre-Suraksha-Drill Records</span>
     </div>
     {% for obj in object_list %}
     <div class="card mb-2 app_card">
-        <a href="{% url 'ujjwala:pre_inspection_form_view' pk=obj.id %}">
+        <a class="text-under-n" href="{% url 'ujjwala:pre_inspection_form_view' pk=obj.id %}">
             <div class="card-header p-2">
                 <div class="row m-0">
                     <div class="col">

@@ -191,9 +191,9 @@
 
     function valid() {
         let files = [
-            validateUppy(annexureFormUppy, 'LEGAL_DOC_ANNEXURE_14_POINTS', 'Form C', false),
-            validateUppy(familyOccupancyUppy, 'LEGAL_DOC_FAMILY_OCCUPANCY', 'Form B ', false),
-            validateUppy(preInspectionUppy, 'LEGAL_DOC_PRE_INSPECTION', 'Form A', false)
+            validateUppy(annexureFormUppy, 'LEGAL_DOC_ANNEXURE_14_POINTS', 'Form C', true),
+            validateUppy(familyOccupancyUppy, 'LEGAL_DOC_FAMILY_OCCUPANCY', 'Form B ', true),
+            validateUppy(preInspectionUppy, 'LEGAL_DOC_PRE_INSPECTION', 'Form A', true)
         ]
 
         if (!files.reduce((aggr, current) => {
@@ -235,6 +235,7 @@
     function submit_form() {
         event.preventDefault();
         let documentArray = valid();
+        if(!documentArray) return;
         let formdata = $('form').serializeArray()
             .reduce(function (accum, item) {
                 if (-1 === ['ignoreThis', 'andThat'].indexOf(item.name)) {

@@ -7,17 +7,17 @@
 <style>
     .hidden-field{ display: none;}
 </style>
-<div class="row m-0 form_label p-2">
-    <div class="card card-profile pt-0 mt-0 " >
-		<div class="row justify-content-center m-0" style="max-width: 400px; margin: 0 auto !important; padding: 10px;">
-			<div style="width: 50%; float:left">
+<div class="form_label p-2">
+	<div class="card card-profile pt-0 mt-0 " style="width: 100%;" >
+		<div class="row justify-content-center m-0" style="width: 100%; margin: 0 auto !important; padding: 10px;">
+			<div style="width: 30%; float:left">
 				<div class="card-profile-image">
 					<a href="#">
 						<img style="width:100%" src="{{obj.parent.document_self}}">
 					</a>
 				</div>
 			</div>
-			<div style="width: 50%; float:right">
+			<div style="width: 70%; float:right">
 				<div class="card-body pt-0">
 					<div class="text-center">
 						<h5 class="h3">{{ obj.parent.name }}<span class="font-weight-light"></span></h5>
@@ -38,20 +38,41 @@
 			</div>
 		</div>
 	</div>
-    <form method="post" id="form"  class="p-2">
+
+    <form method="post" id="form" >
         {% csrf_token %}
-        <div class="card">
-            {{ form }}
-            {% if bridge_available %}
-                <a href="{{ bridge_link }}/print_pdf?url={{ obj.valid_sv_link }}" target="_blank">Print SV</a></br>
-                <a href="{{ bridge_link }}/print_label?url={{bluebook_label_print_url}}" target="_blank">Print Label</a>
-            {% else %}
-                <p>Bridge Not Avaliable, Unable to print</p>
-            {% endif %}
+        <div class="card pt-4">
+			<div class="p-2">
+				{{ form }}
+				<a class="btn btn-danger text-white mb-3" style="width: 100%;" href="{{ obj.valid_sv_link }}" target="_blank">
+					<i class="material-icons">local_printshop</i>
+					Download SV</a>
+
+				<div class="row m-0 multi_buttons mb-2">
+					<div class="col pl-1">
+						<a class="btn btn-danger text-white {% if not bridge_available %}disabled{% endif %}" style="width: 100%;" href="{{ bridge_link }}/print_label?url={{bluebook_label_print_url}}" target="_blank">Print Label</a>
+					</div>
+					<div class="col pr-1">
+						<a class="btn btn-danger text-white  {% if not bridge_available %}disabled{% endif %}" style="width: 100%;" href="{{ bridge_link }}/print_pdf?url={{ obj.valid_sv_link }}" target="_blank">
+							<i class="material-icons">local_printshop</i>
+							Print SV</a></br>
+					</div>
+				</div>
+				{% if not bridge_available %}																																							
+				<p class="alert alert-primary mb-3" role="alert" style="width:100% ;"> <i class="material-icons left">info_outline</i>  Bridge Not Available, Unable to print</p>
+				{% endif %}
+			
+
+				<p class="pl-2" style=" font-weight: 600;"><input required id="accept_form_abc_check" type="checkbox" style="opacity: 1; margin-right:10px; position:relative; pointer-events: unset;" >I have collected Signed Form ABC and SV Voucher from Customer.</p>
+
+			</div>    
             <div class="card-footer">
-                <input class="btn btn-secondary rounded-0 float-right" type="submit" id="form"  value="Submit"/>
+                <input class="btn btn-primary float-right" type="submit" id="form"  value="Submit"/>
             </div>
         </div>
     </form>
 </div>
+<style>
+	accept_form_abc_check
+</style>
 {% endblock %}

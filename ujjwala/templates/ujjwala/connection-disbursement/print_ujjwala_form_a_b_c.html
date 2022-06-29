@@ -45,10 +45,9 @@
 	
 </div>
 <div class="card-footer p-1 multi_buttons">
-
 	<a style="width: 100%;" class="text-white  btn btn-danger mb-3" 
 		href="{% url 'ujjwala:legal_documents_upload' pk=obj.id %}" target="_blank">
-		<i class="material-icons">cloud_upload</i> Legal Documents
+		<i class="material-icons">cloud_upload</i>Legal Documents
 	</a>
 	<a style=" width: 100%;" class="text-white btn btn-danger mb-3 float-right" 
 		href="{{ obj.parent.physical_legal_document_link }}" target="_blank">
@@ -59,7 +58,7 @@
 		<span><i class="material-icons">local_printshop</i> Print Form ABC</span>
 	</a>
 	{% if not bridge_available %}																																							
-		<p class="alert alert-primary" role="alert" style="width:100% ;"> <i class="material-icons left">info_outline</i>  Bridge Not Available, Unable to print</p>
+		<p class="alert alert-primary" role="alert" style="width:100% ;"> <i class="material-icons left">info_outline</i> Bridge Not Available, Unable to print</p>
 	{% endif %}
 </div>
     

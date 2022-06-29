@@ -6,7 +6,7 @@
 <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
 <style>
-    .app_card a{ color: #333;}
+    /* .app_card a{ color: #333;}
     .app_card a:hover{ text-decoration: none;}
     p{ padding: 0; margin: 0;}
     body{ font-family: 'muli', sans-serif !important; font-weight: 500;}
@@ -19,7 +19,7 @@
     .status{ color: #2957A4; font-size: 0.9em;}
     .app_card p{ font-size: 0.9em;}
     .contact_link a:hover{ text-decoration: underline; color: #2957A4  !important; }
-    .contact_link a{ text-decoration: underline; color: #e35d2d !important; }
+    .contact_link a{ text-decoration: underline; color: #e35d2d !important; } */
 </style>
 <div class="p-2 pt-0 form_label" style="width: 100%;">
     {% if messages %}
@@ -62,7 +62,7 @@
             <ul class="m-0">
                 {% for contact in  obj.parent.all_contacts %}
                     <li class="contact_link">
-                        <p class="float-left">Phone  {{ forloop.counter }}</p>
+                        <p class="float-left">Phone {{ forloop.counter }}</p>
                         <p class="float-right">
                             <b> <a href="tel:{{ contact}}" onclick="return true;">{{contact}}</a></b>      
                         </p>

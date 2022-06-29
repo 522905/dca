@@ -25,30 +25,13 @@
     .user_address{ font-size:12px; font-weight:500}
 </style>
 <div class="row m-0 form_label">
-    
     <form method="post" id="upload_sign_and_submit_form">
         {% csrf_token %}
         <div class="card">
             {{form.form_type}}
             {{form.application_id}}
             {{form.name}}
-            <!-- <div class="row pt-2 border-bottom m-0">
-                <div class="col user_profile">
-                    <img src="{{application.document_self}}"> 
-                </div>
-                <div class="col">
-                    <p class="username mt-2"> {{application.name}}</p>
-                    <p class="user_address">
-                        {% if address_json == address_json  %}
-                            {% for key,data in application.address_json.items %}
-                                {{data}},
-                            {% endfor %}
-                        {% else %}
-                            {{ obj.address }}
-                        {% endif%}
-                    </p> 
-                </div>
-            </div> -->
+
             <div class="form-group" style="margin-bottom: 0 !important;">
                 <div class="row m-0 p-3">
                     <div class="col-sm-12 photo_block p-0">

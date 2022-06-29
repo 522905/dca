@@ -7,15 +7,13 @@
 <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.css" >
 <script src="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.js"></script>
 <style>
-    body{ font-family: 'muli', sans-serif; font-weight: 500;}
+    body, .btn{ font-family: 'muli', sans-serif !important; font-weight: 500;}
     .hidden-field{ display: none;}
-    
-    .delete {  background-color: red; border: 0; color: #fff; font-weight: 500; border-radius: 5px;padding: 6px; width: 85px;font-size: 15px;text-transform: uppercase;}
+    .delete {  font-family: 'muli', sans-serif !important; background-color: red; border: 0; color: #fff; font-weight: 500; border-radius: 5px;padding: 6px; width: 85px;font-size: 15px;text-transform: uppercase;}
     #safety_audio_form audio{ padding: 10px 0 0 0; }
     #playAudio p{ padding-left: 10px; font-size: 16px; font-weight: 600;}
     .btns{ font-family: 'muli', sans-serif !important; font-weight: 500; width: 100%; line-height: 0.5;}
     .main-controls canvas{ width: 100%; border-radius: 20px; height: 42px; opacity: 0.4;}
-
 </style>
 <div class="p-2 pt-0 form_label" style="width: 100%;">
     <form method="post" id="safety_audio_form">
@@ -50,9 +48,10 @@
             <div class="card-footer float-right">
                 <button class="btn btn-success float-right rounded-3" onclick="upload_audio_and_submit_form()" type="button">Submit</button>
             </div>
-            <div class="col-sm-12 card p-0">
-                <a href="#" target="_blank" ><img style="width:100%" src="{% static '/img/lpg-security.png' %}"></a> 
-            </div>
+            
+        </div>
+        <div class="col-sm-12 card p-0">
+            <a href="#" target="_blank" ><img style="width:100%" src="{% static '/img/lpg-security.png' %}"></a> 
         </div>
     </form>
 </div>

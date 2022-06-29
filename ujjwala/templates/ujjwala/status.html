@@ -17,6 +17,8 @@
             <div class="row d-flex justify-content-between px-3 top">
                 <div class="d-flex">
                     <h5>Application Id: <span class="text-info font-weight-bold">{{ object.pk }}</span></h5>
+                    <h5>Name: <span class="text-info font-weight-bold">{{ object.name }}</span></h5>
+                    <h5>Status: <span class="text-info font-weight-bold">{{ object.status }}</span></h5>
                 </div>
             </div> <!-- Add class 'active' to progress -->
             <div class="row d-flex justify-content-center">
@@ -24,24 +26,27 @@
                 <div class="col-12">
                
                     <ul id="progressbar" class="text-center">
-                        {% if object.status == 'SUBMITTED' %}
+                        {% if object.status == ' SDF' %}
                          <li class="step0 active"><div class="row d-flex icon-content"> <img class="icon" style="margin-left:120px;" src="{% static 'img/submitted.png' %}">
                                 <div class="d-flex flex-column">
-                                    <p class="font-weight-bold">SUBMITTED</p>
+                                    <p class="font-weight-bold"> </p>
                                 </div></div></li>
                             {% else %}
                             <li class="step0 active"></li>
                         {% endif %}
-                        {% if object.status in 'BACK_OFFICE_START,BACK_OFFICE_END'  %}
+                        {% if object.status in 'NIC_CLEARED'  %}
                             <li class="step0 active"> <div class="row d-flex icon-content"> <img class="icon" style="margin-left:120px;" src="{% static 'img/accepted.png' %}">
                                 <div class="d-flex flex-column">
-                                    <p class="font-weight-bold " style="margin-left: 90px;"> Document Accepted</p>
+                                    <p class="font-weight-bold " style="margin-left: 90px;">
+                                        <h5>अनिवार्य पूर्व निरीक्षण की प्रकिया</h5>
+
+                                    </p>
                                 </div>
                             </div></li>
                             {% else %}
                             <li class="step0 active"></li>
                         {% endif %}
-                        {% if object.status == 'FRONT_OFFICE' %}
+                        {% if object.status == 'PRE_INSPECTION_ACCEPTED' %}
                             <li class="step0 active">
                                
                                   <div class="row d-flex icon-content">
@@ -49,7 +54,21 @@
                                      <img class="icon" style="margin-left:120px;" src="{% static 'img/process.png' %}">
                                         
                                     <div class="d-flex flex-column">
-                                        <p class="font-weight-bold">In Process</p>
+                                        <p class="font-weight-bold">
+                                            <h5>पूर्व निरीक्षण की प्रकिया पूर्ण</h5>
+                                            आपके उज्ज्वला कनेक्शन की अनिवार्य पूर्व निरीक्षण की प्रकिया पूर्ण हो चुकी है
+                                            कृपया व्हाट्सअप पर भेजे गए फॉर्म <b>(Form A,Form B, Form C)</b>
+                                            का प्रिंट आउट निकाल कर अपने हस्ताक्षर कर
+                                            अपने दस्तावेज नीचे दिए गए लिंक पर जा कर अपलोड कर दें
+                                            धन्यवाद
+                                            <a href="http://0.0.0.0:60610/ujjwala/portal/legal_documents_upload/3/">
+                                                <b>फॉर्म अपलोड</b>
+                                            </a>
+                                            <br>
+                                            <a href="http://0.0.0.0:60610/ujjwala/portal/legal_documents_upload/3/">
+                                                <b>व्हाट्सअप पर दोबारा फॉर्म भेजे</b>
+                                            </a>
+                                        </p>
                                     </div>
                               
                                  </div>

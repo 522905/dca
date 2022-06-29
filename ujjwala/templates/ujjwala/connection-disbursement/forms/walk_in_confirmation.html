@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="{% static '/css/style.css' %}" >
 <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
-<style>
+<!-- <style>
     .app_card a{ color: #333;}
     .app_card a:hover{ text-decoration: none;}
     p{ padding: 0; margin: 0;}
@@ -20,7 +20,7 @@
     .app_card p{ font-size: 0.9em;}
     .contact_link a:hover{ text-decoration: underline; color: #2957A4  !important; }
     .contact_link a{ text-decoration: underline; color: #e35d2d !important; }
-</style>
+</style> -->
 <div class="p-2 pt-0 form_label" style="width: 100%;">
     {% if messages %}
       {% for msg in messages %}
@@ -38,8 +38,11 @@
     <div class="card mb-2 app_card">
         <a href="{% url 'ujjwala:connection_disbursement_form_view' pk=obj.id %}" data-turbolinks="false">
             <div class="card-header">
-                <p class="text-center"><b>{{ obj.status }}</b> <br>
-                    Submitted On <b>{{ obj.submitted_on }}</b></p>
+                <p class="text-center m-0">
+                    <b>{{ obj.status }}</b> 
+                    <br> Submitted On 
+                    <b>{{ obj.submitted_on }}</b>
+                </p>
             </div>
             <div class="card-body pb-0 p-2">
                 <ul class="m-0">

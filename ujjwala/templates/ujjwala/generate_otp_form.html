@@ -18,29 +18,36 @@
     <form method="post" id="">
         {% csrf_token %}
         <div class="card">
-            <div class="row pt-2 border-bottom">
-                <div class="col user_profile">
-                    <img src="{{application.document_self}}"> 
+            <div class="row justify-content-center m-0" style="margin: 0 auto !important; padding: 10px;">
+                <div style="width:30%; float:left">
+                    <div class="card-profile-image">
+                        <a href="#">
+                            <img style="max-height:200px" src="{{application.document_self}}">
+                        </a>
+                    </div>
                 </div>
-                <div class="col">
-                    <p class="username mt-2"> {{application.name}}</p>
-                    <p class="user_address">
-                        {% if address_json == address_json  %}
-                            {% for key,data in application.address_json.items %}
-                                {{data}},
-                            {% endfor %}
-                        {% else %}
-                            {{ obj.address }}
-                        {% endif%}
-                    </p> 
+                <div style="width:70%; float:right">
+                    <div class="card-body pt-0">
+                        <div class="text-center">
+                            <p class="username mt-2"> {{application.name}}</p>
+                            <p class="user_address">
+                                {% if address_json == address_json  %}
+                                    {% for key,data in application.address_json.items %}
+                                        {{data}},
+                                    {% endfor %}
+                                {% else %}
+                                    {{ obj.address }}
+                                {% endif%}
+                            </p> 
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="card-body ">
+            <div class="card-body border-top">
                 {% form form=form %}{% endform %}
             </div>
-            
-            <div class="card-footer float-right border-top">
-                <input class="btn btn-success float-right rounded-0" type="submit" value="Submit" />
+            <div class="card-footer">
+                <input class="btn btn-success float-right"  style="position: relative; top: 2px;" type="submit" value="Submit" />
             </div>
         </div>
     </form>

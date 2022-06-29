@@ -17,20 +17,19 @@
             <div class="card-body">
                 {{form.form_type}}
                 {{form.application_id}}
-                <div class="row border-bottom mb-2">
-                    <div class="lacation_field col-sm-8">
-                        <div class="" style="width: 100%; clear:both;">
-                            <span>{{ form.latitude }}</span>
-                            <span>{{ form.longitude }}</span>
-                            <span>{{ form.accuracy }}</span>
-                        </div>
-                    </div>
-                   
-                    <div class="col-sm-4 photo_block pl-lg-0 mb-3">
+                <div class="row mb-2 M-0">
+                    <div class="col-sm-4 photo_block pl-lg-0 mb-3 p-0">
                         <div class="allowLocationNav">
                             <button type="button" class="btn btn-primary" onClick="allowLocationNav();">
                                 Capture Location
                             </button>
+                        </div>
+                        <div class="lacation_field col-sm-8">
+                            <div class="" style="width: 100%; clear:both;">
+                                <span>{{ form.latitude }}</span>
+                                <span>{{ form.longitude }}</span>
+                                <span>{{ form.accuracy }}</span>
+                            </div>
                         </div>
                         {{ form.latitude.errors }} {{ form.longitude.errors }} {{ form.accuracy.errors }}
                     </div>
@@ -42,8 +41,6 @@
                         {{ form.main_gate.errors }}
                     </div>
                 </div>
-               
-                
             </div>
             <div class="card-footer float-right">
                 <input class="btn btn-success float-right rounded-0" type="submit" value="Submit" />
@@ -133,7 +130,7 @@
         var meter = Math.round(position.coords.accuracy);
 
         if (meter > 300) {
-            $('#map_error_msg').append("<p>Move to an open area and capture location again. Location accuracy not precise enough!</p>");
+            $('#map_error_msg').append("<p>किसी खुले क्षेत्र में जाएं और स्थान को फिर से कैप्चर करें। Move to an open area and capture location again. Location accuracy not precise enough! </p>");
             return;
         }
 

@@ -83,9 +83,9 @@ ul.errorlist{ background-color: transparent; display: block;}
 .main-header{ padding: 10px; border-radius: 3px;}
 
 
-.custome_buttons a i{ position: relative; top: 4px; }
-.custome_buttons a{ text-transform: none !important;}
-body .form_label .custome_buttons .btn{ height: 40px !important; line-height: 25px !important; }
+body .form_label a i{ position: relative; top: 4px; }
+body .form_label a{ text-transform: none !important;}
+body .form_label .btn{ height: 40px !important; line-height: 25px !important; }
 
 /* **************************************** */
             /* SideBar */
