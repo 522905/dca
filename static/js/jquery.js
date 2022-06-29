@@ -1,43 +1,3 @@
-//aadhaar check 
-function checkApplicantsAadhaarValidity() {
-    var e = document.getElementById('applicant-uid_no');
-    var uid = e.value;
-    if($("#applicant-uid_no" ).attr("validated_value")==uid) return;
-    
-    if(!validateAadhaar(uid)) {
-        e.setCustomValidity("Invalid aadhaar, please check again.");
-    } else {
-        if($('#family_members_tree .aadhar_no_blur:not([id="SELF-uid_no"]').get().map((e)=> e.value).indexOf(uid) >= 0) {
-            e.setCustomValidity("Aadhaar already entered in Family Members List");
-        } else {
-            $("#self-uid-msg").html('Checking Aadhaar...');
-
-            $("#applicant-uid_no" ).attr("validated_value", uid);
-
-            jQuery.ajax({
-                url: '/ujjwala/ujjwala-application/check_uid/',
-                type: "GET",
-                data: {'uid': uid},
-                success: function (data) {
-                    response = data;
-                    if (response.status === true) {
-                        e.setCustomValidity("");
-                        $('#family_members_tree [id="SELF-uid_no"]').val(uid);
-                        $("#self-uid-msg").html('<p style=" color:green; "> ✔ आप आवेदन कर सकते है। </p>');
-                    } else {
-                        e.setCustomValidity(`ID: ${data.data.applications[0].id} Name: ${data.data.applications[0].name}`);
-                        e.focus();
-
-                        msg = data.data.applications.map(e=>`<p>आपका आवेदन पहले से मौजूद है ${e.id} Name: ${e.name}</p>`).join('');
-                        $("#self-uid-msg").html(msg).css({'color': 'red', 'font-size' : '17px'});
-
-                    }
-                },
-            });
-        }
-    }
-    e.reportValidity();
-}
 
 function checkContactMobileValidity() {
 
@@ -172,7 +132,7 @@ function validate_pincode() {
 }
 
 function validateAadhaarrUniquness() {
-    let uid_list = $('.familyMemberLineItem .aadhar_no_blur').get().map(e=>e.value);
+    let uid_list = $('.familyMemberLineItem .aadhar_on_blur').get().map(e=>e.value);
     let uid_length =uid_list.length
     let uid_uniq_length = uid_list.filter((item, i, ar) => ar.indexOf(item) === i).length;
 
@@ -363,7 +323,7 @@ function submit_form(signature_url) {
             $("#message").html('<div class="alert alert-success" style="color:red; text-align:center; margin-top:250px;"><strong>SUCCESS!</strong> your application has been submitted</div>');
 
             $("#cus_id").append(result);
-            $("#message").append(result.id).css({"text-align": "center"}).append(" <b>is you application Id</b>.");
+            $("#message").append(result.id).css({"text-align": "center"}).append(" <b> is you application Id</b>.");
 
             $('#application_receipt').show();
         },
@@ -465,7 +425,7 @@ function validateFamilyMembersFiles() {
 
 
     file_list_front = $.map(members, memberMap =>
-            validateUppy(window[`${memberMap.relation}-uid_front_link_uppy`], 'UID_FRONT', `${memberMap.relation} Aadhaar Card Frontside Picture (आधार कार्ड की फोटो)*`, true),
+        validateUppy(window[`${memberMap.relation}-uid_front_link_uppy`], 'UID_FRONT', `${memberMap.relation} Aadhaar Card Frontside Picture (आधार कार्ड की फोटो)*`, true),
         validateUppy(window[`${memberMap.relation}-uid_front_link_uppy`], 'FATHER_UID_FRONT', `${memberMap.relation}Father Aadhaar Card Frontside Picture (आधार कार्ड की फोटो)*`, true)
     );
 
@@ -564,7 +524,7 @@ function addFamilyMember(relation_name, relation_label) {
                 <div class="col-sm-4">
                     <p>${relation_label} Aadhaar No.<strong style="color:red">*</strong></p>
                     <div class="">
-                        <input required maxlength="12" minlength="12" type="tel" class="aadhar_no_blur form-control" name="${relation_name}-uid_no" id="${relation_name}-uid_no"  pattern="[0-9]{12}"></input>
+                        <input required maxlength="12" minlength="12" type="tel" class="aadhar_on_blur form-control" name="${relation_name}-uid_no" id="${relation_name}-uid_no"  pattern="[0-9]{12}"></input>
                     </div>
                 </div>
             </div>
@@ -645,37 +605,48 @@ function initUppyUpload(elementId, elementVariable) {
 
 }
 
-$('#family_members_tree').on("blur", ".aadhar_no_blur", function() {
-    var e = this
-    var uid = this.value;
 
-    if(!validateAadhaar(e.value)) {
-        this.setCustomValidity("Invalid aadhaar, please check again.");
+//aadhaar check 
+function checkApplicantsAadhaarValidity() {
+    var e = document.getElementById('applicant-uid_no');
+    var uid = e.value;
+    if($("#applicant-uid_no" ).attr("validated_value")==uid) return;
+    
+    if(!validateAadhaar(uid)) {
+        e.setCustomValidity("Invalid aadhaar, please check again.");
     } else {
-        if($(`#family_members_tree .aadhar_no_blur:not([id="${e.getAttribute('id')}"])`).get().map((i)=> i.value).indexOf(uid) >= 0) {
-                this.setCustomValidity("Aadhaar already entered in Family Members List");
+        if($('#family_members_tree .aadhar_on_blur:not([id="SELF-uid_no"]').get().map((e)=> e.value).indexOf(uid) >= 0) {
+            e.setCustomValidity("Aadhaar already entered in Family Members List");
         } else {
+            $("#self-uid-msg").html('Checking Aadhaar...');
+
+            $("#applicant-uid_no" ).attr("validated_value", uid);
+
             jQuery.ajax({
                 url: '/ujjwala/ujjwala-application/check_uid/',
                 type: "GET",
                 data: {'uid': uid},
                 success: function (data) {
                     response = data;
-
                     if (response.status === true) {
                         e.setCustomValidity("");
-                    } else {    
-                        e.setCustomValidity(data.msg);
+                        $('#family_members_tree [id="SELF-uid_no"]').val(uid);
+                        $("#self-uid-msg").html('<p style=" color:green; "> ✔ आप आवेदन कर सकते है। </p>');
+                    } else {
+                        e.setCustomValidity(`ID: ${data.data.applications[0].id} Name: ${data.data.applications[0].name}`);
                         e.focus();
+
+                        msg = data.data.applications.map(e=>`<p>आपका आवेदन पहले से मौजूद है ${e.id} Name: ${e.name}</p>`).join('');
+                        $("#self-uid-msg").html(msg).css({'color': 'red', 'font-size' : '17px'});
+
                     }
                 },
             });
         }
     }
-
     e.reportValidity();
+}
 
-});
 
 // The multiplication table
 var d = [
@@ -799,7 +770,7 @@ $(document).ready(function() {
         inline: true,
         target: '#customerpicture',
         showProgressDetails: true,
-        note: 'Images and video only, 2–3 files, up to 10 MB',
+        note: 'Images only, 1 file, up to 10 MB',
         height: 250,
         metaFields: [],
         id: 'customerpicture',
@@ -828,7 +799,7 @@ $(document).ready(function() {
         inline: true,
         target: '#bankdetail',
         showProgressDetails: true,
-        note: 'Images and video only, 2–3 files, up to 10 MB',
+        note: 'Images only, 1 file, up to 10 MB',
         height: 250,
         metaFields: [],
         id: 'bankdetail',
@@ -842,5 +813,54 @@ $(document).ready(function() {
         console.log('successful files:', result.successful)
         console.log('failed files:', result.failed)
     });
+
+
+    $('#family_members_tree').on("blur", ".aadhar_on_blur", function() {
+        var e = this
+        var uid = this.value;
+    
+        if(!validateAadhaar(e.value)) {
+            this.setCustomValidity("Invalid aadhaar, please check again.");
+        } else {
+            if($(`#family_members_tree .aadhar_on_blur:not([id="${e.getAttribute('id')}"])`).get().map((i)=> i.value).indexOf(uid) >= 0) {
+                    this.setCustomValidity("Aadhaar already entered in Family Members List");
+            } else {
+                jQuery.ajax({
+                    url: '/ujjwala/ujjwala-application/check_uid/',
+                    type: "GET",
+                    data: {'uid': uid},
+                    success: function (data) {
+                        response = data;
+    
+                        if (response.status === true) {
+                            e.setCustomValidity("");
+                        } else {    
+                            e.setCustomValidity(data.msg);
+                            e.focus();
+                        }
+                    },
+                });
+            }
+        }
+    
+        e.reportValidity();
+    
+    });
+    
+    $('#menu').find('li').click(function(){
+        //removing the previous selected menu state
+        $('#menu').find('li').removeClass('active');
+         
+         //is this element from the second level menu?
+         if($(this).closest('ul').hasClass('secondLevel')){
+              $(this).parents('li').addClass('active');
+             
+         //this is a parent element
+         }else{
+              $(this).addClass('active');
+         }
+     });
+
+
 });
 

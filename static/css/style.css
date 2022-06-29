@@ -1,9 +1,16 @@
+@import url('https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap');
+@import url('https://path/to/font-awesome/css/font-awesome.min.css');
 .height-100{height:100vh}
-body{font-family: 'Montserrat' !important; }
-button{ font-family: 'Montserrat' !important;}
+body, a, p{font-family: 'muli', sans-serif !important; }
+.text-under-n{ text-decoration: none !important;}
 .errorlist li{ color: red; font-size: 14px; font-weight: 500;}
 .form_label{ max-width: 600px;}
 .form_label label{ font-size: 14px; font-weight: 600; color: #333;}
+.form_label a{ color: #222; text-decoration: none; }
+.form_label a:hover{text-decoration: none;}
+.content form .form-group input{  height:40px !important; border-radius: 3px !important; border: 1px solid #ccc !important; width: 100%; line-height: 40px !important;}
+.col.form-group{ margin: 0 !important;}
+.multi_button .col .btn{ font-size: 0.8rem;}
 .uppy-Dashboard-innerWrap
 {
     width:200px;
@@ -73,17 +80,34 @@ ul.errorlist{ background-color: transparent; display: block;}
 .cotainer form input,.cotainer form select,.cotainer form textarea{ display: block;}
 .bg-theme{ background-color: #e35d2d !important;}
 .bg-heading{ background-color: #2957A4  !important;}
+.main-header{ padding: 10px; border-radius: 3px;}
+
+
+.custome_buttons a i{ position: relative; top: 4px; }
+.custome_buttons a{ text-transform: none !important;}
+body .form_label .custome_buttons .btn{ height: 40px !important; line-height: 25px !important; }
 
 /* **************************************** */
             /* SideBar */
 /* **************************************** */
+.sidenav li>a>[class^=mdi-], .sidenav li>a>i, .sidenav li>a>i.material-icons, .sidenav li>a li>a>[class*=mdi-]{ margin: 0 8px 0 0 !important;}
+body .sidenav-fixed .collapsible-body #menu a{ text-decoration: none !important; padding-left: 40px !important;}
 .sidenav .user-view{ margin-bottom: 0 !important;}
-.sidenav .collapsible-body>ul:not(.collapsible)>li.active, .sidenav.sidenav-fixed .collapsible-body>ul:not(.collapsible)>li.active{ background-color:#2957A4  !important}
+.sidenav .collapsible-body li a, .sidenav.fixed .collapsible-body li a{ padding-left: 30px !important; }
+.sidenav .collapsible-body>ul:not(.collapsible)>li.active, .sidenav.sidenav-fixed .collapsible-body>ul:not(.collapsible)>li.active{ background-color:#2957A4  !important; }
+.sidenav-fixed .collapsible-body li a,.parent-menu span { padding-left: 30px !important;}
+body .sidenav-fixed .collapsible-body #menu.parent-menu.active{ color: #fff  !important; padding: 0 !important; background-color: white !important; }
+.sidenav-fixed .collapsible-body .parent-menu.active span{   padding-left: 30px !important; background-color:#2957A4  !important;display: block;}
+.sidenav-fixed .collapsible-body .parent-menu.active li{ background-color: #efefef;   }
+.sidenav-fixed .collapsible-body .parent-menu.active li a{ color: #666 !important; }
+.parent-menu.active a{ padding-left: 10px !important; }
+body .sidenav-fixed .collapsible-body #menu.parent-menu{ background-color: #e5e2e2 !important;}
+body .sidenav-fixed .collapsible-body #menu.parent-menu li{ background-color: #fff;}
 
 /* **************************************** */
             /* Navbar */
 /* **************************************** */
-nav{ background-color: #e35d2d !important;}
+nav.topbar{ background-color: #e35d2d !important;}
 nav.topbar .brand-logo{ font-size: 1.6rem;}
 nav.topbar .brand-logo{ top: 0;}
 nav.topbar, nav.topbar a.button-collapse, nav.topbar a.button-collapse i, nav.topbar i{ line-height: 50px !important; height: 50px!important;}

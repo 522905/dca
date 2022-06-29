@@ -41,25 +41,30 @@
 				</div>
 			</div>
 		</div>
-		<div class="card-footer">
-		    <div class="btn btn-danger float-left">
-				<a style="position: relative; top: 2px;" class=" text-white" href="{% url 'ujjwala:legal_documents_upload' pk=obj.id %}" target="_blank">Upload Legal Documents</a>
-            </div>
-            <br>
-            <div class="btn btn-danger float-left">
-				<a style="position: relative; top: 2px;" class=" text-white" href="{{ obj.parent.physical_legal_document_link }}" target="_blank">Upload Legal Documents</a>
-            </div>
-            <div class="btn btn-danger float-right">
-				{% if bridge_available %}
-				<i class="material-icons left " style="position: relative; top: -2px;">local_printshop</i>
-				<a style="position: relative; top: 2px;" class=" text-white" href="{{ bridge_link }}/print_pdf?url={{ obj.parent.physical_legal_document_link }}" target="_blank">Print Form A B C</a></br>
-				{% else %}
-					<p>Bridge Not Available, Unable to print</p>
-				{% endif %}
-			</div>
-	</div>
+		
 	
+</div>
+<div class="card-footer p-1 multi_buttons">
+
+	<a style="width: 100%;" class="text-white  btn btn-danger mb-3" 
+		href="{% url 'ujjwala:legal_documents_upload' pk=obj.id %}" target="_blank">
+		<i class="material-icons">cloud_upload</i> Legal Documents
+	</a>
+	<a style=" width: 100%;" class="text-white btn btn-danger mb-3 float-right" 
+		href="{{ obj.parent.physical_legal_document_link }}" target="_blank">
+		<i class="material-icons">cloud_download</i>
+		Form ABC
+	</a>
+	<a style=" pointer-events:none; width:100% ;" class="{% if not bridge_available %}disabled	{% endif %}text-white btn btn-danger mb-2" href="{{ bridge_link }}/print_pdf?url={{ obj.parent.physical_legal_document_link }}" target="_blank"> 
+		<span><i class="material-icons">local_printshop</i> Print Form ABC</span>
+	</a>
+	{% if not bridge_available %}																																							
+		<p class="alert alert-primary" role="alert" style="width:100% ;"> <i class="material-icons left">info_outline</i>  Bridge Not Available, Unable to print</p>
+	{% endif %}
 </div>
     
 </div>
+<style>
+	
+	</style>
 {% endblock %}
