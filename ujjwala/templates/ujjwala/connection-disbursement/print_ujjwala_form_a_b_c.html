@@ -47,7 +47,7 @@
             </div>
             <br>
             <div class="btn btn-danger float-left">
-				<a style="position: relative; top: 2px;" class=" text-white" href="{% url 'ujjwalav2application-download-ujjwala-legal-docs' pk=obj.parent_id %}" target="_blank">Upload Legal Documents</a>
+				<a style="position: relative; top: 2px;" class=" text-white" href="{{ obj.parent.physical_legal_document_link }}" target="_blank">Upload Legal Documents</a>
             </div>
             <div class="btn btn-danger float-right">
 				{% if bridge_available %}
