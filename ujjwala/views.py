@@ -844,7 +844,8 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
             if object:
                 if object.status not in (
                         ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
-                        ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED
+                        ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
+                        ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED
                 ):
                     messages.add_message(
                         request, messages.ERROR, "Application Id: {} - {}".format(application_id, object.status)
