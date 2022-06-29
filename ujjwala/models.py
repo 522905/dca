@@ -35,7 +35,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
 	sdms_last_updated_on = models.DateTimeField(null=True)
-	rejection_type = models.CharField(max_length=25, choices=RejectionTypeEnum.choices, null=True, blank=True)
+	rejection_type = models.CharField(max_length=64, choices=RejectionTypeEnum.choices, null=True, blank=True)
 	marital_status = models.CharField(max_length=25, choices=MaritalStatusEnum.choices)
 	residential_status = models.CharField(max_length=25, choices=ResidentialStatusEnum.choices, blank=True, null=True)
 	name = models.CharField(max_length=50)
@@ -69,10 +69,10 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	documents_required_for_reupload = models.JSONField(null=True, blank=True)
 	last_execution_state = models.CharField(max_length=50, null=True, blank=True)
 	pre_inspection_accepted = models.ForeignKey("PreInspection", on_delete=models.CASCADE, null=True, blank=True)
-	connection_disbursement_obj = models.ForeignKey(
-		"ConnectionDisbursement", on_delete=models.CASCADE, null=True, blank=True
-	)
 	sync_with_sdms = models.BooleanField(default=True)
+	applicant_verified = models.BooleanField(default=False)
+	applicant_verified_on = models.DateTimeField(null=True, blank=True)
+	audit_points = models.TextField(null=True, blank=True)
 
 	class Meta:
 		permissions = (
@@ -173,6 +173,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD,
 			UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD,
 			UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
+			UjjwalaV2ApplicationStatus.AUDIT_APPLICATION
 		],
 		target=UjjwalaV2ApplicationStatus.APPLICATION_REJECTED,
 		custom=dict(short_description='Reject Application', admin=True, form=ApplicationRejected),
@@ -311,6 +312,65 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	)
 	def transition_legal_documents_collected(self, *args, **kwargs):
 		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_COLLECTED,
+		target=UjjwalaV2ApplicationStatus.MATERIAL_DELIVERED,
+		custom=dict(
+			short_description='Material Delivered', admin=False,
+		),
+	)
+	def transition_material_delivered(self, *args, **kwargs):
+		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=UjjwalaV2ApplicationStatus.MATERIAL_DELIVERED,
+		target=UjjwalaV2ApplicationStatus.INSTALLED,
+		custom=dict(
+			short_description='Material Installed', admin=False,
+		),
+	)
+	def transition_installed(self, *args, **kwargs):
+		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=[
+			UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
+			UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
+		],
+		target=UjjwalaV2ApplicationStatus.AUDIT_APPLICATION,
+		custom=dict(
+			short_description='Audit Application', admin=False,
+		),
+	)
+	def transition_audit_application(self, audit_points, *args, **kwargs):
+		self.last_execution_state = self.status
+		self.audit_points = audit_points
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=UjjwalaV2ApplicationStatus.AUDIT_APPLICATION,
+		target=GET_STATE(
+			lambda self, **kwargs: self.last_execution_state,
+		),
+		custom=dict(
+			short_description='Audit Accepted', admin=True,
+		),
+	)
+	def transition_audit_accepted(self, audit_points, *args, **kwargs):
+		self.last_execution_state = self.status
+		self.audit_points = audit_points
 
 	@fsm_log_description
 	@fsm_log_by
@@ -492,7 +552,6 @@ class PreInspection(models.Model):
 	def pre_inspection_safety_audio_uploaded(self, *args, **kwargs):
 		pass
 
-
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
@@ -504,7 +563,6 @@ class PreInspection(models.Model):
 	def transition_pre_inspection_submit(self, *args, **kwargs):
 		self.submitted_on = datetime.datetime.now()
 		self.save()
-
 
 	@fsm_log_description
 	@fsm_log_by
@@ -529,8 +587,8 @@ class PreInspection(models.Model):
 		if kwargs.get('review_status') == 'ACCEPTED':
 			ConnectionDisbursement.objects.create(
 				parent=self.parent,
+				mechanic=self.mechanic
 			)
-			self.parent.save()
 			# Bucket Name: ujjwaladocuments
 			physical_legal_document = download_ujjwala_physical_legal_docs(self.parent)
 			upload_url = upload_file_to_minio_bucket(
@@ -543,7 +601,10 @@ class PreInspection(models.Model):
 				link=upload_url,
 				parent=self
 			)
-			self.parent.transition_pre_inspection_accepted(pre_inspection_id=self.pk)
+			self.parent.transition_pre_inspection_accepted(
+				pre_inspection_id=self.pk, by=get_current_user()
+			)
+			self.parent.save()
 		self.save()
 
 
@@ -569,7 +630,7 @@ class Evykati(models.Model):
 
 
 class ConnectionDisbursement(models.Model):
-	parent = models.ForeignKey(
+	parent = models.OneToOneField(
 		UjjwalaV2Application, on_delete=models.PROTECT, related_name='connection_disbursement'
 	)
 	created_on = models.DateTimeField(auto_now_add=True, null=True)
@@ -579,6 +640,7 @@ class ConnectionDisbursement(models.Model):
 	location_data = models.JSONField(null=True, blank=True)
 	walk_in_date = models.DateTimeField(null=True, blank=True)
 	sequence = models.CharField(max_length=16, null=True, blank=True)
+	mechanic = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
 
 	status = FSMField(
 		default=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
@@ -641,7 +703,6 @@ class ConnectionDisbursement(models.Model):
 		else:
 			self.documents.all().delete()
 
-
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
@@ -685,7 +746,8 @@ class ConnectionDisbursement(models.Model):
 		custom=dict(short_description='Material Delivery', admin=False),
 	)
 	def transition_material_delivered(self, *args, **kwargs):
-		pass
+		self.parent.transition_material_delivered(by=get_current_user())
+		self.parent.save()
 
 	@fsm_log_description
 	@fsm_log_by
@@ -707,6 +769,8 @@ class ConnectionDisbursement(models.Model):
 		custom=dict(short_description='Upload Main Gate Photo', admin=False),
 	)
 	def transition_main_gate(self, *args, **kwargs):
+		self.parent.transition_installed(by=get_current_user())
+		self.parent.save()
 		pass
 
 

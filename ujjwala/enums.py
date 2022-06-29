@@ -104,11 +104,18 @@ class UjjwalaV2ApplicationStatus(models.TextChoices):
 	INSTALLED = 'INSTALLED', 'Installed'
 	DO_MANUAL_OPERATION = 'DO_MANUAL_OPERATION', 'Do Manual Operation'
 	PRE_INSPECTION_ACCEPTED = 'PRE_INSPECTION_ACCEPTED', 'Pre Inspection Accepted'
+	AUDIT_APPLICATION = 'AUDIT_APPLICATION', 'Audit Application'
 	COMPLETED = 'COMPLETED', 'Completed'
 
 
 class RejectionTypeEnum(models.TextChoices):
+	UNDER_AGE = 'UNDER_AGE', 'Under Age'
+	INSUFFICIENT_DATA = 'INSUFFICIENT_DATA', 'Insufficient Data'
+	RELATION_WITH_OTHER_DISTRIBUTOR = 'RELATION_WITH_OTHER_DISTRIBUTOR', 'Relation With Other Distributor'
+	EXISTING_UJJWALA_APPLICATION = 'EXISTING_UJJWALA_APPLICATION', 'Existing Ujjwala Application'
 	EKYC = 'EKYC', 'Ekyc'
+	OMC = 'OMC', 'Omc'
+	SDMS_DEDUPE = 'SDMS_DEDUPE', 'Sdms Dedupe'
 	APPLICATION = 'APPLICATION', 'Application'
 	CONNECTION = 'CONNECTION', 'Connection'
 

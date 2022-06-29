@@ -389,7 +389,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 application.event_submit_channel_whatsapp()
                 # Add lead to vicicial
                 requests.post(
-                    "http://vici.hawabadlo.in/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+                    "http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
                     "&function=add_lead&phone_number={}&phone_code=1&list_id=1001&first_name={}&last_name={} ".format(
                         application.contact_mobile, application.name, application.id)
                 )

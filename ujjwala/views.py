@@ -271,6 +271,12 @@ class PreInspectionView(FormView):
                 )
                 pre_inspection.save()
 
+                pre_inspection.pre_inspection_change_address(
+                    by=get_current_user(),
+                    description="Skipped By Admin, Change Address"
+                )
+                pre_inspection.save()
+
                 return redirect('ujjwala:pre_inspection_form_view', pk=pre_inspection.id)
 
     def get_object(self, queryset=None):
@@ -420,7 +426,7 @@ class PreInspectionCreateView(View):
 
             obj.pre_inspection_change_address(
                 by=get_current_user(),
-                description="Allocated Inspection Otp Verified, Customer Phone {}".format(otp_obj.mobile)
+                description="Skipped By Admin, Customer Address"
             )
             obj.save()
 
@@ -822,6 +828,9 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
                 ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
                 ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
                 ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
+                ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE,
+                ConnectionDisbursementStatusEnum.INSTALLATION_UPLOADED
+
             ]
         )
 
@@ -957,11 +966,17 @@ class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         obj = self.get_object()
+        invitation = obj.invitation.first()
+        if invitation:
+           booking_id =  obj.invitation.first().booking_id
+        else:
+           booking_id = ''
         context.update({
             "obj": obj,
-            "booking_id": obj.invitation.first().booking_id
+            "booking_id": booking_id
         })
         return context
+
 
 
 @method_decorator(login_required, 'dispatch')

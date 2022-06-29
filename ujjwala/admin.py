@@ -110,7 +110,9 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 				'referral_code',
 			]
 		else:
-			return super().get_fields(request, obj)
+			fields = super().get_fields(request, obj)
+			fields.append('connection_disbursement')
+			return fields
 
 	def get_readonly_fields(self, request, obj=None):
 		readonly_fields = super().get_readonly_fields(request, obj)

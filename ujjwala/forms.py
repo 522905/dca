@@ -16,7 +16,8 @@ from django.utils.decorators import method_decorator
 from django_currentuser.middleware import get_current_user
 
 from otp.models import Otp
-from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum
+from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
+	RejectionTypeEnum
 from ujjwala.models import UjjwalaApplicationDocumentsEnum
 from formtools.wizard.views import SessionWizardView
 
@@ -40,6 +41,9 @@ logging.basicConfig(
 
 
 class ChangeAddressForm(forms.Form):
+	update_address = forms.BooleanField(
+		widget=forms.CheckboxInput, label='Click To Change Address', required=False
+	)
 	house_no = forms.CharField(
 		widget=forms.TextInput, label='House No.', required=True
 	)
@@ -72,23 +76,31 @@ class ChangeAddressForm(forms.Form):
 		super().__init__(*args, **kwargs)
 		self.pre_inspection = pre_inspection
 
-# def save(self):
-# 	data = self.cleaned_data
-# 	obj = self.pre_inspection
+	def save(self):
+		data = self.cleaned_data
+		
+		# if not self.update_address:
+		# 	return data
 
-# 	obj.documents.create(
-# 		type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO,
-#         link=data['kitchen_photo']
-# 	)
-# 	obj.documents.create(
-# 		type=UjjwalaApplicationDocumentsEnum.WITNESS_SIGNATURE,
-# 		link=data['witness_signature_photo']
-# 	)
+		obj = self.pre_inspection
 
-# 	obj.witness_name = data['witness_name']
-# 	obj.witness_mobile_number = data['witness_mobile_number']
-# 	obj.status = PreInspectionStatusEnum.SAFETY_AUDIO
-# 	obj.save()
+		old_address_json = obj.parent.address_json
+
+		obj.parent.address_json = {
+			"house_no": data.get('house_no', ''),
+			"room_no": data.get('room_no', ''),
+			"floor": data.get('floor', ''),
+			"street_no": data.get('street_no', ''),
+			"landmark": data.get('landmark', ''),
+			"village": data.get('village', ''),
+			"ward_no": data.get('ward_no', ''),
+			"post_office": data.get('post_office', ''),
+			"pincode": data.get('pincode', '')
+		}
+
+		obj.parent.save()
+		obj.pre_inspection_change_address(by=get_current_user(), description=old_address_json)
+		obj.save()
 
 
 class KitchenPreInspectionForm(forms.Form):
@@ -124,7 +136,10 @@ class KitchenPreInspectionForm(forms.Form):
 
 		obj.witness_name = data['witness_name']
 		obj.witness_mobile_number = data['witness_mobile_number']
-		obj.status = PreInspectionStatusEnum.SAFETY_AUDIO
+		obj.pre_inspection_kitchen_photo_uploaded(
+			by=get_current_user(),
+			description="Witness Name: {}, Mobile Number: {}".format(obj.witness_name, obj.witness_mobile_number)
+		)
 		obj.save()
 
 
@@ -141,9 +156,13 @@ class AudioOnSafetyForm(forms.Form):
 		data = self.cleaned_data
 		obj = self.pre_inspection
 
-		obj.documents.create(type=UjjwalaApplicationDocumentsEnum.SAFETY_AUDIO,
+		doc = obj.documents.create(type=UjjwalaApplicationDocumentsEnum.SAFETY_AUDIO,
 		                     link=data['audio_file'])
-		obj.status = PreInspectionStatusEnum.PREVIEW_INSPECTION
+		obj.pre_inspection_safety_audio_uploaded(
+			by=get_current_user(),
+			description="Safety Audio: {}".format(doc.link)
+
+		)
 		obj.save()
 
 
@@ -177,7 +196,9 @@ class PreviewPreInspectionForm(forms.Form):
 		obj.accuracy = data['accuracy']
 
 		obj.transition_pre_inspection_submit(
-			by=get_current_user()
+			by=get_current_user(),
+			description="Latitude: {}, Longituder: {}, Accuracy: {}".format(
+				data['latitude'], data['longitude'], data['accuracy'])
 		)
 		obj.save()
 
@@ -458,7 +479,6 @@ class LegalDocumentsUpload(forms.Form):
 		return data
 
 
-
 class UjjwalaLegalDocumentsUpload(forms.Form):
 	pre_inspection = forms.CharField(
 		widget=forms.TextInput, label='Pre Inspection', required=True
@@ -537,12 +557,7 @@ class ApplicationRejected(forms.Form):
 		label="Rejected Reason",
 		required=True,
 		help_text="Please select rejected reason",
-		choices=[
-			('', '-- Select Rejected Reason --'),
-			('EKYC', 'Ekyc'),
-			('CONNECTION_ALREADY_EXIST', 'Connection Already Exist'),
-			('NIC_FAILED', 'NIC Failed'),
-		]
+		choices=RejectionTypeEnum.choices
 	)
 	description = forms.CharField(
 		widget=forms.Textarea, label='Remarks', required=True
@@ -671,11 +686,6 @@ class ConnectionDisbursementLabelPrintForm(forms.Form):
 	def clean(self):
 		data = self.cleaned_data
 		return data
-
-
-
-
-
 
 
 class ConnectionDisbursementMaterialDeliveredForm(forms.Form):
