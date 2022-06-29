@@ -50,7 +50,7 @@
 
 				<div class="row m-0 multi_buttons mb-2">
 					<div class="col pl-1">
-						<a class="btn btn-danger text-white {% if not bridge_available %}disabled{% endif %}" style="width: 100%;" href="{{ bridge_link }}/print_label?url={{bluebook_label_print_url}}" target="_blank">Print Label</a>
+						<a class="btn btn-danger text-white {% if not bridge_available %}disabled{% endif %}" style="width: 100%;" href="{{ bridge_link }}/print_label?url={{bluebook_label_print_url}}" target="_blank"><i class="material-icons">local_printshop</i>Print Label</a>
 					</div>
 					<div class="col pr-1">
 						<a class="btn btn-danger text-white  {% if not bridge_available %}disabled{% endif %}" style="width: 100%;" href="{{ bridge_link }}/print_pdf?url={{ obj.valid_sv_link }}" target="_blank">
@@ -63,7 +63,7 @@
 				{% endif %}
 			
 
-				<p class="pl-2" style=" font-weight: 600;"><input required id="accept_form_abc_check" type="checkbox" style="opacity: 1; margin-right:10px; position:relative; pointer-events: unset;" >I have collected Signed Form ABC and SV Voucher from Customer.</p>
+				<p class="pl-2 mt-5" style=" font-weight: 600;"><input required id="accept_form_abc_check" type="checkbox" style="opacity: 1; margin-right:10px; position:relative; pointer-events: unset;" >I have collected Signed Form ABC and SV Voucher from Customer.</p>
 
 			</div>    
             <div class="card-footer">
