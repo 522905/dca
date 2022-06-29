@@ -1,11 +1,28 @@
+
 <ul>
-    <li><a href="{% url 'ujjwala:index' %}">Pre-Inspection List</a></li>
-    <li><a href="{% url 'ujjwala:pre_inspection_create' %}">Start a New Pre-Inspection </a></li>
-    <li><a href="{% url 'ujjwala:review' %}">Review Pre-Inspection(s) </a></li>
-    <li><a href="{% url 'ujjwala:connection_disbursement_list' %}">1 - Applicant Walk In </a></li>
-    <li><a>2 - Accept Legal Documents </a></li>
-    <li><a href="{% url 'ujjwala:connection_disbursement_sv_label_print_list' %}">3 - SV Label Print </a></li>
-    <li><a href="{% url 'ujjwala:connection_disbursement_social_media_updates_list' %}">4 - Social Media Updates </a></li>
-    <li><a href="{% url 'ujjwala:connection_disbursement_material_delivery_list' %}">5 - Material Delivery </a></li>
-    <li><a href="{% url 'ujjwala:installation_list' %}">Installation </a></li>
+    <li id="menu" class="parent-menu"><span>Suraksha-Drill</span>
+        <ul>
+            <li><a href="{% url 'ujjwala:index' %}">Pre-Suraksha-Drill List</a></li>
+            <li><a href="{% url 'ujjwala:pre_inspection_create' %}">Start a New Pre-Suraksha-Drill </a></li>
+        </ul>
+    </li>
+    <!-- <li><a href="{% url 'ujjwala:review' %}">Review Pre-Suraksha-Drill(s) </a></li> -->
+    <li id="menu" class="parent-menu"><span>Disbursement</span>
+        <ul>
+            <li><a href="{% url 'ujjwala:connection_disbursement_list' %}">1 - Applicant Walk In </a></li>
+            <li><a>2 - Accept Legal Documents </a></li>
+            <li><a href="{% url 'ujjwala:connection_disbursement_sv_label_print_list' %}">3 - SV Label Print </a></li>
+            <li><a href="{% url 'ujjwala:connection_disbursement_social_media_updates_list' %}">4 - Social Media Updates </a></li>
+            <li><a href="{% url 'ujjwala:connection_disbursement_material_delivery_list' %}">5 - Material Delivery </a></li>
+        </ul>
+    </li>
+    <li id="menu" ><a href="{% url 'ujjwala:installation_list' %}">Installation </a></li>
+    {% if user.is_authenticated %}
+    <li class="p-0">
+        <a class="collapsible-header" href="{% url 'logout' %}" data-turbolinks="false">
+            <i class="material-icons left">exit_to_app</i>
+            <span>Log out</span>
+        </a>
+    </li>
+    {% endif %}
 </ul>
