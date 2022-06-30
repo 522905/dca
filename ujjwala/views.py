@@ -659,7 +659,8 @@ class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
         return ConnectionDisbursement.objects.filter(
             status__in=[
                 ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
-            ]
+            ],
+            walk_in_date__date=datetime.datetime.today().date()
         )
 
     def get_template_names(self):
@@ -746,7 +747,8 @@ class UjjwalaConnectionDisbursementSocialMediaUpdatesListView(ListView):
         return ConnectionDisbursement.objects.filter(
             status__in=[
                 ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
-            ]
+            ],
+            walk_in_date__date=datetime.datetime.today().date()
         )
 
     def get_template_names(self):
@@ -831,7 +833,8 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
                 ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE,
                 ConnectionDisbursementStatusEnum.INSTALLATION_UPLOADED
 
-            ]
+            ],
+            walk_in_date__date=datetime.datetime.today().date()
         )
 
     def get_template_names(self):
