@@ -37,6 +37,9 @@ def filter_walk_in_qs(queryset, state):
 	elif state == 'WALK_IN_NO_SV':
 		return queryset.filter(walk_in_date__date=today.date()).\
 			filter(invitation__sv_link__isnull=True)
+	elif state == 'WALK_IN_SV_DONE':
+		return queryset.filter(walk_in_date__date=today.date()).\
+			filter(invitation__sv_link__isnull=False)
 	elif state == 'WALK_IN_NO_DISBURSEMENT':
 		return queryset.filter(walk_in_date__date=today.date()).\
 			exclude(invitation__sv_link__isnull=True).\
@@ -53,6 +56,7 @@ class WalkInFilter(SimpleListFilter):
 		return [
 			('WALK_IN_TODAY', 'Walk In Today'),
 			('WALK_IN_NO_SV', 'Walk In No Sv'),
+			('WALK_IN_SV_DONE', 'Walk In Sv Done'),
 			('WALK_IN_NO_DISBURSEMENT', 'Walk In No Disbursement'),
 		]
 
