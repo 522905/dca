@@ -1,3 +1,4 @@
+import datetime
 import io
 import zipfile
 from datetime import datetime
@@ -8,6 +9,7 @@ import requests
 from django.conf import settings
 from django.conf.urls import url
 from django.contrib import admin
+from django.contrib.admin import SimpleListFilter
 from django.http import HttpResponse
 from django.template import loader
 from django.urls import path, reverse
@@ -19,13 +21,43 @@ from rangefilter.filters import DateRangeFilter
 
 from fsm_admin2_custom.admin import FSMTransitionCustomMixin
 from .enums import ResidentialStatusEnum, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, MaritalStatusEnum, \
-	PreInspectionStatusEnum
+	PreInspectionStatusEnum, ConnectionDisbursementStatusEnum
 from .models import UjjwalaV2Application, FamilyMembers, UjjwalaApplicationDocuments, UjjwalaV2ApplicationStatus, \
 	UserDocuments, PreInspectionDocuments, PreInspection, ConnectionDisbursementDocuments, ConnectionDisbursement, \
 	ConnectionDisbursementInvitation
 from .ujjwala_functions import download_ujjwala_documents, download_ujjwala_physical_legal_docs
 
 from .views import SendInvitationView
+
+
+def filter_walk_in_qs(queryset, state):
+	today = datetime.today()
+	if state == 'WALK_IN_TODAY':
+		return queryset.filter(walk_in_date__date=today.date())
+	elif state == 'WALK_IN_NO_SV':
+		return queryset.filter(walk_in_date__date=today.date()).\
+			filter(invitation__sv_link__isnull=True)
+	elif state == 'WALK_IN_NO_DISBURSEMENT':
+		return queryset.filter(walk_in_date__date=today.date()).\
+			exclude(invitation__sv_link__isnull=True).\
+			exclude(
+				status=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED
+			)
+
+
+class WalkInFilter(SimpleListFilter):
+	title = 'Walk In Filters'
+	parameter_name = 'walk_in'
+
+	def lookups(self, request, model_admin):
+		return [
+			('WALK_IN_TODAY', 'Walk In Today'),
+			('WALK_IN_NO_SV', 'Walk In No Sv'),
+			('WALK_IN_NO_DISBURSEMENT', 'Walk In No Disbursement'),
+		]
+
+	def queryset(self, request, queryset):
+		return filter_walk_in_qs(queryset, self.value())
 
 
 class UjjwalaApplicationDocumentsInline(admin.TabularInline):
@@ -244,7 +276,7 @@ class ConnectionDisbursementAdmin(FSMTransitionCustomMixin, admin.ModelAdmin):
 		'updated_on',
 		'status',
 	)
-	list_filter = ('status',)
+	list_filter = ('status', WalkInFilter, )
 	inlines = (ConnectionDisbursementDocumentsAdmin, ConnectionDisbursementInvitationAdmin, StateLogInline,)
 	fsm_fields = ['status', ]
 	readonly_fields = ['legal_document_upload_link', 'invite', ]
@@ -269,3 +301,6 @@ class ConnectionDisbursementAdmin(FSMTransitionCustomMixin, admin.ModelAdmin):
 			url('(?P<pk>[^/.]+)/invite/', wrap(SendInvitationView.as_view()), name='%s_%s_invite' % info),
 		]
 		return my_urls + urls
+
+
+
