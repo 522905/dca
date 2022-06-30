@@ -131,9 +131,11 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		return self.documents.filter(type=UjjwalaApplicationDocumentsEnum.WITNESS_PHOTO).first().link
 
 	def physical_legal_document_link(self):
-		return self.pre_inspection_accepted.documents.filter(
+		record = self.pre_inspection_accepted.documents.filter(
 			type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT
-		).first().link
+		).first()
+		if record: return record.link
+		return ''
 
 	def is_sv_uploaded(self):
 		connection_disbursement = ConnectionDisbursement.objects.filter(parent_id=self.id).first()
@@ -795,7 +797,7 @@ class ConnectionDisbursementInvitation(models.Model):
 	sv_link = models.URLField(null=True, blank=True)
 	sv_uploaded_on = models.DateTimeField(null=True, blank=True)
 	booking_id = models.CharField(max_length=16, null=True, blank=True)
-	status = models.CharField(null=True, blank=True, max_length=32)
+	status = models.CharField(max_length=32, default='VALID')
 
 	def download_links(self):
 		html = '''

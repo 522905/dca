@@ -22,6 +22,7 @@ from ujjwala.models import UjjwalaApplicationDocumentsEnum
 from formtools.wizard.views import SessionWizardView
 
 from ujjwala.ujjwala_functions import __get_ref_no__, id_generator, valid_file_uploaded
+from django.core import validators
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -938,7 +939,7 @@ class InstallationMainGateUploadForm(forms.Form):
 class ConnectionDisbursementInvitationForm(forms.Form):
 	invited_for = forms.DateTimeField(widget=forms.HiddenInput, label='Invited For', required=False)
 	sv_link = forms.URLField(widget=forms.HiddenInput, label='SV Document', required=True)
-	booking_id = forms.CharField(widget=forms.TextInput, label='Booking Id', required=True)
+	booking_id = forms.CharField(widget=forms.TextInput(), label='Booking Id', required=True, validators=[validators.RegexValidator(regex='^2-[0-9]{12}$')])
 	sv_uploaded_on = forms.DateTimeField(widget=forms.HiddenInput, required=False)
 
 	def clean(self):
