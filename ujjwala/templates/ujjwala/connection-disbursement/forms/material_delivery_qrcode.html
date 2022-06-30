@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="{% static '/css/style.css' %}" >
 <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
-<style>
+<!-- <style>
     .app_card a{ color: #333;}
     .app_card a:hover{ text-decoration: none;}
     p{ padding: 0; margin: 0;}
@@ -19,20 +19,30 @@
     .status{ color: #2957A4; font-size: 0.9em;}
     .app_card p{ font-size: 0.9em;}
     .contact_link a:hover{ text-decoration: underline; color: #2957A4  !important; }
-    .contact_link a{ text-decoration: underline; color: #e35d2d !important; }
-</style>
+    .contact_link a{ text-decoration: underline; color: #e35d2d !important; } 
+</style>-->
 <div class="p-2 pt-0 form_label" style="width: 100%;">
-    {% if messages %}
-      {% for msg in messages %}
-        <div class="alert alert-info alert-dismissable">
-          <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-          {{msg.message}}
-        </div>
-      {% endfor %}
-    {% endif %}
-    <h1>Material Delivery QR Code</h1>
-    <h2>Booking Id: {{ booking_id }}</h2>
-    <img src="https://chart.googleapis.com/chart?cht=qr&chs=250x250&chld=L|0&chl={{ booking_id }}"/>
+    <div class="main-header bg-heading mb-2">
+		<span class="text-white text">Material Delivery QR Code</span>
+	</div>
+    <div class="card p-2">
+        {% if messages %}
+        {% for msg in messages %}
+          <div class="alert alert-info alert-dismissable">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            {{msg.message}}
+          </div>
+        {% endfor %}
+      {% endif %}
+      
+      <h5>Booking Id: {{ booking_id }}</h5>
+      <img style="max-width: 100px;" src="https://chart.googleapis.com/chart?cht=qr&chs=250x250&chld=L|0&chl={{ booking_id }}"/>
+    </div>
+    <div class="card-footer">
+        <a class="text-white btn btn-danger mb-3 float-left" href="{% url 'ujjwala:connection_disbursement_material_delivery_list' %}" target="_blank">
+            <i class="material-icons">keyboard_backspace</i> BACK
+        </a>
+    </div>
 </div>
     <!-- <table>
 
