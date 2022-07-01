@@ -34,46 +34,48 @@
     <div class="main-header bg-heading" style="background-color: #2957A4;">
         <span class="text-white">List of Connection Disbursement Records</span>
     </div>
+
     {% for obj in object_list %}
     <div class="card mb-2 app_card">
         <a class="text-under-n" href="{% url 'ujjwala:connection_disbursement_form_view' pk=obj.id %}" data-turbolinks="false">
             <div class="card-header">
                 <p class="text-center text-dark"><b>{{ obj.status }}</b>
                      <br>
-                    <span>Submitted on <b>{{ obj.submitted_on }}</b> </span>
+                    <span>Updated On <b>{{ obj.updated_on }}</b> </span>
                 </p>
             </div>
-            <div class="card-body pb-0 p-2">
+            <div class="card-body pb-0 p-2 list_block">
                 <ul class="m-0">
                     <li>
-                        <p class="float-left">Application Id ({{ obj.parent_id }})</p>
-                        <p class="float-right">Connection Disbursement Id({{obj.id}})</p>
+                        <p class="float-left">Application Id</p>
+                        <p class="float-right"><b>({{ obj.parent_id }})</b></p>
+                    </li>
+                    <li>
+                        <p class="float-left">Connection Disbursement Id</p>
+                        <p class="float-right"><b>({{obj.id}})</b></p>
                     </li>
                     <li>
                         <p class="float-left">Name</p>
-                        <p class="float-right">{{ obj.parent.name }}</p>
+                        <p class="float-right"><b>{{ obj.parent.name }}</b></p>
                     </li>
-                    <li>
-                        <p><b>Address:</b>  {{ obj.parent.formatted_address }}</p>
-                    </li>
-                </ul>
-                
-            </div>
-        </a>
-        <div class="card-footer p-2">
-            <ul class="m-0">
-                {% for contact in  obj.parent.all_contacts %}
+                    {% for contact in  obj.parent.all_contacts %}
                     <li class="contact_link">
                         <p class="float-left">Phone  {{ forloop.counter }}</p>
                         <p class="float-right">
                             <b> <a href="tel:{{ contact}}" onclick="return true;">{{contact}}</a></b>      
                         </p>
                     </li>
-                {% endfor %}
-            </ul>
+                    {% endfor %}
+                </ul>
+                
+            </div>
+        </a>
+        <div class="card-footer p-2">
+            <p><b>Address: </b>{{ obj.parent.formatted_address }}</p>
         </div>
         
     </div>
+    
     
     {% endfor %}
 </div>

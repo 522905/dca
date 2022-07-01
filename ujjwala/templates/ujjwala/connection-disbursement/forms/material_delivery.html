@@ -24,7 +24,7 @@
 			<div style="width: 50%; float:right">
 				<div class="card-body pt-0">
 					<div class="text-center">
-						<h5 class="h3">{{ obj.parent.name }}<span class="font-weight-light"></span></h5>
+						<h5 class="h3">{{ obj.parent.name }}({{ obj.parent.id }})<span class="font-weight-light"></span></h5>
 						<div class="h5 font-weight-300">
 							<i class="ni location_pin mr-2"></i>{{ obj.parent.contact_mobile }}
 						</div>
@@ -46,6 +46,7 @@
 <div class="main p-2 pt-0 form_label">
     <form method="post" id="">
         {% csrf_token %}
+		
 		<div class="card p-2">
 			{% if messages %}
 			{% for msg in messages %}
@@ -59,6 +60,7 @@
 		  <h5>Booking Id: {{ booking_id }}</h5>
 		  <img style="max-width: 100px;" src="https://chart.googleapis.com/chart?cht=qr&chs=250x250&chld=L|0&chl={{ booking_id }}"/>
 		</div>
+
         <div class="card">
             <div class="card-body">
                 {{form.application_id}}

@@ -44,7 +44,7 @@
                     <b>{{ obj.submitted_on }}</b>
                 </p>
             </div>
-            <div class="card-body pb-0 p-2">
+            <div class="card-body pb-0 p-2 list_block">
                 <ul class="m-0">
                     <li>
                         <p class="float-left">Application Id ({{ obj.parent_id }})</p>
@@ -54,23 +54,20 @@
                         <p class="float-left">Name</p>
                         <p class="float-right">{{ obj.parent.name }}</p>
                     </li>
-                    <li>
-                        <p><b>Address:</b>  {{ obj.parent.formatted_address }}</p>
+
+                    <li class="contact_link">
+                        {% for contact in  obj.parent.all_contacts %}
+                        <p class="float-left">Phone  {{ forloop.counter }}</p>
+                        <p class="float-right">
+                            <b> <a href="tel:{{ contact}}" onclick="return true;">{{contact}}</a></b>
+                        </p>
+                        {% endfor %}
                     </li>
                 </ul>
             </div>
         </a>
         <div class="card-footer p-2">
-            <ul class="m-0">
-                {% for contact in  obj.parent.all_contacts %}
-                    <li class="contact_link">
-                        <p class="float-left">Phone  {{ forloop.counter }}</p>
-                        <p class="float-right">
-                            <b> <a href="tel:{{ contact}}" onclick="return true;">{{contact}}</a></b>
-                        </p>
-                    </li>
-                {% endfor %}
-            </ul>
+            <p><b>Address:</b>  {{ obj.parent.formatted_address }}</p>
         </div>
 
     </div>

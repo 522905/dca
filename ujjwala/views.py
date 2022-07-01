@@ -518,7 +518,8 @@ class UjjwalaConnectionDisbursementListView(ListView):
                 ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
                 ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED
             ],
-        )
+            walk_in_date__date=datetime.datetime.today().date()
+        ).order_by('updated_on')
 
     def get_template_names(self):
         return 'ujjwala/connection_disbursement_listview.html'
@@ -661,7 +662,7 @@ class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
                 ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
             ],
             walk_in_date__date=datetime.datetime.today().date()
-        )
+        ).order_by('updated_on')
 
     def get_template_names(self):
         return 'ujjwala/connection-disbursement/forms/connection_disbursement_sv_label_print_listview.html'
@@ -749,7 +750,7 @@ class UjjwalaConnectionDisbursementSocialMediaUpdatesListView(ListView):
                 ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
             ],
             walk_in_date__date=datetime.datetime.today().date()
-        )
+        ).order_by('updated_on')
 
     def get_template_names(self):
         return 'ujjwala/connection-disbursement/forms/connection_disbursement_social_media_updates_listview.html'
@@ -835,7 +836,7 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
 
             ],
             walk_in_date__date=datetime.datetime.today().date()
-        )
+        ).order_by('updated_on')
 
     def get_template_names(self):
         return 'ujjwala/connection-disbursement/forms/connection_disbursement_material_delivery_listview.html'
@@ -980,7 +981,6 @@ class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
             "booking_id": booking_id
         })
         return context
-
 
 
 @method_decorator(login_required, 'dispatch')

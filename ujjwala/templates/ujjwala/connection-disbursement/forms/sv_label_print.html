@@ -20,7 +20,7 @@
 			<div style="width: 70%; float:right">
 				<div class="card-body pt-0">
 					<div class="text-center">
-						<h5 class="h3">{{ obj.parent.name }}<span class="font-weight-light"></span></h5>
+						<h5 class="h3">{{ obj.parent.name }}({{ obj.parent.id }})<span class="font-weight-light"></span></h5>
 						<div class="h5 font-weight-300">
 							<i class="ni location_pin mr-2"></i>{{ obj.parent.contact_mobile }}
 						</div>
@@ -69,11 +69,9 @@
                     <i class="material-icons left">info_outline</i>  SV not Uploaded
                 </p>
                 {% endif %}
-			
 
-				<p class="pl-2 mt-5" style=" font-weight: 600;"><input required id="accept_form_abc_check" type="checkbox" style="opacity: 1; margin-right:10px; position:relative; pointer-events: unset;" >I have collected Signed Form ABC and SV Voucher from Customer.</p>
-
-			</div>    
+    			<p class="pl-2 mt-5" style=" font-weight: 600;"><input required id="accept_form_abc_check" type="checkbox" style="opacity: 1; margin-right:10px; position:relative; pointer-events: unset;" >I have collected Signed Form ABC and SV Voucher from Customer.</p>
+			</div>
             <div class="card-footer">
                 <input class="btn btn-primary float-right" type="submit" id="form"  value="Submit"/>
             </div>

@@ -153,6 +153,17 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	def get_sdms_consumer_details(self):
 		return self.family_members.get(relation='SELF').uid_check_result
 
+	def get_physical_legal_documents_status(self):
+		connection_disbursement = ConnectionDisbursement.objects.filter(parent_id=self.id).first()
+		if connection_disbursement.status == ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING:
+			return "Form A B C not uploaded"
+		elif connection_disbursement.status == ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW:
+			return "Form A B C uploaded, Review pending"
+		elif connection_disbursement.status == ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED:
+			return "Form A B C uploaded and accepted"
+		else:
+			return "Connection Disbursement not initiated"
+
 
 	@fsm_log_description
 	@fsm_log_by
@@ -667,6 +678,8 @@ class ConnectionDisbursement(models.Model):
 
 		if valid_invitation:
 			return valid_invitation.sv_link
+
+
 
 	@fsm_log_description
 	@fsm_log_by

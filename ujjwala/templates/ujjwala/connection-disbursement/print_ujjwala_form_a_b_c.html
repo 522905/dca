@@ -8,9 +8,7 @@
 </style>
 {% csrf_token %}
 <div class="m-0 form_label p-2">
-	<div class="main-header bg-heading mb-2">
-		<span class="text-white text">{{ obj.parent.is_sv_uploaded }}</span>
-	</div>
+
 
     <div class="card card-profile pt-0 mt-0 " >
 		<div class="row justify-content-center m-0" style="margin: 0 auto !important; padding: 10px;">
@@ -24,7 +22,7 @@
 			<div style="width:70%; float:right">
 				<div class="card-body pt-0">
 					<div class="text-center">
-						<h5 class="h3">{{ obj.parent.name }}<span class="font-weight-light"></span></h5>
+						<h5 class="h3">{{ obj.parent.name }}({{ obj.parent.id }})<span class="font-weight-light"></span></h5>
 						<div class="h5 font-weight-300">
 							<i class="ni location_pin mr-2"></i>{{ obj.parent.contact_mobile }}
 						</div>
@@ -41,13 +39,18 @@
 				</div>
 			</div>
 		</div>
-		
-	
 </div>
+<div class="main-header bg-heading mb-2">
+    <span class="text-white text">{{ obj.parent.is_sv_uploaded }}</span>
+    <br>
+    <span class="text-white text">{{ obj.parent.get_physical_legal_documents_status }}</span>
+</div>
+
+
 <div class="card-footer p-1 multi_buttons">
 	<a style="width: 100%;" class="text-white  btn btn-danger mb-3" 
 		href="{% url 'ujjwala:legal_documents_upload' pk=obj.id %}" target="_blank">
-		<i class="material-icons">cloud_upload</i>Legal Documents
+		<i class="material-icons">cloud_upload</i> Legal Documents
 	</a>
 	<a style=" width: 100%;" class="text-white btn btn-danger mb-3 float-right" 
 		href="{{ obj.parent.physical_legal_document_link }}" target="_blank">
@@ -64,6 +67,5 @@
     
 </div>
 <style>
-	
-	</style>
+</style>
 {% endblock %}

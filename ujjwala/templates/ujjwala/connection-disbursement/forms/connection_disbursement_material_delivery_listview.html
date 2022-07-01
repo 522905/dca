@@ -39,9 +39,9 @@
         <a href="{% url 'ujjwala:connection_disbursement_material_delivery_view' pk=obj.id %}" data-turbolinks="false">
             <div class="card-header">
                 <p class="text-center"><b>{{ obj.status }}</b> <br>
-                    Submitted On <b>{{ obj.submitted_on }}</b></p>
+                    Updated On <b>{{ obj.updated_on }}</b></p>
             </div>
-            <div class="card-body pb-0 p-2">
+            <div class="card-body pb-0 p-2 list_block">
                 <ul class="m-0">
                     <li>
                         <p class="float-left">Application Id ({{ obj.parent_id }})</p>
