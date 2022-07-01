@@ -155,14 +155,17 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 
 	def get_physical_legal_documents_status(self):
 		connection_disbursement = ConnectionDisbursement.objects.filter(parent_id=self.id).first()
-		if connection_disbursement.status == ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING:
-			return "Form A B C not uploaded"
-		elif connection_disbursement.status == ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW:
-			return "Form A B C uploaded, Review pending"
-		elif connection_disbursement.status == ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED:
-			return "Form A B C uploaded and accepted"
+		if connection_disbursement:
+			if connection_disbursement.status == ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING:
+				return "Form A B C not uploaded"
+			elif connection_disbursement.status == ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW:
+				return "Form A B C uploaded, Review pending"
+			elif connection_disbursement.status == ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED:
+				return "Form A B C uploaded and accepted"
+			else:
+				return "Connection Disbursement Status: {}".format(connection_disbursement.status)
 		else:
-			return "Connection Disbursement not initiated"
+			return "Connection Disbursement not initiated. Make sure Pre Inspection is done and accepted"
 
 
 	@fsm_log_description

@@ -1,4 +1,5 @@
 import datetime
+import io
 
 import django_filters
 import requests
@@ -9,6 +10,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 
+from utils.global_functions import upload_file_to_minio_bucket, upload_file_type_obj_to_minio_bucket
 from . import models
 from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, FamilyMemberRelationEnum, \
     ManualOperationCodeEnum, MaritalStatusEnum, PreInspectionStatusEnum
@@ -326,6 +328,21 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         application_obj.save()
         return HttpResponse('OK')
 
+    @action(methods=['get'], detail=False, url_path='get_walk_in_no_sv_list')
+    def get_walk_in_no_sv_list(self, request, *args, **kwargs):
+        connection_disbursement_list = ConnectionDisbursement.objects.filter(
+            walk_in_date__date=datetime.datetime.today().date()
+        ).filter(invitation__sv_link__isnull=True)
+
+        return JsonResponse([
+            {
+                'connection_disbursement_id': record.id,
+                'application_id': record.parent_id,
+                'consumer_id': record.parent.consumer_id,
+                'name': record.parent.name
+            } for record in connection_disbursement_list
+        ], safe=False)
+
     @action(methods=['get'], detail=False, url_path='get_ekyc_accepted_list')
     def get_list_to_fetch_consumer_id(self, request, *args, **kwargs):
         # .filter(robo_sdms_dedup=RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE) \
@@ -357,6 +374,28 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 'uid': record.family_members.filter(relation=FamilyMemberRelationEnum.SELF).first().uid_no
             } for record in aadhar_list
         ], safe=False)
+
+    @action(methods=['post'], detail=False, url_path='robo_send_invitation')
+    def robo_send_invitation(self, request: HttpRequest, *args, **kwargs):
+        consumer_disbursement_id = request.POST.get('connection_disbursement_id')
+        obj = ConnectionDisbursement.objects.filter(id=consumer_disbursement_id).first()
+        if not obj:
+             return HttpResponse('Connection Disbursement Not Found')
+        file = request.FILES.get('file')
+        # Bucket Name: ujjwaladocuments
+        doc_file_bytes = io.BytesIO(file.read())
+
+        sv_upload_link = upload_file_type_obj_to_minio_bucket(
+            doc_file_bytes, 'ujjwaladocuments', "sv_{}".format(obj.parent_id)
+        )
+
+        obj.invitation.create(
+            sv_link=sv_upload_link,
+            booking_id=request.POST.get('booking_id', ''),
+            sv_uploaded_on=datetime.datetime.now()
+        )
+        return HttpResponse('OK')
+
 
     @action(methods=['post'], detail=False, url_path='update_consumer_id')
     def update_consumer_id(self, request, *args, **kwargs):
@@ -428,7 +467,6 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     def download_pre_inspection_docs(self, request, *args, **kwargs):
         obj = self.get_object()
         return download_pre_installation_documents(obj)
-
 
     @action(methods=['post'], detail=True, url_path='validate_contacts')
     def validate_contacts(self, request: HttpRequest, *args, **kwargs):
