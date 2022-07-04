@@ -111,7 +111,7 @@ body .sidenav-fixed .collapsible-body #menu.parent-menu.active{ color: #fff  !im
 .parent-menu.active a{ padding-left: 10px !important; }
 body .sidenav-fixed .collapsible-body #menu.parent-menu{ background-color: #e5e2e2 !important;}
 body .sidenav-fixed .collapsible-body #menu.parent-menu li{ background-color: #fff;}
-
+.parent-menu.active .active{ background: rgba(0,0,0,.05) !important;}
 /* **************************************** */
             /* Navbar */
 /* **************************************** */
