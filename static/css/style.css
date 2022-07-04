@@ -1,16 +1,24 @@
 @import url('https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap');
 @import url('https://path/to/font-awesome/css/font-awesome.min.css');
 .height-100{height:100vh}
+p{ margin-bottom: 0 !important;}
 body, a, p{font-family: 'muli', sans-serif !important; }
+.fw-500 { font-weight:500;}
+.fw-600 { font-weight:600;}
+.fw-700 { font-weight:700;}
 .text-under-n{ text-decoration: none !important;}
+
+.text-red{  color:#ff5c6c !important;}
 .errorlist li{ color: red; font-size: 14px; font-weight: 500;}
 .form_label{ max-width: 600px;}
 .form_label label{ font-size: 14px; font-weight: 600; color: #333;}
 .form_label a{ color: #222; text-decoration: none; }
 .form_label a:hover{text-decoration: none;}
-.content form .form-group input{  height:40px !important; border-radius: 3px !important; border: 1px solid #ccc !important; width: 100%; line-height: 40px !important;}
+.content form .form-group input{  height:38px !important; border-radius: 3px !important; border: 1px solid #ccc !important; width: 100%; line-height: 38px !important;}
 .col.form-group{ margin: 0 !important;}
 .multi_button .col .btn{ font-size: 0.8rem;}
+.hidden_field{ display:none;}
+body .list_block li{clear: both !important; }
 .uppy-Dashboard-innerWrap
 {
     width:200px;
@@ -249,3 +257,8 @@ color: #222; font-weight: bold; text-transform: uppercase; }
 /* **************************************** */
 
 #id_mobile_container label{ color: #9e9e9e; font-weight: 500;}
+.list_block li{clear: both !important; }
+
+/* **************************************** */
+        /* otp mobile */
+/* **************************************** */
