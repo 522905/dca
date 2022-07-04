@@ -34,6 +34,54 @@ logging.basicConfig(
 )
 
 
+class NicUpdateAddressForm(forms.Form):
+	house_no = forms.CharField(
+		widget=forms.TextInput, label='House No.', required=True
+	)
+	room_no = forms.CharField(
+		widget=forms.TextInput, label='Room No', required=True
+	)
+	floor = forms.CharField(
+		widget=forms.TextInput, label='Floor', required=True
+	)
+	street_no = forms.CharField(
+		widget=forms.TextInput, label='Street No', required=True
+	)
+	landmark = forms.CharField(
+		widget=forms.TextInput, label='Landmark', required=True
+	)
+	village = forms.CharField(
+		widget=forms.TextInput, label='Village', required=True
+	)
+	ward_no = forms.CharField(
+		widget=forms.TextInput, label='Ward No.', required=True
+	)
+	post_office = forms.CharField(
+		widget=forms.TextInput, label='Post Office', required=True
+	)
+	pincode = forms.CharField(
+		widget=forms.TextInput, label='Pin Code', required=True
+	)
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+
+	def clean(self):
+		data = self.cleaned_data
+		data['address_json'] = {
+			"house_no": data.get('house_no', ''),
+			"room_no": data.get('room_no', ''),
+			"floor": data.get('floor', ''),
+			"street_no": data.get('street_no', ''),
+			"landmark": data.get('landmark', ''),
+			"village": data.get('village', ''),
+			"ward_no": data.get('ward_no', ''),
+			"post_office": data.get('post_office', ''),
+			"pincode": data.get('pincode', '')
+		}
+
+
+
 ##################################################
 ##################################################
 # Will be renamed to Address Change Form

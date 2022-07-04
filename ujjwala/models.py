@@ -26,9 +26,9 @@ from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMo
 from ujjwala.forms import UjjwalaLegalDocumentsUpload, \
 	ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewForm, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
-	LegalDocumentsReviewAdminForm
+	LegalDocumentsReviewAdminForm, NicUpdateAddressForm
 from ujjwala.ujjwala_functions import download_ujjwala_physical_legal_docs
-from utils.global_functions import move_file_to_minio_bucket, upload_file_to_minio_bucket
+from utils.global_functions import move_file_to_minio_bucket, upload_file_to_minio_bucket, old_address_to_description
 
 
 class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
@@ -314,6 +314,22 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	)
 	def transition_nic_error(self, *args, **kwargs):
 		self.manual_operation_code = kwargs.get('error_code')
+
+
+	@old_address_to_description
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=UjjwalaV2ApplicationStatus.NIC_ERROR,
+		target=UjjwalaV2ApplicationStatus.NIC_ERROR_UPDATE_ADDRESS,
+		custom=dict(
+			short_description='Update Address', admin=True, form=NicUpdateAddressForm
+		),
+		permission='ujjwala.can_approve_connection',
+	)
+	def transition_nic_address_updated(self, *args, **kwargs):
+		self.address_json = kwargs['address_json']
 
 	@fsm_log_description
 	@fsm_log_by

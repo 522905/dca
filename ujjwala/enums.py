@@ -106,6 +106,7 @@ class UjjwalaV2ApplicationStatus(models.TextChoices):
 	PRE_INSPECTION_ACCEPTED = 'PRE_INSPECTION_ACCEPTED', 'Pre Inspection Accepted'
 	AUDIT_APPLICATION = 'AUDIT_APPLICATION', 'Audit Application'
 	COMPLETED = 'COMPLETED', 'Completed'
+	NIC_ERROR_UPDATE_ADDRESS = 'NIC_ERROR_UPDATE_ADDRESS', 'Nic Error Update Address'
 
 
 class RejectionTypeEnum(models.TextChoices):

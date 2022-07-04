@@ -1,4 +1,5 @@
 import io
+from functools import wraps
 
 import magic
 import requests
@@ -48,3 +49,14 @@ def upload_file_type_obj_to_minio_bucket(file, bucket_name, file_name):
         content_type=descriptor.mime_type
     )
     return get_minio_public_url(bucket_name, doc_file_name)
+
+
+def old_address_to_description(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        kwargs['description'] = args[0].address_json or {'old_address': args[0].address}
+        return func(*args, **kwargs)
+
+    wrapper.__name__ = func.__name__
+    wrapper.__doc__ = func.__doc__
+    return wrapper
