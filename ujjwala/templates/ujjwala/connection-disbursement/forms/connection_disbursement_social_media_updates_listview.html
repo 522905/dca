@@ -1,5 +1,6 @@
 {% extends "material/frontend/base_module.html" %}
 {% load static %}
+{% block page_title %}CD Social Media Updates {% endblock %}
 {% block content %}
 
 <link rel="stylesheet" href="{% static '/css/style.css' %}" >
@@ -32,7 +33,7 @@
     {% endif %}
     {% include 'ujjwala/connection-disbursement/forms/application_search.html' %}
     <div class="main-header bg-heading" style="background-color: #2957A4;">
-        <span class="text-white">List of Connection Disbursement Records</span>
+        <span class="text-white">Social Media Updates</span>
     </div>
     {% for obj in object_list %}
     <div class="card mb-2 app_card">

@@ -1,5 +1,6 @@
 {% extends "material/frontend/base_module.html" %}
 {% load static %}
+{% block page_title %}List of Installation{% endblock %}
 {% block content %}
 
 <link rel="stylesheet" href="{% static '/css/style.css' %}" >
@@ -23,7 +24,7 @@
 </style>
 <div class="p-2 pt-0 form_label" style="width: 100%;">
     <div class="main-header bg-heading" style="background-color: #2957A4;">
-        <span class="text-white">List of Pre-Suraksha-Drill Records</span>
+        <span class="text-white">List of Installation</span>
     </div>
     {% for obj in object_list %}
     <div class="card mb-2 app_card">
