@@ -50,12 +50,16 @@
 
 				<div class="row m-0 multi_buttons mb-2">
 					<div class="col pl-1">
-						<a class="btn btn-danger text-white {% if not bridge_available %}disabled{% endif %}" style="width: 100%;" href="{{ bridge_link }}/print_label?url={{bluebook_label_print_url}}" target="_blank"><i class="material-icons">local_printshop</i>Print Label</a>
+                                                <a id="print_label" class="btn btn-danger text-white {% if not bridge_available %}disabled{% endif %}" style="width: 100%;"
+                                                onclick="sendPrint('print_label', '{{ bridge_link }}/print_label?url={{bluebook_label_print_url}}')">
+                                                <i class="material-icons">local_printshop</i>Print Label
+                                                </a>
 					</div>
 					<div class="col pr-1">
-						<a class="btn btn-danger text-white {% if bridge_available and obj.valid_sv_link %}{% else %}disabled{% endif %}" style="width: 100%;" href="{{ bridge_link }}/print_pdf?url={{ obj.valid_sv_link }}" target="_blank">
+                                                <a id="print_sv" class="btn btn-danger text-white {% if bridge_available and obj.valid_sv_link %}{% else %}disabled{% endif %}" style="width: 100%;"
+                                                onclick="sendPrint('print_sv', '{{ bridge_link }}/print_ujjwala_sv?url={{ obj.valid_sv_link }}')">
 							<i class="material-icons">local_printshop</i> Print SV
-                        </a>
+                        			</a>
 					</div>
 				</div>
                 </br>
@@ -78,7 +82,22 @@
         </div>
     </form>
 </div>
-<style>
-	accept_form_abc_check
-</style>
+
+<script>
+function sendPrint(elementId, url) {
+  $(`#${elementId}`).addClass('disabled');
+  var jqxhr = $.get(url)
+  .done(function() {
+    alert("Print Command Sent");
+  })
+  .fail(function() {
+    alert("Printing Failed");
+  })
+  .always(function() {
+    $(`#${elementId}`).removeClass('disabled');
+  });
+}
+</script>
+
+
 {% endblock %}

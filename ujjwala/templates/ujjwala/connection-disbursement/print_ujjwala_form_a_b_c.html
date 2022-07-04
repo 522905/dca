@@ -57,7 +57,9 @@
 		<i class="material-icons">cloud_download</i>
 		Form ABC
 	</a>
-	<a style=" pointer-events:none; width:100% ;" class="{% if not bridge_available %}disabled	{% endif %}text-white btn btn-danger mb-2" href="{{ bridge_link }}/print_pdf?url={{ obj.parent.physical_legal_document_link }}" target="_blank"> 
+	<a id="print_form_abc" style="width:100% ;"
+	class="{% if not bridge_available %}disabled {% endif %}text-white btn btn-danger mb-2"
+	onclick="sendPrint('print_form_abc', '{{ bridge_link }}/print_pdf?url={{ obj.parent.physical_legal_document_link }}')"> 
 		<span><i class="material-icons">local_printshop</i> Print Form ABC</span>
 	</a>
 	{% if not bridge_available %}																																							
@@ -68,4 +70,21 @@
 </div>
 <style>
 </style>
+<script>
+function sendPrint(elementId, url) {
+  $(`#${elementId}`).addClass('disabled');
+  var jqxhr = $.get(url)
+  .done(function() {
+    alert("Print Command Sent");
+  })
+  .fail(function() {
+    alert("Printing Failed");
+  })
+  .always(function() {
+    $(`#${elementId}`).removeClass('disabled');
+  });
+}
+</script>
+
+
 {% endblock %}
