@@ -330,8 +330,12 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
     @action(methods=['get'], detail=False, url_path='get_walk_in_no_sv_list')
     def get_walk_in_no_sv_list(self, request, *args, **kwargs):
+        # connection_disbursement_list = ConnectionDisbursement.objects.filter(
+        #     walk_in_date__date=datetime.datetime.today().date()
+        # ).filter(invitation__sv_link__isnull=True)
+
         connection_disbursement_list = ConnectionDisbursement.objects.filter(
-            walk_in_date__date=datetime.datetime.today().date()
+            parent__id__in=[337, 338]
         ).filter(invitation__sv_link__isnull=True)
 
         return JsonResponse([

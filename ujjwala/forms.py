@@ -79,7 +79,7 @@ class NicUpdateAddressForm(forms.Form):
 			"post_office": data.get('post_office', ''),
 			"pincode": data.get('pincode', '')
 		}
-
+		return data
 
 
 ##################################################

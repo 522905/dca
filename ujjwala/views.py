@@ -29,7 +29,7 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
     ConnectionDisbursementSvLabelPrintForm, InstallationMainGateUploadForm, InstallationKitchenUploadForm, \
     UjjwalaApplicationOtpInitialForm, UjjwalaApplicationGenerateOtpForm, UjjwalaApplicationValidateOtpForm, \
     ConnectionDisbursementMaterialDeliveryForm, ConnectionDisbursementInvitationForm, \
-    ConnectionDisbursementSocialMediaUpdatesForm, ConnectionDisbursementSearchForm
+    ConnectionDisbursementSocialMediaUpdatesForm, ConnectionDisbursementSearchForm, NicUpdateAddressForm
 
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, ConnectionDisbursementInvitation
 
@@ -40,6 +40,16 @@ def index(request):
 
 def legal_documents(request):
     return render(request, 'ujjwala/legal_documents_upload.html')
+
+
+class WhatsappNicErrorUpdateAddress(View):
+    def get(self, request, *args, **kwargs):
+        obj = UjjwalaV2Application.objects.filter(pk=kwargs.get('pk')).first()
+        if obj:
+            obj.event_whatsapp_nic_error_update_address()
+            return HttpResponse("Application Id {}: Message Sent".format(kwargs.get('pk')))
+        return HttpResponse("Application Id {} does not exist".format(kwargs.get('pk')))
+
 
 
 class ApplicationStatusView(DetailView):
@@ -830,10 +840,9 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
             status__in=[
                 ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
                 ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
-                ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
-                ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE,
-                ConnectionDisbursementStatusEnum.INSTALLATION_UPLOADED
-
+                # ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
+                # ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE,
+                # ConnectionDisbursementStatusEnum.INSTALLATION_UPLOADED
             ],
             walk_in_date__date=datetime.datetime.today().date()
         ).order_by('updated_on')
@@ -1047,3 +1056,39 @@ class BarCodeLabelPrintView(View):
             resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_bluebook_label_{}.prn'.format(obj.parent.id)
 
             return resp
+
+
+@method_decorator(login_required, 'dispatch')
+class NicErrorUpdateAddress(FormView):
+    # model = ConnectionDisbursementInvitation
+    form_class = NicUpdateAddressForm
+    template_name = "ujjwala/NicErrorUpdateAddress/update_address.html"
+
+    def get_object(self, queryset=None):
+        try:
+            obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
+        except:
+            raise Http404(
+                "No application with id: {} found.".format(self.kwargs.get('pk'))
+            )
+        return obj
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        obj = self.get_object()
+        context.update({
+            "obj": obj
+        })
+        return context
+
+    def form_valid(self, form):
+        obj = self.get_object()
+        data = form.clean()
+        old_address_json = obj.address_json or obj.address
+        obj.transition_nic_address_updated(
+            description=old_address_json,
+            address_json=data['address_json']
+        )
+        obj.save()
+        return HttpResponse("<b>Address Updated Successfully</b>")
+

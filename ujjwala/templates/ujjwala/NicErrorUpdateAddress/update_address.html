@@ -1,0 +1,153 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+
+<style>
+    .hidden-field{ display: none;}
+    .form_label .card{ width: 100%;  }
+    .address_form label{ margin-bottom: 5px; }
+    #address_form .form_block input{ padding-left:5px; border-radius: 3px; border: 1px solid #ccc; width: 100%; line-height: 40px; }
+    .form_block label{ float: left; width: 100%; }
+</style>
+<div id="address_form" class="row m-0 form_label p-2">
+    <div class="card card-profile pt-0 mt-0 " style="width: 100%;" >
+		<div class="row justify-content-center m-0" style="width: 100%; margin: 0 auto !important; padding: 10px;">
+			<div style="width: 30%; float:left">
+				<div class="card-profile-image">
+					<a href="#">
+						<img style="width:100%; max-height: 150px;" src="{{obj.document_self}}">
+					</a>
+				</div>
+			</div>
+			<div style="width: 70%; float:right">
+				<div class="card-body pt-0">
+					<div class="text-center">
+						<h5 class="h3">{{ obj.name }}({{ obj.id }})<span class="font-weight-light"></span></h5>
+						<div class="h5 font-weight-300">
+							<i class="ni location_pin mr-2"></i>{{ obj.contact_mobile }}
+						</div>
+						<div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
+							{% if address_json == address_json  %}
+								{% for key,data in obj.address_json.items %}
+									{{data}},
+								{% endfor %}
+							{% else %}
+								{{ obj.address }}
+							{% endif%}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+    <form method="post" id="form" style="width: 100%;">
+        {% csrf_token %}
+        <div class="card address_form">
+            {{form.form_type}}
+            {{form.application_id}}
+            {{form.name}}
+            {{form.address}}
+            <div class="main-header bg-heading p-2 border-0" style="background-color: #2957A4;">
+                <span class="text-white" style="font-size: 18px; padding-left: 20PX;">Edit Address</span>
+            </div>
+            <div class="p-4 form_block">
+                {{ form }}
+            </div>
+            <!-- <div class="form-group" style="margin-bottom: 0 !important;">
+                <div class="row m-0 p-3">
+                    <div class="col-sm-12 photo_block p-0">
+                        <input class="hidden-field" id="id_house_no" name="house_no" value=""/>
+                        <label for="id_house_no">House No<strong style="color:red">*</strong></label>
+                        <input placeholder="माकन नंबर" id="id_house_no" name="{{house_no}}" value="{{house_no}}"/>
+                       {{ form.house_no.errors }}
+                    </div>
+                    <div class="col-sm-12 photo_block p-0">
+                        <input class="hidden-field" id="id_room_no" name="room_no" value=""/>
+                        <label for="room_no">Room No.<strong style="color:red">*</strong></label>
+                        <input placeholder="कमरा सं." id="id_room_no" name="room_no" value=""/>
+                       {{ form.house_no.errors }}
+                    </div>
+                    <div class="col-sm-12 photo_block p-0">
+                        <input class="hidden-field" id="id_floor" name="floor" value=""/>
+                        <label for="floor">Floor<strong style="color:red">*</strong></label>
+                        <input placeholder="तल सं." id="id_floor" name="floor" value=""/>
+                       {{ form.floor.errors }}
+                    </div>
+                    <div class="col-sm-12 photo_block p-0">
+                        <input class="hidden-field" id="id_street_no" name="street_no" value=""/>
+                        <label for="street_no">Street No.<strong style="color:red">*</strong></label>
+                        <input placeholder="गली नंबर" id="id_street_no" name="street_no" value=""/>
+                       {{ form.street_no.errors }}
+                    </div>
+                    <div class="col-sm-12 photo_block p-0">
+                        <input class="hidden-field" id="id_landmark" name="landmark" value=""/>
+                        <label for="landmark">Land Mark<strong style="color:red">*</strong></label>
+                        <input placeholder="सीमाचिह्न" id="id_landmark" name="landmark" value=""/>
+                       {{ form.landmark.errors }}
+                    </div>
+                    <div class="col-sm-12 photo_block p-0">
+                        <input class="hidden-field" id="id_village" name="village" value=""/>
+                        <label for="village">Locality Village<strong style="color:red">*</strong></label>
+                        <input placeholder="सड़क का नाम/गांव" id="id_village" name="village" value=""/>
+                       {{ form.village.errors }}
+                    </div>
+                    <div class="col-sm-12 photo_block p-0">
+                        <input class="hidden-field" id="id_ward_no" name="ward_no" value=""/>
+                        <label for="ward_no">Ward No.<strong style="color:red">*</strong></label>
+                        <input placeholder="वर्ड नंबर" id="id_ward_no" name="ward_no" value=""/>
+                       {{ form.ward_no.errors }}
+                    </div>
+                    <div class="col-sm-12 photo_block p-0">
+                        <input class="hidden-field" id="id_post_office" name="post_office" value=""/>
+                        <label for="post_office">Post Office<strong style="color:red">*</strong></label>
+                        <input placeholder="पोस्ट ऑफीस" id="id_post_office" name="post_office" value=""/>
+                       {{ form.post_office.errors }}
+                    </div>
+                    <div class="col-sm-12 photo_block p-0">
+                        <input class="hidden-field" id="city" name="city" value=""/>
+                        <label for="city">City<strong style="color:red">*</strong></label>
+                        <input placeholder="शहर" id="city" name="city" value="Ludhiana"/>
+                       {{ form.city.errors }}
+                    </div>
+                    <div class="col-sm-12 photo_block p-0">
+                        <input class="hidden-field" id="pincode" name="pincode" value=""/>
+                        <label for="pincode">Pincode<strong style="color:red">*</strong></label>
+                        <input placeholder="पिनकोड" id="id_pincode" name="pincode" value="" onblur="validate_pincode();"  pattern="[1-9]{1}[0-9]{5}"/>
+                       {{ form.pincode.errors }}
+                    </div>
+                </div>
+            </div> -->
+            <div class="card-footer">
+                <input class="btn btn-secondary rounded-0 float-right" type="button" id="form" onclick="submit()"  value="Submit"/>
+            </div>
+        </div>
+        
+    </form>
+</div>
+<script>
+    function submit() {
+        if(!$('#form')[0].reportValidity()) {
+            alert("Please complete all required fields");
+            return;
+        }
+
+        if (!validate_pincode()) {
+            return;
+        }
+    }
+
+    function validate_pincode() {
+        if(!$('#id_pincode')[0].reportValidity()) {
+            return;
+        }
+        pincode = parseInt($('#id_pincode').val());
+        if(pincode && pincode >= 141001 && pincode <= 141014) {
+            return true;
+        }
+        alert("We don't provide service this Pin code area. हम इस पिन कोड क्षेत्र में सेवा प्रदान नहीं करते हैं");
+        return false;
+    }
+</script>
+{% endblock %}

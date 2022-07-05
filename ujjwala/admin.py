@@ -27,7 +27,7 @@ from .models import UjjwalaV2Application, FamilyMembers, UjjwalaApplicationDocum
 	ConnectionDisbursementInvitation
 from .ujjwala_functions import download_ujjwala_documents, download_ujjwala_physical_legal_docs
 
-from .views import SendInvitationView
+from .views import SendInvitationView, NicErrorUpdateAddress
 
 
 def filter_walk_in_qs(queryset, state):
@@ -92,7 +92,7 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 		'referral_code',
 		'robo_sdms_dedup',
 		'status',
-		'consumer_id'
+		'consumer_id',
 	)
 
 	search_fields = ('id', 'name', 'referral_code', 'contact_mobile', 'consumer_id',)
@@ -158,7 +158,11 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 				UjjwalaV2ApplicationStatus.DO_MANUAL_OPERATION,
 				UjjwalaV2ApplicationStatus.MANUAL_LEGAL_DOCUMENTS_UPLOAD
 		):
-			readonly_fields = readonly_fields + ['download_legal_docs']
+			readonly_fields = readonly_fields + ['download_legal_docs', ]
+		elif obj and obj.status in (
+				UjjwalaV2ApplicationStatus.NIC_ERROR
+		):
+			readonly_fields = readonly_fields + ['whatsapp_nic_error_update_address', ]
 
 		return readonly_fields
 
@@ -305,6 +309,3 @@ class ConnectionDisbursementAdmin(FSMTransitionCustomMixin, admin.ModelAdmin):
 			url('(?P<pk>[^/.]+)/invite/', wrap(SendInvitationView.as_view()), name='%s_%s_invite' % info),
 		]
 		return my_urls + urls
-
-
-

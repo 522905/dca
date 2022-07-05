@@ -59,6 +59,12 @@ urlpatterns = [
     ),
 
     url(
+        '^portal/whatsapp_nic_error_update_address/(?P<pk>[^/.]+)/$',
+        views.WhatsappNicErrorUpdateAddress.as_view(),
+        name="whatsapp_nic_error_update_address"
+    ),
+
+    url(
         '^portal/pre-inspection/(?P<pk>[^/.]+)/$',
         views.PreInspectionView.as_view(),
         name="pre_inspection_form_view"
@@ -68,6 +74,11 @@ urlpatterns = [
         '^portal/legal_documents_upload/(?P<pk>[^/.]+)/$',
         views.UjjwalaApplicationLegalDocumentsUpload.as_view(),
         name="legal_documents_upload"
+    ),
+    url(
+        '^portal/nic_error_update_address/(?P<pk>[^/.]+)/$',
+        views.NicErrorUpdateAddress.as_view(),
+        name="nic_error_update_address"
     ),
 
     # url(

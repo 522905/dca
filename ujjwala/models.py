@@ -94,6 +94,14 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		# 	return mark_safe(html)
 		return mark_safe("")
 
+	def whatsapp_nic_error_update_address(self):
+		url = reverse('ujjwala:whatsapp_nic_error_update_address', kwargs={'pk': self.pk})
+		html = '''
+		<a href="{}">Whatsapp Nic Error Update Address</a>
+		'''.format(url)
+		return mark_safe(html)
+
+
 	@property
 	def formatted_address(self):
 		if self.version in ('V1', 'V2'):
@@ -685,6 +693,7 @@ class ConnectionDisbursement(models.Model):
 		<a href="{}">Send Invitation</a>
 		'''.format(invite_url)
 		return mark_safe(html)
+
 
 	def legal_document_upload_link(self):
 		html = '''
