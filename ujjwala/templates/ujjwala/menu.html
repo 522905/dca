@@ -1,4 +1,4 @@
-
+{% if user.is_authenticated %}
 <ul>
     <li id="menu" class="parent-menu"><span>Suraksha-Drill</span>
         <ul>
@@ -26,3 +26,4 @@
     </li>
     {% endif %}
 </ul>
+{% endif %}

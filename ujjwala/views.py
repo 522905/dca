@@ -30,6 +30,7 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
     UjjwalaApplicationOtpInitialForm, UjjwalaApplicationGenerateOtpForm, UjjwalaApplicationValidateOtpForm, \
     ConnectionDisbursementMaterialDeliveryForm, ConnectionDisbursementInvitationForm, \
     ConnectionDisbursementSocialMediaUpdatesForm, ConnectionDisbursementSearchForm, NicUpdateAddressForm
+from ujjwala.global_functions import login_required_if_mech_inspection
 
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, ConnectionDisbursementInvitation
 
@@ -50,6 +51,15 @@ class WhatsappNicErrorUpdateAddress(View):
             return HttpResponse("Application Id {}: Message Sent".format(kwargs.get('pk')))
         return HttpResponse("Application Id {} does not exist".format(kwargs.get('pk')))
 
+
+class WhatsappPreInspectionTypeSelf(View):
+    def get(self, request, *args, **kwargs):
+        pi_obj = PreInspection.objects.filter(parent_id=kwargs.get('pk')).first()
+        # obj = UjjwalaV2Application.objects.filter(pk=kwargs.get('pk')).first()
+        if pi_obj:
+            pi_obj.parent.event_whatsapp_pre_inspection_type_self(pi_obj.id)
+            return HttpResponse("Application Id {}: Message Sent For Pre Inspection Type Self".format(kwargs.get('pk')))
+        return HttpResponse("Application Id {} does not exist".format(kwargs.get('pk')))
 
 
 class ApplicationStatusView(DetailView):
@@ -196,7 +206,7 @@ class InstallationListView(ListView):
         return 'ujjwala/installation_listview.html'
 
 
-@method_decorator(login_required, 'dispatch')
+@method_decorator(login_required_if_mech_inspection, 'dispatch')
 class PreInspectionView(FormView):
     model = PreInspection
     pre_inspection_step0_template = 'ujjwala/pre-Inspection-form/steps/step0.html'
@@ -210,12 +220,15 @@ class PreInspectionView(FormView):
 
     def dispatch(self, request, *args, **kwargs):
         pre_inspection = PreInspection.objects.get(pk=kwargs.get('pk'))
-        if pre_inspection.status == PreInspectionStatusEnum.ALLOCATED:
+
+        if pre_inspection.status in (
+                PreInspectionStatusEnum.ALLOCATED,
+                PreInspectionStatusEnum.REJECTED
+        ):
             return self.otp_verification(pre_inspection)
         elif pre_inspection.status in (
                 PreInspectionStatusEnum.SUBMITTED,
                 PreInspectionStatusEnum.ACCEPTED,
-                PreInspectionStatusEnum.REJECTED,
         ):
             return render(self.request, 'ujjwala/pre_inspection_status.html', context={
                 'pre_inspection': pre_inspection

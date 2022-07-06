@@ -4,6 +4,8 @@ from functools import wraps
 import magic
 import requests
 from django.conf import settings
+from django.contrib.auth import REDIRECT_FIELD_NAME
+from django.contrib.auth.decorators import user_passes_test
 
 from connection_app.models import minio_client
 from domestic_app.utils import get_minio_public_url
@@ -51,12 +53,12 @@ def upload_file_type_obj_to_minio_bucket(file, bucket_name, file_name):
     return get_minio_public_url(bucket_name, doc_file_name)
 
 
-def old_address_to_description(func):
-    @wraps(func)
+def old_address_to_description(function):
+    @wraps(function)
     def wrapper(*args, **kwargs):
         kwargs['description'] = args[0].address_json or {'old_address': args[0].address}
-        return func(*args, **kwargs)
+        return function(*args, **kwargs)
 
-    wrapper.__name__ = func.__name__
-    wrapper.__doc__ = func.__doc__
+    wrapper.__name__ = function.__name__
+    wrapper.__doc__ = function.__doc__
     return wrapper

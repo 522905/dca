@@ -185,10 +185,18 @@ class KitchenPreInspectionForm(forms.Form):
 
 		obj.witness_name = data['witness_name']
 		obj.witness_mobile_number = data['witness_mobile_number']
-		obj.pre_inspection_kitchen_photo_uploaded(
-			by=get_current_user(),
-			description="Witness Name: {}, Mobile Number: {}".format(obj.witness_name, obj.witness_mobile_number)
-		)
+		if obj.type == 'SELF':
+			obj.pre_inspection_kitchen_photo_uploaded_skip_safety(
+				description='\n'.join([
+					"Witness Name: {}, Mobile Number: {}".format(obj.witness_name, obj.witness_mobile_number),
+					"Self Inspection, Skipping Safety",
+				])
+			)
+		else:
+			obj.pre_inspection_kitchen_photo_uploaded(
+				by=get_current_user(),
+				description="Witness Name: {}, Mobile Number: {}".format(obj.witness_name, obj.witness_mobile_number)
+			)
 		obj.save()
 
 
@@ -216,9 +224,15 @@ class AudioOnSafetyForm(forms.Form):
 
 
 class PreviewPreInspectionForm(forms.Form):
-	latitude = forms.CharField(widget=forms.TextInput(attrs={'readonly': 1}), max_length=32, label='Latitude', required=True)
-	longitude = forms.CharField(widget=forms.TextInput(attrs={'readonly': 1}), max_length=32, label='Longitude', required=True)
-	accuracy = forms.CharField(widget=forms.TextInput(attrs={'readonly': 1}), max_length=24, label='Accuracy', required=True)
+	latitude = forms.CharField(
+		widget=forms.TextInput(attrs={'readonly': 1}), max_length=32, label='Latitude', required=True
+	)
+	longitude = forms.CharField(
+		widget=forms.TextInput(attrs={'readonly': 1}), max_length=32, label='Longitude', required=True
+	)
+	accuracy = forms.CharField(
+		widget=forms.TextInput(attrs={'readonly': 1}), max_length=24, label='Accuracy', required=True
+	)
 	main_gate = forms.CharField(
 		widget=forms.HiddenInput, label='Main Gate Photo', required=True
 	)
@@ -246,7 +260,7 @@ class PreviewPreInspectionForm(forms.Form):
 
 		obj.transition_pre_inspection_submit(
 			by=get_current_user(),
-			description="Latitude: {}, Longituder: {}, Accuracy: {}".format(
+			description="Latitude: {}, Longitude: {}, Accuracy: {}".format(
 				data['latitude'], data['longitude'], data['accuracy'])
 		)
 		obj.save()

@@ -107,6 +107,7 @@ class UjjwalaV2ApplicationStatus(models.TextChoices):
 	AUDIT_APPLICATION = 'AUDIT_APPLICATION', 'Audit Application'
 	COMPLETED = 'COMPLETED', 'Completed'
 	NIC_ERROR_UPDATE_ADDRESS = 'NIC_ERROR_UPDATE_ADDRESS', 'Nic Error Update Address'
+	READY_FOR_DISBURSEMENT = 'READY_FOR_DISBURSEMENT', 'Ready For Disbursement'
 
 
 class RejectionTypeEnum(models.TextChoices):
@@ -148,6 +149,11 @@ class PreInspectionStatusEnum(models.TextChoices):
 	ACCEPTED = 'ACCEPTED', 'Accepted'
 	REUPLOAD = 'REUPLOAD', 'Reupload'
 	REJECTED = 'REJECTED', 'Rejected'
+
+
+class PreInspectionTypeEnum(models.TextChoices):
+	SELF = 'SELF', 'Self'
+	MECHANIC = 'MECHANIC', 'Mechanic'
 
 
 class ConnectionDisbursementStatusEnum(models.TextChoices):

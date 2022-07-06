@@ -54,6 +54,7 @@ class UjjwalaWhatsappCommunication(object):
 			CommunicationLog.objects.create(
 				content_type=ujjwala_v2_application_content_type,
 				object_id=self.pk,
+				channel_subscriber=self.contact_mobile,
 				event="submit", channel="whatsapp",
 				message_id=data.get('id')
 			)
@@ -158,6 +159,7 @@ class UjjwalaWhatsappCommunication(object):
 			CommunicationLog.objects.create(
 				content_type=ujjwala_v2_application_content_type,
 				object_id=self.pk,
+				channel_subscriber=self.contact_mobile,
 				event="ujjwala_invite_for_ekyc", channel="whatsapp",
 				message_id=data.get('id')
 			)
@@ -218,6 +220,7 @@ class UjjwalaWhatsappCommunication(object):
 			CommunicationLog.objects.create(
 				content_type=ujjwala_v2_application_content_type,
 				object_id=self.pk,
+				channel_subscriber=self.contact_mobile,
 				event="physcial_legal_document", channel="whatsapp",
 				message_id=data.get('id')
 			)
@@ -228,7 +231,6 @@ class UjjwalaWhatsappCommunication(object):
 				self.contact_mobile, self.name, self.pk
 			)
 		)
-
 		# res = requests.post(
 		# 	"http://vici.hawabadlo.in/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
 		# 	"&function=add_lead&phone_number={}&list_id=1006&first_name={}&last_name={}".format(
@@ -278,7 +280,8 @@ class UjjwalaWhatsappCommunication(object):
 			CommunicationLog.objects.create(
 				content_type=ujjwala_v2_application_content_type,
 				object_id=self.pk,
-				event="submit", channel="whatsapp",
+				channel_subscriber=self.contact_mobile,
+				event="legal_documents_upload", channel="whatsapp",
 				message_id=data.get('id')
 			)
 
@@ -322,7 +325,62 @@ class UjjwalaWhatsappCommunication(object):
 			CommunicationLog.objects.create(
 				content_type=ujjwala_v2_application_content_type,
 				object_id=self.pk,
-				event="submit", channel="whatsapp",
+				channel_subscriber=self.contact_mobile,
+				event="nic_error_update_address", channel="whatsapp",
+				message_id=data.get('id')
+			)
+
+		# res = requests.post(
+		# 	"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+		# 	"&function=add_lead&phone_number={}&list_id=1006&first_name={}&last_name={}".format(
+		# 		self.contact_mobile, self.name, self.pk
+		# 	)
+		# )
+		return data.get('result', '')
+
+	def event_whatsapp_pre_inspection_type_self(self, pre_inspection_id):
+		body_text = {
+			"countryCode": "+91",
+			"phoneNumber": self.contact_mobile,
+			"type": "Template",
+			"traits": {
+				"name": self.name,
+			},
+			# "callbackData": "some_callback_data",
+			"template": {
+				# "name": "ujjwala_application_submitted_",
+				"name": "pre_inspection_type_self",
+				"languageCode": "hi",
+				"headerValues": [
+					# "Alert",  #
+				],
+				"bodyValues": [
+					self.name,
+					"https://dca-local.arungas.com/portal/pre-inspection/{}/".format(str(pre_inspection_id))
+				],
+				"buttonValues": {
+					"0": [
+						"ujjwala/portal/whatsapp_pre_inspection_type_self/{}/".format(pre_inspection_id)
+					]
+				}
+			}
+		}
+
+		ujjwala_v2_application_content_type = ContentType.objects.get(
+			app_label='ujjwala', model='ujjwalav2application'
+		)
+		data = track.client.post(
+			api_key=settings.INTERAKT_API_KEY,
+			path="/v1/public/message/",
+			body=body_text
+		).json()
+
+		if data.get('result', ''):
+			CommunicationLog.objects.create(
+				content_type=ujjwala_v2_application_content_type,
+				object_id=self.pk,
+				channel_subscriber=self.contact_mobile,
+				event="pre_inspection_type_self", channel="whatsapp",
 				message_id=data.get('id')
 			)
 

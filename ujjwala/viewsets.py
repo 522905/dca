@@ -13,7 +13,7 @@ from rest_framework.pagination import PageNumberPagination
 from utils.global_functions import upload_file_to_minio_bucket, upload_file_type_obj_to_minio_bucket
 from . import models
 from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, FamilyMemberRelationEnum, \
-    ManualOperationCodeEnum, MaritalStatusEnum, PreInspectionStatusEnum
+    ManualOperationCodeEnum, MaritalStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum
 from .forms import ApplicationRejected
 from .models import UjjwalaV2Application, FamilyMembers, ConnectionDisbursement, ConnectionDisbursementDocuments, \
     PreInspection
@@ -320,22 +320,24 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 pass
         else:
             application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE
-            application_obj.event_invite_for_ekyc_channel_whatsapp()
+            # Create PreInspection Object
+            obj = PreInspection.objects.create(
+                parent_id=application_obj.id,
+                status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+                type=PreInspectionTypeEnum.SELF
+            )
+            application_obj.event_whatsapp_pre_inspection_type_self()
+            # application_obj.event_invite_for_ekyc_channel_whatsapp()
             if application_obj.consumer_id and \
                     application_obj.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
                 application_obj.ekyc_accepted_or_rejected(description="Bot Processed")
-
         application_obj.save()
         return HttpResponse('OK')
 
     @action(methods=['get'], detail=False, url_path='get_walk_in_no_sv_list')
     def get_walk_in_no_sv_list(self, request, *args, **kwargs):
-        # connection_disbursement_list = ConnectionDisbursement.objects.filter(
-        #     walk_in_date__date=datetime.datetime.today().date()
-        # ).filter(invitation__sv_link__isnull=True)
-
         connection_disbursement_list = ConnectionDisbursement.objects.filter(
-            parent__id__in=[337, 338]
+            walk_in_date__date=datetime.datetime.today().date()
         ).filter(invitation__sv_link__isnull=True)
 
         return JsonResponse([
@@ -400,7 +402,6 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         )
         return HttpResponse('OK')
 
-
     @action(methods=['post'], detail=False, url_path='update_consumer_id')
     def update_consumer_id(self, request, *args, **kwargs):
         result = request.data.get('result')
@@ -408,18 +409,31 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         application.sdms_last_updated_on = timezone.now()
         application.save()
 
-        if 'arun indane' not in result.get('distributor_name', '').lower():
+        if not result.get('distributor_name', ''):
             return HttpResponse('OK')
 
-        self_family_member = application.family_members.filter(relation=FamilyMemberRelationEnum.SELF).first()
+        if 'arun indane' in result.get('distributor_name', '').lower():
+            self_family_member = application.family_members.filter(relation=FamilyMemberRelationEnum.SELF).first()
 
-        self_family_member.uid_check_result = result
-        self_family_member.save()
+            self_family_member.uid_check_result = result
+            self_family_member.save()
 
-        application.consumer_id = result.get('consumer_id', '')
+            application.consumer_id = result.get('consumer_id', '')
 
-        if application.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
-            application.ekyc_accepted_or_rejected(description="Bot Processed")
+            if application.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
+                application.ekyc_accepted_or_rejected(description="Bot Processed")
+        else:
+            form = ApplicationRejected(data={
+                'rejected_reason': 'CONNECTION_ALREADY_EXIST',
+                'description': "{} {} {} {}".format(
+                    'SELF',
+                    result['distributor_name'], result['consumer_id'],
+                    result['contact_address']
+                )})
+            form.is_valid()
+            if application.status == 'DOCUMENTS_UPLOADED':
+                application.application_rejected(**form.cleaned_data)
+                application.event_ioc_dedupe_reject_channel_whatsapp()
 
         application.save()
 

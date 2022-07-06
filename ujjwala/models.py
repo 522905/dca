@@ -22,7 +22,7 @@ from ujjwala.communication_models import UjjwalaWhatsappCommunication
 from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMobileStatusEnum, \
 	UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, \
 	RejectionTypeEnum, RoboSdmsDedeupStatusEnum, UserDocumentsEnum, OtpStatusEnum, PreInspectionStatusEnum, \
-	ConnectionDisbursementStatusEnum
+	ConnectionDisbursementStatusEnum, PreInspectionTypeEnum
 from ujjwala.forms import UjjwalaLegalDocumentsUpload, \
 	ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewForm, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
@@ -289,25 +289,25 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	def transition_nic_cleared(self, *args, **kwargs):
 		pass
 
-	@fsm_log_description
-	@fsm_log_by
-	@transition(
-		field=status,
-		source=UjjwalaV2ApplicationStatus.NIC_CLEARED,
-		target=UjjwalaV2ApplicationStatus.PRE_INSPECTION_ACCEPTED,
-		custom=dict(
-			short_description='Pre Inspection Accepted', admin=True
-		),
-	)
-	def transition_pre_inspection_accepted(self, *args, **kwargs):
-		pre_inspection_id = kwargs.get('pre_inspection_id')
-		pre_inspection = PreInspection.objects.get(pk=pre_inspection_id)
-		self.latitude = pre_inspection.latitude
-		self.longitude = pre_inspection.longitude
-		self.accuracy = pre_inspection.accuracy
-		self.pre_inspection_accepted = pre_inspection
-		self.save()
-		self.event_legal_documents_upload_channel_whatsapp()
+	# @fsm_log_description
+	# @fsm_log_by
+	# @transition(
+	# 	field=status,
+	# 	source=UjjwalaV2ApplicationStatus.NIC_CLEARED,
+	# 	target=UjjwalaV2ApplicationStatus.PRE_INSPECTION_ACCEPTED,
+	# 	custom=dict(
+	# 		short_description='Pre Inspection Accepted', admin=True
+	# 	),
+	# )
+	# def transition_pre_inspection_accepted(self, *args, **kwargs):
+	# 	pre_inspection_id = kwargs.get('pre_inspection_id')
+	# 	pre_inspection = PreInspection.objects.get(pk=pre_inspection_id)
+	# 	self.latitude = pre_inspection.latitude
+	# 	self.longitude = pre_inspection.longitude
+	# 	self.accuracy = pre_inspection.accuracy
+	# 	self.pre_inspection_accepted = pre_inspection
+	# 	self.save()
+	# 	self.event_legal_documents_upload_channel_whatsapp()
 
 	@fsm_log_description
 	@fsm_log_by
@@ -339,25 +339,42 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	def transition_nic_address_updated(self, *args, **kwargs):
 		self.address_json = kwargs['address_json']
 
+	# @fsm_log_description
+	# @fsm_log_by
+	# @transition(
+	# 	field=status,
+	# 	source=UjjwalaV2ApplicationStatus.PRE_INSPECTION_ACCEPTED,
+	# 	target=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_COLLECTED,
+	# 	custom=dict(
+	# 		short_description='Legal Documents Collection', admin=True,
+	# 	),
+	# 	permission='ujjwala.can_approve_connection',
+	# )
+	# def transition_legal_documents_collected(self, *args, **kwargs):
+	# 	pass
+
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=UjjwalaV2ApplicationStatus.PRE_INSPECTION_ACCEPTED,
-		target=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_COLLECTED,
+		source=UjjwalaV2ApplicationStatus.NIC_CLEARED,
+		target=UjjwalaV2ApplicationStatus.READY_FOR_DISBURSEMENT,
 		custom=dict(
-			short_description='Legal Documents Collection', admin=True,
+			short_description='Ready For Disbursement', admin=True,
 		),
 		permission='ujjwala.can_approve_connection',
 	)
-	def transition_legal_documents_collected(self, *args, **kwargs):
+	def transition_ready_for_disbrusement(self, *args, **kwargs):
 		pass
 
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_COLLECTED,
+		source=[
+			UjjwalaV2ApplicationStatus.READY_FOR_DISBURSEMENT,
+			UjjwalaV2ApplicationStatus.NIC_CLEARED
+		],
 		target=UjjwalaV2ApplicationStatus.MATERIAL_DELIVERED,
 		custom=dict(
 			short_description='Material Delivered', admin=False,
@@ -530,6 +547,7 @@ class PreInspection(models.Model):
 	witness_mobile_number = models.CharField(max_length=10, null=True, blank=True)
 	mechanic = models.ForeignKey(User, on_delete=models.PROTECT)
 	submitted_on = models.DateTimeField(null=True)
+	type = models.CharField(max_length=32, choices=PreInspectionTypeEnum.choices, default=PreInspectionTypeEnum.SELF)
 
 
 	status = FSMField(
@@ -550,12 +568,17 @@ class PreInspection(models.Model):
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=PreInspectionStatusEnum.ALLOCATED,
+		source=[
+			PreInspectionStatusEnum.ALLOCATED,
+			PreInspectionStatusEnum.REJECTED
+		],
 		target=PreInspectionStatusEnum.CHANGE_ADDRESS,
 		custom=dict(short_description='Verify Otp', admin=False),
 	)
 	def pre_inspection_otp_verified(self, *args, **kwargs):
-		pass
+		# Deleting existing documents
+		if self.status == PreInspectionStatusEnum.REJECTED:
+			self.documents.delete()
 
 
 	@fsm_log_description
@@ -569,6 +592,16 @@ class PreInspection(models.Model):
 	def pre_inspection_change_address(self, *args, **kwargs):
 		pass
 
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=PreInspectionStatusEnum.KITCHEN_PHOTO,
+		target=PreInspectionStatusEnum.PREVIEW_INSPECTION,
+		custom=dict(short_description='Upload Main Gate Pic & Location', admin=False),
+	)
+	def pre_inspection_kitchen_photo_uploaded_skip_safety(self, *args, **kwargs):
+		pass
 
 	@fsm_log_description
 	@fsm_log_by
@@ -587,7 +620,7 @@ class PreInspection(models.Model):
 		field=status,
 		source=PreInspectionStatusEnum.SAFETY_AUDIO,
 		target=PreInspectionStatusEnum.PREVIEW_INSPECTION,
-		custom=dict(short_description='Preview Inspection', admin=False),
+		custom=dict(short_description='Upload Main Gate Pic & Location', admin=False),
 	)
 	def pre_inspection_safety_audio_uploaded(self, *args, **kwargs):
 		pass
@@ -641,11 +674,23 @@ class PreInspection(models.Model):
 				link=upload_url,
 				parent=self
 			)
-			self.parent.transition_pre_inspection_accepted(
-				pre_inspection_id=self.pk, by=get_current_user()
-			)
+			# self.parent.transition_pre_inspection_accepted(
+			# 	pre_inspection_id=self.pk, by=get_current_user()
+			# )
+			# self.parent.save()
+			self.parent.latitude = self.latitude
+			self.parent.longitude = self.longitude
+			self.parent.accuracy = self.accuracy
+			self.parent.pre_inspection_accepted = self
 			self.parent.save()
-		self.save()
+			self.parent.event_legal_documents_upload_channel_whatsapp()
+		else:
+			if self.type == PreInspectionTypeEnum.SELF:
+				# Send Whatsapp Message
+				pass
+
+
+
 
 
 class PreInspectionDocuments(models.Model):
@@ -708,7 +753,6 @@ class ConnectionDisbursement(models.Model):
 			return valid_invitation.sv_link
 
 
-
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
@@ -741,8 +785,9 @@ class ConnectionDisbursement(models.Model):
 	)
 	def transition_legal_documents_reviewed(self, *args, **kwargs):
 		if kwargs.get('review_status') == 'ACCEPTED':
-			self.parent.transition_legal_documents_collected(connection_disbursement_id=self.pk)
-			self.parent.save()
+			pass
+			# self.parent.transition_legal_documents_collected(connection_disbursement_id=self.pk)
+			# self.parent.save()
 		else:
 			self.documents.all().delete()
 
