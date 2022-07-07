@@ -394,24 +394,28 @@ class PreInspectionCreateView(View):
                 })
             app_id = form.data.get('application_id')
 
+            # pre_inspection_obj = PreInspection.objects.filter(
+            #     parent_id=app_id
+            # ).exclude(
+            #     status__in=[
+            #         PreInspectionStatusEnum.REJECTED
+            #     ]
+            # ).first()
             pre_inspection_obj = PreInspection.objects.filter(
                 parent_id=app_id
-            ).exclude(
-                status__in=[
-                    PreInspectionStatusEnum.REJECTED
-                ]
             ).first()
 
             if pre_inspection_obj:
-                if pre_inspection_obj.type  == PreInspectionTypeEnum.SELF:
-                    return redirect(
-                        'ujjwala:pre_inspection_form_view', type='self', pk=pre_inspection_obj.pk
-                    )
-                elif pre_inspection_obj.type  == PreInspectionTypeEnum.MECHANIC:
-                    return redirect(
-                        'ujjwala:pre_inspection_form_view', type='mech',
-                        pk=pre_inspection_obj.pk
-                    )
+                if pre_inspection_obj.status != PreInspectionStatusEnum.REJECTED:
+                    if pre_inspection_obj.type == PreInspectionTypeEnum.SELF:
+                        return redirect(
+                            'ujjwala:pre_inspection_form_view', type='self', pk=pre_inspection_obj.pk
+                        )
+                    elif pre_inspection_obj.type == PreInspectionTypeEnum.MECHANIC:
+                        return redirect(
+                            'ujjwala:pre_inspection_form_view', type='mech',
+                            pk=pre_inspection_obj.pk
+                        )
 
             app = UjjwalaV2Application.objects.filter(pk=app_id).first()
             return render(self.request, self.stage_2_template, {
@@ -454,13 +458,22 @@ class PreInspectionCreateView(View):
                     'reference_number': otp_obj.reference_number,
                     'mobile': otp_obj.mobile
                 })
+
             app_id = form.data.get('application_id')
-            obj = PreInspection.objects.create(
-                parent_id=app_id,
-                status=PreInspectionStatusEnum.ALLOCATED,
-                type=PreInspectionTypeEnum.MECHANIC,
-                mechanic=get_current_user()
-            )
+            obj = PreInspection.objects.filter(
+                parent_id=app_id
+            ).first()
+
+            if obj:
+                obj.type = PreInspectionTypeEnum.MECHANIC
+            else:
+                obj = PreInspection.objects.create(
+                    parent_id=app_id,
+                    status=PreInspectionStatusEnum.ALLOCATED,
+                    type=PreInspectionTypeEnum.MECHANIC,
+                    mechanic=get_current_user()
+                )
+
             obj.pre_inspection_otp_verified(
                 by=get_current_user(),
                 description="Instant Inspection Created, Customer Phone {}".format(otp_obj.mobile)
@@ -472,6 +485,7 @@ class PreInspectionCreateView(View):
                 description="Skipped By Admin, Customer Address"
             )
             obj.save()
+
             return redirect('ujjwala:pre_inspection_form_view', type='mech', pk=obj.pk)
 
 
