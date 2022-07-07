@@ -403,9 +403,15 @@ class PreInspectionCreateView(View):
             ).first()
 
             if pre_inspection_obj:
-                return redirect(
-                    'ujjwala:pre_inspection_form_view', type=pre_inspection_obj.type.lower(), pk=pre_inspection_obj.pk
-                )
+                if pre_inspection_obj.type  == PreInspectionTypeEnum.SELF:
+                    return redirect(
+                        'ujjwala:pre_inspection_form_view', type='self', pk=pre_inspection_obj.pk
+                    )
+                elif pre_inspection_obj.type  == PreInspectionTypeEnum.MECHANIC:
+                    return redirect(
+                        'ujjwala:pre_inspection_form_view', type='mech',
+                        pk=pre_inspection_obj.pk
+                    )
 
             app = UjjwalaV2Application.objects.filter(pk=app_id).first()
             return render(self.request, self.stage_2_template, {
@@ -466,7 +472,10 @@ class PreInspectionCreateView(View):
             )
             obj.save()
 
-            return redirect('ujjwala:pre_inspection_form_view', type=obj.type, pk=obj.pk)
+            if obj.type == PreInspectionTypeEnum.SELF:
+                return redirect('ujjwala:pre_inspection_form_view', type='self', pk=obj.pk)
+            elif obj.type == PreInspectionTypeEnum.MECHANIC:
+                return redirect('ujjwala:pre_inspection_form_view', type='mech', pk=obj.pk)
 
 
 class ReviewForm(forms.ModelForm):
