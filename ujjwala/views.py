@@ -21,7 +21,8 @@ from django.forms import formset_factory
 
 import ujjwala.forms
 from otp.models import Otp
-from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum
+from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
+    PreInspectionTypeEnum
 from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm, \
     PreInspectionGenerateOtpForm, PreInspectionValidateOtpForm, \
     KitchenPreInspectionForm, AudioOnSafetyForm, PreviewPreInspectionForm, PreInspectionAllocatedGenerateOtpForm, \
@@ -287,20 +288,30 @@ class PreInspectionView(FormView):
                         )
                     })
                     return render(self.request, self.stage_2_validate_otp, context)
+                if pre_inspection.type == PreInspectionTypeEnum.SELF:
+                    pre_inspection.pre_inspection_otp_verified(
+                        description="Allocated Inspection Otp Verified, Customer Phone {}".format(otp_obj.mobile)
+                    )
+                    pre_inspection.save()
 
-                pre_inspection.pre_inspection_otp_verified(
-                    by=get_current_user(),
-                    description="Allocated Inspection Otp Verified, Customer Phone {}".format(otp_obj.mobile)
-                )
-                pre_inspection.save()
+                    pre_inspection.pre_inspection_change_address(
+                        description="Skipped By Admin, Change Address"
+                    )
+                    pre_inspection.save()
+                    return redirect('ujjwala:pre_inspection_form_view', type='self', pk=pre_inspection.id)
+                else:
+                    pre_inspection.pre_inspection_otp_verified(
+                        by=get_current_user(),
+                        description="Allocated Inspection Otp Verified, Customer Phone {}".format(otp_obj.mobile)
+                    )
+                    pre_inspection.save()
 
-                pre_inspection.pre_inspection_change_address(
-                    by=get_current_user(),
-                    description="Skipped By Admin, Change Address"
-                )
-                pre_inspection.save()
-
-                return redirect('ujjwala:pre_inspection_form_view', type=pre_inspection.type, pk=pre_inspection.id)
+                    pre_inspection.pre_inspection_change_address(
+                        by=get_current_user(),
+                        description="Skipped By Admin, Change Address"
+                    )
+                    pre_inspection.save()
+                    return redirect('ujjwala:pre_inspection_form_view', type='mech', pk=pre_inspection.id)
 
     def get_object(self, queryset=None):
         try:
@@ -393,7 +404,7 @@ class PreInspectionCreateView(View):
 
             if pre_inspection_obj:
                 return redirect(
-                    'ujjwala:pre_inspection_form_view', type=pre_inspection_obj.type, pk=pre_inspection_obj.pk
+                    'ujjwala:pre_inspection_form_view', type=pre_inspection_obj.type.lower(), pk=pre_inspection_obj.pk
                 )
 
             app = UjjwalaV2Application.objects.filter(pk=app_id).first()
@@ -1073,7 +1084,7 @@ class BarCodeLabelPrintView(View):
             return resp
 
 
-@method_decorator(login_required, 'dispatch')
+# @method_decorator(login_required, 'dispatch')
 class NicErrorUpdateAddress(FormView):
     # model = ConnectionDisbursementInvitation
     form_class = NicUpdateAddressForm

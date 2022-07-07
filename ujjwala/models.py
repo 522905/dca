@@ -581,7 +581,7 @@ class PreInspection(models.Model):
 	def pre_inspection_otp_verified(self, *args, **kwargs):
 		# Deleting existing documents
 		if self.status == PreInspectionStatusEnum.REJECTED:
-			self.documents.delete()
+			self.documents.all().delete()
 
 
 	@fsm_log_description
