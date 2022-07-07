@@ -458,6 +458,7 @@ class PreInspectionCreateView(View):
             obj = PreInspection.objects.create(
                 parent_id=app_id,
                 status=PreInspectionStatusEnum.ALLOCATED,
+                type=PreInspectionTypeEnum.MECHANIC,
                 mechanic=get_current_user()
             )
             obj.pre_inspection_otp_verified(
@@ -471,11 +472,7 @@ class PreInspectionCreateView(View):
                 description="Skipped By Admin, Customer Address"
             )
             obj.save()
-
-            if obj.type == PreInspectionTypeEnum.SELF:
-                return redirect('ujjwala:pre_inspection_form_view', type='self', pk=obj.pk)
-            elif obj.type == PreInspectionTypeEnum.MECHANIC:
-                return redirect('ujjwala:pre_inspection_form_view', type='mech', pk=obj.pk)
+            return redirect('ujjwala:pre_inspection_form_view', type='mech', pk=obj.pk)
 
 
 class ReviewForm(forms.ModelForm):
