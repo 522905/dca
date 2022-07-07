@@ -147,6 +147,7 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 			]
 		else:
 			fields = super().get_fields(request, obj)
+			fields.pop('last_execution_state', '')
 			fields.append('connection_disbursement')
 			return fields
 

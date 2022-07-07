@@ -300,7 +300,7 @@ class PreInspectionView(FormView):
                 )
                 pre_inspection.save()
 
-                return redirect('ujjwala:pre_inspection_form_view', pk=pre_inspection.id)
+                return redirect('ujjwala:pre_inspection_form_view', type=pre_inspection.type, pk=pre_inspection.id)
 
     def get_object(self, queryset=None):
         try:
@@ -392,7 +392,9 @@ class PreInspectionCreateView(View):
             ).first()
 
             if pre_inspection_obj:
-                return redirect('ujjwala:pre_inspection_form_view', pk=pre_inspection_obj.pk)
+                return redirect(
+                    'ujjwala:pre_inspection_form_view', type=pre_inspection_obj.type, pk=pre_inspection_obj.pk
+                )
 
             app = UjjwalaV2Application.objects.filter(pk=app_id).first()
             return render(self.request, self.stage_2_template, {
@@ -453,7 +455,7 @@ class PreInspectionCreateView(View):
             )
             obj.save()
 
-            return redirect('ujjwala:pre_inspection_form_view', pk=obj.pk)
+            return redirect('ujjwala:pre_inspection_form_view', type=obj.type, pk=obj.pk)
 
 
 class ReviewForm(forms.ModelForm):

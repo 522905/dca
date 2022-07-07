@@ -356,7 +356,7 @@ class UjjwalaWhatsappCommunication(object):
 				],
 				"bodyValues": [
 					self.name,
-					"https://dca-local.arungas.com/portal/pre-inspection/{}/".format(str(pre_inspection_id))
+					"https://dca.arungas.com/portal/pre-inspection/self/{}/".format(str(pre_inspection_id))
 				],
 				"buttonValues": {
 					"0": [

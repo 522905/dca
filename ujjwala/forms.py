@@ -17,7 +17,7 @@ from django_currentuser.middleware import get_current_user
 
 from otp.models import Otp
 from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
-	RejectionTypeEnum
+	RejectionTypeEnum, PreInspectionTypeEnum
 from ujjwala.models import UjjwalaApplicationDocumentsEnum
 from formtools.wizard.views import SessionWizardView
 
@@ -185,7 +185,7 @@ class KitchenPreInspectionForm(forms.Form):
 
 		obj.witness_name = data['witness_name']
 		obj.witness_mobile_number = data['witness_mobile_number']
-		if obj.type == 'SELF':
+		if obj.type == PreInspectionTypeEnum.SELF:
 			obj.pre_inspection_kitchen_photo_uploaded_skip_safety(
 				description='\n'.join([
 					"Witness Name: {}, Mobile Number: {}".format(obj.witness_name, obj.witness_mobile_number),

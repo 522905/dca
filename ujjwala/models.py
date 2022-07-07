@@ -68,7 +68,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	sv = models.CharField(max_length=25, null=True, blank=True)
 	documents_required_for_reupload = models.JSONField(null=True, blank=True)
 	last_execution_state = models.CharField(max_length=50, null=True, blank=True)
-	pre_inspection_accepted = models.ForeignKey("PreInspection", on_delete=models.CASCADE, null=True, blank=True)
+	pre_inspection_accepted = models.OneToOneField("PreInspection", on_delete=models.CASCADE, null=True, blank=True)
 	sync_with_sdms = models.BooleanField(default=True)
 	applicant_verified = models.BooleanField(default=False)
 	applicant_verified_on = models.DateTimeField(null=True, blank=True)
@@ -545,7 +545,7 @@ class PreInspection(models.Model):
 	accuracy = models.CharField(max_length=24, null=True, blank=True)
 	witness_name = models.CharField(max_length=256, null=True, blank=True)
 	witness_mobile_number = models.CharField(max_length=10, null=True, blank=True)
-	mechanic = models.ForeignKey(User, on_delete=models.PROTECT)
+	mechanic = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
 	submitted_on = models.DateTimeField(null=True)
 	type = models.CharField(max_length=32, choices=PreInspectionTypeEnum.choices, default=PreInspectionTypeEnum.SELF)
 
@@ -691,9 +691,6 @@ class PreInspection(models.Model):
 			if self.type == PreInspectionTypeEnum.SELF:
 				# Send Whatsapp Message
 				pass
-
-
-
 
 
 class PreInspectionDocuments(models.Model):
