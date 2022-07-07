@@ -39,28 +39,28 @@ class NicUpdateAddressForm(forms.Form):
 		widget=forms.TextInput, label='House No. (मकान नंबर)', required=True
 	)
 	room_no = forms.CharField(
-		widget=forms.TextInput, label='Room No', required=True
+		widget=forms.TextInput, label='Room No. (कमरा सं.)', required=True
 	)
 	floor = forms.CharField(
-		widget=forms.TextInput, label='Floor', required=True
+		widget=forms.TextInput, label='Floor (मंजिल)', required=True
 	)
 	street_no = forms.CharField(
-		widget=forms.TextInput, label='Street No', required=True
+		widget=forms.TextInput, label='Street No (गली नंबर)', required=True
 	)
 	landmark = forms.CharField(
-		widget=forms.TextInput, label='Landmark', required=True
+		widget=forms.TextInput, label='Landmark (नजदीकी स्थान)', required=True
 	)
 	village = forms.CharField(
-		widget=forms.TextInput, label='Village', required=True
+		widget=forms.TextInput, label='Village (रोड/गांव/मोहल्ला/इलाका)', required=True
 	)
 	ward_no = forms.CharField(
-		widget=forms.TextInput, label='Ward No.', required=True
+		widget=forms.TextInput, label='Ward No.(वार्ड नंबर)', required=True
 	)
 	post_office = forms.CharField(
-		widget=forms.TextInput, label='Post Office', required=True
+		widget=forms.TextInput, label='Post Office (डाकख़ाना )', required=True
 	)
 	pincode = forms.CharField(
-		widget=forms.TextInput, label='Pin Code', required=True
+		widget=forms.TextInput, label='Pin Code (पिन कोड)', required=True
 	)
 
 	def __init__(self, *args, **kwargs):
@@ -510,6 +510,36 @@ class PreInspectionReviewForm(forms.Form):
 		return data
 
 
+class ReviewNicErrorUpdatedAddressForm(forms.Form):
+	review_status = forms.ChoiceField(
+		label="Select Review Status ?",
+		required=True,
+		help_text="",
+		choices=[
+			('', '-- Select Review Status --'),
+			('ACCEPTED', 'Accepted'),
+			('REJECTED', 'Rejected')
+		]
+	)
+	rejected_reason = forms.CharField(
+		widget=forms.TextInput, max_length=255, label='Rejected Reason', required=False
+	)
+	description = forms.CharField(
+		widget=forms.Textarea, label='Remarks', required=False
+	)
+
+	def clean(self):
+		data = self.cleaned_data
+		if data:
+			if data.get('review_status', '') == 'REJECTED' and not data['rejected_reason']:
+				raise forms.ValidationError("Please enter a reason for rejection.")
+			data.update({'description': '{} - {}: {}'.format(
+				data.get('review_status'), data.get('rejected_reason'), data.get('description', '')
+			)
+			})
+		return data
+
+
 class EkycAcceptedOrRejected(forms.Form):
 
 	description = forms.CharField(
@@ -707,36 +737,6 @@ class PreInspectionReviewAdminForm(forms.Form):
 			data.update({'description': '{} - {}: {}'.format(
 					data.get('review_status'), data.get('rejected_reason'), data.get('description', '')
 				)
-			})
-		return data
-
-
-class ReviewNicErrorUpdatedAddressForm(forms.Form):
-	review_status = forms.ChoiceField(
-		label="Select Review Status ?",
-		required=True,
-		help_text="",
-		choices=[
-			('', '-- Select Review Status --'),
-			('ACCEPTED', 'Accepted'),
-			('REJECTED', 'Rejected')
-		]
-	)
-	rejected_reason = forms.CharField(
-		widget=forms.TextInput, max_length=255, label='Rejected Reason', required=False
-	)
-	description = forms.CharField(
-		widget=forms.Textarea, label='Remarks', required=False
-	)
-
-	def clean(self):
-		data = self.cleaned_data
-		if data:
-			if data.get('review_status', '') == 'REJECTED' and not data['rejected_reason']:
-				raise forms.ValidationError("Please enter a reason for rejection.")
-			data.update({'description': '{} - {}: {}'.format(
-				data.get('review_status'), data.get('rejected_reason'), data.get('description', '')
-			)
 			})
 		return data
 
