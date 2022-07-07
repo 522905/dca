@@ -298,6 +298,7 @@ def download_ujjwala_legal_docs_to_upload(obj, signature=True):
 
     for family_member in family_members_doc:
         uid_front_doc_file = get_compressed_file_link_jpeg(family_member.uid_front_link)
+        uid_front_doc_file = requests.get(uid_front_doc_file)
 
         # uid_back_doc_file = requests.get(family_member.uid_back_link)
         # if not valid_file_size(uid_back_doc_file):
