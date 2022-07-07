@@ -2,6 +2,7 @@ import io
 import random
 import string
 import zipfile
+import base64
 from datetime import datetime
 from functools import wraps
 from time import timezone
