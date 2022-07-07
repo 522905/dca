@@ -556,7 +556,10 @@ class PreInspection(models.Model):
 	)
 
 	def mechanic_name(self):
-		return self.mechanic.get_full_name()
+		if self.mechanic:
+			return self.mechanic.get_full_name()
+		else:
+			self.parent.name
 
 	def document_kitchen_photo(self):
 		return self.documents.filter(type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO).first().link
