@@ -106,7 +106,7 @@
         </tr>
         {% for obj in object_list %}
             <tr>
-                <td><a href="{% url 'ujjwala:pre_inspection_form_view' pk=obj.id %}">{{ obj.pk }}</a><td>
+                <td><a href="{% url 'ujjwala:pre_inspection_form_view' type='mech' pk=obj.id %}">{{ obj.pk }}</a><td>
                 <td>{{ obj.parent_id }}</td>
                 <td>{{ obj.status }}</td>
             </tr>

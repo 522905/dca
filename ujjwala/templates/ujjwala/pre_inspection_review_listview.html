@@ -25,7 +25,7 @@
     </div>
     {% for obj in object_list %}
     <div class="card mb-2 app_card">
-        <a class="text-under-n" href="{% url 'ujjwala:pre_inspection_form_view' pk=obj.id %}">
+        <a class="text-under-n" href="{% url 'ujjwala:pre_inspection_form_view' type='mech' pk=obj.id %}">
             <div class="card-header p-2">
                 <div class="row m-0">
                     <div class="col">
@@ -91,7 +91,7 @@
         </tr>
         {% for obj in object_list %}
             <tr>
-                <td><a href="{% url 'ujjwala:pre_inspection_form_view' pk=obj.id %}">{{ obj.pk }}</a><td>
+                <td><a href="{% url 'ujjwala:pre_inspection_form_view' type='mech' pk=obj.id %}">{{ obj.pk }}</a><td>
                 <td>{{ obj.parent_id }}</td>
                 <td>{{ obj.status }}</td>
             </tr>

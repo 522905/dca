@@ -20,13 +20,13 @@ def login_required_if_mech_inspection(function, redirect_field_name=REDIRECT_FIE
 	)
 
 	@wraps(function)
-	def wrapper(*args, **kwargs):
+	def wrapper(request, *args, **kwargs):
 		url_type = kwargs.get('type')
 		pi = PreInspection.objects.get(pk=kwargs.get('pk'))
-		if pi.type == PreInspectionTypeEnum.SELF and url_type == 'self':
-			return function(*args, **kwargs)
+		if pi.type == PreInspectionTypeEnum.SELF and url_type == 'self' and request.user.is_authenticated == False:
+			return function(request, *args, **kwargs)
 		elif pi.type == PreInspectionTypeEnum.MECHANIC and url_type == 'mech':
-			return actual_decorator(function)(*args, **kwargs)
+			return actual_decorator(function)(request, *args, **kwargs)
 		return HttpResponse("Not Valid For Mechanic Inspection")
 	# wrapper.__name__ = function.__name__
 	# wrapper.__doc__ = function.__doc__
