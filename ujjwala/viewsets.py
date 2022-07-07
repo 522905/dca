@@ -326,7 +326,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 status=PreInspectionStatusEnum.KITCHEN_PHOTO,
                 type=PreInspectionTypeEnum.SELF
             )
-            application_obj.event_whatsapp_pre_inspection_type_self()
+            application_obj.event_whatsapp_pre_inspection_type_self(obj.id)
             # application_obj.event_invite_for_ekyc_channel_whatsapp()
             if application_obj.consumer_id and \
                     application_obj.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
@@ -496,7 +496,11 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
         primary_record = [i for i in contacts_table if i['Primary'] == 'Y']
         if not primary_record:
-            application.robo_manual_legal_documents_upload(
+            # application.robo_manual_legal_documents_upload(
+            #     description='No primary record found',
+            #     manual_operation_code=ManualOperationCodeEnum.NO_PRIMARY_RECORD
+            # )
+            application.do_manual_operations(
                 description='No primary record found',
                 manual_operation_code=ManualOperationCodeEnum.NO_PRIMARY_RECORD
             )
@@ -519,7 +523,11 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             if i["Identity Method"] == "Aadhaar(UID)"
         ]
         if not uid_record:
-            application.robo_manual_legal_documents_upload(
+            # application.robo_manual_legal_documents_upload(
+            #     description='UID does not exist',
+            #     manual_operation_code=ManualOperationCodeEnum.NO_UID_FOUND
+            # )
+            application.do_manual_operations(
                 description='UID does not exist',
                 manual_operation_code=ManualOperationCodeEnum.NO_UID_FOUND
             )
@@ -538,7 +546,11 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         applicant = application.family_members.filter(uid_no__endswith=uid_last_4_digits)
         if not applicant:
             # Applicant UID not matching SDMS
-            application.robo_manual_legal_documents_upload(
+            # application.robo_manual_legal_documents_upload(
+            #     description='Applicant UID not matching SDMS',
+            #     manual_operation_code=ManualOperationCodeEnum.UID_MISMATCH_SDMS
+            # )
+            application.do_manual_operations(
                 description='Applicant UID not matching SDMS',
                 manual_operation_code=ManualOperationCodeEnum.UID_MISMATCH_SDMS
             )
@@ -561,7 +573,11 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 applicant.save()
             else:
                 # Applicant UID Relation Mismatch
-                application.robo_manual_legal_documents_upload(
+                # application.robo_manual_legal_documents_upload(
+                #     description='Applicant UID Relation Mismatch',
+                #     manual_operation_code=ManualOperationCodeEnum.UID_MISMATCH_SDMS
+                # )
+                application.do_manual_operations(
                     description='Applicant UID Relation Mismatch',
                     manual_operation_code=ManualOperationCodeEnum.UID_MISMATCH_SDMS
                 )
