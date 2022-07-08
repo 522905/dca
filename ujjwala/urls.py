@@ -64,11 +64,11 @@ urlpatterns = [
         name="whatsapp_nic_error_update_address"
     ),
 
-    # url(
-    #     '^portal/whatsapp_pre_inspection_type_self/(?P<pk>[^/.]+)/$',
-    #     views.WhatsappPreInspectionTypeSelf.as_view(),
-    #     name="whatsapp_pre_inspection_type_self"
-    # ),
+    url(
+        '^portal/whatsapp_pre_inspection_type_self/(?P<pk>[^/.]+)/$',
+        views.WhatsappPreInspectionTypeSelf.as_view(),
+        name="whatsapp_pre_inspection_type_self"
+    ),
 
     url(
         '^portal/pre-inspection/(?P<type>(self|mech))/(?P<pk>[^/.]+)/$',
