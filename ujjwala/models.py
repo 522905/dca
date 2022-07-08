@@ -102,6 +102,14 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		return mark_safe(html)
 
 
+	def whatsapp_pre_inspection_type_self(self):
+		url = reverse('ujjwala:whatsapp_pre_inspection_type_self', kwargs={'pk': self.pk})
+		html = '''
+		<a href="{}">Whatsapp Pre Inspection Type Self</a>
+		'''.format(url)
+		return mark_safe(html)
+
+
 	@property
 	def formatted_address(self):
 		if self.version in ('V1', 'V2'):

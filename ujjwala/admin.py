@@ -163,11 +163,11 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 				UjjwalaV2ApplicationStatus.NIC_ERROR
 		):
 			readonly_fields = readonly_fields + [
-				'whatsapp_nic_error_update_address', 'whatsapp_pre_inspection_type_self'
+				'whatsapp_nic_error_update_address'
 			]
 
 		readonly_fields = readonly_fields + [
-			'whatsapp_pre_inspection_type_self'
+			'whatsapp_pre_inspection_type_self',
 		]
 		return readonly_fields
 
