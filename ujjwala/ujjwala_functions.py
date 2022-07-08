@@ -2,6 +2,7 @@ import io
 import random
 import string
 import zipfile
+import base64
 from datetime import datetime
 from functools import wraps
 from time import timezone
@@ -30,14 +31,16 @@ def valid_file_uploaded(url):
         return True
 
 
-def file_needs_compression(url):
+def get_compressed_file_link_jpeg(url):
     res = requests.head(url, headers={"Tus-Resumable": "1.0.0"})
     header_info = res.headers
 
     if int(header_info['Upload-Length']) <= 499000:
-        return False
-    else:
-        return True
+        file_type = header_info['Upload-Metadata'].split(',')[0].split(' ')[1]
+        if 'webp' not in base64.b64decode(file_type).decode():
+            return url
+
+    return f'http://dca.arungas.com:6988/unsafe/fit-in/1920x1080/filters:format(jpeg)/{url}'
 
 
 def valid_file_size(file):
@@ -294,10 +297,8 @@ def download_ujjwala_legal_docs_to_upload(obj, signature=True):
     family_members_doc = obj.family_members.exclude(relation=FamilyMemberRelationEnum.SELF)
 
     for family_member in family_members_doc:
-        if file_needs_compression(family_member.uid_front_link):
-            uid_front_doc_file = requests.get("{}{}".format(settings.THUMBOR_URL, family_member.uid_front_link))
-        else:
-            uid_front_doc_file = requests.get(family_member.uid_front_link)
+        uid_front_doc_file = get_compressed_file_link_jpeg(family_member.uid_front_link)
+        uid_front_doc_file = requests.get(uid_front_doc_file)
 
         # uid_back_doc_file = requests.get(family_member.uid_back_link)
         # if not valid_file_size(uid_back_doc_file):
