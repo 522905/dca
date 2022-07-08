@@ -104,8 +104,11 @@ class UjjwalaV2ApplicationStatus(models.TextChoices):
 	DO_MANUAL_OPERATION = 'DO_MANUAL_OPERATION', 'Do Manual Operation'
 	AUDIT_APPLICATION = 'AUDIT_APPLICATION', 'Audit Application'
 	COMPLETED = 'COMPLETED', 'Completed'
-	NIC_ERROR_UPDATE_ADDRESS = 'NIC_ERROR_UPDATE_ADDRESS', 'Nic Error Update Address'
 	READY_FOR_DISBURSEMENT = 'READY_FOR_DISBURSEMENT', 'Ready For Disbursement'
+	NIC_ERROR_INSUFFICIENT_ADDRESS = 'NIC_ERROR_INSUFFICIENT_ADDRESS', 'Nic Error Insufficient Address'
+	NIC_ERROR_UPDATE_ADDRESS = 'NIC_ERROR_UPDATE_ADDRESS', 'Nic Error Update Address'
+	NIC_ERROR_ADDRESS_ACCEPTED = 'NIC_ERROR_ADDRESS_ACCEPTED', 'Nic Error Address Accepted'
+	NIC_ERROR_APPROVED = 'NIC_ERROR_APPROVED', 'Nic Error Approved'
 
 
 class RejectionTypeEnum(models.TextChoices):

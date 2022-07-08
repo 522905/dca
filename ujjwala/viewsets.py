@@ -86,9 +86,12 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
             elif request.data.get('omc_status') == 'OMC Reject':
                 application.transition_omc_reject(description="Bot Processed: OMC Reject")
         if application.status == UjjwalaV2ApplicationStatus.OMC_CLEARED and nic_status not in ('Pending', 'Awaited'):
-            if nic_status == 'Cleared':
-                application.transition_nic_cleared(description="Bot Processed: NIC Cleared")
-#            elif nic_status == 'NIC Rejected':
+            if nic_status == 'Cleared' or 'approved' in nic_status.lower():
+                application.transition_nic_cleared(description="Bot Processed: NIC Cleared {}".format(nic_status))
+            elif nic_status == 'Address Insufficient':
+                application.transition_nic_error_insufficient_address(
+                    error_code='', description="Bot Processed: {}".format(nic_status)
+                )
             else:
                 application.transition_nic_error(error_code='', description=nic_status)
         application.save()

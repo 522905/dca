@@ -1137,4 +1137,3 @@ class NicErrorUpdateAddress(FormView):
         )
         obj.save()
         return HttpResponse("<b>Address Updated Successfully</b>")
-
