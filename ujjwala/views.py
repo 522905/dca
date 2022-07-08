@@ -59,7 +59,7 @@ class WhatsappPreInspectionTypeSelf(View):
         # obj = UjjwalaV2Application.objects.filter(pk=kwargs.get('pk')).first()
         if pi_obj:
             if pi_obj.type == PreInspectionTypeEnum.SELF:
-                pi_obj.parent.event_whatsapp_pre_inspection_type_self(pi_obj.id)
+                pi_obj.parent.event_whatsapp_pre_inspection_type_self_admin(pi_obj.id)
                 return HttpResponse(
                     "Application Id {}: Message Sent For Pre Inspection Type Self".format(kwargs.get('pk'))
                 )
