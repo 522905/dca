@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     'formtools',
     'otp',
     'ujjwala.apps.UjjwalaAppConfig',
+    'sdms'
 ]
 
 MIDDLEWARE = [
