@@ -12,6 +12,7 @@ class SdmsCustomerRecord(models.Model):
 	nic_status = models.CharField(max_length=64)
 	omc_status = models.CharField(max_length=64)
 	address = models.TextField()
+	contact_number = models.CharField(max_length=10, null=True)
 
 
 class BookResource(resources.ModelResource):
