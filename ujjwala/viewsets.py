@@ -125,7 +125,7 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
         if records:
             return JsonResponse([
                 {
-                    'consumer_id': record['consumer_id'],
+                    'consumer_id': record[0],
                 } for record in records
             ], safe=False)
         else:
