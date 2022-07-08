@@ -166,6 +166,9 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 				'whatsapp_nic_error_update_address', 'whatsapp_pre_inspection_type_self'
 			]
 
+		readonly_fields = readonly_fields + [
+			'whatsapp_pre_inspection_type_self'
+		]
 		return readonly_fields
 
 	def download_legal_docs(self, obj=None):
