@@ -5,15 +5,7 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
 
 <style>
-        .input[for="id_house_no"]::before{
-    content: 'माकन नंबर';
-    height: 100px;
-    width: 100px;
-}
-.form_block input:after {
-    content: " <- EXCITING!";
-    color: green;
-  }
+
     .hidden-field{ display: none;}
     .form_label .card{ width: 100%;  }
     .address_form label{ margin-bottom: 5px; }
@@ -38,13 +30,7 @@
 							<i class="ni location_pin mr-2"></i>{{ obj.contact_mobile }}
 						</div>
 						<div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
-							{% if address_json == address_json  %}
-								{% for key,data in obj.address_json.items %}
-									{{data}},
-								{% endfor %}
-							{% else %}
-								{{ obj.address }}
-							{% endif%}
+							{{ obj.formatted_address }}
 						</div>
 					</div>
 				</div>
@@ -62,8 +48,9 @@
                 <span class="text-white" style="font-size: 18px; padding-left: 20PX;">Edit Address</span>
             </div>
             <div class="p-4 form_block">
-                <p>Note: 
-                    <b class="text-red">आपका पुराना पता सही ना होने के करण आपके उज्ज्वला कनेक्शन की वितरण  में देरी हो सकती है, कृपया सही पता भरें ताकि आपके उज्ज्वला कनेक्शन की वितरण में कोई देरी न हो।</b></p>
+                <p>
+                    <b class="text-red">Note: आपका पुराना पता ({{ obj.formatted_address }}) सही ना होने के करण आपके उज्ज्वला कनेक्शन की वितरण में देरी हो रही है,
+                    कृपया सही पता भरें ताकि आपके उज्ज्वला कनेक्शन की वितरण में कोई देरी न हो।</b></p>
                 {{ form }}
             </div>
             <!-- <div class="form-group" style="margin-bottom: 0 !important;">

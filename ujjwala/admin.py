@@ -147,7 +147,6 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 			]
 		else:
 			fields = super().get_fields(request, obj)
-			fields.pop('last_execution_state', '')
 			fields.append('connection_disbursement')
 			return fields
 
@@ -163,8 +162,13 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 		elif obj and obj.status in (
 				UjjwalaV2ApplicationStatus.NIC_ERROR
 		):
-			readonly_fields = readonly_fields + ['whatsapp_nic_error_update_address', ]
+			readonly_fields = readonly_fields + [
+				'whatsapp_nic_error_update_address'
+			]
 
+		readonly_fields = readonly_fields + [
+			'whatsapp_pre_inspection_type_self',
+		]
 		return readonly_fields
 
 	def download_legal_docs(self, obj=None):

@@ -26,7 +26,7 @@ from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMo
 from ujjwala.forms import UjjwalaLegalDocumentsUpload, \
 	ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewForm, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
-	LegalDocumentsReviewAdminForm, NicUpdateAddressForm
+	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm
 from ujjwala.ujjwala_functions import download_ujjwala_physical_legal_docs
 from utils.global_functions import move_file_to_minio_bucket, upload_file_to_minio_bucket, old_address_to_description
 
@@ -98,6 +98,14 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		url = reverse('ujjwala:whatsapp_nic_error_update_address', kwargs={'pk': self.pk})
 		html = '''
 		<a href="{}">Whatsapp Nic Error Update Address</a>
+		'''.format(url)
+		return mark_safe(html)
+
+
+	def whatsapp_pre_inspection_type_self(self):
+		url = reverse('ujjwala:whatsapp_pre_inspection_type_self', kwargs={'pk': self.pk})
+		html = '''
+		<a href="{}">Whatsapp Pre Inspection Type Self</a>
 		'''.format(url)
 		return mark_safe(html)
 
@@ -323,13 +331,50 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	def transition_nic_error(self, *args, **kwargs):
 		self.manual_operation_code = kwargs.get('error_code')
 
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=[
+			UjjwalaV2ApplicationStatus.OMC_CLEARED,
+			UjjwalaV2ApplicationStatus.NIC_ERROR_UPDATE_ADDRESS
+		],
+		target=UjjwalaV2ApplicationStatus.NIC_ERROR_INSUFFICIENT_ADDRESS,
+		custom=dict(
+			short_description='NIC Error Insufficient Address', admin=False
+		),
+		permission='ujjwala.can_approve_connection',
+	)
+	def transition_nic_error_insufficient_address(self, *args, **kwargs):
+		self.manual_operation_code = kwargs.get('error_code')
+		self.event_whatsapp_nic_error_update_address()
+		pass
+
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=UjjwalaV2ApplicationStatus.NIC_ERROR,
+		target=UjjwalaV2ApplicationStatus.NIC_ERROR_APPROVED,
+		custom=dict(
+			short_description='Nic Error Distributor Approved', admin=False
+		),
+		permission='ujjwala.can_approve_connection',
+	)
+	def transition_nic_error_distributor_approved(self, *args, **kwargs):
+		pass
+
 
 	@old_address_to_description
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=UjjwalaV2ApplicationStatus.NIC_ERROR,
+		source=[
+			UjjwalaV2ApplicationStatus.NIC_ERROR,
+			UjjwalaV2ApplicationStatus.NIC_ERROR_INSUFFICIENT_ADDRESS
+		],
 		target=UjjwalaV2ApplicationStatus.NIC_ERROR_UPDATE_ADDRESS,
 		custom=dict(
 			short_description='Update Address', admin=True, form=NicUpdateAddressForm
@@ -339,19 +384,33 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	def transition_nic_address_updated(self, *args, **kwargs):
 		self.address_json = kwargs['address_json']
 
-	# @fsm_log_description
-	# @fsm_log_by
-	# @transition(
-	# 	field=status,
-	# 	source=UjjwalaV2ApplicationStatus.PRE_INSPECTION_ACCEPTED,
-	# 	target=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_COLLECTED,
-	# 	custom=dict(
-	# 		short_description='Legal Documents Collection', admin=True,
-	# 	),
-	# 	permission='ujjwala.can_approve_connection',
-	# )
-	# def transition_legal_documents_collected(self, *args, **kwargs):
-	# 	pass
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=UjjwalaV2ApplicationStatus.NIC_ERROR_UPDATE_ADDRESS,
+		target=GET_STATE(
+			lambda self, **kwargs: \
+					UjjwalaV2ApplicationStatus.NIC_ERROR_ADDRESS_ACCEPTED \
+							if kwargs.get("review_status") == 'ACCEPTED' \
+							else UjjwalaV2ApplicationStatus.NIC_ERROR_INSUFFICIENT_ADDRESS,
+			states=[
+				UjjwalaV2ApplicationStatus.NIC_ERROR_ADDRESS_ACCEPTED,
+				UjjwalaV2ApplicationStatus.NIC_ERROR_INSUFFICIENT_ADDRESS
+			]
+		),
+		custom=dict(
+			short_description='Review Nic Error Updated Address', admin=True, form=ReviewNicErrorUpdatedAddressForm
+		),
+	)
+	def transition_review_nic_address_updated(self, *args, **kwargs):
+		if kwargs.get('review_status') == 'ACCEPTED':
+			pass
+		else:
+			self.transition_nic_error_insufficient_address(
+				error_code='', description="User Entered In-correct Address"
+			)
+
 
 	@fsm_log_description
 	@fsm_log_by
