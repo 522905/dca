@@ -1117,6 +1117,14 @@ class NicErrorUpdateAddress(FormView):
     form_class = NicUpdateAddressForm
     template_name = "ujjwala/NicErrorUpdateAddress/update_address.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        application = self.get_object()
+        if application:
+            if application.status == \
+                    UjjwalaV2ApplicationStatus.NIC_ERROR_UPDATE_ADDRESS:
+                return HttpResponse("Address already submitted by you and is under review.")
+        return super().dispatch(request, *args, **kwargs)
+
     def get_object(self, queryset=None):
         try:
             obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
