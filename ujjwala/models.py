@@ -129,7 +129,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		return list(phones)
 
 	def document_self(self):
-		return self.documents.filter(type=UjjwalaApplicationDocumentsEnum.CUSTOMER_PHOTO).first().link
+		sd = self.documents.filter(type=UjjwalaApplicationDocumentsEnum.CUSTOMER_PHOTO).first()
+		return sd.link if sd else ''
 
 	def document_kitchen_photo(self):
 		return self.documents.filter(type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO).first().link
