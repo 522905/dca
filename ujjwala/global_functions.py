@@ -2,6 +2,7 @@ from functools import wraps
 
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.decorators import user_passes_test
+from django.db import connection
 from django.http import HttpResponse
 
 from ujjwala.enums import PreInspectionTypeEnum
@@ -32,3 +33,14 @@ def login_required_if_mech_inspection(function, redirect_field_name=REDIRECT_FIE
 	# wrapper.__doc__ = function.__doc__
 	return wrapper
 
+
+def get_sdms_mismatched_records(from_date):
+
+	with connection.cursor() as cursor:
+		query = """select sscr.consumer_id from sdms_sdmscustomerrecord sscr 
+		                where sscr.consumer_id not in (
+		                select consumer_id from ujjwala_ujjwalav2application uua where consumer_id is not null
+		                ) and sscr.kyc_date >='{}';""".format(from_date)
+		cursor.execute(query)
+		result = cursor.fetchall()
+	return result

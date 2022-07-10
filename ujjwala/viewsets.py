@@ -3,6 +3,7 @@ import io
 
 import django_filters
 import requests
+from django.db import connection
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse, HttpRequest
 from django.utils import timezone
@@ -10,11 +11,13 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 
+from sdms.models import SdmsCustomerRecord
 from utils.global_functions import upload_file_to_minio_bucket, upload_file_type_obj_to_minio_bucket
 from . import models
 from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, FamilyMemberRelationEnum, \
     ManualOperationCodeEnum, MaritalStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum
 from .forms import ApplicationRejected
+from .global_functions import get_sdms_mismatched_records
 from .models import UjjwalaV2Application, FamilyMembers, ConnectionDisbursement, ConnectionDisbursementDocuments, \
     PreInspection
 from .serializers import UjjwalaV2ApplicationSerializer
@@ -113,6 +116,34 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
                 'consumer_id': record.consumer_id
             } for record in aadhar_list
         ], safe=False)
+
+    @action(methods=['get'], detail=False, url_path='get_mismatched_sdms_records')
+    def get_mismatched_sdms_records(self, request: HttpRequest, *args, **kwargs):
+        from_days = request.GET.get('from_days')
+        from_date = datetime.datetime.today() - datetime.timedelta(days=int(from_days))
+        records = get_sdms_mismatched_records(from_date.strftime('%Y-%m-%d'))
+        if records:
+            return JsonResponse([
+                {
+                    'consumer_id': record[0],
+                } for record in records
+            ], safe=False)
+        else:
+            return HttpResponse("No records found.")
+
+
+    @action(methods=['post'], detail=False, url_path='update_mobile_number_sdms_record')
+    def update_mobile_number_sdms_record(self, request: HttpRequest, *args, **kwargs):
+        consumer_id = request.query_params.get('consumer_id')
+        contact_number = request.query_params.get('contact_number')
+
+        obj = SdmsCustomerRecord.objects.filter(consumer_id=consumer_id).first()
+        if obj:
+            obj.contact_number = contact_number
+            obj.save()
+            return HttpResponse("Contact Number Updated Successfully")
+        else:
+            return HttpResponse("Invalid Record Or Error Occurred")
 
 
 class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
@@ -259,6 +290,29 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             } for record in aadhar_list
         ], safe=False)
 
+    @action(methods=['get'], detail=False, url_path='get_aadhar_list_v2')
+    def get_aadhar_list_for_iocl_sdms_dedup_v2(self, request, *args, **kwargs):
+        aadhar_list = UjjwalaV2Application.objects.filter(
+            status__in=(
+                UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
+                UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
+                UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD
+            ),
+            robo_sdms_dedup=RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE,
+            created_on__date__lte=datetime.datetime.strptime('2022-06-01', '%Y-%m-%d')
+            # robo_sdms_dedup=RoboSdmsDedeupStatusEnum.NOT_PROCESSED
+        ).exclude(family_members__uid_no__in=("0", "1")).order_by('-id')
+        # aadhar_list = UjjwalaV2Application.objects.filter(id__in=["1273","2120","2534","32","1265","323","76","601","2148","37"])
+        return JsonResponse([
+            {
+                'id': record.id,
+                'family_members': [{
+                    'id': member.id,
+                    'uid': member.uid_no
+                } for member in record.family_members.all()]
+            } for record in aadhar_list
+        ], safe=False)
+
     @action(methods=['post'], detail=False, url_path='update_result')
     def update_iocl_sdms_dedup_results(self, request, *args, **kwargs):
         record_valid = True
@@ -335,6 +389,10 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                     application_obj.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
                 application_obj.ekyc_accepted_or_rejected(description="Bot Processed")
         application_obj.save()
+        return HttpResponse('OK')
+
+    @action(methods=['post'], detail=False, url_path='update_result_v2')
+    def update_iocl_sdms_dedup_results_v2(self, request, *args, **kwargs):
         return HttpResponse('OK')
 
     @action(methods=['get'], detail=False, url_path='get_walk_in_no_sv_list')
