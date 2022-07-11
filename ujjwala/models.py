@@ -349,8 +349,6 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	def transition_nic_error_insufficient_address(self, *args, **kwargs):
 		self.manual_operation_code = kwargs.get('error_code')
 		self.event_whatsapp_nic_error_update_address()
-		pass
-
 
 	@fsm_log_description
 	@fsm_log_by
@@ -366,6 +364,20 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	def transition_nic_error_distributor_approved(self, *args, **kwargs):
 		pass
 
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=UjjwalaV2ApplicationStatus.NIC_ERROR_ADDRESS_ACCEPTED,
+		target=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD,
+		custom=dict(
+			short_description='Address Updated, New relation initiated', admin=True, form=ConnectionStatusApproved
+		),
+
+		# permission='ujjwala.can_approve_connection',
+	)
+	def transition_nic_error_distributor_approved(self, *args, **kwargs):
+		self.consumer_id = kwargs.get('consumer_id')
 
 	@old_address_to_description
 	@fsm_log_description
@@ -406,7 +418,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	)
 	def transition_review_nic_address_updated(self, *args, **kwargs):
 		if kwargs.get('review_status') == 'ACCEPTED':
-			pass
+			self.address_json = kwargs['address_json']
 		else:
 			self.transition_nic_error_insufficient_address(
 				error_code='', description="User Entered In-correct Address"
@@ -563,8 +575,10 @@ class FamilyMembers(models.Model):
 		html = '''
 		<a href="{}" target="blank">View Ori.</a> UID Front <a href="{}{}" target="blank">Download Comp.</a><br><br>
 		<a href="{}" target="blank">View Ori.</a> UID Back <a href="{}{}" target="blank">Download Comp.</a>
-		'''.format(self.uid_front_link, settings.THUMBOR_URL, self.uid_front_link,
-		           self.uid_back_link, settings.THUMBOR_URL, self.uid_back_link, )
+		'''.format(
+			self.uid_front_link, settings.THUMBOR_URL, self.uid_front_link,
+			self.uid_back_link, settings.THUMBOR_URL, self.uid_back_link,
+		)
 		return mark_safe(html)
 
 

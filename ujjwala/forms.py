@@ -510,7 +510,7 @@ class PreInspectionReviewForm(forms.Form):
 		return data
 
 
-class ReviewNicErrorUpdatedAddressForm(forms.Form):
+class ReviewNicErrorUpdatedAddressForm(NicUpdateAddressForm):
 	review_status = forms.ChoiceField(
 		label="Select Review Status ?",
 		required=True,
@@ -529,14 +529,14 @@ class ReviewNicErrorUpdatedAddressForm(forms.Form):
 	)
 
 	def clean(self):
-		data = self.cleaned_data
-		if data:
-			if data.get('review_status', '') == 'REJECTED' and not data['rejected_reason']:
-				raise forms.ValidationError("Please enter a reason for rejection.")
-			data.update({'description': '{} - {}: {}'.format(
+		data = super(ReviewNicErrorUpdatedAddressForm, self).clean()
+		if data.get('review_status', '') == 'REJECTED' and not data['rejected_reason']:
+			raise forms.ValidationError("Please enter a reason for rejection.")
+		data.update({
+			'description': '{} - {}: {}'.format(
 				data.get('review_status'), data.get('rejected_reason'), data.get('description', '')
 			)
-			})
+		})
 		return data
 
 
@@ -1050,3 +1050,7 @@ class ConnectionDisbursementInvitationForm(forms.Form):
 class ConnectionDisbursementSearchForm(forms.Form):
 	# from ujjwala.models import ConnectionDisbursement
 	application_id = forms.IntegerField()
+
+
+class NewRelationCreated(forms.Form):
+	consumer_id = forms.CharField(widget=forms.TextInput(), required=True)
