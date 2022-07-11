@@ -37,7 +37,7 @@ class UjjwalaApplicationNicErrorRobotAPIViewSet(viewsets.ModelViewSet):
                     "consumer_id": application.consumer_id,
                     "address": application.get_address_for_sdms_upload()
                 }
-            } for application in queryset
+            } for application in queryset[:1]
         ], safe=False)
 
     @action(methods=['post'], detail=True, url_path='update_consumer_id')

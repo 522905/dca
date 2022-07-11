@@ -127,6 +127,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		'Street No {street_no} {village} near {landmark} ward no {ward_no} '\
 		'Post Office {post_office}'.format(**self.address_json)
 
+		addr_str = addr_str.title()
+
 		return {
 			'addr_str': addr_str,
 			'pincode': self.address_json.get('pincode', '141001')
