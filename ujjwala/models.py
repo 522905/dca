@@ -123,8 +123,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		if not self.address_json:
 			return self.address
 
-		addr_str = 'Room No {room_no} Floor No {floor} House No {house_no} '
-		'Street No {street_no} {village} near {landmark} ward no {ward_no} '
+		addr_str = 'Room No {room_no} Floor No {floor} House No {house_no} '\
+		'Street No {street_no} {village} near {landmark} ward no {ward_no} '\
 		'Post Office {post_office}'.format(**self.address_json)
 
 		return {
