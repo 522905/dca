@@ -376,7 +376,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 
 		# permission='ujjwala.can_approve_connection',
 	)
-	def transition_nic_error_distributor_approved(self, *args, **kwargs):
+	def transition_create_new_relation_after_nic_error_insufficent_address(self, *args, **kwargs):
 		self.consumer_id = kwargs.get('consumer_id')
 
 	@old_address_to_description
