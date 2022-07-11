@@ -35,7 +35,7 @@ class UjjwalaApplicationNicErrorRobotAPIViewSet(viewsets.ModelViewSet):
                 "payload": {
                     "application_id": application.pk,
                     "consumer_id": application.consumer_id,
-                    "address": application.get_address_for_sdms_upload
+                    "address": application.get_address_for_sdms_upload()
                 }
             } for application in queryset
         ], safe=False)
