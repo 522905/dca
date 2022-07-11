@@ -59,7 +59,8 @@ class FSMTransitionCustomMixin(FSMTransitionMixin):
                         context
                     )
             else:
-                form = form_class(self.get_form_kwargs(form_class, obj))
+                kwargs = self.get_form_kwargs(form_class, obj)
+                form = form_class(**kwargs)
                 context.update({'transition': transition_name, 'form': form})
                 return render(
                     request,
