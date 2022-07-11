@@ -119,6 +119,19 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			'room_no', 'floor', 'street_no', 'landmark', 'village', 'post_office', 'pincode'
 		]])
 
+	def get_address_for_sdms_upload(self):
+		if not self.address_json:
+			return self.address
+
+		addr_str = 'Room No {room_no} Floor No {floor} House No {house_no} '
+		'Street No {street_no} {village} near {landmark} ward no {ward_no} '
+		'Post Office {post_office}'.format(**self.address_json)
+
+		return {
+			'addr_str': addr_str,
+			'pincode': self.address_json.get('pincode', '141001')
+		}
+
 	@property
 	def all_contacts(self):
 		phones = set([i for i in [
