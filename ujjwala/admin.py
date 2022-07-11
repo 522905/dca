@@ -28,7 +28,7 @@ from .models import UjjwalaV2Application, FamilyMembers, UjjwalaApplicationDocum
 from .ujjwala_functions import download_ujjwala_documents, download_ujjwala_physical_legal_docs
 
 from .views import SendInvitationView, NicErrorUpdateAddress
-
+from .forms import ReviewNicErrorUpdatedAddressForm
 
 def filter_walk_in_qs(queryset, state):
 	today = datetime.today()
