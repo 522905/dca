@@ -189,6 +189,13 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 	def fsm_transition_view_extra_context(self, obj):
 		return {'obj': obj}
 
+	def get_form_kwargs(self, form_class, obj):
+		if form_class == ReviewNicErrorUpdatedAddressForm:
+			return {
+				'initial': obj.address_json
+			}
+		return {}
+
 
 @admin.register(UserDocuments)
 class UserDocumentsAdmin(admin.ModelAdmin):

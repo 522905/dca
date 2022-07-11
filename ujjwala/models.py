@@ -371,7 +371,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		source=UjjwalaV2ApplicationStatus.NIC_ERROR_ADDRESS_ACCEPTED,
 		target=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD,
 		custom=dict(
-			short_description='Address Updated, New relation initiated', admin=True, form=ConnectionStatusApproved
+			short_description='Address Updated, New relation initiated', admin=True, form=NewRelationCreated
 		),
 
 		# permission='ujjwala.can_approve_connection',
