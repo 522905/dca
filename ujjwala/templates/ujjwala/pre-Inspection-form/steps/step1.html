@@ -10,60 +10,48 @@
 <script src="{% static '/js/static.js' %}"></script>
 <script src="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.js"></script>
 
-<style>
-    .signature-pad{ padding: 2px !important;}
-    .hidden-field{ display: none;}
-    #upload_sign_and_submit_form label{ font-weight: 500; font-size:14px; color: #666 ;}
-    #upload_sign_and_submit_form{ padding: 10px;}
-    #upload_sign_and_submit_form .uppy-Dashboard-inner{ width: 100% !important;}
-    .content { padding-bottom: 0 !important;}
-    .signature-pad--actions { margin-top: 0 !important;}
-    #select_number_for_otp .radio-field .col{ flex: none; }
-    .user_profile img{ height:100px; }
-    .user_profile{margin: 0 auto;display: block;text-align: center;}
-    .username{ font-size:15px; font-weight:600; color:#ff5c6c !important;}
-    .user_address{ font-size:12px; font-weight:500}
-</style>
-<div class="row m-0 form_label">
+<div class="main p-2 pt-0 form_label overlay_location">
     <form method="post" id="upload_sign_and_submit_form">
         {% csrf_token %}
+        <div class="main-header bg-heading" style="background-color: #2957A4;">
+            <span class="text-white">Fill Pre-Suraksha-Drill  test</span>
+        </div>
         <div class="card">
             {{form.form_type}}
             {{form.application_id}}
             {{form.name}}
-
-            <div class="form-group" style="margin-bottom: 0 !important;">
+            <div class="form-group input_form" style="margin-bottom: 0 !important;">
                 <div class="row m-0 p-3">
-                    <div class="col-sm-12 photo_block p-0">
-                        <span class="hidden-field">{{ form.kitchen_photo }}</span>
+                    <div class="col-sm-12 photo_block p-0 pt-2">
+                        <span class="hidden_field">{{ form.kitchen_photo }}</span>
                         <label>Photo of customer with kitchen<br> (रसोईघर के साथ ग्राहक की तस्वीर)</label>
                         <p id="kitchen_photo"></p>
                         {{ form.kitchen_photo.errors }}
                     </div>
-                    <div class="col-sm-12  photo_block p-0">
-                        <input class="hidden-field" id="id_witness_name" name="witness_name" value=""/>
+                    <div class="col-sm-12 photo_block p-0  pt-2">
+                        <input class="hidden_field" id="id_witness_name" name="witness_name" value=""/>
                         <label>Witness Name</label>
                         <input placeholder="गवाह का नाम" id="id_witness_name" name="witness_name" value=""/>
-                       {{ form.witness_name.errors }}
+                    {{ form.witness_name.errors }}
                     </div>
-                    <div class="col-sm-12  photo_block p-0">
-                        <input class="hidden-field" id="id_witness_mobile_number" name="witness_mobile_number" value=""/>
+                    <div class="col-sm-12  photo_block p-0  pt-2">
+                        <input class="hidden_field" id="id_witness_mobile_number" name="witness_mobile_number" value=""/>
                         <label>Witness Mobile Number</label>
                         <input placeholder="गवाह का मोबाइल नंबर" id="id_witness_mobile_number" type="tel" name="witness_mobile_number" value=""/>
                         {{ form.witness_mobile_number.errors }}
                     </div>
-                    <div class="col-sm-12 p-0">
+                    <div class="col-sm-12 p-0  pt-2">
                         <div class="photo_block">
-                            <span class="hidden-field">{{ form.witness_signature_photo }}</span>
+                            <span class="hidden_field">{{ form.witness_signature_photo }}</span>
                             <label>Witness Signature</label>
                             <div id="witness_signature_photo" class="signature-pad">
                                 <div class="signature-pad--body">
-                                  <canvas></canvas>
+                                <canvas></canvas>
                                 </div>
                                 <div class="signature-pad--footer ">
-                                  <div class="signature-pad--actions" style="margin-top: 0 !important;">
-                                    <button type="button" class="btn btn-primary clear" data-action="clear">Clear</button>
-                                  </div>
+                                <div class="signature-pad--actions" style="margin-top: 0 !important;">
+                                    <button type="button" class="btn btn-primary clear right" data-action="clear">Clear</button>
+                                </div>
                                 </div>
                             </div>
                             {{ form.witness_signature_photo.errors }}
@@ -78,10 +66,16 @@
         </div>
         
     </form>
+    <div id="add_location"></div>
 </div>
+
+
 <script src="{% static '/js/signature_pad.umd.js' %}" ></script>
 <script src=" {% static '/js/signature_app.js' %}"></script>
 <script>
+    $(document).ready(function() {
+        ensureLocationAccess();
+    });
     window.kitchenPhotoUppy = new Uppy.Core({
 		debug: true,
 		autoProceed: true,
@@ -157,4 +151,15 @@
     }
 }
 </script>
+
+<!-- <script>
+    let locationBlockElement = `
+        <div class="overlay_location_outer">
+            <p style="font-size: 20px; color:#fff; padding-top:30px; margin:20px; text-align: center;"> निचे दिए गए बटन पर क्लिक करे और लोकेशन को ओपन करें <br>ताकि प्री-सुरक्षा-ड्रिल की 
+                प्रक्रिया पूरा किया जा सके|</p>
+            <a target="_blank" class="btn btn-primary" href="https://arungas.com/public/ujwalla/location-guide.pdf">Location Guide</a>
+        </div>
+    `;
+    $('#add_location').append($(locationBlockElement));
+</script> -->
 {% endblock %}

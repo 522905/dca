@@ -57,6 +57,9 @@
 </div>
 <script src="{% static '/js/recorder.js' %}"></script>
 <script>
+    $(document).ready(function() {
+        ensureLocationAccess();
+    });
     window.audioFileUppy = new Uppy.Core({
 		debug: true,
 		autoProceed: true,
