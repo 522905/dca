@@ -160,7 +160,7 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 		):
 			readonly_fields = readonly_fields + ['download_legal_docs', ]
 		elif obj and obj.status in (
-				UjjwalaV2ApplicationStatus.NIC_ERROR
+				UjjwalaV2ApplicationStatus.NIC_ERROR_INSUFFICIENT_ADDRESS
 		):
 			readonly_fields = readonly_fields + [
 				'whatsapp_nic_error_update_address'
