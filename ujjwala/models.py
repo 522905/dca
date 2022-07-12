@@ -383,6 +383,20 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	@fsm_log_by
 	@transition(
 		field=status,
+		source=UjjwalaV2ApplicationStatus.NIC_ERROR_APPROVED,
+		target=UjjwalaV2ApplicationStatus.NIC_CLEARED,
+		custom=dict(
+			short_description='Nic Error Approved To Nic Clear', admin=False
+		),
+		permission='ujjwala.can_approve_connection',
+	)
+	def transition_nic_error_approved_to_nic_clear(self, *args, **kwargs):
+		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
 		source=UjjwalaV2ApplicationStatus.NIC_ERROR_ADDRESS_ACCEPTED,
 		target=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD,
 		custom=dict(

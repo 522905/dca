@@ -23,7 +23,7 @@ from .models import UjjwalaV2Application, FamilyMembers, ConnectionDisbursement,
 from .serializers import UjjwalaV2ApplicationSerializer
 from .ujjwala_functions import download_ujjwala_documents, get_salutation, \
     download_pre_installation_documents, get_existing_duplicate_applications_detail, \
-    download_ujjwala_legal_docs_to_upload, download_ujjwala_physical_legal_docs
+    download_ujjwala_legal_docs_to_upload, download_ujjwala_physical_legal_docs, process_result
 
 
 class CustomPagePagination(PageNumberPagination):
@@ -78,19 +78,27 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
         nic_status = request.data.get('nic_status')
         legal_docs_uploaded = request.data.get('legal_docs_uploaded')
 
-        if legal_docs_uploaded and application.status == UjjwalaV2ApplicationStatus.EKYC_ACCEPTED:
-            application.legal_documents_upload(description='Status Updated By Bot, Uploaded by unknown person')
-        elif not legal_docs_uploaded and application.status == UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD:
-            application.status == UjjwalaV2ApplicationStatus.EKYC_ACCEPTED
+        # if legal_docs_uploaded and application.status == UjjwalaV2ApplicationStatus.EKYC_ACCEPTED:
+        #     application.legal_documents_upload(description='Status Updated By Bot, Uploaded by unknown person')
+        # elif not legal_docs_uploaded and application.status == UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD:
+        #     application.status == UjjwalaV2ApplicationStatus.EKYC_ACCEPTED
 
         if application.status == UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD:
             if request.data.get('omc_status') == 'OMC Clear':
                 application.transition_omc_clear(description="Bot Processed: OMC Clear")
             elif request.data.get('omc_status') == 'OMC Reject':
                 application.transition_omc_reject(description="Bot Processed: OMC Reject")
-        if application.status == UjjwalaV2ApplicationStatus.OMC_CLEARED and nic_status not in ('Pending', 'Awaited'):
+        if application.status in (
+            UjjwalaV2ApplicationStatus.OMC_CLEARED,
+            UjjwalaV2ApplicationStatus.NIC_ERROR_APPROVED
+        ) and nic_status not in ('Pending', 'Awaited'):
             if nic_status == 'Cleared' or 'approved' in nic_status.lower():
-                application.transition_nic_cleared(description="Bot Processed: NIC Cleared {}".format(nic_status))
+                if application.status == UjjwalaV2ApplicationStatus.OMC_CLEARED:
+                    application.transition_nic_cleared(description="Bot Processed: NIC Cleared {}".format(nic_status))
+                else:
+                    application.transition_nic_error_approved_to_nic_clear(
+                        description="Bot Processed: NIC Cleared {}".format(nic_status)
+                    )
             elif nic_status == 'Address Insufficient':
                 application.transition_nic_error_insufficient_address(
                     error_code='', description="Bot Processed: {}".format(nic_status)
@@ -104,7 +112,8 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
     def get_list_to_fetch_omc_nic_status(self, request: HttpRequest, *args, **kwargs):
         aadhar_list = UjjwalaV2Application.objects.filter(
             Q(status=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD) |
-            Q(status=UjjwalaV2ApplicationStatus.OMC_CLEARED)
+            Q(status=UjjwalaV2ApplicationStatus.OMC_CLEARED) |
+            Q(status=UjjwalaV2ApplicationStatus.NIC_ERROR_APPROVED)
         ).exclude(consumer_id__isnull=True).order_by('id')
 #.filter(sdms_last_updated_on__lte=datetime.datetime.today()-datetime.timedelta(hours=6))
 #.exclude(version='V1')
@@ -393,6 +402,80 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
     @action(methods=['post'], detail=False, url_path='update_result_v2')
     def update_iocl_sdms_dedup_results_v2(self, request, *args, **kwargs):
+        record_valid = True
+        invalid_result = {}
+        invalid_result_relation = ''
+        family_member_obj = {}
+
+        consumer_id = ''
+        application_obj = UjjwalaV2Application.objects.get(pk=request.data.get('id'))
+
+        for member in request.data['family_members']:
+            try:
+                family_member_obj = FamilyMembers.objects.get(pk=member.get('id'))
+                if family_member_obj.uid_no in ('999999999999', '666666666666'): continue
+
+                family_member_obj.uid_check_result = member['result']
+
+                family_member_obj.save()
+
+                if request.data.get('alert', ''):
+                    if 'SBL-BPR-00131' in request.data.get('alert'):
+                        continue
+                    else:
+                        application_obj.status = UjjwalaV2ApplicationStatus.PROCESS_MANUAL
+                        application_obj.save()
+                        return HttpResponse('OK')
+
+                if not member['result'].get('distributor_name', ''):
+                    continue
+                else:
+                    is_our_record = 'arun indane' not in member['result'].get('distributor_name').lower()
+                    if is_our_record:
+                        if member['result'].get('relationship_status') != 'CANCELLED':
+                            record_valid = False
+                            invalid_result = member['result']
+                            invalid_result_relation = family_member_obj.relation
+                    elif family_member_obj.relation != 'SELF':
+                        record_valid = False
+                        invalid_result = member['result']
+                        invalid_result_relation = family_member_obj.relation
+                    elif family_member_obj.relation == 'SELF' and is_our_record:
+                        application_obj.consumer_id = member['consumer_id']
+            except FamilyMembers.DoesNotExist:
+                pass
+
+        if not record_valid:
+            try:
+                form = ApplicationRejected(data={
+                    'rejected_reason': 'CONNECTION_ALREADY_EXIST',
+                    'description': "{} {} {} {}".format(
+                        invalid_result_relation,
+                        invalid_result['distributor_name'], invalid_result['consumer_id'],
+                        invalid_result['contact_address']
+                    )})
+                form.is_valid()
+                application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE
+                if application_obj.status == 'DOCUMENTS_UPLOADED':
+                    application_obj.application_rejected(**form.cleaned_data)
+                    application_obj.event_ioc_dedupe_reject_channel_whatsapp()
+            except Exception as e:
+                print(e)
+                pass
+        else:
+            application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE
+            # Create PreInspection Object
+            obj = PreInspection.objects.create(
+                parent_id=application_obj.id,
+                status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+                type=PreInspectionTypeEnum.SELF
+            )
+            application_obj.event_whatsapp_pre_inspection_type_self(obj.id)
+            # application_obj.event_invite_for_ekyc_channel_whatsapp()
+            if application_obj.consumer_id and \
+                    application_obj.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
+                application_obj.ekyc_accepted_or_rejected(description="Bot Processed")
+        application_obj.save()
         return HttpResponse('OK')
 
     @action(methods=['get'], detail=False, url_path='get_walk_in_no_sv_list')
