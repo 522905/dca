@@ -158,6 +158,12 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
 
         obj.contact_number = contact_number
         obj.save()
+        res = requests.post(
+         	"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+         	"&function=add_lead&phone_number={}&list_id=1000&first_name={}&address1={}&kyc_date={}".format(
+         		obj.contact_number, obj.name, obj.address, obj.kyc_date
+         	)
+        )
         return HttpResponse("Contact Number Updated Successfully")
 
 

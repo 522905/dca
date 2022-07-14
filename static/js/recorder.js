@@ -3,7 +3,7 @@
 const record = document.querySelector('.record');
 const stop = document.querySelector('.stop');
 const soundClips = document.querySelector('.sound-clips');
-const canvas = document.querySelector('.visualizer');
+const recordingCanvas = document.querySelector('.visualizer');
 const mainSection = document.querySelector('.main-controls');
 
 // disable stop button while not recording
@@ -13,7 +13,7 @@ stop.disabled = true;
 // visualiser setup - create web audio api context and canvas
 
 let audioCtx;
-const canvasCtx = canvas.getContext("2d");
+const canvasCtx = recordingCanvas.getContext("2d");
 
 //main block for doing the audio recording
 
@@ -133,8 +133,8 @@ function visualize(stream) {
   draw()
 
   function draw() {
-    const WIDTH = canvas.width
-    const HEIGHT = canvas.height;
+    const WIDTH = recordingCanvas.width
+    const HEIGHT = recordingCanvas.height;
 
     requestAnimationFrame(draw);
 
@@ -166,14 +166,14 @@ function visualize(stream) {
       x += sliceWidth;
     }
 
-    canvasCtx.lineTo(canvas.width, canvas.height/2);
+    canvasCtx.lineTo(recordingCanvas.width, recordingCanvas.height/2);
     canvasCtx.stroke();
 
   }
 }
 
 window.onresize = function() {
-  canvas.width = mainSection.offsetWidth;
+  recordingCanvas.width = mainSection.offsetWidth;
 }
 
 window.onresize();

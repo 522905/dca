@@ -864,8 +864,6 @@ $(document).ready(function() {
      });
 
      allowLocationNav();
-            
-
 
 });
 
@@ -875,14 +873,14 @@ function ensureLocationAccess() {
         (error)=>{
             if (error.code == 1) {
                 let locationBlockElement = `
-    <div class="overlay_location_outer">
-        <p style="font-size: 20px; color:#fff; padding-top:30px; margin:20px; text-align: center;"> निचे दिए गए बटन पर क्लिक करे और लोकेशन को ओपन करें <br>ताकि प्री-सुरक्षा-ड्रिल की 
-            प्रक्रिया पूरा किया जा सके|</p>
-        <a target="_blank" class="btn btn-primary" href="https://arungas.com/public/ujwalla/chrome-location-guide.pdf">Chrome Location Guide</a>
-        <a target="_blank" class="btn btn-primary" href="https://arungas.com/public/ujwalla/app-location-guide.pdf">App Location Guide</a>
-    </div>
-`;
-                $('#add_location').append($(locationBlockElement));
+                    <div class="overlay_location_outer">
+                        <p style="font-size: 20px; color:#fff; padding-top:30px; margin:20px; text-align: center;"> निचे दिए गए बटन पर क्लिक करे और लोकेशन को ओपन करें <br>ताकि प्री-सुरक्षा-ड्रिल की 
+                            प्रक्रिया पूरा किया जा सके|</p>
+                        <a target="_blank" class="btn btn-primary" href="https://arungas.com/public/ujwalla/chrome-location-guide.pdf">Chrome Location Guide</a>
+                        <a target="_blank" class="btn btn-primary" href="https://arungas.com/public/ujwalla/app-location-guide.pdf">App Location Guide</a>
+                    </div>
+                `;
+                // $('#add_location').append($(locationBlockElement));
             }
         },
         {maximumAge:600000, timeout:10000, enableHighAccuracy: true}

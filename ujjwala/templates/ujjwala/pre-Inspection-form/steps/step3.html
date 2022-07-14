@@ -10,51 +10,83 @@
 <style>
      .lacation_field span{ float: left; width: 100px; } 
 </style>
+
 <div class="main p-2 pt-0 form_label">
     <form method="post" id="">
         {% csrf_token %}
         <div class="card">
-            <div class="card-body">
+            <div class="row mb-2 m-0">
+                <div class="main-header bg-heading" style="border-radius:0;background-color: #ff5c6c !important; display: block; width: 100%;">
+                    <i class="fa fa-hand-o-right mr-2" style="color: white; font-size:18px"></i><span class="text-white">महत्वपूर्ण जानकारी</span>
+                </div>
+                <div class="row p-2 m-0" style="background-color: #efefef;">
+                    <div class="col-6 pl-0">
+                        <p style="color: #2957A4; font-weight: bold; margin-bottom: 20px !important;">मेन गेट की फोटो इस तरहा से खिचे| 
+                            आपके मेन गेट की फोटो साफ़ दिखाई दे| फोटो पर क्लिक करें ओर इस तरहा की फोटो खींचे| <a  href="https://arungas.com/public/ujwalla/main-gate-photo.png" target="_blank">
+                            </a></p>
+                    </div>
+                    <div class="col-6 p-0">
+                        <a href="https://arungas.com/public/ujwalla/main-gate-photo.png" target="_blank" style="border:1px solid #ccc; display:block; padding: 5px; ">
+                            <img src="https://arungas.com/public/ujwalla/main-gate-photo.png" style=" width:100%; object-fit: contain; margin:0 auto; display: block;" >
+                            <span style="display:block;background-color: #000; color: #fff; padding: 5px;">उदाहरण के लिए फोटो</span>
+                        </a>
+                    </div>
+                  
+                </div>
+                <div class="col-sm-12 photo_block mt-2">
+                    <span class="hidden-field">{{ form.main_gate }}</span>
+                    <label>Photo of Main Gate with customer<br> (ग्राहक के साथ मेन गेट का फोटो)</label>
+
+                    <p id="main_gate"></p>
+                    {{ form.main_gate.errors }}
+                </div>
+            </div>
+            <hr style="display: block; width:100%;">
+            <div>
                 {{form.form_type}}
                 {{form.application_id}}
-                <div class="photo_block pl-lg-0 mb-3 p-0 row">
-                    <div class="lacation_field col-sm-8">
+                <div class="photo_block">
+                    <div class="main-header bg-heading" style="border-radius:0;background-color: #ff5c6c !important; display: block; width: 100%;">
+                        <i class="fa fa-hand-o-right mr-2" style="color: white; font-size:18px"></i><span class="text-white">महत्वपूर्ण जानकारी</span>
+                    </div>
+                    <div class="row p-2 m-0" style="background-color: #efefef;">
+                        <p style="color: #2957A4; font-weight: bold; margin-bottom: 10px !important;">किसी खुले क्षेत्र में जाएं और लोकेशन को  कैप्चर करें। 
+                        </p>                            
+                    </div>
+                    <div class="lacation_field col-sm-6">
                         <div class="" style="width: 100%; clear:both;">
                             <span>{{ form.latitude }}</span>
                             <span>{{ form.longitude }}</span>
                             <span>{{ form.accuracy }}</span>
                         </div>
                     </div>
-                    <div class="col-sm-4 p-0">
+                    <div class="col-sm-6">
                         <div class="allowLocationNav">
                             <button type="button" class="btn btn-primary" onClick="allowLocationNav();">
-                                Capture Location
+                                कैप्चर लोकेशन
                             </button>
                         </div>
                     </div>
-                    {{ form.latitude.errors }} {{ form.longitude.errors }} {{ form.accuracy.errors }}
-                </div>
-                <div class="row mb-2 M-0">
-                    <p class="text-danger" style="font-weight: 500;" id="map_error_msg"></p>
-                    <div class="col-sm-12 photo_block">
-                        <span class="hidden-field">{{ form.main_gate }}</span>
-                        <label>Photo of Main Gate with customer<br> (ग्राहक के साथ मेन गेट का फोटो)</label>
-                        <p id="main_gate"></p>
-                        {{ form.main_gate.errors }}
+                    <div class="lacation_field col-sm-12">
+                        {{ form.latitude.errors }} {{ form.longitude.errors }} {{ form.accuracy.errors }}
+                        <p class="text-danger mt-2" style="font-weight: 500;" id="map_error_msg"></p>
                     </div>
                 </div>
+              
+                
             </div>
             <div class="card-footer float-right">
                 <input class="btn btn-success float-right rounded-0" type="submit" value="Submit" />
             </div>
         </div>
     </form>
+    <div id="add_location"></div>
 </div>
-
-<script src="{% static '/js/static.js' %}"></script>
+<script src="{% static '/js/location.js' %}"></script>
 <script>
     $(document).ready(function() {
         ensureLocationAccess();
+        allowLocationNav();
     });
 
      window.kitchenPhotoUppy = new Uppy.Core({

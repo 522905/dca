@@ -755,35 +755,6 @@ $(document).ready(function() {
     //     });
     // }).change();
 
-    window.customerpictureuppy = new Uppy.Core({
-        debug: true,
-        autoProceed: true,
-        restrictions: {
-            maxFileSize: 50000000,
-            maxNumberOfFiles: 1,
-            minNumberOfFiles: 1,
-            allowedFileTypes: ['image/*'],
-        }
-    })
-    .use(Uppy.Dashboard, {
-        trigger: '#customerpicture',
-        inline: true,
-        target: '#customerpicture',
-        showProgressDetails: true,
-        note: 'Images only, 1 file, up to 10 MB',
-        height: 250,
-        metaFields: [],
-        id: 'customerpicture',
-        browserBackButtonClose: false
-    })
-    .use(Uppy.Tus, {
-        endpoint: 'https://tus.dca.arungas.com/files/',
-    })
-    customerpictureuppy.on('complete', result => {
-        console.log('successful files:', result.successful)
-        console.log('failed files:', result.failed)
-    })
-
     window.bankdetailuppy = new Uppy.Core({
         debug: true,
         autoProceed: true,

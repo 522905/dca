@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.css" >
 <script src="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.js"></script>
+<link rel="stylesheet" href="https://arungas.com/public/ujwalla/css/signature-pad.css">
 <style>
     body, .btn{ font-family: 'muli', sans-serif !important; font-weight: 500;}
     .hidden-field{ display: none;}
@@ -14,6 +15,19 @@
     #playAudio p{ padding-left: 10px; font-size: 16px; font-weight: 600;}
     .btns{ font-family: 'muli', sans-serif !important; font-weight: 500; width: 100%; line-height: 0.5;}
     .main-controls canvas{ width: 100%; border-radius: 20px; height: 42px; opacity: 0.4;}
+    /* .zoom_img input[type=checkbox] {
+        display: none;
+    }
+
+    .zoom_img img {
+        transition: transform 0.25s ease;
+        cursor: zoom-in;
+    }
+
+    .zoom_img input[type=checkbox]:checked ~ label > img {
+        transform: scale(2);
+        cursor: zoom-out;
+    } */
 </style>
 <div class="p-2 pt-0 form_label" style="width: 100%;">
     <form method="post" id="safety_audio_form">
@@ -23,9 +37,24 @@
             {{form.application_id}}
             <input class="hidden-field" id="id_audio_file" name="audio_file" value=""/>
         </div>
+        <div class="main-header bg-heading" style="border-radius:0;background-color: #ff5c6c !important; display: block; width: 100%;">
+            <i class="fa fa-hand-o-right mr-2" style="color: white; font-size:18px"></i><span class="text-white"> को महत्वपूर्ण जानकारी</span>
+        </div>
+        <div class="row p-2 m-0" style="background-color: #efefef;">
+            <div class="col-12 p-0 zoom_img">
+                <input type="checkbox" id="zoomCheck">
+                <label for="zoomCheck">
+                    <img style="width:100%" src="{% static '/img/lpg-security.png' %}">
+                </label>
+            </div>
+        </div>
+        
         <div class="card" style="max-width:600px">
+            <div class="main-header bg-heading" style="background-color: #2957A4; border-radius:0;">
+                <span class="text-white">रिकॉर्ड एलपीजी स्थापना सुरक्षा निर्देश </span>
+            </div>
             <div class="col-sm-12 photo_block pt-3">
-                <label style="color: #212529; padding-left:5px;"> रिकॉर्ड एलपीजी स्थापना सुरक्षा निर्देश </label>
+                <label style="color: #212529; padding-left:5px;"> </label>
                 <section class="main-controls">
                     <canvas class="visualizer" height="60px"></canvas>
                     {{ form.audio_file.errors }}
@@ -41,86 +70,169 @@
                 
                 <section id="playAudio" class="sound-clips">
                 </section>
-                <p id="uppy_informer"></p>
-                <p id="audio_file"></p>
             </div>
+            <div class="main-header bg-heading mt-3" style="background-color: #2957A4; border-radius:0;">
+                <span class="text-white">गवाह का रिकॉर्ड</span>
+            </div>
+            <div class="col-sm-12 photo_block pt-2">
+                <label>Witness Name (गवाह का नाम)</label>
+                <input placeholder="गवाह का नाम" id="id_witness_name" name="witness_name" value="" required/>
+                {{ form.witness_name.errors }}
+            </div>
+            <div class="col-sm-12  photo_block   pt-2">
+                <label>Witness Mobile Number (गवाह का मोबाइल नंबर)</label>
+                <input placeholder="गवाह का मोबाइल नंबर" id="id_witness_mobile_number" type="tel" name="witness_mobile_number" value="" required/>
+                {{ form.witness_mobile_number.errors }}
+            </div>
+            <div class="col-sm-12 pt-2">
+                <div class="photo_block">
+                    <span class="hidden_field">{{ form.witness_signature_photo }}</span>
+                    <label>Witness Signature (गवाह का हस्ताक्षर)<br> नीचे दिए गये बक्से में हस्ताक्षर करे|</label>
+                    <div id="witness_signature_photo" class="signature-pad">
+                        <div class="signature-pad--body">
+                        <canvas></canvas>
+                        </div>
+                        <div class="signature-pad--footer ">
+                        <div class="signature-pad--actions" style="margin-top: 0 !important;">
+                            <button type="button" class="btn btn-primary clear right" data-action="clear">Clear</button>
+                        </div>
+                        </div>
+                    </div>
+                    {{ form.witness_signature_photo.errors }}
+                </div>
+            </div>
+
+            <p id="uppy_informer"></p>
+            <p id="file_status"></p>
 
             <div class="card-footer float-right">
-                <button class="btn btn-success float-right rounded-3" onclick="upload_audio_and_submit_form()" type="button">Submit</button>
+                <button class="btn btn-success float-right rounded-3" id="upload_sign_and_submit_action" onclick="upload_and_submit_hidden()" type="button">Submit</button>
             </div>
+            <!-- <div class="card-footer">
+                <input class="btn btn-secondary rounded-0" type="submit" id="upload_sign_and_submit_hidden" value="Upload Signature & Submit" style="display:none">
+                <input class="btn btn-secondary rounded-0 float-right" type="button"  onclick="upload_sign_and_submit()" value="Upload Signature & Submit"/>
+            </div> -->
+
             
         </div>
-        <div class="col-sm-12 card p-0">
-            <a href="#" target="_blank" ><img style="width:100%" src="{% static '/img/lpg-security.png' %}"></a> 
-        </div>
+        
     </form>
 </div>
+
+
 <script src="{% static '/js/recorder.js' %}"></script>
+<script src="{% static '/js/location.js' %}"></script>
+<script src="{% static '/js/signature_pad.umd.js' %}" ></script>
+<script src=" {% static '/js/signature_app.js' %}"></script>
+
 <script>
+
     $(document).ready(function() {
+        document.getElementById("id_witness_signature_photo").required = false;
+        document.getElementById("id_audio_file").required = false;
         ensureLocationAccess();
     });
-    window.audioFileUppy = new Uppy.Core({
-		debug: true,
-		autoProceed: true,
-		restrictions: {
-			maxFileSize: 50000000,
-			maxNumberOfFiles: 1,
-			minNumberOfFiles: 1,
-			allowedFileTypes: ['audio/*'],
-		}
-	})
-    .use(Uppy.StatusBar, {
-        id: 'StatusBar',
-        target: '#audio_file',
-        hideAfterFinish: true,
-        showProgressDetails: false,
-        hideUploadButton: false,
-        hideRetryButton: false,
-        hidePauseResumeButton: false,
-        hideCancelButton: false,
-        doneButtonHandler: null,
-        locale: {},
-    })  
-    .use(Uppy.Tus, {
-        endpoint: 'https://tus.dca.arungas.com/files/',
-    })
-    .use(Uppy.Informer, {
-        id: 'Informer',
-        target: '#uppy_informer',
-    });
 
-    window.submit_form = function(audio_url) {
-        $("[name='audio_file']").val(audio_url);
+    window.submit_form = function(audio_url, signature_url) {
+        $("#id_audio_file").val(audio_url);
+        $('#id_witness_signature_photo').val(signature_url);
         $('form#safety_audio_form').submit();
     }
 
+    window.upload_and_submit_hidden = function () {
+        if (signaturePad.isEmpty()) {
+            return alert("Please provide a signature first.");
+        }
+        if (!window.audio_blob) {
+            return alert("Please record Safety Audio.");
+        }
 
-    window.upload_audio_and_submit_form = function () {
-        window.audioFileUppy.addFile({
+        if (!$('form#safety_audio_form')[0].reportValidity()) {
+            return alert("Please fill all fields.");
+        }
+       
+        var signature_blob = dataURLToBlob(signaturePad.toDataURL());
+
+        let uppy = new Uppy.Core({
+            debug: true,
+            autoProceed: true,
+            restrictions: {
+                maxFileSize: 50000000,
+                maxNumberOfFiles: 2,
+                minNumberOfFiles: 1,
+                allowedFileTypes: ['image/*', 'audio/*'],
+            }
+        }) 
+        .use(Uppy.StatusBar, {
+            id: 'StatusBar',
+            target: '#file_status',
+            hideAfterFinish: true,
+            showProgressDetails: false,
+            hideUploadButton: false,
+            hideRetryButton: false,
+            hidePauseResumeButton: false,
+            hideCancelButton: false,
+            doneButtonHandler: null,
+            locale: {},
+        })
+        .use(Uppy.Informer, {
+            id: 'Informer',
+            target: '#uppy_informer',
+        })
+        .use(Uppy.Tus, {
+            endpoint: 'https://tus.dca.arungas.com/files/',
+        });
+        
+        uppy.addFiles([{
+            name: `signature_${new Date().getTime()}_${(Math.random() + 1).toString(36).substring(7)}.png`,
+            type: 'image/png',
+            data: signature_blob,
+            source: 'Local', // optional, determines the source of the file, for example, Instagram.
+            isRemote: false, // optional, set to true if actual file is not in the browser, but on some remote server, for example,
+            meta: {
+                file_type: 'signature',
+            },
+        },
+        {
             name: `safety_audio_${new Date().getTime()}_${(Math.random() + 1).toString(36).substring(7)}.ogg`,
             type: 'audio/ogg',
             data: window.audio_blob,
             source: 'Local', // optional, determines the source of the file, for example, Instagram.
             isRemote: false, // optional, set to true if actual file is not in the browser, but on some remote server, for example,
-        });
+            meta: {
+                file_type: 'safety_audio',
+            },
+        }]);
 
-        window.audioFileUppy.upload().then((result) => {
+        uppy.upload().then((result) => {
+            debugger;
             if (result.failed.length > 0) {
-                alert("Error Uploading Signature, try again");
+                alert("Error Uploading Signature or Safety Audio, Clcik retry on upload.");
                 console.error('Errors:')
                 result.failed.forEach((file) => {
                     console.error(file.error)
                 });
-                
-                jQuery('#submit').html('Submit');
-                jQuery('#submit').attr('disabled', false);
-
-            } else {
-                console.info('Successful uploads:', result.successful);
-                submit_form(result.successful[0].uploadURL)
+                return;
             }
+            console.info('Successful uploads:', result.successful);
+
+            var audio_url='';
+            var sig_url = '';
+
+            $.each(result.successful, (indx, _file) => {
+                if (_file.meta.file_type == 'signature') {
+                    sig_url = _file.uploadURL;
+                }
+                if (_file.meta.file_type == 'safety_audio') {
+                    audio_url = _file.uploadURL;
+                }
+            });
+
+            window.submit_form(audio_url, sig_url);
+
         });
+        
     }
+
 </script>
 {% endblock %}

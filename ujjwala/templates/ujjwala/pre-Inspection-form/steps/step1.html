@@ -7,62 +7,52 @@
 <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://arungas.com/public/ujwalla/css/signature-pad.css">
 
-<script src="{% static '/js/static.js' %}"></script>
 <script src="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.js"></script>
 
-<div class="main p-2 pt-0 form_label overlay_location">
+<script src="{% static '/js/location.js' %}"></script>
+<div class="main p-2 pt-0 form_label">
     <form method="post" id="upload_sign_and_submit_form">
         {% csrf_token %}
         <div class="main-header bg-heading" style="background-color: #2957A4;">
-            <span class="text-white">Fill Pre-Suraksha-Drill  test</span>
+            <span class="text-white">Fill Pre-Suraksha-Drill</span>
         </div>
         <div class="card">
             {{form.form_type}}
             {{form.application_id}}
             {{form.name}}
             <div class="form-group input_form" style="margin-bottom: 0 !important;">
+                <div class="main-header bg-heading" style="border-radius:0;background-color: #ff5c6c !important; display: block; width: 100%;">
+                    <i class="fa fa-hand-o-right mr-2" style="color: white; font-size:18px"></i><span class="text-white">महत्वपूर्ण जानकारी</span>
+                </div>
+                <div class="row p-2 m-0" style="background-color: #efefef;">
+                    <div class="col-6 pl-0">
+                        <p style="color: #2957A4; font-weight: bold; margin-bottom: 20px !important;">किचन  फोटो इस तरहा से खिचे की 
+                            आपके किचन की फोटो साफ़ दिखाई दे| फोटो पर क्लिक करें ओर इस तरहा की फोटो खींचे| 
+                    </div>
+                    <div class="col-6 p-0">
+                        <a href="https://arungas.com/public/ujwalla/Kitchen-Photo.png" target="_blank" style="border:1px solid #ccc; display:block; padding: 5px; ">
+                            <img src="https://arungas.com/public/ujwalla/Kitchen-Photo.png" style=" width:100%; object-fit: contain; margin:0 auto; display: block;" >
+                            <span style="display:block;background-color: #000; color: #fff; padding: 5px;">उदाहरण के लिए फोटो</span>
+                        </a>
+                    </div>
+                </div>
                 <div class="row m-0 p-3">
                     <div class="col-sm-12 photo_block p-0 pt-2">
                         <span class="hidden_field">{{ form.kitchen_photo }}</span>
-                        <label>Photo of customer with kitchen<br> (रसोईघर के साथ ग्राहक की तस्वीर)</label>
-                        <p id="kitchen_photo"></p>
-                        {{ form.kitchen_photo.errors }}
+                        <label>Photo of customer with kitchen<br>(रसोईघर के साथ ग्राहक की तस्वीर)</label>
                     </div>
-                    <div class="col-sm-12 photo_block p-0  pt-2">
-                        <input class="hidden_field" id="id_witness_name" name="witness_name" value=""/>
-                        <label>Witness Name</label>
-                        <input placeholder="गवाह का नाम" id="id_witness_name" name="witness_name" value=""/>
-                    {{ form.witness_name.errors }}
-                    </div>
-                    <div class="col-sm-12  photo_block p-0  pt-2">
-                        <input class="hidden_field" id="id_witness_mobile_number" name="witness_mobile_number" value=""/>
-                        <label>Witness Mobile Number</label>
-                        <input placeholder="गवाह का मोबाइल नंबर" id="id_witness_mobile_number" type="tel" name="witness_mobile_number" value=""/>
-                        {{ form.witness_mobile_number.errors }}
-                    </div>
-                    <div class="col-sm-12 p-0  pt-2">
-                        <div class="photo_block">
-                            <span class="hidden_field">{{ form.witness_signature_photo }}</span>
-                            <label>Witness Signature</label>
-                            <div id="witness_signature_photo" class="signature-pad">
-                                <div class="signature-pad--body">
-                                <canvas></canvas>
-                                </div>
-                                <div class="signature-pad--footer ">
-                                <div class="signature-pad--actions" style="margin-top: 0 !important;">
-                                    <button type="button" class="btn btn-primary clear right" data-action="clear">Clear</button>
-                                </div>
-                                </div>
-                            </div>
-                            {{ form.witness_signature_photo.errors }}
+                    <div class="row">
+                        <div class="col-12 photo_block p-0  pt-2">
+                            <p id="kitchen_photo"></p>
+                            {{ form.kitchen_photo.errors }}
                         </div>
                     </div>
                 </div>
             </div>
             <div class="card-footer">
-                <input class="btn btn-secondary rounded-0" type="submit" id="upload_sign_and_submit_hidden" value="Upload Signature & Submit" style="display:none">
-                <input class="btn btn-secondary rounded-0 float-right" type="button" id="upload_sign_and_submit_action" onclick="upload_sign_and_submit()" value="Upload Signature & Submit"/>
+                <input class="btn btn-secondary rounded-0" type="submit"  value="Submit">
             </div>
+            
         </div>
         
     </form>
@@ -70,11 +60,12 @@
 </div>
 
 
-<script src="{% static '/js/signature_pad.umd.js' %}" ></script>
-<script src=" {% static '/js/signature_app.js' %}"></script>
+<script src="{% static '/js/location.js' %}"></script>
 <script>
     $(document).ready(function() {
+        allowLocationNav();
         ensureLocationAccess();
+        
     });
     window.kitchenPhotoUppy = new Uppy.Core({
 		debug: true,
@@ -104,62 +95,6 @@
 		$('#id_kitchen_photo').val(result.successful[0].uploadURL);
 	})
 
-    //signaturePad
-    function upload_sign_and_submit() {
-    
-    if (signaturePad.isEmpty()) {
-        alert("Please provide a signature first.");
-    } else {
-        var dataURL = signaturePad.toDataURL();
-        var blob = dataURLToBlob(dataURL);
-        let sign_uppy = new Uppy.Core({
-            debug: true,
-            autoProceed: true,
-            restrictions: {
-                maxFileSize: 50000000,
-                maxNumberOfFiles: 1,
-                minNumberOfFiles: 1,
-                allowedFileTypes: ['image/*'],
-            }
-        })
-        .use(Uppy.Tus, {
-            endpoint: 'https://tus.dca.arungas.com/files/',
-        });
-        
-        sign_uppy.addFile({
-            name: `signature_${new Date().getTime()}_${(Math.random() + 1).toString(36).substring(7)}.png`,
-            type: 'image/png',
-            data: blob,
-            source: 'Local', // optional, determines the source of the file, for example, Instagram.
-            isRemote: false, // optional, set to true if actual file is not in the browser, but on some remote server, for example,
-        });
-
-        sign_uppy.upload().then((result) => {
-            if (result.failed.length > 0) {
-                alert("Error Uploading Signature, try again");
-                console.error('Errors:')
-                result.failed.forEach((file) => {
-                    console.error(file.error)
-                })
-            } else {
-                console.info('Successful uploads:', result.successful);
-                // submit_form(result.successful[0].uploadURL)
-                    $('#id_witness_signature_photo').val(result.successful[0].uploadURL);
-                    $('#upload_sign_and_submit_hidden').trigger('click');
-            }
-        });
-    }
-}
+  
 </script>
-
-<!-- <script>
-    let locationBlockElement = `
-        <div class="overlay_location_outer">
-            <p style="font-size: 20px; color:#fff; padding-top:30px; margin:20px; text-align: center;"> निचे दिए गए बटन पर क्लिक करे और लोकेशन को ओपन करें <br>ताकि प्री-सुरक्षा-ड्रिल की 
-                प्रक्रिया पूरा किया जा सके|</p>
-            <a target="_blank" class="btn btn-primary" href="https://arungas.com/public/ujwalla/location-guide.pdf">Location Guide</a>
-        </div>
-    `;
-    $('#add_location').append($(locationBlockElement));
-</script> -->
 {% endblock %}

@@ -156,6 +156,41 @@ class KitchenPreInspectionForm(forms.Form):
 	kitchen_photo = forms.CharField(
 		widget=forms.TextInput, label='Kitchen Photo', required=True
 	)
+
+
+	def __init__(self, pre_inspection=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.pre_inspection = pre_inspection
+
+	def save(self):
+		data = self.cleaned_data
+		obj = self.pre_inspection
+
+		obj.documents.create(
+			type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO,
+            link=data['kitchen_photo']
+		)
+
+		if obj.type == PreInspectionTypeEnum.SELF:
+			obj.pre_inspection_kitchen_photo_uploaded_skip_safety(
+				description='\n'.join([
+					"Witness Name: {}, Mobile Number: {}".format(obj.witness_name, obj.witness_mobile_number),
+					"Self Inspection, Skipping Safety",
+				])
+			)
+		else:
+			obj.pre_inspection_kitchen_photo_uploaded(
+				by=get_current_user(),
+				description="Witness Name: {}, Mobile Number: {}".format(obj.witness_name, obj.witness_mobile_number)
+			)
+		obj.save()
+
+
+class AudioOnSafetyForm(forms.Form):
+	audio_file = forms.CharField(
+		widget=forms.TextInput, label='Audio File', required=True
+	)
+
 	witness_name = forms.CharField(
 		widget=forms.TextInput, label='Witness Name', required=True
 	)
@@ -175,50 +210,18 @@ class KitchenPreInspectionForm(forms.Form):
 		obj = self.pre_inspection
 
 		obj.documents.create(
-			type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO,
-            link=data['kitchen_photo']
-		)
-		obj.documents.create(
 			type=UjjwalaApplicationDocumentsEnum.WITNESS_SIGNATURE,
 			link=data['witness_signature_photo']
 		)
 
 		obj.witness_name = data['witness_name']
 		obj.witness_mobile_number = data['witness_mobile_number']
-		if obj.type == PreInspectionTypeEnum.SELF:
-			obj.pre_inspection_kitchen_photo_uploaded_skip_safety(
-				description='\n'.join([
-					"Witness Name: {}, Mobile Number: {}".format(obj.witness_name, obj.witness_mobile_number),
-					"Self Inspection, Skipping Safety",
-				])
-			)
-		else:
-			obj.pre_inspection_kitchen_photo_uploaded(
-				by=get_current_user(),
-				description="Witness Name: {}, Mobile Number: {}".format(obj.witness_name, obj.witness_mobile_number)
-			)
-		obj.save()
-
-
-class AudioOnSafetyForm(forms.Form):
-	audio_file = forms.CharField(
-		widget=forms.TextInput, label='Audio File', required=False
-	)
-
-	def __init__(self, pre_inspection=None, *args, **kwargs):
-		super().__init__(*args, **kwargs)
-		self.pre_inspection = pre_inspection
-
-	def save(self):
-		data = self.cleaned_data
-		obj = self.pre_inspection
 
 		doc = obj.documents.create(type=UjjwalaApplicationDocumentsEnum.SAFETY_AUDIO,
 		                     link=data['audio_file'])
 		obj.pre_inspection_safety_audio_uploaded(
 			by=get_current_user(),
 			description="Safety Audio: {}".format(doc.link)
-
 		)
 		obj.save()
 
@@ -1060,3 +1063,7 @@ class ConnectionDisbursementSearchForm(forms.Form):
 
 class NewRelationCreated(forms.Form):
 	consumer_id = forms.CharField(widget=forms.TextInput(), required=True)
+
+
+class PreInspectionConvertForm(forms.Form):
+	convert_to = forms.CharField(widget=forms.HiddenInput(), required=True)
