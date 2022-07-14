@@ -68,11 +68,10 @@ class WhatsappPreInspectionTypeSelf(View):
                 status=PreInspectionStatusEnum.KITCHEN_PHOTO,
                 type=PreInspectionTypeEnum.SELF
             )
-        if pi_obj.type == PreInspectionTypeEnum.SELF:
+        if pi_obj.status not in (
+                PreInspectionStatusEnum.SUBMITTED, PreInspectionStatusEnum.ACCEPTED
+        ):
             pi_obj.parent.event_whatsapp_pre_inspection_type_self_admin(pi_obj.id)
-            return HttpResponse(
-                "Application Id {}: Message Sent For Pre Inspection Type Self".format(kwargs.get('pk'))
-            )
         else:
             return HttpResponse(
                 "Application Id {} not authorised for self inspection.".format(kwargs.get('pk'))
