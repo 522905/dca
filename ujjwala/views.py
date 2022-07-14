@@ -72,6 +72,10 @@ class WhatsappPreInspectionTypeSelf(View):
                 PreInspectionStatusEnum.SUBMITTED, PreInspectionStatusEnum.ACCEPTED
         ):
             pi_obj.parent.event_whatsapp_pre_inspection_type_self_admin(pi_obj.id)
+            return HttpResponse(
+                "Application Id {} Whatsapp Message Sent.".format(kwargs.get('pk'))
+            )
+
         else:
             return HttpResponse(
                 "Application Id {} not authorised for self inspection.".format(kwargs.get('pk'))
