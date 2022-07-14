@@ -258,11 +258,17 @@ class PreviewPreInspectionForm(forms.Form):
 		obj.longitude = data['longitude']
 		obj.accuracy = data['accuracy']
 
-		obj.transition_pre_inspection_submit(
-			by=get_current_user(),
-			description="Latitude: {}, Longitude: {}, Accuracy: {}".format(
-				data['latitude'], data['longitude'], data['accuracy'])
-		)
+		if obj.type == PreInspectionTypeEnum.SELF:
+			obj.transition_pre_inspection_submit(
+				description="Self Inspection: Latitude: {}, Longitude: {}, Accuracy: {}".format(
+					data['latitude'], data['longitude'], data['accuracy'])
+			)
+		else:
+			obj.transition_pre_inspection_submit(
+				by=get_current_user(),
+				description="Latitude: {}, Longitude: {}, Accuracy: {}".format(
+					data['latitude'], data['longitude'], data['accuracy'])
+			)
 		obj.save()
 
 	def get_form_initial(self, step):
