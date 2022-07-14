@@ -403,7 +403,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			short_description='Address Updated, New relation initiated', admin=True, form=NewRelationCreated
 		),
 
-		# permission='ujjwala.can_approve_connection',
+		permission='ujjwala.can_approve_connection',
 	)
 	def transition_create_new_relation_after_nic_error_insufficent_address(self, *args, **kwargs):
 		self.consumer_id = kwargs.get('consumer_id')
@@ -414,7 +414,6 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	@transition(
 		field=status,
 		source=[
-			UjjwalaV2ApplicationStatus.NIC_ERROR,
 			UjjwalaV2ApplicationStatus.NIC_ERROR_INSUFFICIENT_ADDRESS
 		],
 		target=UjjwalaV2ApplicationStatus.NIC_ERROR_UPDATE_ADDRESS,

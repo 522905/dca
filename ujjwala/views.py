@@ -603,7 +603,8 @@ class UjjwalaConnectionDisbursementListView(ListView):
             if object:
                 if object.status not in (
                     ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
-                    ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW
+                    ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
+                    ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED
                 ):
                     messages.add_message(
                         request, messages.ERROR, "Application Id: {} - {}".format(application_id, object.status)
@@ -902,9 +903,6 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
             status__in=[
                 ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
                 ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
-                # ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
-                # ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE,
-                # ConnectionDisbursementStatusEnum.INSTALLATION_UPLOADED
             ],
             walk_in_date__date=datetime.datetime.today().date()
         ).order_by('updated_on')

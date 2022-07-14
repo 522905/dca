@@ -11,10 +11,12 @@ import magic
 # @job
 from domestic_app.utils import get_minio_public_url
 from ujjwala.models import UjjwalaV2Application
-
+import logging
 
 def interakt_webhook_job_processing(data):
     mid = data['data']['message']['id']
+    print(data['data'])
+    logging.info(data['data'])
     comm_obj = CommunicationLog.objects.get(channel='whatsapp', message_id=mid)
 
     _type = data.get('type')

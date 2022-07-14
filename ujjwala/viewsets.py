@@ -23,13 +23,15 @@ from .models import UjjwalaV2Application, FamilyMembers, ConnectionDisbursement,
 from .serializers import UjjwalaV2ApplicationSerializer
 from .ujjwala_functions import download_ujjwala_documents, get_salutation, \
     download_pre_installation_documents, get_existing_duplicate_applications_detail, \
-    download_ujjwala_legal_docs_to_upload, download_ujjwala_physical_legal_docs, process_result
-
+    download_ujjwala_legal_docs_to_upload, download_ujjwala_physical_legal_docs
 
 class CustomPagePagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     page_size = 50
 
+
+upload_docs=('5745','1994','6880','2821','2112','6163','2367','6999','7022','5206','5207','2370','5871','2860','8','5714','6215','2699','2725','2521','1985','2286','2074','2349','1300','2312','2234','2225','1884','2114','2233','2262','2279','2217','2236','2256','2238','2477','2252','2254','2244','2281','1866','1782','2878','3883','2863','2481','2514','2495','4414','2220','4312','4983','2340','4186','2218','1759','1897','2547','5608','5073','171','213','262','270','883','921','926','934','969','1292','1308','1332','1334','1385','1558','1583','1595','1730','1746','1887','1948','1959','1966','2210','2224','2273','2351','2396','2447','2513','2522','2527','2539','2542','2544','2554','2559','2571','2575','2583','2590','2695','2733','2847','2851','2853','2877','2950','4013','3058','3061','3072','4176','4202','4222','3174','3199','4280','4291','4340','4411','4442','4456','3318','4521','3402','3471','3528','3531','3569','3575','5409','6318','3799','5723','5849','5868','6034','6061','6174','7610','6740','7676','7064','7882','5005','5044','5148','5159','5161','5228','4843','2543','8257','8302','8171','8205','8215','8354','8378','8485','7998','8836','8536','9437','3146')
+nic_oms_update = ['7200000023289375','7200000023340267','7200000023342363','7200000023368273','7200000023408889','7200000023419908','7200000023434484','7200000023488189','7200000023503142','7200000023503600','7200000023514594','7200000023531011','7200000023531927','7200000023549593','7200000023552566','7200000023553382','7200000023554000','7200000023554458','7200000023554465','7200000023554908','7200000023555435','7200000023555950','7200000023555956','7200000023556389','7200000023556470','7200000023556672','7200000023556795','7200000023556974','7200000023557397','7200000023557529','7200000023557653','7200000023557833','7200000023558019','7200000023558306','7200000023558382','7200000023559400','7200000023562783','7200000023565562','7200000023571986','7200000023572268','7200000023572539','7200000023577982','7200000023578051','7200000023579391','7200000023579690','7200000023580190','7200000023580512','7200000023581032','7200000023583116','7200000023586410','7200000023587707','7200000023590401','7200000023591395','7200000023594586','7200000023607350','7200000023615939','7200000023624994','7200000023636241','7200000023641386','7200000023642663','7200000023648728','7200000023649712','7200000023653432','7200000023653949','7200000023654454','7200000023654836','7200000023655718','7200000023684986','7200000023685217','7200000023690763','7200000023697125','7200000023714420','7200000023719682','7200000023719741','7200000023730063','7200000023733326','7200000023749433','7200000023772363','7200000023776039','7200000023804562','7200000023823927','7200000023849876','7200000023852557','7200000023853988','7200000023853992','7200000023855790','7200000023856680','7200000023863140','7200000023875594','7200000023887783','7200000023897923','7200000023898929','7200000023901066','7200000023901185','7200000023902338','7200000023903017','7200000023907145','7200000023959425','7200000023968068','7200000023970230','7200000023985412','7200000023996563','7200000023998368','7200000024013319','7200000024051214','7200000024070115','7200000024078150','7200000024101931','7200000024102174','7200000024129137','7200000024130452','7200000024147063','7200000024149000','7200000024155824','7200000024156641','7200000024160475','7200000024166745','7200000024171200','7200000024173903','7200000024201279','7200000024214655','7200000024220252','7200000024227853','7200000024242781','7200000024243600','7200000024245580','7200000024246115','7200000024247013','7200000024247377','7200000024249215','7200000024265613','7200000024269591','7200000024271091','7200000024273600','7200000024281795','7200000024282317','7200000024295706','7200000024309112','7200000024317312','7200000024326410','7200000024329022','7200000024330960','7200000024331702','7200000024337367','7200000024361433','7200000024367213','7200000024396389','7200000024407637','7200000024411773','7200000024415783','7200000024424328','7200000024434195','7200000024447844','7200000024460071','7200000024507489','7200000024538087','7200000024578589','7200000024639057','7200000024657853','7200000024668056','7200000024668554','7200000024789028','7200000024848867','7200000024849969','7200000024850480','7200000024851314','7200000024856342','7200000024856458','7200000024863451','7200000024863960','7200000024864287','7200000024864933','7200000024867459','7200000024868491','7200000024875150','7200000024879600','7200000024881859','7200000024882172','7200000024889322','7200000024891219','7200000024891408','7200000024891929','7200000024892347','7200000024893704','7200000024921689','7200000024940788','7200000024991301','7200000024992119']
 
 class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
     queryset = models.UjjwalaV2Application.objects.all()
@@ -43,12 +45,15 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=False, url_path='get_work_items_for_doc_upload')
     def get_work_items_for_doc_upload(self, request: HttpRequest, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-        # queryset.filter(status=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED)
+        #queryset = queryset.filter(id__in=upload_docs)
+        #queryset = queryset.filter(id__gt=1439)
         queryset = queryset.filter(
-            status=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED, consumer_id__isnull=False
+            status=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED, consumer_id__isnull=False, residential_status='LIVING_WITH_FAMILY'
         ).exclude(marital_status__in=[
             MaritalStatusEnum.DIVORCED, MaritalStatusEnum.WIDOW
-        ])
+        ]).exclude(
+		family_members__dob__gte='2004-06-23'
+	).order_by('-sdms_last_updated_on')
         page = self.paginate_queryset(queryset)
         return self.get_paginated_response([
             {
@@ -72,6 +77,7 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
 
     @action(methods=['post'], detail=True, url_path='update_omc_and_nic_status')
     def update_omc_and_nic_status(self, request: HttpRequest, *args, **kwargs):
+        if not request.data.get('omc_status'): return HttpResponse('No Data, Skip Update')
         application: UjjwalaV2Application = self.get_object()
         application.sdms_last_updated_on = timezone.now()
         application.product = request.data.get('product')
@@ -104,7 +110,8 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
                     error_code='', description="Bot Processed: {}".format(nic_status)
                 )
             else:
-                application.transition_nic_error(error_code='', description=nic_status)
+                code = 'DIST' if 'dist' in nic_status.lower() else 'FO'
+                application.transition_nic_error(error_code=code, description=nic_status)
         application.save()
         return HttpResponse('OK')
 
@@ -114,8 +121,9 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
             Q(status=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD) |
             Q(status=UjjwalaV2ApplicationStatus.OMC_CLEARED) |
             Q(status=UjjwalaV2ApplicationStatus.NIC_ERROR_APPROVED)
-        ).exclude(consumer_id__isnull=True).order_by('id')
-#.filter(sdms_last_updated_on__lte=datetime.datetime.today()-datetime.timedelta(hours=6))
+        ).exclude(consumer_id__isnull=True).filter(
+            sdms_last_updated_on__lte=datetime.datetime.today()-datetime.timedelta(hours=16)
+        ).order_by('updated_on')
 #.exclude(version='V1')
 #.order_by('-id')
 #        aadhar_list = UjjwalaV2Application.objects.filter(id__in=["1273","2120","2534","32","1265","323","76","601","2148","37"]).exclude(consumer_id__isnull=True).order_by('id')
@@ -143,16 +151,14 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
 
     @action(methods=['post'], detail=False, url_path='update_mobile_number_sdms_record')
     def update_mobile_number_sdms_record(self, request: HttpRequest, *args, **kwargs):
-        consumer_id = request.query_params.get('consumer_id')
-        contact_number = request.query_params.get('contact_number')
+        consumer_id = request.data.get('consumer_id')
+        contact_number = request.data.get('contact_number')
 
-        obj = SdmsCustomerRecord.objects.filter(consumer_id=consumer_id).first()
-        if obj:
-            obj.contact_number = contact_number
-            obj.save()
-            return HttpResponse("Contact Number Updated Successfully")
-        else:
-            return HttpResponse("Invalid Record Or Error Occurred")
+        obj = SdmsCustomerRecord.objects.get(consumer_id=consumer_id)
+
+        obj.contact_number = contact_number
+        obj.save()
+        return HttpResponse("Contact Number Updated Successfully")
 
 
 class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
@@ -484,6 +490,13 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             walk_in_date__date=datetime.datetime.today().date()
         ).filter(invitation__sv_link__isnull=True)
 
+        #connection_disbursement_list = ConnectionDisbursement.objects.filter(
+        #    parent__id__in=[337, 338]
+        #).filter(invitation__sv_link__isnull=True)
+
+        #connection_disbursement_list = ConnectionDisbursement.objects.filter(
+        #    parent__id__in=[337, 338]
+        #).filter(invitation__sv_link__isnull=True)
         return JsonResponse([
             {
                 'connection_disbursement_id': record.id,
@@ -509,10 +522,11 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 )
             )
         ).filter(
-            Q(sdms_last_updated_on__lte=datetime.datetime.today()-datetime.timedelta(hours=12)) |
+            Q(sdms_last_updated_on__lte=datetime.datetime.today()-datetime.timedelta(hours=16)) |
             Q(sdms_last_updated_on__isnull=True)
-	    ).\
+	).\
             exclude(family_members__uid_no__in=("0", "1")).\
+            exclude(sync_with_sdms=False).\
             exclude(id__in=['113', '33', '157', '138', '37', '32', '259', '299', '295', '301']).\
             order_by('-id')
 
@@ -567,6 +581,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             if application.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
                 application.ekyc_accepted_or_rejected(description="Bot Processed")
         else:
+            application.sync_with_sdms = False
             form = ApplicationRejected(data={
                 'rejected_reason': 'CONNECTION_ALREADY_EXIST',
                 'description': "{} {} {} {}".format(
@@ -807,9 +822,10 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     @action(methods=['post'], detail=True, url_path='robo_got_error_alert')
     def robo_got_error_alert(self, request: HttpRequest, *args, **kwargs):
         application: UjjwalaV2Application = self.get_object()
-        application.do_manual_operations(
-            description=request.data.get('message'),
-            manual_operation_code=ManualOperationCodeEnum.ROBO_GOT_ERROR_ALERT
-        )
-        application.save()
+        if application.status == 'EKYC_ACCEPTED':
+            application.do_manual_operations(
+                description=request.data.get('message'),
+                manual_operation_code=ManualOperationCodeEnum.ROBO_GOT_ERROR_ALERT
+            )
+            application.save()
         return HttpResponse('OK')

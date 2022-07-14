@@ -10,7 +10,7 @@ class CommunicationLog(models.Model):
 	object_id = models.PositiveIntegerField(null=True)
 
 	content_object = GenericForeignKey('content_type', 'object_id')
-	event = models.CharField(max_length=25)
+	event = models.CharField(max_length=30)
 	channel = models.CharField(max_length=25)
 	channel_subscriber = models.CharField(max_length=10)
 	status = models.CharField(max_length=25, default="Initial")
