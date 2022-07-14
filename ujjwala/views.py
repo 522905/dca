@@ -30,7 +30,8 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
     ConnectionDisbursementSvLabelPrintForm, InstallationMainGateUploadForm, InstallationKitchenUploadForm, \
     UjjwalaApplicationOtpInitialForm, UjjwalaApplicationGenerateOtpForm, UjjwalaApplicationValidateOtpForm, \
     ConnectionDisbursementMaterialDeliveryForm, ConnectionDisbursementInvitationForm, \
-    ConnectionDisbursementSocialMediaUpdatesForm, ConnectionDisbursementSearchForm, NicUpdateAddressForm
+    ConnectionDisbursementSocialMediaUpdatesForm, ConnectionDisbursementSearchForm, NicUpdateAddressForm, \
+    PreInspectionConvertForm
 from ujjwala.global_functions import login_required_if_mech_inspection
 
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, ConnectionDisbursementInvitation
@@ -76,7 +77,6 @@ class WhatsappPreInspectionTypeSelf(View):
             return HttpResponse(
                 "Application Id {} not authorised for self inspection.".format(kwargs.get('pk'))
             )
-
 
 
 class ApplicationStatusView(DetailView):
@@ -352,6 +352,12 @@ class PreInspectionView(FormView):
 
     def form_valid(self, form):
         form.save()
+        if form.__class__ == PreviewPreInspectionForm:
+            obj = self.get_object()
+            if obj.type == PreInspectionTypeEnum.SELF:
+                return HttpResponse(
+                    content="<h1>Pre-Inspection Submitted For Review</h1>"
+                )
         return HttpResponseRedirect(self.get_success_url())
 
     def get_template_names(self):
@@ -1159,3 +1165,42 @@ class NicErrorUpdateAddress(FormView):
         )
         obj.save()
         return HttpResponse("<b>Address Updated Successfully</b>")
+
+
+class PreInspectionConvertToView(FormView):
+    # model = ConnectionDisbursementInvitation
+    form_class = PreInspectionConvertForm
+    template_name = "ujjwala/pre-Inspection-form/pre_inspection_conversion.html"
+
+    def get_object(self, queryset=None):
+        try:
+            obj = PreInspection.objects.get(pk=self.kwargs.get('pk'))
+        except:
+            raise Http404(
+                "No application with id: {} found.".format(self.kwargs.get('pk'))
+            )
+        return obj
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        obj = self.get_object()
+        convert_to = self.kwargs.get('convert_to')
+        context.update({
+            "obj": obj,
+            "convert_to": PreInspectionTypeEnum.MECHANIC if convert_to == 'mech' else PreInspectionTypeEnum.SELF
+        })
+        return context
+
+    def get_initial(self):
+        kwargs = super().get_initial()
+        kwargs.update({
+            'convert_to': self.kwargs.get('convert_to')
+        })
+        return kwargs
+
+    def form_valid(self, form):
+        obj = self.get_object()
+        data = form.clean()
+        obj.type = PreInspectionTypeEnum.MECHANIC if data['convert_to'] == 'mech' else PreInspectionTypeEnum.SELF
+        obj.save()
+        return redirect('ujjwala:pre_inspection_form_view', type=data['convert_to'], pk=obj.pk)
