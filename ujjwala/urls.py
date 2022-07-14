@@ -78,6 +78,12 @@ urlpatterns = [
         name="pre_inspection_form_view"
     ),
 
+    url(
+        '^portal/pre-inspection/convert_to/(?P<convert_to>(self|mech))/(?P<pk>[^/.]+)/$',
+        views.PreInspectionConvertToView.as_view(),
+        name="pre_inspection_view_convert_to"
+    ),
+
     # url(
     #     '^portal/pre-inspection/(?P<pk>[^/.]+)/$',
     #     views.PreInspectionView.as_view(),

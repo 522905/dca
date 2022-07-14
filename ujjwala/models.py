@@ -675,6 +675,41 @@ class PreInspection(models.Model):
 		field=status,
 		source=[
 			PreInspectionStatusEnum.ALLOCATED,
+			PreInspectionStatusEnum.OTP_VERIFIED,
+			PreInspectionStatusEnum.CHANGE_ADDRESS,
+			PreInspectionStatusEnum.KITCHEN_PHOTO,
+			PreInspectionStatusEnum.PREVIEW_INSPECTION,
+			PreInspectionStatusEnum.REUPLOAD,
+			PreInspectionStatusEnum.REJECTED,
+		],
+		target=GET_STATE(
+			lambda self, **kwargs: \
+					PreInspectionStatusEnum.KITCHEN_PHOTO \
+						if kwargs.get('convert_to_type') == 'self' \
+						else PreInspectionStatusEnum.ALLOCATED,
+			states=[
+				PreInspectionStatusEnum.KITCHEN_PHOTO,
+				PreInspectionStatusEnum.ALLOCATED
+			]
+		),
+		custom=dict(short_description='Convert Inspection Type', admin=False),
+	)
+	def convert_inspection_type(self, convert_to_type='', *args, **kwargs):
+		if convert_to_type == 'mech':
+			self.type = PreInspectionTypeEnum.MECHANIC
+			self.mechanic = get_current_user()
+		else:
+			self.type = PreInspectionTypeEnum.SELF
+			self.mechanic = None
+
+		self.documents.all().delete()
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=[
+			PreInspectionStatusEnum.ALLOCATED,
 			PreInspectionStatusEnum.REJECTED
 		],
 		target=PreInspectionStatusEnum.CHANGE_ADDRESS,

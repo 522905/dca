@@ -1201,6 +1201,6 @@ class PreInspectionConvertToView(FormView):
     def form_valid(self, form):
         obj = self.get_object()
         data = form.clean()
-        obj.type = PreInspectionTypeEnum.MECHANIC if data['convert_to'] == 'mech' else PreInspectionTypeEnum.SELF
+        obj.convert_inspection_type(convert_to_type=data['convert_to'])
         obj.save()
         return redirect('ujjwala:pre_inspection_form_view', type=data['convert_to'], pk=obj.pk)

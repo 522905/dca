@@ -3,7 +3,8 @@ from functools import wraps
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.decorators import user_passes_test
 from django.db import connection
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import redirect
 
 from ujjwala.enums import PreInspectionTypeEnum
 from ujjwala.models import PreInspection
@@ -24,11 +25,38 @@ def login_required_if_mech_inspection(function, redirect_field_name=REDIRECT_FIE
 	def wrapper(request, *args, **kwargs):
 		url_type = kwargs.get('type')
 		pi = PreInspection.objects.get(pk=kwargs.get('pk'))
-		if pi.type == PreInspectionTypeEnum.SELF and url_type == 'self' and request.user.is_authenticated == False:
-			return function(request, *args, **kwargs)
+		if pi.type == PreInspectionTypeEnum.MECHANIC and url_type == 'self':
+			if request.user.is_authenticated:
+				return redirect(
+					'ujjwala:pre_inspection_form_view', pk=pi.pk, type='mech'
+				)
+			else:
+				return redirect(
+					'ujjwala:pre_inspection_view_convert_to', pk=pi.pk, convert_to='self'
+				)
 		elif pi.type == PreInspectionTypeEnum.MECHANIC and url_type == 'mech':
-			return actual_decorator(function)(request, *args, **kwargs)
-		return HttpResponse("Not Valid For Mechanic Inspection")
+			if request.user.is_authenticated:
+				return actual_decorator(function)(request, *args, **kwargs)
+			else:
+				return redirect(
+					'ujjwala:pre_inspection_view_convert_to', pk=pi.pk, convert_to='mech'
+				)
+		elif pi.type == PreInspectionTypeEnum.SELF and url_type == 'self':
+			if not request.user.is_authenticated:
+				return function(request, *args, **kwargs)
+			else:
+				return redirect(
+					'ujjwala:pre_inspection_view_convert_to', pk=pi.pk, convert_to='mech'
+				)
+		elif pi.type == PreInspectionTypeEnum.SELF and url_type == 'mech':
+			if request.user.is_authenticated:
+				return redirect(
+					'ujjwala:pre_inspection_view_convert_to', pk=pi.pk, convert_to='mech'
+				)
+			else:
+				return redirect(
+					'ujjwala:pre_inspection_form_view', pk=pi.pk, type='self'
+				)
 	# wrapper.__name__ = function.__name__
 	# wrapper.__doc__ = function.__doc__
 	return wrapper
