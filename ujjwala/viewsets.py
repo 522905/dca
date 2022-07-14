@@ -128,9 +128,9 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
 
     @action(methods=['get'], detail=False, url_path='get_mismatched_sdms_records')
     def get_mismatched_sdms_records(self, request: HttpRequest, *args, **kwargs):
-        from_days = request.GET.get('from_days')
-        from_date = datetime.datetime.today() - datetime.timedelta(days=int(from_days))
-        records = get_sdms_mismatched_records(from_date.strftime('%Y-%m-%d'))
+        before_days = request.GET.get('before_days')
+        upto_date = datetime.datetime.today() - datetime.timedelta(days=int(before_days))
+        records = get_sdms_mismatched_records(upto_date.strftime('%Y-%m-%d'))
         if records:
             return JsonResponse([
                 {

@@ -34,13 +34,13 @@ def login_required_if_mech_inspection(function, redirect_field_name=REDIRECT_FIE
 	return wrapper
 
 
-def get_sdms_mismatched_records(from_date):
+def get_sdms_mismatched_records(upto_date):
 
 	with connection.cursor() as cursor:
 		query = """select sscr.consumer_id from sdms_sdmscustomerrecord sscr 
 		                where sscr.consumer_id not in (
 		                select consumer_id from ujjwala_ujjwalav2application uua where consumer_id is not null
-		                ) and sscr.kyc_date >='{}';""".format(from_date)
+		                ) and sscr.kyc_date <='{}';""".format(upto_date)
 		cursor.execute(query)
 		result = cursor.fetchall()
 	return result
