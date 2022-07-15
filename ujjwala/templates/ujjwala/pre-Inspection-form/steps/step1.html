@@ -50,7 +50,7 @@
                 </div>
             </div>
             <div class="card-footer">
-                <input class="btn btn-secondary rounded-0" type="submit"  value="Submit">
+                <input class="btn btn-success rounded-3" type="submit"  value="अगला पेज">
             </div>
             
         </div>
@@ -61,6 +61,7 @@
 
 
 <script src="{% static '/js/location_2022_07_15.js' %}"></script>
+<!-- <script src="{% static '/json/uppy-in.json' %}"></script> -->
 <script>
     $(document).ready(function() {
         allowLocationNav();
@@ -86,8 +87,22 @@
         height: 200,
         metaFields: [],
         id: 'kitchen_photo',
-        browserBackButtonClose: false
+        doneButtonHandler: () => {
+            // this.uppy.reset()
+            // this.requestCloseModal()
+        },
+        showRemoveButtonAfterComplete: true,
+        theme: 'light',
+        locale: {
+            strings: {
+                dropPasteFiles: 'फोटो अपलोड करने के लिए यहाँ पर क्लिक करे %{browseFiles}',
+                done: '-',
+                uploadComplete: 'अपलोड पूरा हो गया है',
+                complete: 'पूरा हुआ',
+            }
+        },
     })
+
     .use(Uppy.Tus, {
         endpoint: 'https://tus.dca.arungas.com/files/',
     })

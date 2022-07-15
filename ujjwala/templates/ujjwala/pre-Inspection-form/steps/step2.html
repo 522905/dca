@@ -50,7 +50,7 @@
         </div>
         
         <div class="card" style="max-width:600px">
-            <div class="main-header bg-heading" style="background-color: #2957A4; border-radius:0;">
+            <div class="main-header bg-heading" style="background-color: #ff5c6c; border-radius:0;">
                 <span class="text-white">रिकॉर्ड एलपीजी स्थापना सुरक्षा निर्देश </span>
             </div>
             <div class="col-sm-12 photo_block pt-3">
@@ -71,17 +71,17 @@
                 <section id="playAudio" class="sound-clips">
                 </section>
             </div>
-            <div class="main-header bg-heading mt-3" style="background-color: #2957A4; border-radius:0;">
+            <div class="main-header bg-heading mt-3" style="background-color: #ff5c6c; border-radius:0;">
                 <span class="text-white">गवाह का रिकॉर्ड</span>
             </div>
             <div class="col-sm-12 photo_block pt-2">
                 <label>Witness Name (गवाह का नाम)</label>
-                <input placeholder="गवाह का नाम" id="id_witness_name" name="witness_name" value="" required/>
+                <input placeholder="गवाह का नाम" pattern="[a-zA-Z]+" id="id_witness_name" name="witness_name" value="" onblur="this.reportValidity();" required/>
                 {{ form.witness_name.errors }}
             </div>
             <div class="col-sm-12  photo_block   pt-2">
                 <label>Witness Mobile Number (गवाह का मोबाइल नंबर)</label>
-                <input placeholder="गवाह का मोबाइल नंबर" id="id_witness_mobile_number" type="tel" name="witness_mobile_number" value="" required/>
+                <input placeholder="गवाह का मोबाइल नंबर" id="id_witness_mobile_number" maxlength="10" onblur="this.reportValidity();" pattern="[6789][0-9]{9}" type="tel" name="witness_mobile_number" value="" required/>
                 {{ form.witness_mobile_number.errors }}
             </div>
             <div class="col-sm-12 pt-2">
@@ -106,7 +106,7 @@
             <p id="file_status"></p>
 
             <div class="card-footer float-right">
-                <button class="btn btn-success float-right rounded-3" id="upload_sign_and_submit_action" onclick="upload_and_submit_hidden()" type="button">Submit</button>
+                <button class="btn btn-success rounded-3 float-right " id="upload_sign_and_submit_action" onclick="upload_and_submit_hidden()" type="button">अगला पेज</button>
             </div>
             <!-- <div class="card-footer">
                 <input class="btn btn-secondary rounded-0" type="submit" id="upload_sign_and_submit_hidden" value="Upload Signature & Submit" style="display:none">
@@ -140,15 +140,16 @@
     }
 
     window.upload_and_submit_hidden = function () {
-        if (signaturePad.isEmpty()) {
-            return alert("Please provide a signature first.");
+        if (!$('form#safety_audio_form')[0].reportValidity()) {
+            return alert("Please fill all fields.");
         }
-        if (!window.audio_blob) {
+
+        if (!(window.audio_blob && window.audio_blob.size>0)) {
             return alert("Please record Safety Audio.");
         }
 
-        if (!$('form#safety_audio_form')[0].reportValidity()) {
-            return alert("Please fill all fields.");
+        if (signaturePad.isEmpty()) {
+            return alert("Please provide a signature first.");
         }
        
         var signature_blob = dataURLToBlob(signaturePad.toDataURL());
@@ -159,7 +160,7 @@
             restrictions: {
                 maxFileSize: 50000000,
                 maxNumberOfFiles: 2,
-                minNumberOfFiles: 1,
+                minNumberOfFiles: 2,
                 allowedFileTypes: ['image/*', 'audio/*'],
             }
         }) 
