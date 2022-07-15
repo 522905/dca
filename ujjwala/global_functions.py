@@ -39,7 +39,7 @@ def login_required_if_mech_inspection(function, redirect_field_name=REDIRECT_FIE
 				return actual_decorator(function)(request, *args, **kwargs)
 			else:
 				return redirect(
-					'ujjwala:pre_inspection_view_convert_to', pk=pi.pk, convert_to='mech'
+					'ujjwala:pre_inspection_view_convert_to', pk=pi.pk, convert_to='self'
 				)
 		elif pi.type == PreInspectionTypeEnum.SELF and url_type == 'self':
 			if not request.user.is_authenticated:

@@ -11,13 +11,7 @@
     <form id="page_form" method="post">
         {% csrf_token %}
         {{ form }}
-        Auto-converting To
-        {% if obj.type == 'mech' %}
-             Self
-        {% else %}
-            Mechanic
-        {% endif %}
-        - Inspection in <span id="time_left"></span> Seconds
+        Auto-converting To {{ convert_to }}- Inspection in <span id="time_left"></span> Seconds
         <button type="button" onclick="cancelTimer()">Click to Cancel Conversion...</button>
 
     </form>
