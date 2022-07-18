@@ -321,7 +321,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 # UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
                 # UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD
             ),
-            robo_sdms_dedup=RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE,
+            robo_sdms_dedup=RoboSdmsDedeupStatusEnum.PROCESS_MANUAL,
             created_on__date__lte=datetime.datetime.strptime('2022-06-01', '%Y-%m-%d')
             # robo_sdms_dedup=RoboSdmsDedeupStatusEnum.NOT_PROCESSED
         ).exclude(family_members__uid_no__in=("0", "1")).order_by('id')[:5]
