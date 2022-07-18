@@ -1,5 +1,6 @@
 import io
 import random
+import re
 import string
 import zipfile
 import base64
@@ -18,6 +19,9 @@ from django.template import loader
 from ujjwala.enums import UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, ResidentialStatusEnum, \
     MaritalStatusEnum, UjjwalaV2ApplicationStatus, PreInspectionStatusEnum
 
+COMPILED_REGEX_PATTERN_AADHAR_EXISTS = re.compile(
+    """Aadhaar already exists for customer (?P<contact_name>.*?) of (?P<distributor_name>.*)\(SBL-EXL-00151\)"""
+)
 
 def valid_file_uploaded(url):
     res = requests.head(url, headers={"Tus-Resumable": "1.0.0"})
@@ -614,3 +618,27 @@ def get_ujjwala_legal_documents_physical(iterable):
 
     myio.seek(0)
     return myio
+
+
+def process_family_uid_result(result):
+    result = result.replace("BusinessError: ", "")
+    if 'already exists' in result:
+        m = COMPILED_REGEX_PATTERN_AADHAR_EXISTS.match(result)
+        result_dict = m.groupdict()
+
+        contact_name = result_dict.get('contact_name').split('(')
+        result_dict['contact_name'] = contact_name[0]
+        result_dict['consumer_id'] = contact_name[0].split(')')[0] if len(contact_name) > 1 else ''
+        return result_dict
+    return {
+        'alert': result
+    }
+    # {distributor_name}    Get Attribute    xpath=//input[@aria-labelledby="EPIC_Distributor_Name_Label"]    value
+    # {relationship_status}    Get Attribute    xpath=//input[@aria-labelledby="EPIC_Relationship_Status_Label"]    value
+    # {contact_name}    Get Attribute    xpath=//input[@aria-labelledby="EPICContactName_Label"]    value
+    # {consumer_id}    Get Attribute    xpath=//input[@aria-labelledby="EPICConsumerId_Label"]    value
+    # {phone_number}    Get Attribute    xpath=//input[@aria-labelledby="EPIC_Phone_Number_Label"]    value
+    # {contact_address}    Get Attribute    xpath=//textarea[@aria-labelledby="EPIC_Contact_Address_Label"]    value
+
+    # return result_dict
+

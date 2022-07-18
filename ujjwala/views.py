@@ -426,6 +426,7 @@ class PreInspectionCreateView(View):
             #         PreInspectionStatusEnum.REJECTED
             #     ]
             # ).first()
+
             pre_inspection_obj = PreInspection.objects.filter(
                 parent_id=app_id
             ).first()
