@@ -23,7 +23,9 @@ from .models import UjjwalaV2Application, FamilyMembers, ConnectionDisbursement,
 from .serializers import UjjwalaV2ApplicationSerializer
 from .ujjwala_functions import download_ujjwala_documents, get_salutation, \
     download_pre_installation_documents, get_existing_duplicate_applications_detail, \
-    download_ujjwala_legal_docs_to_upload, download_ujjwala_physical_legal_docs
+    download_ujjwala_legal_docs_to_upload, download_ujjwala_physical_legal_docs,  \
+    process_family_uid_result
+
 
 class CustomPagePagination(PageNumberPagination):
     page_size_query_param = 'page_size'
@@ -316,13 +318,13 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         aadhar_list = UjjwalaV2Application.objects.filter(
             status__in=(
                 UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
-                UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
-                UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD
+                # UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
+                # UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD
             ),
-            robo_sdms_dedup=RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE,
+            robo_sdms_dedup=RoboSdmsDedeupStatusEnum.PROCESS_MANUAL,
             created_on__date__lte=datetime.datetime.strptime('2022-06-01', '%Y-%m-%d')
             # robo_sdms_dedup=RoboSdmsDedeupStatusEnum.NOT_PROCESSED
-        ).exclude(family_members__uid_no__in=("0", "1")).order_by('-id')
+        ).exclude(family_members__uid_no__in=("0", "1")).order_by('id')[:5]
         # aadhar_list = UjjwalaV2Application.objects.filter(id__in=["1273","2120","2534","32","1265","323","76","601","2148","37"])
         return JsonResponse([
             {
@@ -425,12 +427,13 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         for member in request.data['family_members']:
             try:
                 family_member_obj = FamilyMembers.objects.get(pk=member.get('id'))
-                if family_member_obj.uid_no in ('999999999999', '666666666666'): continue
 
+                if family_member_obj.uid_no in ('999999999999', '666666666666'): continue
+                result = process_family_uid_result(member.get('alert', ''))
+                member['result'] = result
                 family_member_obj.uid_check_result = member['result']
 
                 family_member_obj.save()
-
                 if request.data.get('alert', ''):
                     if 'SBL-BPR-00131' in request.data.get('alert'):
                         continue
@@ -444,7 +447,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 else:
                     is_our_record = 'arun indane' not in member['result'].get('distributor_name').lower()
                     if is_our_record:
-                        if member['result'].get('relationship_status') != 'CANCELLED':
+                        if member['result']['consumer_id']:
                             record_valid = False
                             invalid_result = member['result']
                             invalid_result_relation = family_member_obj.relation
@@ -463,8 +466,8 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                     'rejected_reason': 'CONNECTION_ALREADY_EXIST',
                     'description': "{} {} {} {}".format(
                         invalid_result_relation,
-                        invalid_result['distributor_name'], invalid_result['consumer_id'],
-                        invalid_result['contact_address']
+                        invalid_result.get('distributor_name', ''), invalid_result.get('consumer_id', ''),
+                        invalid_result.get('contact_address', '')
                     )})
                 form.is_valid()
                 application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE

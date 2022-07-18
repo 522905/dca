@@ -137,24 +137,32 @@
                     </div>
                     <div class="form-group">
                         <label for="pincode">Pincode (पिनकोड)<strong style="color:red">*</strong></label>
-                        <input type="tel" class="form-control" id="pincode" name="pincode" onblur="validate_pincode();"  pattern="[1-9]{1}[0-9]{5}" required />
+                        <input type="tel" class="form-control" id="pincode" name="pincode" onblur="validate_pincode();" pattern="[1-9]{1}[0-9]{5}" required />
                     </div>  
 
                     <div class="form-group" class="container">
                         <div class="row">
-                            <div class="col-sm-4 col">
-                                <label>Your Picture or Selfie(प्रार्थी की फोटो)<strong style="color:red">*</strong>
-                                </label>
+                            <div class="col-sm-12 col">
+                                <label>Your Picture or Selfie (प्रार्थी की फोटो)<strong style="color:red">*</strong></label>
                                 <span class="custom-file-input" name="customerpicture"
-                                    id="customerpicture"></span><br>
-                                <span id="customerpicture_detail" class="text-danger"></span>
+									id="customerpicture"></span><br>
+								<span id="customerpicture_detail" class="text-danger"></span>
                             </div>
+                        </div>
+                    </div>
 
-                            <div class="col-sm-4 col">
-                                <label>Bank Detail (पास बुक का विवरण)<strong style="color:red">*</strong>
-                                </label>
-                                <span class="custom-file-input" id="bankdetail" name="bankdetail"></span><br>
-                            </div>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <label>Bank Detail (पास बुक का विवरण)<strong style="color:red">*</strong></label>
+                            <span class="custom-file-input" name="bankdetail" id="bankdetail"></span>
+                        </div>
+                        <div class="col-sm-4">
+                            <label>Enter Bank Account No (बैंक खाता संख्या)<strong style="color:red">*</strong></label>
+                            <input type="text" class="form-control" id="bankAccountNumber" name="bankAccountNumber" required />
+                        </div>
+                        <div class="col-sm-4">
+                            <label>Enter IFSC Code (IFSC कोड दर्ज करें)<strong style="color:red">*</strong></label>
+                            <input type="text" class="form-control" id="ifscCode" onblur="this.reportValidity();" pattern="^[A-Z]{4}[0][A-Z0-9]{6}$" name="ifscCode" required />
                         </div>
                     </div>
 
@@ -167,7 +175,7 @@
                             <input type="text" class="form-control" id="reference" name="referral_code" value="">
                             <br>
                             <p style="font-size: 14px;">
-                                <input id="term_condition_agree" type="checkbox" name="terms"   style="margin-right: 10px; font-size: 13px;">
+                                <input id="term_condition_agree" type="checkbox" name="terms" style="margin-right: 10px; font-size: 13px;">
                                 <a class="term_link" target="_blank" href="https://www.arungas.com/public/ujwalla/terms.pdf" style="color: #000; text-decoration: underline;">
                                     मैं प्रवासी हूँ, मैंने शर्तें पढ़ ली है और मुझे सारी शर्तें बताई भी गई है मैं सब कुछ जान कर ये घोषणा करती हूं कि उपर दी गई सभी जानकारी सत्य एवं सही हैं इसमें कुछ भी छिपा नहीं है</a>
                             </p>
@@ -200,4 +208,68 @@
 </body>
 </html>
 <script src="https://arungas.com/public/ujwalla/js/app.js"></script>
+<script>
+    // customerpictureuppy 
+    window.customerpictureuppy = new Uppy.Core({
+        debug: true,
+        autoProceed: true,
+        restrictions: {
+            maxFileSize: 50000000,
+            maxNumberOfFiles: 1,
+            minNumberOfFiles: 1,
+            allowedFileTypes: ['image/*'],
+        }
+    })
+    .use(Uppy.Dashboard, {
+        trigger: '#customerpicture',
+        inline: true,
+        target: '#customerpicture',
+        showProgressDetails: true,
+        note: 'Images only, 1 file, up to 10 MB',
+        height: 250,
+        metaFields: [],
+        id: 'customerpicture',
+        browserBackButtonClose: false
+    })
+    .use(Uppy.Tus, {
+        endpoint: 'https://tus.dca.arungas.com/files/',
+    })
+    customerpictureuppy.on('complete', result => {
+        console.log('successful files:', result.successful)
+        console.log('failed files:', result.failed)
+    })
+
+    // bankdetailuppy 
+    window.bankdetailuppy = new Uppy.Core({
+        debug: true,
+        autoProceed: true,
+        restrictions: {
+            maxFileSize: 50000000,
+            maxNumberOfFiles: 1,
+            minNumberOfFiles: 1,
+            allowedFileTypes: ['image/*'],
+        }
+    })
+    .use(Uppy.Dashboard, {
+        trigger: '#bankdetail',
+        inline: true,
+        target: '#bankdetail',
+        showProgressDetails: true,
+        note: 'Images only, 1 file, up to 10 MB',
+        height: 250,
+        metaFields: [],
+        id: 'bankdetail',
+        browserBackButtonClose: false
+    })
+    .use(Uppy.Tus, {
+        endpoint: 'https://tus.dca.arungas.com/files/',
+    })
+    
+    bankdetailuppy.on('complete', result => {
+        console.log('successful files:', result.successful)
+        console.log('failed files:', result.failed)
+    });
+
+
+</script>
 
