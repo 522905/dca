@@ -318,13 +318,13 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         aadhar_list = UjjwalaV2Application.objects.filter(
             status__in=(
                 UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
-                UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
-                UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD
+                # UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
+                # UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD
             ),
             robo_sdms_dedup=RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE,
             created_on__date__lte=datetime.datetime.strptime('2022-06-01', '%Y-%m-%d')
             # robo_sdms_dedup=RoboSdmsDedeupStatusEnum.NOT_PROCESSED
-        ).exclude(family_members__uid_no__in=("0", "1")).order_by('-id')
+        ).exclude(family_members__uid_no__in=("0", "1")).order_by('id')[:5]
         # aadhar_list = UjjwalaV2Application.objects.filter(id__in=["1273","2120","2534","32","1265","323","76","601","2148","37"])
         return JsonResponse([
             {
