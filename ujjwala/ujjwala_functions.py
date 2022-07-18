@@ -628,7 +628,7 @@ def process_family_uid_result(result):
 
         contact_name = result_dict.get('contact_name').split('(')
         result_dict['contact_name'] = contact_name[0]
-        result_dict['consumer_id'] = contact_name[0].split(')')[0] if len(contact_name) > 1 else ''
+        result_dict['consumer_id'] = contact_name[1].split(')')[0] if len(contact_name) > 1 else ''
         return result_dict
     return {
         'alert': result

@@ -445,9 +445,9 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 if not member['result'].get('distributor_name', ''):
                     continue
                 else:
-                    is_our_record = 'arun indane' in member['result'].get('distributor_name').lower()
+                    is_our_record = 'arun indane' not in member['result'].get('distributor_name').lower()
                     if is_our_record:
-                        if member['consumer_id']:
+                        if member['result']['consumer_id']:
                             record_valid = False
                             invalid_result = member['result']
                             invalid_result_relation = family_member_obj.relation

@@ -56,7 +56,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	accuracy = models.CharField(max_length=24, null=True, blank=True)
 	product = models.CharField(max_length=256, null=True, blank=True)
 	robo_sdms_dedup = models.CharField(
-		max_length=25, choices=RoboSdmsDedeupStatusEnum.choices,
+		max_length=32, choices=RoboSdmsDedeupStatusEnum.choices,
 		default=RoboSdmsDedeupStatusEnum.NOT_PROCESSED
 	)
 	status = FSMField(
@@ -73,6 +73,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	applicant_verified = models.BooleanField(default=False)
 	applicant_verified_on = models.DateTimeField(null=True, blank=True)
 	audit_points = models.TextField(null=True, blank=True)
+	ifsc_code = models.CharField(max_length=16, null=True, blank=True)
+	bank_account_number = models.CharField(max_length=16, null=True, blank=True)
 
 	class Meta:
 		permissions = (
