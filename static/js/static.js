@@ -337,31 +337,7 @@ function submit_form(signature_url) {
     });
 }
 
-function valid() {
-    let files = [
-        validateUppy(customerpictureuppy, 'CUSTOMER_PHOTO', 'Customer Picture or Selfie (ग्राहक की फोटो)*', false),
-        validateUppy(bankdetailuppy, 'BANK_DETAIL', 'Bank Detail (पास बुक का विवरण)', false)
-    ]
 
-    if (!files.reduce((aggr, current) => {
-        return current.valid && aggr
-    }, true)) {
-        let error = files.reduce((aggr, current) => {
-            if (current.msg) {
-                return aggr + '\n' + current.msg
-            } else {
-                return aggr
-            }
-        }, '');
-        window.alert(error);
-        return null;
-    }
-    let documentArray = files.filter(e => e.url).map(e => {
-        return {type: e.key, link: e.url}
-    });
-    console.log(documentArray);
-    return documentArray;
-}
 
 function validateUppy(uppyObj, key, label, fileMandatory) {
 
@@ -737,85 +713,6 @@ $(document).ready(function() {
         );
 
     });
-
-    // $('#uid_mobile_status').change(function() {
-    //     $(this).find("option:selected").each(function() {
-    //         var optionValue = $(this).attr("value");
-
-    //         if (optionValue === 'LINKED_WITH_SAME_MOBILE') {
-    //             $("#uid_linked_mobile_form_group").show();
-    //             $("#uid_linked_mobile").val($("#contact_mobile").val());
-    //             $('#uid_linked_mobile').prop('disabled', true);
-    //         } else if (optionValue == 'MOBILE_NOT_AVAILABLE') {
-    //             $("#uid_linked_mobile_form_group").hide();
-    //             $('#uid_linked_mobile').prop('disabled', true);
-    //         } else {
-    //             $('#uid_linked_mobile').prop('disabled', false);
-    //             $("#uid_linked_mobile_form_group").show();
-    //         }
-
-    //     });
-    // }).change();
-
-    window.customerpictureuppy = new Uppy.Core({
-        debug: true,
-        autoProceed: true,
-        restrictions: {
-            maxFileSize: 50000000,
-            maxNumberOfFiles: 1,
-            minNumberOfFiles: 1,
-            allowedFileTypes: ['image/*'],
-        }
-    })
-    .use(Uppy.Dashboard, {
-        trigger: '#customerpicture',
-        inline: true,
-        target: '#customerpicture',
-        showProgressDetails: true,
-        note: 'Images only, 1 file, up to 10 MB',
-        height: 250,
-        metaFields: [],
-        id: 'customerpicture',
-        browserBackButtonClose: false
-    })
-    .use(Uppy.Tus, {
-        endpoint: 'https://tus.dca.arungas.com/files/',
-    })
-    customerpictureuppy.on('complete', result => {
-        console.log('successful files:', result.successful)
-        console.log('failed files:', result.failed)
-    })
-
-    window.bankdetailuppy = new Uppy.Core({
-        debug: true,
-        autoProceed: true,
-        restrictions: {
-            maxFileSize: 50000000,
-            maxNumberOfFiles: 1,
-            minNumberOfFiles: 1,
-            allowedFileTypes: ['image/*'],
-        }
-    })
-    .use(Uppy.Dashboard, {
-        trigger: '#bankdetail',
-        inline: true,
-        target: '#bankdetail',
-        showProgressDetails: true,
-        note: 'Images only, 1 file, up to 10 MB',
-        height: 250,
-        metaFields: [],
-        id: 'bankdetail',
-        browserBackButtonClose: false
-    })
-    .use(Uppy.Tus, {
-        endpoint: 'https://tus.dca.arungas.com/files/',
-    })
-    
-    bankdetailuppy.on('complete', result => {
-        console.log('successful files:', result.successful)
-        console.log('failed files:', result.failed)
-    });
-
 
     $('#family_members_tree').on("blur", ".aadhar_on_blur", function() {
         var e = this
