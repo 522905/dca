@@ -25,6 +25,7 @@ from .ujjwala_functions import download_ujjwala_documents, get_salutation, \
     download_pre_installation_documents, get_existing_duplicate_applications_detail, \
     download_ujjwala_legal_docs_to_upload, download_ujjwala_physical_legal_docs,  \
     process_family_uid_result
+from django.urls import reverse
 
 
 class CustomPagePagination(PageNumberPagination):
@@ -42,6 +43,21 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
     filterset_fields = ['id', 'status']
     ordering_fields = '__all__'
     pagination_class = CustomPagePagination
+
+
+    @action(methods=['get'], detail=True, url_path='get_printing_urls')
+    def get_printing_urls(self, request: HttpRequest, *args, **kwargs):
+        obj = self.get_object()
+        connection_disbursement = obj.connection_disbursement
+        bluebook_label_print_url = reverse(
+            'ujjwala:connection_disbursement_barcode_label_print_view',
+            kwargs={'pk':connection_disbursement.id}
+        )
+        return JsonResponse({
+            "form_abc": obj.physical_legal_document_link(),
+            "ujjwala_sv": connection_disbursement.valid_sv_link(),
+            "label": self.request.build_absolute_uri(bluebook_label_print_url)
+        })
 
 
     @action(methods=['get'], detail=False, url_path='get_work_items_for_doc_upload')
@@ -124,7 +140,8 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
             Q(status=UjjwalaV2ApplicationStatus.OMC_CLEARED) |
             Q(status=UjjwalaV2ApplicationStatus.NIC_ERROR_APPROVED)
         ).exclude(consumer_id__isnull=True).filter(
-            sdms_last_updated_on__lte=datetime.datetime.today()-datetime.timedelta(hours=16)
+            Q(sdms_last_updated_on__lte=datetime.datetime.today()-datetime.timedelta(hours=6)) |
+            Q(sdms_last_updated_on__isnull=True)
         ).order_by('updated_on')
 #.exclude(version='V1')
 #.order_by('-id')
@@ -497,7 +514,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     def get_walk_in_no_sv_list(self, request, *args, **kwargs):
         connection_disbursement_list = ConnectionDisbursement.objects.filter(
             walk_in_date__date=datetime.datetime.today().date()
-        ).filter(invitation__sv_link__isnull=True)
+        ).filter(invitation__sv_link__isnull=True).order_by('walk_in_date')
 
         #connection_disbursement_list = ConnectionDisbursement.objects.filter(
         #    parent__id__in=[337, 338]
