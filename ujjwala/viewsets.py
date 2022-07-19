@@ -878,6 +878,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
     @action(methods=['post'], detail=False, url_path='update_enrich_rejection_record')
     def update_enrich_rejection_record(self, request, *args, **kwargs):
+        record_valid = True
         invalid_result = {}
         invalid_result_relation = ''
         application_obj = UjjwalaV2Application.objects.get(pk=request.data.get('id'))
@@ -885,33 +886,36 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         for member in request.data['family_members']:
             result = process_omc_dedupe_result(member['omc_dedup_result'])
             if not result:
-                application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESS_MANUAL
-                application_obj.save()
-                return HttpResponse('PROCESS MANUAL')
+                continue
             else:
+                record_valid = False
                 family_member_obj = FamilyMembers.objects.get(pk=member.get('id'))
                 family_member_obj.uid_check_result = result
                 family_member_obj.save()
                 if family_member_obj.relation == 'SELF':
                     invalid_result_relation = 'SELF'
-                    invalid_result = member['result']
+                    invalid_result = result
                 else:
                     if not invalid_result:
                         invalid_result_relation = family_member_obj.relation
-                        invalid_result = member['result']
-
-        form = ApplicationRejected(data={
-            'rejected_reason': 'CONNECTION_ALREADY_EXIST',
-            'description': "{} {} {}".format(
-                invalid_result_relation,
-                invalid_result['distributor_name'], invalid_result['consumer_id']
-            )})
-        form.is_valid()
-        application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE
-        application_obj.application_rejected(**form.cleaned_data)
-        application_obj.event_ioc_dedupe_reject_channel_whatsapp()
-        application_obj.save()
-        return HttpResponse('OK')
+                        invalid_result = result
+        if record_valid:
+            application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESS_MANUAL
+            application_obj.save()
+            return HttpResponse('PROCESS MANUAL')
+        else:
+            form = ApplicationRejected(data={
+                'rejected_reason': 'CONNECTION_ALREADY_EXIST',
+                'description': "{} {} {}".format(
+                    invalid_result_relation,
+                    invalid_result['distributor_name'], invalid_result['consumer_id']
+                )})
+            form.is_valid()
+            application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE
+            application_obj.application_rejected(**form.cleaned_data)
+            application_obj.event_ioc_dedupe_reject_channel_whatsapp()
+            application_obj.save()
+            return HttpResponse('OK')
 
 
     @action(methods=['get'], detail=False, url_path='get_iocl_investigation_records')

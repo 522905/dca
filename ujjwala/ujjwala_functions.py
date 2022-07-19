@@ -651,7 +651,8 @@ def process_family_uid_result(result):
 
 
 def process_omc_dedupe_result(omc_dedup_result):
-    for key, value in omc_dedup_result:
+
+    for key, value in omc_dedup_result.items():
         if not "not available with" in value.lower():
             if key == 'bpcl':
                 m = COMPILED_REGEX_PATTERN_BPC.match(value)
