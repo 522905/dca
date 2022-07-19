@@ -71,6 +71,7 @@ class UjjwalaWhatsappCommunication(object):
 
 		family_member_with_connection: FamilyMembers = None
 		for family_member in self.family_members.all():
+			if not family_member.uid_check_result: continue
 			distributor_name = family_member.uid_check_result.get('distributor_name', '')
 			if not distributor_name or (
 				distributor_name and 'arun indane' in distributor_name.lower()
@@ -349,18 +350,18 @@ class UjjwalaWhatsappCommunication(object):
 			# "callbackData": "some_callback_data",
 			"template": {
 				# "name": "ujjwala_application_submitted_",
-				"name": "pre_inspection_type_self",
+				"name": "pre_inspection_self_19072022",
 				"languageCode": "hi",
 				"headerValues": [
 					# "Alert",  #
 				],
 				"bodyValues": [
 					self.name,
-					"https://dca.arungas.com/portal/pre-inspection/self/{}/".format(str(pre_inspection_id))
+					"https://dca.arungas.com/ujjwala/portal/pre-inspection/self/{}/".format(str(pre_inspection_id))
 				],
 				"buttonValues": {
 					"0": [
-						"ujjwala/portal/whatsapp_pre_inspection_type_self/{}/".format(pre_inspection_id)
+						"ujjwala/portal/ujjwala/portal/pre-inspection/self/{}/".format(pre_inspection_id)
 					]
 				}
 			}
@@ -390,4 +391,57 @@ class UjjwalaWhatsappCommunication(object):
 		# 		self.contact_mobile, self.name, self.pk
 		# 	)
 		# )
-		return data.get('result', '')
+		#return data.get('result', '')
+
+	def event_whatsapp_pre_inspection_type_self_admin(self, pre_inspection_id):
+		body_text = {
+			"countryCode": "+91",
+			"phoneNumber": self.contact_mobile,
+			"type": "Template",
+			"traits": {
+				"name": self.name,
+			},
+			# "callbackData": "some_callback_data",
+			"template": {
+				# "name": "ujjwala_application_submitted_",
+				"name": "pre_inspection_self_19072022",
+				"languageCode": "hi",
+				"headerValues": [
+					# "Alert",  #
+				],
+				"bodyValues": [
+					self.name,
+					"https://dca.arungas.com/ujjwala/portal/pre-inspection/self/{}/".format(str(pre_inspection_id))
+				],
+				"buttonValues": {
+					"0": [
+						"ujjwala/portal/pre-inspection/self/{}/".format(pre_inspection_id)
+					]
+				}
+			}
+		}
+
+		ujjwala_v2_application_content_type = ContentType.objects.get(
+			app_label='ujjwala', model='ujjwalav2application'
+		)
+		data = track.client.post(
+			api_key=settings.INTERAKT_API_KEY,
+			path="/v1/public/message/",
+			body=body_text
+		).json()
+
+		if data.get('result', ''):
+			CommunicationLog.objects.create(
+				content_type=ujjwala_v2_application_content_type,
+				object_id=self.pk,
+				channel_subscriber=self.contact_mobile,
+				event="pre_inspection_type_self_adm", channel="whatsapp",
+				message_id=data.get('id')
+			)
+
+		# res = requests.post(
+		# 	"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+		# 	"&function=add_lead&phone_number={}&list_id=1006&first_name={}&last_name={}".format(
+		# 		self.contact_mobile, self.name, self.pk
+		# 	)
+		# )
