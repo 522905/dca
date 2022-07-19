@@ -83,6 +83,8 @@ class RoboSdmsDedeupStatusEnum(models.TextChoices):
 	PROCESSED_AND_UNIQUE = 'PROCESSED_AND_UNIQUE', 'Processed and Unique'
 	PROCESSED_AND_DUPLICATE = 'PROCESSED_AND_DUPLICATE', 'Processed and Duplicate'
 	PROCESS_MANUAL = 'PROCESS_MANUAL', 'Process Manual'
+	IOCL_INVESTIGATION_REQUIRED = 'IOCL_INVESTIGATION_REQUIRED', 'Iocl Investigation Required'
+	ENRICH_REJECTION_DETAILS = 'ENRICH_REJECTION_DETAILS', 'Enrich Rejection Details'
 
 
 class UjjwalaV2ApplicationStatus(models.TextChoices):

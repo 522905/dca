@@ -2,6 +2,7 @@ import datetime
 import io
 
 import django_filters
+import django_rq
 import requests
 from django.db import connection
 from django.db.models import Q
@@ -18,13 +19,14 @@ from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, FamilyM
     ManualOperationCodeEnum, MaritalStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum
 from .forms import ApplicationRejected
 from .global_functions import get_sdms_mismatched_records
+from .jobs import do_primary_omc_dedupe_check
 from .models import UjjwalaV2Application, FamilyMembers, ConnectionDisbursement, ConnectionDisbursementDocuments, \
     PreInspection
 from .serializers import UjjwalaV2ApplicationSerializer
 from .ujjwala_functions import download_ujjwala_documents, get_salutation, \
     download_pre_installation_documents, get_existing_duplicate_applications_detail, \
-    download_ujjwala_legal_docs_to_upload, download_ujjwala_physical_legal_docs,  \
-    process_family_uid_result
+    download_ujjwala_legal_docs_to_upload, download_ujjwala_physical_legal_docs, \
+    process_family_uid_result, process_omc_dedupe_result
 from django.urls import reverse
 
 
@@ -424,7 +426,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 type=PreInspectionTypeEnum.SELF
             )
             application_obj.event_whatsapp_pre_inspection_type_self(obj.id)
-            # application_obj.event_invite_for_ekyc_channel_whatsapp()
+            application_obj.event_invite_for_ekyc_channel_whatsapp()
             if application_obj.consumer_id and \
                     application_obj.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
                 application_obj.ekyc_accepted_or_rejected(description="Bot Processed")
@@ -503,7 +505,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 type=PreInspectionTypeEnum.SELF
             )
             application_obj.event_whatsapp_pre_inspection_type_self(obj.id)
-            # application_obj.event_invite_for_ekyc_channel_whatsapp()
+            application_obj.event_invite_for_ekyc_channel_whatsapp()
             if application_obj.consumer_id and \
                     application_obj.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
                 application_obj.ekyc_accepted_or_rejected(description="Bot Processed")
@@ -628,13 +630,15 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         application = serializer.save()
         if getattr(self.request, "PERFORM_SUBMIT", False):
             try:
-                application.event_submit_channel_whatsapp()
+                # commented for development
+                # application.event_submit_channel_whatsapp()
+                result = django_rq.enqueue(do_primary_omc_dedupe_check, args=(application.id,))
                 # Add lead to vicicial
                 requests.post(
                     "http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
                     "&function=add_lead&phone_number={}&phone_code=1&list_id=1001&first_name={}&last_name={} ".format(
                         application.contact_mobile, application.name, application.id)
-                )
+                    )
 
                 # django_rq.enqueue(add_lead_to_vicidial, args=(
                 #     application.id, application.name, application.contact_mobile
@@ -854,4 +858,119 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 manual_operation_code=ManualOperationCodeEnum.ROBO_GOT_ERROR_ALERT
             )
             application.save()
+        return HttpResponse('OK')
+
+    @action(methods=['get'], detail=False, url_path='get_enrich_rejection_records')
+    def get_enrich_rejection_records(self, request, *args, **kwargs):
+        record_list = UjjwalaV2Application.objects.filter(
+            robo_sdms_dedup=RoboSdmsDedeupStatusEnum.ENRICH_REJECTION_DETAILS
+        ).order_by("id")
+
+        return JsonResponse([
+            {
+                'id': record.id,
+                'family_members': [{
+                    'id': member.id,
+                    'uid': member.uid_no
+                } for member in record.family_members.all()]
+            } for record in record_list
+        ], safe=False)
+
+    @action(methods=['post'], detail=False, url_path='update_enrich_rejection_record')
+    def update_enrich_rejection_record(self, request, *args, **kwargs):
+        invalid_result = {}
+        invalid_result_relation = ''
+        application_obj = UjjwalaV2Application.objects.get(pk=request.data.get('id'))
+
+        for member in request.data['family_members']:
+            result = process_omc_dedupe_result(member['omc_dedup_result'])
+            if not result:
+                application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESS_MANUAL
+                application_obj.save()
+                return HttpResponse('PROCESS MANUAL')
+            else:
+                family_member_obj = FamilyMembers.objects.get(pk=member.get('id'))
+                family_member_obj.uid_check_result = result
+                family_member_obj.save()
+                if family_member_obj.relation == 'SELF':
+                    invalid_result_relation = 'SELF'
+                    invalid_result = member['result']
+                else:
+                    if not invalid_result:
+                        invalid_result_relation = family_member_obj.relation
+                        invalid_result = member['result']
+
+        form = ApplicationRejected(data={
+            'rejected_reason': 'CONNECTION_ALREADY_EXIST',
+            'description': "{} {} {}".format(
+                invalid_result_relation,
+                invalid_result['distributor_name'], invalid_result['consumer_id']
+            )})
+        form.is_valid()
+        application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE
+        application_obj.application_rejected(**form.cleaned_data)
+        application_obj.event_ioc_dedupe_reject_channel_whatsapp()
+        application_obj.save()
+        return HttpResponse('OK')
+
+
+    @action(methods=['get'], detail=False, url_path='get_iocl_investigation_records')
+    def get_iocl_investigation_records(self, request, *args, **kwargs):
+        record_list = UjjwalaV2Application.objects.filter(
+            robo_sdms_dedup=RoboSdmsDedeupStatusEnum.IOCL_INVESTIGATION_REQUIRED
+        ).order_by("id")
+
+        return JsonResponse([
+            {
+                'id': record.id,
+                'family_members': [{
+                    'id': member.id,
+                    'uid': member.uid_no
+                } for member in record.family_members.all()]
+            } for record in record_list
+        ], safe=False)
+
+
+    @action(methods=['post'], detail=False, url_path='update_iocl_investigation_record')
+    def update_iocl_investigation_record(self, request, *args, **kwargs):
+        record_valid = True
+        invalid_result = {}
+        invalid_result_relation = ''
+        application_obj = UjjwalaV2Application.objects.get(pk=request.data.get('id'))
+
+        for member in request.data['family_members']:
+            family_member_obj = FamilyMembers.objects.get(pk=member.get('id'))
+            family_member_obj.uid_check_result = member['result']
+            family_member_obj.save()
+
+            if not member['result'].get('distributor_name', ''):
+                continue
+
+            is_our_record = 'arun indane' in member['result'].get('distributor_name').lower()
+
+            if not (
+                family_member_obj.relation == 'SELF' and
+                is_our_record and
+                member['result'].get('relationship_status') == 'IN PROCESS'
+            ):
+                invalid_result_relation = family_member_obj.relation
+                invalid_result = member['result']
+                record_valid = False
+
+        if record_valid:
+            application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE
+        else:
+            form = ApplicationRejected(data={
+                'rejected_reason': 'CONNECTION_ALREADY_EXIST',
+                'description': "{} {} {} {}".format(
+                    invalid_result_relation,
+                    invalid_result['distributor_name'], invalid_result['consumer_id'],
+                    invalid_result['contact_address']
+                )})
+            form.is_valid()
+            application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE
+            if application_obj.status == 'DOCUMENTS_UPLOADED':
+                application_obj.application_rejected(**form.cleaned_data)
+                application_obj.event_ioc_dedupe_reject_channel_whatsapp()
+        application_obj.save()
         return HttpResponse('OK')

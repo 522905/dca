@@ -23,6 +23,13 @@ COMPILED_REGEX_PATTERN_AADHAR_EXISTS = re.compile(
     """Aadhaar already exists for customer (?P<contact_name>.*?) of (?P<distributor_name>.*)\(SBL-EXL-00151\)"""
 )
 
+COMPILED_REGEX_PATTERN_BPC = re.compile(
+    "Available with (?P<omc>.*). Already exists with lpgid: (?P<consumer_id>.*) and distcode: (?P<distributor_name>.*)"
+)
+COMPILED_REGEX_PATTERN_OTHERS = re.compile(
+    "Available with (?P<omc>.*) LPGId : (?P<consumer_id>.*) DistName : (?P<distributor_name>.*)"
+)
+
 def valid_file_uploaded(url):
     res = requests.head(url, headers={"Tus-Resumable": "1.0.0"})
     header_info = res.headers
@@ -642,3 +649,19 @@ def process_family_uid_result(result):
 
     # return result_dict
 
+
+def process_omc_dedupe_result(omc_dedup_result):
+    for key, value in omc_dedup_result:
+        if not "not available with" in value.lower():
+            if key == 'bpcl':
+                m = COMPILED_REGEX_PATTERN_BPC.match(value)
+                result_dict = m.groupdict()
+                result_dict.update({
+                    'distributor_name': "{} Id {}".format(result_dict['omc'], result_dict['distributor_name'])
+                })
+                return result_dict
+            else:
+                m = COMPILED_REGEX_PATTERN_OTHERS.match(value)
+                result_dict = m.groupdict()
+                return result_dict
+    return {}

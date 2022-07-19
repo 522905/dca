@@ -10,7 +10,10 @@ import magic
 
 # @job
 from domestic_app.utils import get_minio_public_url
+from sdms.services import IoclOmcDedup
+from ujjwala.enums import RoboSdmsDedeupStatusEnum
 
+dedup_portal = IoclOmcDedup('305948', 'Arun@305948')
 
 # def interakt_webhook_job_processing(data):
 #     mid = data['data']['message']['id']
@@ -96,3 +99,40 @@ def move_ujjwala_files_to_minio_processing(obj):
 # def send_message_on_whatsapp(id):
 #     obj = ConnectionApplication.objects.get(id=id)
 #     obj.event_completed_channel_whatsapp()
+
+
+def do_primary_omc_dedupe_check(id):
+    from ujjwala.models import UjjwalaV2Application
+
+    for application in UjjwalaV2Application.objects.filter(pk=id):
+        omc_dedupe_check_passed = False
+        iocl_investigation_required = False
+        for fm in application.family_members.all():
+            resp = dedup_portal.omc_aadhar_dedup(fm.uid_no)
+            print(resp)
+
+            for omc, status in resp.items():
+                if status != 'Present':
+                    continue
+                omc_dedupe_check_passed = False
+
+                if fm.relation == 'SELF' and omc == 'IOCL':
+                    iocl_investigation_required = True
+
+                fm.uid_check_result = {
+                    'distributor_name': omc,
+                    'consumer_id': 'NotAvail-CheckWithDistributor',
+                    'contact_address': ''
+                }
+                fm.save()
+
+        if omc_dedupe_check_passed:
+            application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE
+            application.ekyc_accepted_or_rejected(description="Bot Processed")
+            application.save()
+        else:
+            if iocl_investigation_required:
+                application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.IOCL_INVESTIGATION_REQUIRED
+            else:
+                application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.ENRICH_REJECTION_DETAILS
+        application.save()
