@@ -105,7 +105,7 @@ def do_primary_omc_dedupe_check(id):
     from ujjwala.models import UjjwalaV2Application
 
     for application in UjjwalaV2Application.objects.filter(pk=id):
-        omc_dedupe_check_passed = False
+        omc_dedupe_check_passed = True
         iocl_investigation_required = False
         for fm in application.family_members.all():
             resp = dedup_portal.omc_aadhar_dedup(fm.uid_no)
@@ -128,7 +128,7 @@ def do_primary_omc_dedupe_check(id):
 
         if omc_dedupe_check_passed:
             application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE
-            application.ekyc_accepted_or_rejected(description="Bot Processed")
+            application.event_invite_for_ekyc_channel_whatsapp()
             application.save()
         else:
             if iocl_investigation_required:
