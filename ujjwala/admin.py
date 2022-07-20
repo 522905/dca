@@ -302,7 +302,7 @@ class ConnectionDisbursementAdmin(FSMTransitionCustomMixin, admin.ModelAdmin):
 	list_filter = ('status', WalkInFilter, )
 	inlines = (ConnectionDisbursementDocumentsAdmin, ConnectionDisbursementInvitationAdmin, StateLogInline,)
 	fsm_fields = ['status', ]
-	readonly_fields = ['legal_document_upload_link', 'invite', ]
+	readonly_fields = ['legal_document_upload_link', 'invite', 'whatsapp_form_a_b_c', ]
 	search_fields = ('id', 'parent__id', 'parent__consumer_id',)
 
 	def has_change_permission(self, request, obj=None):

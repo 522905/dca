@@ -894,6 +894,14 @@ class ConnectionDisbursement(models.Model):
 		'''.format(self.pk)
 		return mark_safe(html)
 
+	def whatsapp_form_a_b_c(self):
+		# WhatsappUploadLegalForms
+		url = reverse('ujjwala:whatsapp_form_abc', kwargs={'pk': self.parent.pk})
+		html = '''
+		<a href="{}">Whatsapp Form A B C</a>
+		'''.format(url)
+		return mark_safe(html)
+
 	def valid_sv_link(self):
 		valid_invitation = self.invitation.filter(parent=self).first()
 
