@@ -1,10 +1,11 @@
 import datetime
 import io
+from functools import partial
 
 import django_filters
 import django_rq
 import requests
-from django.db import connection
+from django.db import connection, transaction
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse, HttpRequest
 from django.utils import timezone
@@ -630,9 +631,15 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         application = serializer.save()
         if getattr(self.request, "PERFORM_SUBMIT", False):
             try:
+                create_txn_status_job_function = partial(
+                    django_rq.enqueue,
+                    "ujjwala.jobs.do_primary_omc_dedupe_check",
+                    id=application.id
+                )
+                transaction.on_commit(create_txn_status_job_function)
                 # commented for development
                 # application.event_submit_channel_whatsapp()
-                result = django_rq.enqueue(do_primary_omc_dedupe_check, args=(application.id,))
+                # result = django_rq.enqueue(do_primary_omc_dedupe_check, args=(application.id,))
                 # Add lead to vicicial
                 requests.post(
                     "http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"

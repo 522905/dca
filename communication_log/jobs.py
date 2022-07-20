@@ -13,27 +13,31 @@ from domestic_app.utils import get_minio_public_url
 from ujjwala.models import UjjwalaV2Application
 import logging
 
+
 def interakt_webhook_job_processing(data):
     mid = data['data']['message']['id']
     print(data['data'])
     logging.info(data['data'])
-    comm_obj = CommunicationLog.objects.get(channel='whatsapp', message_id=mid)
+    try:
+        comm_obj = CommunicationLog.objects.get(channel='whatsapp', message_id=mid)
 
-    _type = data.get('type')
-    if _type == "message_api_sent":
-        comm_obj.status = "SENT"
-    elif _type == "message_api_delivered":
-        comm_obj.status = "DELIVERED"
-    elif _type == "message_api_read":
-        comm_obj.status = "READ"
-    elif _type == "message_api_failed":
-        comm_obj.status = "FAILED"
-        method_name = 'event_{}_channel_{}'.format(comm_obj.event, 'sms')
-        if hasattr(comm_obj.content_object, method_name):
-            method = getattr(comm_obj.content_object, method_name)
-            method()
+        _type = data.get('type')
+        if _type == "message_api_sent":
+            comm_obj.status = "SENT"
+        elif _type == "message_api_delivered":
+            comm_obj.status = "DELIVERED"
+        elif _type == "message_api_read":
+            comm_obj.status = "READ"
+        elif _type == "message_api_failed":
+            comm_obj.status = "FAILED"
+            method_name = 'event_{}_channel_{}'.format(comm_obj.event, 'sms')
+            if hasattr(comm_obj.content_object, method_name):
+                method = getattr(comm_obj.content_object, method_name)
+                method()
 
-    comm_obj.save()
+        comm_obj.save()
+    except CommunicationLog.DoesNotExist:
+        pass
 
 
 # @job
