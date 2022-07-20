@@ -104,35 +104,39 @@ def move_ujjwala_files_to_minio_processing(obj):
 def do_primary_omc_dedupe_check(id):
     from ujjwala.models import UjjwalaV2Application
 
-    for application in UjjwalaV2Application.objects.filter(pk=id):
-        omc_dedupe_check_passed = True
-        iocl_investigation_required = False
-        for fm in application.family_members.all():
-            resp = dedup_portal.omc_aadhar_dedup(fm.uid_no)
-            print(resp)
+    application = UjjwalaV2Application.objects.filter(pk=id).first()
+    omc_dedupe_check_passed = True
+    iocl_investigation_required = False
+    for fm in application.family_members.all():
 
-            for omc, status in resp.items():
-                if status != 'Present':
-                    continue
-                omc_dedupe_check_passed = False
+        if fm.uid_no in ('999999999999', '666666666666'):
+            continue
 
-                if fm.relation == 'SELF' and omc == 'IOCL':
-                    iocl_investigation_required = True
+        resp = dedup_portal.omc_aadhar_dedup(fm.uid_no)
+        print(resp)
 
-                fm.uid_check_result = {
-                    'distributor_name': omc,
-                    'consumer_id': 'NotAvail-CheckWithDistributor',
-                    'contact_address': ''
-                }
-                fm.save()
+        for omc, status in resp.items():
+            if status != 'Present':
+                continue
+            omc_dedupe_check_passed = False
 
-        if omc_dedupe_check_passed:
-            application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE
-            application.event_invite_for_ekyc_channel_whatsapp()
-            application.save()
-        else:
-            if iocl_investigation_required:
-                application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.IOCL_INVESTIGATION_REQUIRED
-            else:
-                application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.ENRICH_REJECTION_DETAILS
+            if fm.relation == 'SELF' and omc == 'IOCL':
+                iocl_investigation_required = True
+
+            fm.uid_check_result = {
+                'distributor_name': omc,
+                'consumer_id': 'NotAvail-CheckWithDistributor',
+                'contact_address': ''
+            }
+            fm.save()
+
+    if omc_dedupe_check_passed:
+        application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE
+        application.event_invite_for_ekyc_channel_whatsapp()
         application.save()
+    else:
+        if iocl_investigation_required:
+            application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.IOCL_INVESTIGATION_REQUIRED
+        else:
+            application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.ENRICH_REJECTION_DETAILS
+    application.save()
