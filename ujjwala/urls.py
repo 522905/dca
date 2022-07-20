@@ -73,6 +73,12 @@ urlpatterns = [
     ),
 
     url(
+        '^portal/whatsapp_form_abc/(?P<pk>[^/.]+)/$',
+        views.WhatsappUploadLegalForms.as_view(),
+        name="whatsapp_form_abc"
+    ),
+
+    url(
         '^portal/pre-inspection/(?P<type>(self|mech))/(?P<pk>[^/.]+)/$',
         views.PreInspectionView.as_view(),
         name="pre_inspection_form_view"

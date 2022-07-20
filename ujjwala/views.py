@@ -82,6 +82,30 @@ class WhatsappPreInspectionTypeSelf(View):
             )
 
 
+class WhatsappUploadLegalForms(View):
+    def get(self, request, *args, **kwargs):
+        application = UjjwalaV2Application.objects.filter(id=kwargs.get('pk')).first()
+        if not application:
+            return HttpResponse("Application Id {} does not exist".format(kwargs.get('pk')))
+
+        connection_disbursement = ConnectionDisbursement.objects.filter(parent_id=kwargs.get('pk')).first()
+
+        if connection_disbursement:
+            if connection_disbursement.status == ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING:
+                application.event_legal_documents_upload_channel_whatsapp()
+                return HttpResponse(
+                    "Application Id {} Form A B C sent.".format(kwargs.get('pk'))
+                )
+            else:
+                return HttpResponse(
+                    "Application Id {} Form A B C Uploaded.".format(kwargs.get('pk'))
+                )
+        else:
+            return HttpResponse(
+                "Application Id {} not valid state. Connection Disbursement not created.".format(kwargs.get('pk'))
+            )
+
+
 class ApplicationStatusView(DetailView):
     model = UjjwalaV2Application
 

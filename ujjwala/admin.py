@@ -27,8 +27,10 @@ from .models import UjjwalaV2Application, FamilyMembers, UjjwalaApplicationDocum
 	ConnectionDisbursementInvitation
 from .ujjwala_functions import download_ujjwala_documents, download_ujjwala_physical_legal_docs
 
+
 from .views import SendInvitationView, NicErrorUpdateAddress
 from .forms import ReviewNicErrorUpdatedAddressForm
+
 
 def filter_walk_in_qs(queryset, state):
 	today = datetime.today()
@@ -166,8 +168,9 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
 				'whatsapp_nic_error_update_address'
 			]
 
+
 		readonly_fields = readonly_fields + [
-			'whatsapp_pre_inspection_type_self',
+			'whatsapp_pre_inspection_type_self', 'whatsapp_form_a_b_c'
 		]
 		return readonly_fields
 

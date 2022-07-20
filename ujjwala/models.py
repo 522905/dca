@@ -112,6 +112,15 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		return mark_safe(html)
 
 
+	def whatsapp_form_a_b_c(self):
+		# WhatsappUploadLegalForms
+		url = reverse('ujjwala:whatsapp_form_abc', kwargs={'pk': self.pk})
+		html = '''
+		<a href="{}">Whatsapp Form A B C</a>
+		'''.format(url)
+		return mark_safe(html)
+
+
 	@property
 	def formatted_address(self):
 		if self.version in ('V1', 'V2'):
