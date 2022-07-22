@@ -265,9 +265,9 @@ class PreInspectionView(FormView):
     def dispatch(self, request, *args, **kwargs):
         pre_inspection = PreInspection.objects.get(pk=kwargs.get('pk'))
 
-        if pre_inspection.status in (
-                PreInspectionStatusEnum.ALLOCATED,
-                PreInspectionStatusEnum.REJECTED
+        if pre_inspection.status == PreInspectionStatusEnum.ALLOCATED \
+            or (pre_inspection.status == PreInspectionStatusEnum.REJECTED
+                and pre_inspection.type == PreInspectionTypeEnum.MECHANIC
         ):
             return self.otp_verification(pre_inspection)
         elif pre_inspection.status in (
