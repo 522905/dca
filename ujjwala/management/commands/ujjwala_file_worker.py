@@ -67,8 +67,24 @@ def upload_compressed_file_to_tus(file_url):
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-#        self.handle_application(*args, **options)
-        self.handle_disb(*args, **options)
+        # self.handle_application(*args, **options)
+        # self.handle_disb(*args, **options)
+        self.handle_pi(*args, **options)
+
+    def handle_pi(self, *args, **options):
+        for dc in PreInspection.objects.filter(
+            updated_on__date__lt=datetime.datetime.today().date()
+        ).order_by('-id'):
+            print("\n\n\nProcessing Files For PreInspection : {}".format(dc.id))
+            for customer_doc in dc.documents.all():
+                print("PreInspection Doc {} {}".format(customer_doc.type, customer_doc.link))
+                success, upload_url, file_size = upload_compressed_file_to_tus(customer_doc.link)
+                if success:
+                    customer_doc.file_size = file_size
+                    if not customer_doc.link == upload_url:
+                        customer_doc.link = upload_url
+                        customer_doc.front_compressed = True
+                customer_doc.save()
 
     def handle_disb(self, *args, **options):
         for dc in ConnectionDisbursement.objects.filter(
