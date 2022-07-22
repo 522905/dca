@@ -3,6 +3,7 @@ import os
 import time
 import traceback
 import uuid
+import datetime
 
 import magic
 import requests
@@ -12,7 +13,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from tusclient import client
 
-from ujjwala.models import UjjwalaV2Application
+from ujjwala.models import UjjwalaV2Application, ConnectionDisbursement
 
 
 def get_tus_client():
@@ -65,7 +66,24 @@ def upload_compressed_file_to_tus(file_url):
 
 class Command(BaseCommand):
 
-    def handle(self, *args, **options):
+    def handle(*args, **options):
+        self.handle_application(*args, **options)
+        self.handle_disb(*args, **options)
+
+    def handle_disb(self, *args, **options):
+        for dc in ConnectionDisbursement.objects.filter(
+                updated_on__date__lt=datetime.datetime.today().date()
+        ).order_by('-id'):
+            print("\n\n\nProcessing Files For disbersment : {}".format(application.id))
+            for customer_doc in dc.documents.all():
+                print("Disb Doc {} {}".format(customer_doc.type, customer_doc.link))
+                success, upload_url, file_size = upload_compressed_file_to_tus(customer_doc.link)
+                if success:
+                    if not customer_doc.link == upload_url:
+                        customer_doc.link = upload_url
+                customer_doc.save()
+
+    def handle_application(self, *args, **options):
         #5361, 4978, 4743, 3880, 3250, 2676, 1765, 1567, 1384, 673
         for application in UjjwalaV2Application.objects.filter(id__lte=5361, id__gt=4978).order_by('-id'):
             print("\n\n\nProcessing Files For : {} {}".format(application.id, application.name))
