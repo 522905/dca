@@ -1,12 +1,14 @@
 import datetime
 import re
+from functools import partial
 
+import django_rq
 import requests
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core import signals
-from django.db import models
+from django.db import models, transaction
 from django.dispatch import receiver
 from django.template import loader
 from django.urls import reverse
@@ -787,6 +789,12 @@ class PreInspection(models.Model):
 	def transition_pre_inspection_submit(self, *args, **kwargs):
 		self.submitted_on = datetime.datetime.now()
 		self.save()
+		create_txn_status_job_function = partial(
+			django_rq.enqueue,
+			"compress_pre_inspection_documents",
+			parent_id=self.id
+		)
+		transaction.on_commit(create_txn_status_job_function)
 
 	@fsm_log_description
 	@fsm_log_by
@@ -992,6 +1000,12 @@ class ConnectionDisbursement(models.Model):
 	def transition_material_delivered(self, *args, **kwargs):
 		self.parent.transition_material_delivered(by=get_current_user())
 		self.parent.save()
+		create_txn_status_job_function = partial(
+			django_rq.enqueue,
+			"compress_connection_disbursement_documents",
+			parent_id=self.id
+		)
+		transaction.on_commit(create_txn_status_job_function)
 
 	@fsm_log_description
 	@fsm_log_by

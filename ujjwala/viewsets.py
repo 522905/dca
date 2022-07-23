@@ -20,7 +20,7 @@ from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, FamilyM
     ManualOperationCodeEnum, MaritalStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum
 from .forms import ApplicationRejected
 from .global_functions import get_sdms_mismatched_records
-from .jobs import do_primary_omc_dedupe_check
+from .jobs import do_primary_omc_dedupe_check, compress_connection_disbursement_documents
 from .models import UjjwalaV2Application, FamilyMembers, ConnectionDisbursement, ConnectionDisbursementDocuments, \
     PreInspection
 from .serializers import UjjwalaV2ApplicationSerializer
@@ -214,9 +214,17 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                         link=document.get('link')
                     )
                 connection_disbursement.transition_legal_documents_uploaded(
-                    description="Submitted On: {}".format(timezone.now().strftime('%d-%M-%Y'))
+                    description="Submitted On: {}".format(timezone.now().strftime('%d-%m-%Y'))
                 )
                 connection_disbursement.save()
+
+                create_txn_status_job_function = partial(
+                    django_rq.enqueue,
+                    "compress_connection_disbursement_documents",
+                    parent_id=connection_disbursement.id
+                )
+                transaction.on_commit(create_txn_status_job_function)
+
                 return JsonResponse({
                     "status": True
                 })

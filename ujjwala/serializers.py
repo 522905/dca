@@ -1,3 +1,5 @@
+import math
+
 from rest_framework import serializers
 from drf_writable_nested.serializers import WritableNestedModelSerializer
 
@@ -11,8 +13,9 @@ class UjjwalaApplicationDocumentsSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def validate(self, attrs):
-        is_valid_file_size = valid_file_uploaded(attrs.get('link'))
+        is_valid_file_size, file_size = valid_file_uploaded(attrs.get('link'))
         if is_valid_file_size:
+            attrs['file_size'] = math.ceil(file_size/1024)
             return attrs
         raise serializers.ValidationError("Ujjwala Application Invalid Documents Size")
 
@@ -23,10 +26,12 @@ class FamilyMembersSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def validate(self, attrs):
-        is_valid_file_size = valid_file_uploaded(attrs.get('uid_front_link'))
+        is_valid_file_size, file_size = valid_file_uploaded(attrs.get('uid_front_link'))
         if is_valid_file_size:
-            is_valid_file_size = valid_file_uploaded(attrs.get('uid_back_link'))
+            attrs['uid_front_file_size'] = math.ceil(file_size / 1024)
+            is_valid_file_size, file_size = valid_file_uploaded(attrs.get('uid_back_link'))
             if is_valid_file_size:
+                attrs['uid_back_file_size'] = math.ceil(file_size / 1024)
                 return attrs
         raise serializers.ValidationError("Family Member Documents Invalid Size")
 

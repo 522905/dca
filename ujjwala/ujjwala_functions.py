@@ -30,16 +30,17 @@ COMPILED_REGEX_PATTERN_OTHERS = re.compile(
     "Available with (?P<omc>.*) LPGId : (?P<consumer_id>.*) DistName : (?P<distributor_name>.*)"
 )
 
+
 def valid_file_uploaded(url):
     res = requests.head(url, headers={"Tus-Resumable": "1.0.0"})
     header_info = res.headers
 
     if int(header_info['Upload-Length']) == 0 or int(header_info['Upload-Offset']) == 0:
-        return False
+        return False, header_info['Upload-Length']
     elif header_info['Upload-Length'] != header_info['Upload-Offset']:
-        return False
+        return False, header_info['Upload-Length']
     else:
-        return True
+        return True, header_info['Upload-Length']
 
 
 def get_compressed_file_link_jpeg(url):

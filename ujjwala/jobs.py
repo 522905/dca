@@ -12,6 +12,7 @@ import magic
 from domestic_app.utils import get_minio_public_url
 from sdms.services import IoclOmcDedup
 from ujjwala.enums import RoboSdmsDedeupStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum
+from ujjwala.management.commands.ujjwala_file_worker import upload_compressed_file_to_tus
 
 dedup_portal = IoclOmcDedup('305948', 'Arun@305948')
 
@@ -145,3 +146,31 @@ def do_primary_omc_dedupe_check(id):
         else:
             application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.ENRICH_REJECTION_DETAILS
     application.save()
+
+
+def compress_connection_disbursement_documents(parent_id):
+    from ujjwala.models import ConnectionDisbursementDocuments
+
+    docs = ConnectionDisbursementDocuments.objects.filter(parent_id=parent_id, compressed=False)
+    for customer_doc in docs:
+        print("Disb Doc {} {} {}".format(customer_doc.parent_id, customer_doc.type, customer_doc.link))
+        success, upload_url, file_size = upload_compressed_file_to_tus(customer_doc.link)
+        customer_doc.file_size = file_size
+        if success and not customer_doc.link == upload_url:
+            customer_doc.link = upload_url
+            customer_doc.compressed = True
+        customer_doc.save()
+
+
+def compress_pre_inspection_documents(parent_id):
+    from ujjwala.models import PreInspectionDocuments
+
+    docs = PreInspectionDocuments.objects.filter(parent_id=parent_id, compressed=False)
+    for customer_doc in docs:
+        print("PreInspection Doc {} {} {}".format(customer_doc.parent_id, customer_doc.type, customer_doc.link))
+        success, upload_url, file_size = upload_compressed_file_to_tus(customer_doc.link)
+        customer_doc.file_size = file_size
+        if success and not customer_doc.link == upload_url:
+            customer_doc.link = upload_url
+            customer_doc.compressed = True
+        customer_doc.save()
