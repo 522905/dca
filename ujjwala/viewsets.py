@@ -942,12 +942,12 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
     @action(methods=['get'], detail=False, url_path='get_iocl_investigation_records')
     def get_iocl_investigation_records(self, request, *args, **kwargs):
-        # record_list = UjjwalaV2Application.objects.filter(
-        #     robo_sdms_dedup=RoboSdmsDedeupStatusEnum.IOCL_INVESTIGATION_REQUIRED
-        # ).order_by("id")
         record_list = UjjwalaV2Application.objects.filter(
-            id=11351
+            robo_sdms_dedup=RoboSdmsDedeupStatusEnum.IOCL_INVESTIGATION_REQUIRED
         ).order_by("id")
+        # record_list = UjjwalaV2Application.objects.filter(
+        #     id=11351
+        # ).order_by("id")
 
         return JsonResponse([
             {
@@ -1017,7 +1017,8 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 )})
             form.is_valid()
             application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE
-            application_obj.application_rejected(**form.cleaned_data)
-            application_obj.event_ioc_dedupe_reject_channel_whatsapp()
+            if not application_obj.status == UjjwalaV2ApplicationStatus.APPLICATION_REJECTED:
+                application_obj.application_rejected(**form.cleaned_data)
+                application_obj.event_ioc_dedupe_reject_channel_whatsapp()
         application_obj.save()
         return HttpResponse('OK')
