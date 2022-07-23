@@ -666,7 +666,11 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
 
     def dispatch(self, request, *args, **kwargs):
         connection_disbursement = self.get_object()
-        if connection_disbursement:
+        if connection_disbursement and \
+                connection_disbursement.parent.status in (
+                UjjwalaV2ApplicationStatus.NIC_CLEARED,
+                UjjwalaV2ApplicationStatus.READY_FOR_DISBURSEMENT
+        ):
             if not connection_disbursement.walk_in_date or \
                     (connection_disbursement.walk_in_date.date() != datetime.datetime.today().date()):
                 return self.otp_verification(connection_disbursement)
