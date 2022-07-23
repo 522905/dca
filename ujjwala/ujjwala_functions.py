@@ -670,15 +670,17 @@ def process_omc_dedupe_result(omc_dedup_result):
                     return result_dict
 
                 m = COMPILED_REGEX_PATTERN_BPC_2.match(value)
-                result_dict = m.groupdict()
-                result_dict.update({
-                    'distributor_name': "BPCL Distributor"
-                })
-                return result_dict
+                if m:
+                    result_dict = m.groupdict()
+                    result_dict.update({
+                        'distributor_name': "BPCL Distributor"
+                    })
+                    return result_dict
             else:
                 m = COMPILED_REGEX_PATTERN_OTHERS.match(value)
-                result_dict = m.groupdict()
-                if not result_dict and 'invalid response (p)' in value.lower():
+                if m:
+                    result_dict = m.groupdict()
+                    return result_dict
+                elif key == 'hpcl' and 'invalid response (p)' in value.lower():
                     return {'consumer_id': 'IdNotAvaliable', 'distributor_name': key, 'contact_address': ''}
-                return result_dict
     return {}
