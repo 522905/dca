@@ -643,12 +643,12 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 )
                 transaction.on_commit(create_txn_status_job_function)
 
-                create_txn_status_job_function = partial(
+                create_compress_docs_job_function = partial(
                     django_rq.enqueue,
                     "ujjwala.jobs.compress_application_documents",
                     application_id=application.id
                 )
-                transaction.on_commit(create_txn_status_job_function)
+                transaction.on_commit(create_compress_docs_job_function)
 
                 # commented for development
                 # application.event_submit_channel_whatsapp()
