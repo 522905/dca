@@ -47,7 +47,6 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
     ordering_fields = '__all__'
     pagination_class = CustomPagePagination
 
-
     @action(methods=['get'], detail=True, url_path='get_printing_urls')
     def get_printing_urls(self, request: HttpRequest, *args, **kwargs):
         obj = self.get_object()
@@ -61,7 +60,6 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
             "ujjwala_sv": connection_disbursement.valid_sv_link(),
             "label": self.request.build_absolute_uri(bluebook_label_print_url)
         })
-
 
     @action(methods=['get'], detail=False, url_path='get_work_items_for_doc_upload')
     def get_work_items_for_doc_upload(self, request: HttpRequest, *args, **kwargs):
@@ -94,7 +92,6 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
             application.legal_documents_upload(description="{} {}".format(status, message))
             application.save()
         return HttpResponse('OK')
-
 
     @action(methods=['post'], detail=True, url_path='update_omc_and_nic_status')
     def update_omc_and_nic_status(self, request: HttpRequest, *args, **kwargs):
@@ -645,6 +642,14 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                     id=application.id
                 )
                 transaction.on_commit(create_txn_status_job_function)
+
+                create_txn_status_job_function = partial(
+                    django_rq.enqueue,
+                    "ujjwala.jobs.compress_application_documents",
+                    application_id=application.id
+                )
+                transaction.on_commit(create_txn_status_job_function)
+
                 # commented for development
                 # application.event_submit_channel_whatsapp()
                 # result = django_rq.enqueue(do_primary_omc_dedupe_check, args=(application.id,))
