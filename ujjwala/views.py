@@ -264,7 +264,7 @@ class PreInspectionView(FormView):
     stage_2_validate_otp = 'ujjwala/pre_inspection_validate_otp_form.html'
 
     def dispatch(self, request, *args, **kwargs):
-        pre_inspection = PreInspection.objects.get(pk=kwargs.get('pk'))
+        pre_inspection = self.get_object()
 
         if pre_inspection.status == PreInspectionStatusEnum.ALLOCATED \
             or (pre_inspection.status == PreInspectionStatusEnum.REJECTED
@@ -371,7 +371,10 @@ class PreInspectionView(FormView):
         application = self.get_object()
         if application.status == PreInspectionStatusEnum.CHANGE_ADDRESS:
             return ChangeAddressForm
-        elif application.status == PreInspectionStatusEnum.KITCHEN_PHOTO:
+        elif application.status in (
+                PreInspectionStatusEnum.KITCHEN_PHOTO,
+                PreInspectionStatusEnum.REJECTED
+        ):
             return KitchenPreInspectionForm
         elif application.status == PreInspectionStatusEnum.SAFETY_AUDIO:
             return AudioOnSafetyForm
@@ -392,7 +395,10 @@ class PreInspectionView(FormView):
         pre_inspection_obj = self.get_object()
         if pre_inspection_obj.status == PreInspectionStatusEnum.CHANGE_ADDRESS:
             return self.pre_inspection_step0_template
-        elif pre_inspection_obj.status == PreInspectionStatusEnum.KITCHEN_PHOTO:
+        elif pre_inspection_obj.status in (
+                PreInspectionStatusEnum.KITCHEN_PHOTO,
+                PreInspectionStatusEnum.REJECTED,
+        ):
             return self.pre_inspection_step1_template
         elif pre_inspection_obj.status == PreInspectionStatusEnum.SAFETY_AUDIO:
             return self.pre_inspection_step2_template
