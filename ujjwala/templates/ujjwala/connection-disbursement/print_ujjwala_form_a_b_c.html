@@ -41,17 +41,26 @@
 		</div>
 </div>
 <div class="main-header bg-heading mb-2">
-    <span class="text-white text">{{ obj.parent.is_sv_uploaded }}</span>
-    <br>
+{#    <span class="text-white text">{{ obj.parent.is_sv_uploaded }}</span>#}
+{#    <br>#}
     <span class="text-white text">{{ obj.parent.get_physical_legal_documents_status }}</span>
 </div>
 
 
 <div class="card-footer p-1 multi_buttons">
-	<a style="width: 100%;" class="text-white  btn btn-danger mb-3" 
-		href="{% url 'ujjwala:legal_documents_upload' pk=obj.id %}" target="_blank">
-		<i class="material-icons">cloud_upload</i> Legal Documents
-	</a>
+	<div class="row">
+		<div class="col">
+			<a style="width: 100%;" class="text-white  btn btn-danger" href="{% url 'ujjwala:legal_documents_upload' pk=obj.id %}" target="_blank">
+				<i class="material-icons">cloud_upload</i> Legal Documents
+			</a>
+		</div>
+		<div class="col">
+			<a style="width: 100%;" class="text-white  btn btn-danger" href="{% url 'ujjwala:legal_documents_upload' pk=obj.id %}" target="_blank">
+				<i class="material-icons">send</i> Send  Link 
+			</a>
+		</div>
+	</div>
+
 	<a style=" width: 100%;" class="text-white btn btn-danger mb-3 float-right" 
 		href="{{ obj.parent.physical_legal_document_link }}" target="_blank">
 		<i class="material-icons">cloud_download</i>
@@ -65,8 +74,22 @@
 	{% if not bridge_available %}																																							
 		<p class="alert alert-primary" role="alert" style="width:100% ;"> <i class="material-icons left">info_outline</i> Bridge Not Available, Unable to print</p>
 	{% endif %}
-</div>
-    
+    <a class="text-white btn btn-danger mb-3 float-left " href="{% url 'ujjwala:connection_disbursement_list' %}">
+        <i class="material-icons">keyboard_backspace</i> Back To Walk In List
+    </a>
+    {% if obj.status == 'LEGAL_DOCUMENTS_REVIEW' %}
+        <a class="text-white btn btn-danger mb-3 float-right" href="{% url 'ujjwala:connection_disbursement_review_form_abc_view' pk=obj.id %}">
+            <i class="material-icons">arrow_forward</i> Review Form ABC
+        </a></div>
+    {% endif %}
+	<!-- <div class="card-footer">
+		<a class="text-white btn btn-danger mb-3 float-left " href="{% url 'ujjwala:connection_disbursement_sv_label_print_list' %}">
+			<i class="material-icons">keyboard_backspace</i> BACK TO LIST VIEW
+		</a>
+		<a class="text-white btn btn-danger mb-3 float-right" href="{% url 'ujjwala:connection_disbursement_review_form_abc_view' pk=obj.id %}">
+			<i class="material-icons">arrow_forward</i> NEXT
+		</a>
+	</div> -->
 </div>
 <style>
 </style>

@@ -764,18 +764,17 @@ class LegalDocumentsReviewAdminForm(forms.Form):
 	rejected_reason = forms.CharField(
 		widget=forms.TextInput, max_length=255, label='Rejected Reason', required=False
 	)
-	description = forms.CharField(
-		widget=forms.Textarea, label='Remarks', required=False
-	)
+	# description = forms.CharField(
+	# 	widget=forms.Textarea, label='Remarks', required=False
+	# )
 
 	def clean(self):
 		data = self.cleaned_data
 		if data:
 			if data.get('review_status', '') == 'REJECTED' and not data['rejected_reason']:
 				raise forms.ValidationError("Please enter a reason for rejection.")
-			data.update({'description': '{} - {}: {}'.format(
-					data.get('review_status'), data.get('rejected_reason'), data.get('description', '')
-				)
+			data.update({
+				'description': '{} - {}'.format(data.get('review_status'), data.get('rejected_reason' ''))
 			})
 		return data
 

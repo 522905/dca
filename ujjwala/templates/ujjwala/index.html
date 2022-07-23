@@ -1,16 +1,19 @@
 {% load static %}
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>ARUN GAS SERVICE</title>
-    <link rel="icon" type="image/png" href="img/logo2.png">
-    <meta charset="utf-8"></meta>
+    <link rel="icon" type="image/png" href="{% static 'img/logo2.png' %}">
+    <meta charset="utf-8">
+    </meta>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" >
-    <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.css" >
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,600,800&display=swap" >
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap" >
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,600,800&display=swap">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap">
     <link rel="stylesheet" href="https://arungas.com/public/ujwalla/css/signature-pad.css">
     <link rel="stylesheet" href="https://arungas.com/public/ujwalla/css/style.css">
     <link rel="stylesheet" href="{% static '/css/style.css' %}">
@@ -21,16 +24,17 @@
     <script src="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.js"></script>
     <script src="https://arungas.com/public/ujwalla/js/signature_pad.umd.js"></script>
     <script src="{% static '/js/static.js' %}"></script>
-    
+
 </head>
+
 <body style="background-color: #efefef;">
     <div class="container" style="background-color: #fff;">
         <div class="">
             <div class="row justify-content-start">
                 <div class="col-6">
                     <h1 class="" style=" background-color: #fff;">
-                        <img style="max-width:200px; width: 100%; padding: 10px; margin-top: 18px;" 
-                        src="https://www.arungas.com/wp-content/uploads/2022/04/Arungas-new-logo.png" >
+                        <img style="max-width:200px; width: 100%; padding: 10px; margin-top: 18px;"
+                            src="https://www.arungas.com/wp-content/uploads/2022/04/Arungas-new-logo.png">
                     </h1>
                 </div>
 
@@ -42,147 +46,230 @@
             </div>
             <div class="row">
                 <div class="col-12">
-                    <h3 class="" style="font-size: 20px; margin-top: 0px; text-align: center;">प्रधानमंत्री उज्ज्वला योजना 2.0<br><span
-                        style="font-size: 12px;">(फ्री गैस कनेक्शन पात्रता योग्य प्रवासी ज़रूरतमंद महिलाओं के लिए) <br>आवेदन करने की अंतिम तिथि <b style="color: #f37022">31 जुलाई 2022</b></span>
+                    <h3 class="" style="font-size: 20px; margin-top: 0px; text-align: center;">प्रधानमंत्री उज्ज्वला
+                        योजना 2.0<br><span style="font-size: 12px;">(फ्री गैस कनेक्शन पात्रता योग्य प्रवासी ज़रूरतमंद
+                            महिलाओं के लिए) <br>आवेदन करने की अंतिम तिथि <b style="color: #f37022">31 जुलाई
+                                2022</b></span>
                     </h3>
-                        <p style="font-size: 12px; text-align: center; color: #2d5593; font-weight: bold;"> प्रधानमंत्री उज्ज्वला योजना हमारे देश के प्रधानमंत्री जी के द्वारा आरंभ की गई है।<br><i style="color: #c8860f;">हम सिर्फ़ माध्यम है</i></p>
+                    <p style="font-size: 12px; text-align: center; color: #2d5593; font-weight: bold;"> प्रधानमंत्री
+                        उज्ज्वला योजना हमारे देश के प्रधानमंत्री जी के द्वारा आरंभ की गई है।<br><i
+                            style="color: #c8860f;">हम सिर्फ़ माध्यम है</i></p>
                 </div>
             </div>
         </div>
     </div>
-    <div class="container border-top" style="background-color: #fff;">
+    <div class="container p-0 border-top" style="background-color: #fff;">
         <form class="form-horizontal reno-bg p-4 " id="form" method="POST">
-            <input type="hidden" name="version" value="V4"/>
-            <div class="row">
-                <div class="col-sm-12">
+            <input type="hidden" name="version" value="V4" />
+
+            <div class="card mb-2">
+                <div class="main-header bg-heading rounded-0 mb-2" style="background-color: #2957A4;">
+                    <span class="text-white">Enter Personal Detail</span>
+                </div>
+                <div class="p-2">
                     <div class="form-group">
                         <div class="col-sm-12 p-0">
-                            <label>Enter Applicant Aadhaar No. (प्रवासी ज़रूरतमंद महिला का आधार संख्या)<strong style="color:red">*</strong></label>
+                            <label>Enter Applicant Aadhaar No. (प्रवासी ज़रूरतमंद महिला का आधार संख्या)<strong
+                                    style="color:red">*</strong></label>
                             <div class="" id="selfAadharValidation">
-                                <input required maxlength="12" minlength="12" onblur="checkApplicantsAadhaarValidity();" type="tel" class="form-control" name="applicant-uid_no" id="applicant-uid_no"  pattern="[0-9]{12}"></input>
+                                <input required maxlength="12" minlength="12" onblur="checkApplicantsAadhaarValidity();"
+                                    type="tel" class="form-control" name="applicant-uid_no" id="applicant-uid_no"
+                                    pattern="[0-9]{12}"></input>
                                 <div id="self-uid-msg"></div>
                             </div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Applicant Mobile Number. (आवेदक का मोबाइल नंबर)<strong style="color:red">*</strong></label>
-                        <input type="tel" class="form-control" id="uid_linked_mobile" onblur="checkContactMobileValidity();" pattern="[6789][0-9]{9}"
-                        name="uid_linked_mobile" maxlength="10" required />
+                        <label>Applicant Mobile Number. (आवेदक का मोबाइल नंबर)<strong
+                                style="color:red">*</strong></label>
+                        <input type="tel" class="form-control" id="uid_linked_mobile"
+                            onblur="checkContactMobileValidity();" pattern="[6789][0-9]{9}" name="uid_linked_mobile"
+                            maxlength="10" required />
                         <span id="contact_mobile_detail"></span>
-                        
+
                     </div>
-                    
+
                     <div id="uid_linked_mobile_form_group" class="form-group">
-                        <label style="margin-bottom: 0;">Own or Family Whatsapp Number(अपना या परिवार के किसी सदस्य का व्हाट्सएप नंबर) <i class="fa fa-whatsapp" aria-hidden="true"></i> <strong style="color:red">*</strong></label>
-                        <span style="color:red; font-size:12px; display: block; width: 100%;">जो कि कनेक्शन मिलने तक चलता रहे ताकि हम आपको संपर्क कर सके</span>
-                        <input type="tel" class="form-control" id="contact_mobile" onblur="checkMobileValidity();" pattern="[6789][0-9]{9}" name="contact_mobile" maxlength="10" required />
+                        <label style="margin-bottom: 0;">Own or Family Whatsapp Number(अपना या परिवार के किसी सदस्य का
+                            व्हाट्सएप नंबर) <i class="fa fa-whatsapp" aria-hidden="true"></i> <strong
+                                style="color:red">*</strong></label>
+                        <span style="color:red; font-size:12px; display: block; width: 100%;">जो कि कनेक्शन मिलने तक
+                            चलता रहे ताकि हम आपको संपर्क कर सके</span>
+                        <input type="tel" class="form-control" id="contact_mobile" onblur="checkMobileValidity();"
+                            pattern="[6789][0-9]{9}" name="contact_mobile" maxlength="10" required />
                         <span id="mobile_detail"></span>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group ">
                         <label>Marital Status (वैवाहिक स्थिति)<strong style="color:red">*</strong></label>
-                        <select required
-                            class="selectpicker form-control"
-                            id="marital_status"
-                            name="marital_status" >
+                        <select required class="selectpicker form-control" id="marital_status" name="marital_status">
                             <option value="" selected="selected" id="status">
                                 Select Marital Status (चुनें वैवाहिक स्थिति)
                             </option>
                             <option value="MARRIED">Married (विवाहित)</option>
                             <option value="UNMARRIED">Unmarried (अविवाहित)</option>
                             <!-- <option value="DIVORCED">Divorced (तलाक)</option>
-                            <option value="WIDOW">WIDOW ()</option> -->
+                                <option value="WIDOW">WIDOW ()</option> -->
                         </select>
                     </div>
-                    <input type="hidden" id="occupancy_status" name="residential_status" value="LIVING_WITH_FAMILY">
 
-                    <div class="form-group">
-                        <label for="house_no">Current Address (वर्तमान पता)<strong style="color:red">*</strong></label>
-                        <input  required type="text" class="form-control" id="house_no" name="house_no" placeholder="House No.">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="room_no">Room No. (कमरा सं.)<strong style="color:red">*</strong></label>
-                        <input type="text" class="form-control" id="room_no" name="room_no" required />
-                    </div>  
-                    <div class="form-group">
-                        <label for="floor">Floor(तल सं.)<strong style="color:red">*</strong></label>
-                        <input type="text" class="form-control" id="floor" name="floor" required />
-                    </div> 
-                    
-                    <div class="form-group">
-                        <label for="street_no">Street No. (गली नंबर)<strong style="color:red">*</strong></label>
-                        <input type="text" class="form-control" id="street_no" name="street_no" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="landmark">Land Mark (सीमाचिह्न)<strong style="color:red">*</strong></label>
-                        <input type="text" class="form-control" id="landmark" name="landmark" required/>
-                    </div> 
-                    <div class="form-group">
-                        <label for="village">Locality Village(सड़क का नाम/गांव)<strong style="color:red">*</strong></label>
-                        <input type="text" class="form-control" id="village" name="village" required/>
-                    </div>  
-                    <div class="form-group">
-                        <label for="ward_no">Ward No. (वर्ड नंबर)<strong style="color:red">*</strong></label>
-                        <input type="text" class="form-control" id="ward_no" name="ward_no" required/>
-                    </div> 
-                                            
-                    <div class="form-group">
-                        <label for="post_office">Post Office (पोस्ट ऑफीस)<strong style="color:red">*</strong></label>
-                        <input type="text" class="form-control" id="post_office" name="post_office" required/>
-                    </div>
-                    <div class="form-group">
-                        <label for="city">City (शहर)<strong style="color:red">*</strong></label>
-                        <input type="text" class="form-control" value="Ludhiana" id="ludhiana" name="" required/>
-                    </div>
-                    <div class="form-group">
-                        <label for="pincode">Pincode (पिनकोड)<strong style="color:red">*</strong></label>
-                        <input type="tel" class="form-control" id="pincode" name="pincode" onblur="validate_pincode();" pattern="[1-9]{1}[0-9]{5}" required />
-                    </div>  
-
-                    <div class="form-group" class="container">
+                    <div class="form-group mb-0">
                         <div class="row">
                             <div class="col-sm-12 col">
-                                <label>Your Picture or Selfie (प्रार्थी की फोटो)<strong style="color:red">*</strong></label>
-                                <span class="custom-file-input" name="customerpicture"
-									id="customerpicture"></span><br>
-								<span id="customerpicture_detail" class="text-danger"></span>
+                                <label>Your Picture or Selfie (प्रार्थी की फोटो)<strong
+                                        style="color:red">*</strong></label>
+                                <span class="custom-file-input" name="customerpicture" id="customerpicture"></span><br>
+                                <span id="customerpicture_detail" class="text-danger"></span>
                             </div>
                         </div>
                     </div>
-
+                </div>
+            </div>
+            <input type="hidden" id="occupancy_status" name="residential_status" value="LIVING_WITH_FAMILY">
+            <div class="card mb-2">
+                <div class="main-header bg-heading rounded-0 mb-2" style="background-color: #2957A4;">
+                    <span class="text-white">Current Address (वर्तमान पता)</span>
+                </div>
+                <div class="p-2">
                     <div class="row">
-                        <div class="col-sm-4">
-                            <label>Bank Detail (पास बुक का विवरण)<strong style="color:red">*</strong></label>
-                            <span class="custom-file-input" name="bankdetail" id="bankdetail"></span>
+                        <div class="col pr-0">
+                            <div class="form-group">
+                                <label for="house_no">House No. <br> (घर का नंबर)<strong style="color:red">*</strong></label>
+                                <input required type="text" class="form-control" id="house_no" name="house_no"
+                                    placeholder="House No.">
+                            </div>
                         </div>
-                        <div class="col-sm-4">
-                            <label>Enter Bank Account No (बैंक खाता संख्या)<strong style="color:red">*</strong></label>
-                            <input type="text" class="form-control" id="bankAccountNumber" name="bankAccountNumber" required />
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="room_no">Room No.<br> (कमरा सं.)<strong style="color:red">*</strong></label>
+                                <input type="text" class="form-control" id="room_no" name="room_no" required />
+                            </div>
                         </div>
-                        <div class="col-sm-4">
-                            <label>Enter IFSC Code (IFSC कोड दर्ज करें)<strong style="color:red">*</strong></label>
-                            <input type="text" class="form-control" id="ifscCode" onblur="this.reportValidity();" pattern="^[A-Z]{4}[0][A-Z0-9]{6}$" name="ifscCode" required />
-                        </div>
-                    </div>
-
-                    <div id="family_members_tree" class="container p-0">
                     </div>
                     
-                    <div  id="show">
-                        <div class="form-group">
+                    <div class="row">
+                        <div class="col pr-0">
+                            <div class="form-group">
+                                <label for="floor">Floor(तल सं.)<strong style="color:red">*</strong></label>
+                                <input type="text" class="form-control" id="floor" name="floor" required />
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="street_no">Street No. (गली नंबर)<strong style="color:red">*</strong></label>
+                                <input type="text" class="form-control" id="street_no" name="street_no" required />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="landmark">Land Mark (नजदीकी स्थान)<strong style="color:red">*</strong></label>
+                                <input type="text" class="form-control" id="landmark" name="landmark" required />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="village">Locality Village (रोड/गांव/मोहल्ला/इलाका)<strong
+                                        style="color:red">*</strong></label>
+                                <input type="text" class="form-control" id="village" name="village" required />
+                            </div>
+                        </div>
+                    </div>
+                  
+                    <div class="row">
+                        <div class="col pr-0">
+                            <div class="form-group">
+                                <label for="ward_no">Ward No.<br> (वर्ड नंबर)<strong style="color:red">*</strong></label>
+                                <input type="text" class="form-control" id="ward_no" name="ward_no" required />
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="post_office">Post Office <br>(पोस्ट ऑफीस)<strong
+                                        style="color:red">*</strong></label>
+                                <input type="text" class="form-control" id="post_office" name="post_office" required />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col pr-0">
+                            <div class="form-group">
+                                <label for="city">City (शहर)<strong style="color:red">*</strong></label>
+                                <input type="text" class="form-control" value="Ludhiana" id="ludhiana" name="" required />
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="pincode">Pincode (पिनकोड)<strong style="color:red">*</strong></label>
+                                <input type="tel" class="form-control" id="pincode" name="pincode"
+                                    onblur="validate_pincode();" pattern="[1-9]{1}[0-9]{5}" required />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-2">
+                <div class="main-header bg-heading rounded-0 mb-2" style="background-color: #2957A4;">
+                    <span class="text-white">Bank Detail</span>
+                </div>
+                <div class="row p-2">
+                    <div class="col-sm-4">
+                        <label>Bank Detail (पास बुक का विवरण)<strong style="color:red">*</strong></label>
+                        <span class="custom-file-input" name="bankdetail" id="bankdetail"></span>
+                    </div>
+                    <div class="col-sm-4">
+                        <label>Enter Bank Account No (बैंक खाता संख्या)<strong style="color:red">*</strong></label>
+                        <input type="number"  class="form-control" pattern = "[0-9]" maxlength="19" id="bank_account_number"
+                            name="bank_account_number" required />
+                    </div>
+                    <div class="col-sm-4 p-sm-t-2" id="ifsccontainer">
+                        <!-- SBIN0050873 -->
+                        <label>Enter the IFSC code:</label>
+                        <!-- ^[A-Z]{4}0[A-Z0-9]{6}$ -->
+                        <input class="input_field form-control" placeholder="IFSC" id="ifsc_code"name="ifsc_code" required onblur="checkIfscCodeValidity();">
+                        <p id="ifscmess"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="card mb-2 family_heading">
+                <div class="main-header bg-heading rounded-0 mb-2" style="background-color: #2957A4;">
+                    <span class="text-white">(Family Detail) परिवार का डेटा </span>
+                </div>
+                <div id="family_members_tree" class="container p-0">
+                </div>
+            </div>
+           
+               
+
+            <div class="card mb-2">
+                <div class="main-header bg-heading rounded-0 mb-2 " style="background-color: #2957A4;">
+                    <span class="text-white">Other Detail</span>
+                </div>
+                <div class="p-2">
+                    <div id="show">
+                        <div class="form-group pt-2">
                             <p>Referral Code</p>
                             <input type="text" class="form-control" id="reference" name="referral_code" value="">
                             <br>
                             <p style="font-size: 14px;">
-                                <input id="term_condition_agree" type="checkbox" name="terms" style="margin-right: 10px; font-size: 13px;">
-                                <a class="term_link" target="_blank" href="https://www.arungas.com/public/ujwalla/terms.pdf" style="color: #000; text-decoration: underline;">
-                                    मैं प्रवासी हूँ, मैंने शर्तें पढ़ ली है और मुझे सारी शर्तें बताई भी गई है मैं सब कुछ जान कर ये घोषणा करती हूं कि उपर दी गई सभी जानकारी सत्य एवं सही हैं इसमें कुछ भी छिपा नहीं है</a>
+                                <input id="term_condition_agree" type="checkbox" name="terms"
+                                    style="margin-right: 10px; font-size: 13px;">
+                                <a class="term_link" target="_blank" href="https://www.arungas.com/public/ujwalla/terms.pdf"
+                                    style="color: #000; text-decoration: underline;">
+                                    मैं प्रवासी हूँ, मैंने शर्तें पढ़ ली है और मुझे सारी शर्तें बताई भी गई है मैं सब कुछ जान
+                                    कर ये घोषणा करती हूं कि उपर दी गई सभी जानकारी सत्य एवं सही हैं इसमें कुछ भी छिपा नहीं
+                                    है</a>
                             </p>
                             <p style="font-size: 14px;">
-                                <span style="color: red;"><b> ज़रूरी सूचना :- </b><br></span>
-                                उज्जवला स्कीम का अवेदन करने का हम सिर्फ माध्यम हैं कनेक्शन  की मंजूरी  सरकार पर निर्भर करती है</p>
-                            <div id="signature-pad" class="signature-pad" >
+                                <span style="color: red;"><br><b> ज़रूरी सूचना :- </b><br></span>
+                                उज्जवला स्कीम का अवेदन करने का हम सिर्फ माध्यम हैं कनेक्शन की मंजूरी सरकार पर निर्भर करती है
+                            </p>
+                            <div id="signature-pad" class="signature-pad">
                                 <div class="signature-pad--body">
                                     <canvas></canvas>
                                 </div>
@@ -192,7 +279,9 @@
                                             <button type="button" class="button clear" data-action="clear">Clear</button>
                                         </div>
                                         <div>
-                                            <button type="button" id="submit" name="submit" onclick="upload_sign_and_submit()" class="btn btn-success">Upload Signature & Submit</button>
+                                            <button type="button" id="submit" name="submit"
+                                                onclick="upload_sign_and_submit()" class="btn btn-success">Upload Signature
+                                                & Submit</button>
                                         </div>
                                     </div>
                                 </div>
@@ -204,8 +293,8 @@
         </form>
     </div>
     <div id="message"></div>
-    </div>
 </body>
+
 </html>
 <script src="https://arungas.com/public/ujwalla/js/app.js"></script>
 <script>
@@ -220,20 +309,20 @@
             allowedFileTypes: ['image/*'],
         }
     })
-    .use(Uppy.Dashboard, {
-        trigger: '#customerpicture',
-        inline: true,
-        target: '#customerpicture',
-        showProgressDetails: true,
-        note: 'Images only, 1 file, up to 10 MB',
-        height: 250,
-        metaFields: [],
-        id: 'customerpicture',
-        browserBackButtonClose: false
-    })
-    .use(Uppy.Tus, {
-        endpoint: 'https://tus.dca.arungas.com/files/',
-    })
+        .use(Uppy.Dashboard, {
+            trigger: '#customerpicture',
+            inline: true,
+            target: '#customerpicture',
+            showProgressDetails: true,
+            note: 'Images only, 1 file, up to 10 MB',
+            height: 250,
+            metaFields: [],
+            id: 'customerpicture',
+            browserBackButtonClose: false
+        })
+        .use(Uppy.Tus, {
+            endpoint: 'https://tus.dca.arungas.com/files/',
+        })
     customerpictureuppy.on('complete', result => {
         console.log('successful files:', result.successful)
         console.log('failed files:', result.failed)
@@ -250,26 +339,56 @@
             allowedFileTypes: ['image/*'],
         }
     })
-    .use(Uppy.Dashboard, {
-        trigger: '#bankdetail',
-        inline: true,
-        target: '#bankdetail',
-        showProgressDetails: true,
-        note: 'Images only, 1 file, up to 10 MB',
-        height: 250,
-        metaFields: [],
-        id: 'bankdetail',
-        browserBackButtonClose: false
-    })
-    .use(Uppy.Tus, {
-        endpoint: 'https://tus.dca.arungas.com/files/',
-    })
-    
+        .use(Uppy.Dashboard, {
+            trigger: '#bankdetail',
+            inline: true,
+            target: '#bankdetail',
+            showProgressDetails: true,
+            note: 'Images only, 1 file, up to 10 MB',
+            height: 250,
+            metaFields: [],
+            id: 'bankdetail',
+            browserBackButtonClose: false
+        })
+        .use(Uppy.Tus, {
+            endpoint: 'https://tus.dca.arungas.com/files/',
+        })
+
     bankdetailuppy.on('complete', result => {
         console.log('successful files:', result.successful)
         console.log('failed files:', result.failed)
     });
 
 
-</script>
+    function checkIfscCodeValidity() {
+        if(!$('#ifsc_code')[0].reportValidity()) {
+            return;
+        }
+        if (!$('#ifsccontainer > input').val()) {
+            alert("IFSC can't be blank!");
+        }
+        else {
+            change(1);
+        }
 
+        function change(i) {
+            if (i == 1) {
+                var ifsc = String($('#ifsccontainer > input').val());
+                $.getJSON('https://ifsc.razorpay.com/' + ifsc, function (data) {
+                    var table = '<div class="striped">'
+                        + '<p><b>Bank Name:</b> ' + data.BANK + ', ' + data.CITY + ', ' + data.STATE + ' </p>'
+                        + '<p><b>Branch:</b> ' + data.BRANCH + ' </p>'
+                        + '</div>';
+                    $('#ifscmess').html(table);
+                }).fail(function () {
+                    alert("Invalid IFSC code");
+                    var msg = '<div id="errMsg">Invalid IFSC code</div>';
+                    $('#ifscmess').html(msg);
+                    document.getElementById("ifscmess").reportValidity();
+                    return;
+                });
+            }
+        }
+    }
+
+</script>

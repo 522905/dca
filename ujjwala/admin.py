@@ -10,21 +10,23 @@ from django.conf import settings
 from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
+from django.db.models import F
 from django.http import HttpResponse
 from django.template import loader
 from django.urls import path, reverse
 from django.utils.safestring import mark_safe
 from django_admin_listfilter_dropdown.filters import DropdownFilter
 from django_fsm_log.admin import StateLogInline
+from django_fsm_log.models import StateLog
 from import_export.admin import ExportActionMixin
 from rangefilter.filters import DateRangeFilter
 
 from fsm_admin2_custom.admin import FSMTransitionCustomMixin
 from .enums import ResidentialStatusEnum, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, MaritalStatusEnum, \
-	PreInspectionStatusEnum, ConnectionDisbursementStatusEnum
+    PreInspectionStatusEnum, ConnectionDisbursementStatusEnum
 from .models import UjjwalaV2Application, FamilyMembers, UjjwalaApplicationDocuments, UjjwalaV2ApplicationStatus, \
-	UserDocuments, PreInspectionDocuments, PreInspection, ConnectionDisbursementDocuments, ConnectionDisbursement, \
-	ConnectionDisbursementInvitation
+    UserDocuments, PreInspectionDocuments, PreInspection, ConnectionDisbursementDocuments, ConnectionDisbursement, \
+    ConnectionDisbursementInvitation
 from .ujjwala_functions import download_ujjwala_documents, download_ujjwala_physical_legal_docs
 
 
@@ -33,294 +35,336 @@ from .forms import ReviewNicErrorUpdatedAddressForm
 
 
 def filter_walk_in_qs(queryset, state):
-	today = datetime.today()
-	if state == 'WALK_IN_TODAY':
-		return queryset.filter(walk_in_date__date=today.date())
-	elif state == 'WALK_IN_NO_SV':
-		return queryset.filter(walk_in_date__date=today.date()).\
-			filter(invitation__sv_link__isnull=True)
-	elif state == 'WALK_IN_SV_DONE':
-		return queryset.filter(walk_in_date__date=today.date()).\
-			filter(invitation__sv_link__isnull=False)
-	elif state == 'WALK_IN_NO_DISBURSEMENT':
-		return queryset.filter(walk_in_date__date=today.date()).\
-			exclude(invitation__sv_link__isnull=True).\
-			exclude(
-				status=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED
-			)
+    today = datetime.today()
+    if state == 'WALK_IN_TODAY':
+        return queryset.filter(walk_in_date__date=today.date())
+    elif state == 'WALK_IN_NO_SV':
+        return queryset.filter(walk_in_date__date=today.date()).\
+            filter(invitation__sv_link__isnull=True)
+    elif state == 'WALK_IN_SV_DONE':
+        return queryset.filter(walk_in_date__date=today.date()).\
+            filter(invitation__sv_link__isnull=False)
+    elif state == 'WALK_IN_NO_DISBURSEMENT':
+        return queryset.filter(walk_in_date__date=today.date()).\
+            exclude(invitation__sv_link__isnull=True).\
+            exclude(
+                status=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED
+            )
 
 
 class WalkInFilter(SimpleListFilter):
-	title = 'Walk In Filters'
-	parameter_name = 'walk_in'
+    title = 'Walk In Filters'
+    parameter_name = 'walk_in'
 
-	def lookups(self, request, model_admin):
-		return [
-			('WALK_IN_TODAY', 'Walk In Today'),
-			('WALK_IN_NO_SV', 'Walk In No Sv'),
-			('WALK_IN_SV_DONE', 'Walk In Sv Done'),
-			('WALK_IN_NO_DISBURSEMENT', 'Walk In No Disbursement'),
-		]
+    def lookups(self, request, model_admin):
+        return [
+            ('WALK_IN_TODAY', 'Walk In Today'),
+            ('WALK_IN_NO_SV', 'Walk In No Sv'),
+            ('WALK_IN_SV_DONE', 'Walk In Sv Done'),
+            ('WALK_IN_NO_DISBURSEMENT', 'Walk In No Disbursement'),
+        ]
 
-	def queryset(self, request, queryset):
-		return filter_walk_in_qs(queryset, self.value())
+    def queryset(self, request, queryset):
+        return filter_walk_in_qs(queryset, self.value())
 
 
 class UjjwalaApplicationDocumentsInline(admin.TabularInline):
-	extra = 0
-	model = UjjwalaApplicationDocuments
-	fields = ('type', 'download_links', 'file_size')
-	readonly_fields = ('download_links',)
+    extra = 0
+    model = UjjwalaApplicationDocuments
+    fields = ('type', 'download_links', 'file_size')
+    readonly_fields = ('download_links',)
 # template = 'connection_app/admin/document-inline.html'
 
 
 class FamilyMembersInline(admin.TabularInline):
-	extra = 0
-	model = FamilyMembers
-	fields = ('name', 'relation', 'dob', 'uid_no', 'download_links',
-			  'uid_check_result', 'uid_front_file_size', 'uid_back_file_size',)
-	readonly_fields = ('download_links', 'uid_check_result', 'uid_front_file_size', 'uid_back_file_size',)
+    extra = 0
+    model = FamilyMembers
+    fields = ('name', 'relation', 'dob', 'uid_no', 'download_links',
+              'uid_check_result', 'uid_front_file_size', 'uid_back_file_size',)
+    readonly_fields = ('download_links', 'uid_check_result', 'uid_front_file_size', 'uid_back_file_size',)
 
 
 @admin.register(UjjwalaV2Application)
 class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdmin):
-	fsm_transition_form_template = 'ujjwala/transaction_form_template.html'
-	list_display = (
-		'id',
-		'name',
-		'address',
-		'address_json',
-		'contact_mobile',
-		'referral_code',
-		'robo_sdms_dedup',
-		'status',
-		'consumer_id',
-	)
+    fsm_transition_form_template = 'ujjwala/transaction_form_template.html'
+    list_display = (
+        'id',
+        'name',
+        'address',
+        'address_json',
+        'contact_mobile',
+        'referral_code',
+        'robo_sdms_dedup',
+        'status',
+        'consumer_id',
+    )
 
-	search_fields = ('id', 'name', 'referral_code', 'contact_mobile', 'consumer_id',)
-	ordering = ('id',)
+    search_fields = ('id', 'name', 'referral_code', 'contact_mobile', 'consumer_id',)
+    ordering = ('id',)
 
-	list_filter = (
-		('created_on', DateRangeFilter),
-		('updated_on', DateRangeFilter),
-		('status', DropdownFilter),
-		('version', DropdownFilter),
-		('robo_sdms_dedup', DropdownFilter)
-	)
+    list_filter = (
+        ('created_on', DateRangeFilter),
+        ('updated_on', DateRangeFilter),
+        ('status', DropdownFilter),
+        ('version', DropdownFilter),
+        ('robo_sdms_dedup', DropdownFilter)
+    )
 
-	advanced_filter_fields = (
-		'created_on',
-		'updated_on',
-		'status',
-		'version',
-		'robo_sdms_dedup',
-		'id',
-		'consumer_id',
-		'referral_code',
-		'name'
-	)
+    advanced_filter_fields = (
+        'created_on',
+        'updated_on',
+        'status',
+        'version',
+        'robo_sdms_dedup',
+        'id',
+        'consumer_id',
+        'referral_code',
+        'name'
+    )
 
-	inlines = [
-		FamilyMembersInline, UjjwalaApplicationDocumentsInline, StateLogInline
-	]
-	fsm_fields = ['status', ]
+    inlines = [
+        FamilyMembersInline, UjjwalaApplicationDocumentsInline, StateLogInline
+    ]
+    fsm_fields = ['status', ]
 
-	def has_change_permission(self, request, obj=None):
-		if not obj:
-			return True
-		return obj.status == UjjwalaV2ApplicationStatus.EDIT_APPLICATION
+    def has_change_permission(self, request, obj=None):
+        if not obj:
+            return True
+        return obj.status == UjjwalaV2ApplicationStatus.EDIT_APPLICATION
 
-	def get_fields(self, request, obj=None):
-		# fields = super().get_fields(request, obj)
-		# return fields
-		if obj and obj.status in (
-				UjjwalaV2ApplicationStatus.EDIT_APPLICATION
-		):
-			return [
-				'marital_status',
-				'residential_status',
-				'name',
-				'address_json',
-				'contact_mobile',
-				'uid_linked_mobile',
-				'uid_mobile_status',
-				'fsm_display_status',
-				'referral_code',
-			]
-		else:
-			fields = super().get_fields(request, obj)
-			fields.append('connection_disbursement')
-			return fields
+    def get_fields(self, request, obj=None):
+        # fields = super().get_fields(request, obj)
+        # return fields
+        if obj and obj.status in (
+                UjjwalaV2ApplicationStatus.EDIT_APPLICATION
+        ):
+            return [
+                'marital_status',
+                'residential_status',
+                'name',
+                'address_json',
+                'contact_mobile',
+                'uid_linked_mobile',
+                'uid_mobile_status',
+                'fsm_display_status',
+                'referral_code',
+            ]
+        else:
+            fields = super().get_fields(request, obj)
+            fields.append('connection_disbursement')
+            return fields
 
-	def get_readonly_fields(self, request, obj=None):
-		readonly_fields = super().get_readonly_fields(request, obj)
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = super().get_readonly_fields(request, obj)
 
-		if obj and obj.status in (
-				UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
-				UjjwalaV2ApplicationStatus.DO_MANUAL_OPERATION,
-				UjjwalaV2ApplicationStatus.MANUAL_LEGAL_DOCUMENTS_UPLOAD
-		):
-			readonly_fields = readonly_fields + ['download_legal_docs', ]
-		elif obj and obj.status in (
-				UjjwalaV2ApplicationStatus.NIC_ERROR_INSUFFICIENT_ADDRESS
-		):
-			readonly_fields = readonly_fields + [
-				'whatsapp_nic_error_update_address'
-			]
+        if obj and obj.status in (
+                UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
+                UjjwalaV2ApplicationStatus.DO_MANUAL_OPERATION,
+                UjjwalaV2ApplicationStatus.MANUAL_LEGAL_DOCUMENTS_UPLOAD
+        ):
+            readonly_fields = readonly_fields + ['download_legal_docs', ]
+        elif obj and obj.status in (
+                UjjwalaV2ApplicationStatus.NIC_ERROR_INSUFFICIENT_ADDRESS
+        ):
+            readonly_fields = readonly_fields + [
+                'whatsapp_nic_error_update_address'
+            ]
 
 
-		readonly_fields = readonly_fields + [
-			'whatsapp_pre_inspection_type_self', 'whatsapp_form_a_b_c'
-		]
-		return readonly_fields
+        readonly_fields = readonly_fields + [
+            'whatsapp_pre_inspection_type_self', 'whatsapp_form_a_b_c'
+        ]
+        return readonly_fields
 
-	def download_legal_docs(self, obj=None):
-		url = reverse('ujjwala:ujjwalav2application-download-ujjwala-legal-docs', kwargs={'pk': obj.id})
-		return mark_safe("""
-			<a href="{}" target="_blank">Download Legal Docs To Upload In SDMS</a>
-		""".format(url))
+    def download_legal_docs(self, obj=None):
+        url = reverse('ujjwala:ujjwalav2application-download-ujjwala-legal-docs', kwargs={'pk': obj.id})
+        return mark_safe("""
+            <a href="{}" target="_blank">Download Legal Docs To Upload In SDMS</a>
+        """.format(url))
 
-	def download_legal_documents_pdf(self, obj):
-		return download_ujjwala_documents(obj)
+    def download_legal_documents_pdf(self, obj):
+        return download_ujjwala_documents(obj)
 
-	def change_view(self, request, object_id, form_url='', extra_context=None):
-		if "_download-legal-doc-pdf" in request.POST:
-			obj = UjjwalaV2Application.objects.get(pk=object_id)
-			return self.download_legal_documents_pdf(obj)
-		return super().change_view(request, object_id, form_url=form_url, extra_context=extra_context)
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        if "_download-legal-doc-pdf" in request.POST:
+            obj = UjjwalaV2Application.objects.get(pk=object_id)
+            return self.download_legal_documents_pdf(obj)
+        return super().change_view(request, object_id, form_url=form_url, extra_context=extra_context)
 
-	def fsm_transition_view_extra_context(self, obj):
-		return {'obj': obj}
+    def fsm_transition_view_extra_context(self, obj):
+        return {'obj': obj}
 
-	def get_form_kwargs(self, form_class, obj):
-		if form_class == ReviewNicErrorUpdatedAddressForm:
-			return {
-				'initial': obj.address_json
-			}
-		return {}
+    def get_form_kwargs(self, form_class, obj):
+        if form_class == ReviewNicErrorUpdatedAddressForm:
+            return {
+                'initial': obj.address_json
+            }
+        return {}
 
 
 @admin.register(UserDocuments)
 class UserDocumentsAdmin(admin.ModelAdmin):
-	list_display = ('id', 'parent', 'type', 'link',)
-	list_filter = ('parent',)
+    list_display = ('id', 'parent', 'type', 'link',)
+    list_filter = ('parent',)
 
 
 class PreInspectionDocumentsAdmin(admin.TabularInline):
-	fields = (
-		'type',
-		'download_links',
-		'compressed',
-		'file_size',
-	)
-	model = PreInspectionDocuments
-	extra = 0
+    fields = (
+        'type',
+        'download_links',
+        'compressed',
+        'file_size',
+    )
+    model = PreInspectionDocuments
+    extra = 0
 
-	readonly_fields = ('type', 'download_links', 'compressed', 'file_size',)
+    readonly_fields = ('type', 'download_links', 'compressed', 'file_size',)
 
 
 @admin.register(PreInspection)
 class PreInspectionAdmin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdmin):
-	list_display = (
-		'id',
-		'parent',
-		'witness_mobile_number',
-		'mechanic_name',
-		'status',
-	)
-	list_filter = ('mechanic', 'status')
-	inlines = (PreInspectionDocumentsAdmin, StateLogInline,)
-	fsm_fields = ['status', ]
-	search_fields = ('id', 'parent__id', 'parent__consumer_id')
+    list_display = (
+        'id',
+        'parent',
+        'witness_mobile_number',
+        'mechanic_name',
+        'status',
+    )
+    list_filter = ('mechanic', 'status')
+    inlines = (PreInspectionDocumentsAdmin, StateLogInline,)
+    fsm_fields = ['status', ]
+    search_fields = ('id', 'parent__id', 'parent__consumer_id')
 
-	def get_readonly_fields(self, request, obj=None):
-		readonly_fields = super().get_readonly_fields(request, obj=obj)
-		if obj:
-			if obj.status == PreInspectionStatusEnum.ACCEPTED:
-				readonly_fields = readonly_fields + ['download_physical_legal_docs']
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = super().get_readonly_fields(request, obj=obj)
+        if obj:
+            if obj.status == PreInspectionStatusEnum.ACCEPTED:
+                readonly_fields = readonly_fields + ['download_physical_legal_docs']
 
-		return readonly_fields
+        return readonly_fields
 
-	def has_change_permission(self, request, obj=None):
-		if not obj:
-			return True
+    def has_change_permission(self, request, obj=None):
+        if not obj:
+            return True
 
-	def download_physical_legal_docs(self, obj=None):
-		return mark_safe("""
-			<input type="submit" value="Download Physical Legal Docs" name="_download-physical-legal-doc-pdf">
-		""")
+    def download_physical_legal_docs(self, obj=None):
+        return mark_safe("""
+            <input type="submit" value="Download Physical Legal Docs" name="_download-physical-legal-doc-pdf">
+        """)
 
-	def download_physical_legal_documents_pdf(self, obj):
-		return download_ujjwala_physical_legal_docs(obj)
+    def download_physical_legal_documents_pdf(self, obj):
+        return download_ujjwala_physical_legal_docs(obj)
 
-	def change_view(self, request, object_id, form_url='', extra_context=None):
-		if "_download-physical-legal-doc-pdf" in request.POST:
-			pre_inspection_obj = PreInspection.objects.get(pk=object_id)
-			return self.download_physical_legal_documents_pdf(pre_inspection_obj.parent)
-		return super().change_view(request, object_id, form_url=form_url, extra_context=extra_context)
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        if "_download-physical-legal-doc-pdf" in request.POST:
+            pre_inspection_obj = PreInspection.objects.get(pk=object_id)
+            return self.download_physical_legal_documents_pdf(pre_inspection_obj.parent)
+        return super().change_view(request, object_id, form_url=form_url, extra_context=extra_context)
 
-	def fsm_transition_view_extra_context(self, obj):
-		return {'obj': obj}
+    def fsm_transition_view_extra_context(self, obj):
+        return {'obj': obj}
 
 
 class ConnectionDisbursementDocumentsAdmin(admin.TabularInline):
-	fields = (
-		'type',
-		'download_links',
-		'compressed',
-		'file_size',
-	)
-	model = ConnectionDisbursementDocuments
-	extra = 0
+    fields = (
+        'type',
+        'download_links',
+        'compressed',
+        'file_size',
+    )
+    model = ConnectionDisbursementDocuments
+    extra = 0
 
-	readonly_fields = ('type', 'download_links', 'compressed', 'file_size', )
+    readonly_fields = ('type', 'download_links', 'compressed', 'file_size', )
 
 
 class ConnectionDisbursementInvitationAdmin(admin.TabularInline):
-	fields = (
-		'parent',
-		'invited_for',
-		'invite_accepted',
-		'sv_link',
-		'sv_uploaded_on',
-		'booking_id',
-		'status'
-	)
-	model = ConnectionDisbursementInvitation
-	extra = 0
+    fields = (
+        'parent',
+        'invited_for',
+        'invite_accepted',
+        'sv_link',
+        'sv_uploaded_on',
+        'booking_id',
+        'status'
+    )
+    model = ConnectionDisbursementInvitation
+    extra = 0
 
 
 @admin.register(ConnectionDisbursement)
 class ConnectionDisbursementAdmin(FSMTransitionCustomMixin, admin.ModelAdmin):
-	list_display = (
-		'id',
-		'parent',
-		'created_on',
-		'updated_on',
-		'status',
-	)
-	list_filter = ('status', WalkInFilter, )
-	inlines = (ConnectionDisbursementDocumentsAdmin, ConnectionDisbursementInvitationAdmin, StateLogInline,)
-	fsm_fields = ['status', ]
-	readonly_fields = ['legal_document_upload_link', 'invite', 'whatsapp_form_a_b_c', ]
-	search_fields = ('id', 'parent__id', 'parent__consumer_id',)
+    list_display = (
+        'id',
+        'parent',
+        'created_on',
+        'updated_on',
+        'status',
+    )
+    list_filter = ('status', WalkInFilter, )
+    inlines = (ConnectionDisbursementDocumentsAdmin, ConnectionDisbursementInvitationAdmin, StateLogInline,)
+    fsm_fields = ['status', ]
+    readonly_fields = ['legal_document_upload_link', 'invite', 'whatsapp_form_a_b_c', ]
+    search_fields = ('id', 'parent__id', 'parent__consumer_id',)
 
-	def has_change_permission(self, request, obj=None):
-		if not obj:
-			return True
+    def has_change_permission(self, request, obj=None):
+        if not obj:
+            return True
 
-	def get_urls(self):
-		urls = super().get_urls()
-		info = self.model._meta.app_label, self.model._meta.model_name
+    def get_urls(self):
+        urls = super().get_urls()
+        info = self.model._meta.app_label, self.model._meta.model_name
 
-		def wrap(view):
-			def wrapper(*args, **kwargs):
-				return self.admin_site.admin_view(view)(*args, **kwargs)
+        def wrap(view):
+            def wrapper(*args, **kwargs):
+                return self.admin_site.admin_view(view)(*args, **kwargs)
 
-			wrapper.model_admin = self
-			return update_wrapper(wrapper, view)
+            wrapper.model_admin = self
+            return update_wrapper(wrapper, view)
 
-		my_urls = [
-			url('(?P<pk>[^/.]+)/invite/', wrap(SendInvitationView.as_view()), name='%s_%s_invite' % info),
-		]
-		return my_urls + urls
+        my_urls = [
+            url('(?P<pk>[^/.]+)/invite/', wrap(SendInvitationView.as_view()), name='%s_%s_invite' % info),
+        ]
+        return my_urls + urls
+
+
+@admin.register(StateLog)
+class StateLogAdmin(ExportActionMixin, admin.ModelAdmin):
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    fields = (
+        'transition',
+        'source_state',
+        'state',
+        'by',
+        'description',
+        'timestamp',
+    )
+    list_display = (
+        'transition',
+        'source_state',
+        'state',
+        'by',
+        'description',
+        'timestamp',
+    )
+    list_filter = (
+        'transition',
+        'by',
+        'timestamp',
+    )
+
+    def get_readonly_fields(self, request, obj=None):
+        return self.fields
+
+    def get_queryset(self, request):
+        return super().get_queryset(
+            request
+        ).order_by(F('timestamp').desc())

@@ -31,10 +31,11 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
     UjjwalaApplicationOtpInitialForm, UjjwalaApplicationGenerateOtpForm, UjjwalaApplicationValidateOtpForm, \
     ConnectionDisbursementMaterialDeliveryForm, ConnectionDisbursementInvitationForm, \
     ConnectionDisbursementSocialMediaUpdatesForm, ConnectionDisbursementSearchForm, NicUpdateAddressForm, \
-    PreInspectionConvertForm
+    PreInspectionConvertForm, LegalDocumentsReviewAdminForm
 from ujjwala.global_functions import login_required_if_mech_inspection
 
-from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, ConnectionDisbursementInvitation
+from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
+    ConnectionDisbursementInvitation, ConnectionDisbursementDocuments
 
 
 def index(request):
@@ -622,7 +623,6 @@ class UjjwalaConnectionDisbursementListView(ListView):
                 ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
                 ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
                 ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
-                ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED
             ],
             walk_in_date__date=datetime.datetime.today().date()
         ).order_by('updated_on')
@@ -670,6 +670,16 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
             if not connection_disbursement.walk_in_date or \
                     (connection_disbursement.walk_in_date.date() != datetime.datetime.today().date()):
                 return self.otp_verification(connection_disbursement)
+        else:
+            pi_obj = PreInspection.objects.filter(
+                parent_id=self.kwargs.get('pk')).first()
+
+            if pi_obj:
+                messages.add_message(
+                    request, messages.ERROR, "Application Id : {} Pre Inspection Status: {}".format(
+                        pi_obj.parent_id, pi_obj.status
+                    )
+                )
         return super().dispatch(request, *args, **kwargs)
 
     def otp_verification(self, connection_disbursement):
@@ -746,7 +756,6 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
     # def form_valid(self, form):
     #     return redirect('ujjwala:connection_disbursement_list')
 
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
@@ -755,7 +764,110 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
         return context
 
 
-# Step - 2 SV Label Print List View & Form View
+@method_decorator(login_required, 'dispatch')
+class ConnectionDisbursementReviewFormAbcListView(ListView):
+    model = ConnectionDisbursement
+
+    paginate_by = 100
+    permission = 'has_view_permission'
+
+    def get_queryset(self):
+        return ConnectionDisbursement.objects.filter(
+            status__in=[
+                ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
+            ],
+            walk_in_date__date=datetime.datetime.today().date()
+        ).order_by('updated_on')
+
+    def get_template_names(self):
+        return 'ujjwala/connection-disbursement/forms/connection_disbursement_review_form_abc_listview.html'
+
+    def get(self, request, *args, **kwargs):
+        application_id = request.GET.get('application_id', '')
+        if application_id:
+            object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
+            if object:
+                if object.status not in (
+                    ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
+                ):
+                    messages.add_message(
+                        request, messages.ERROR, "Application Id: {} - {}".format(application_id, object.status)
+                    )
+                else:
+                    return redirect('ujjwala:connection_disbursement_review_form_abc_view',
+                                    pk=object.pk
+                                    )
+            else:
+                messages.add_message(
+                    request, messages.ERROR, "Application Id: {} not found".format(application_id)
+                )
+        return super().get(request, *args, **kwargs)
+
+
+# Step - 2 Review Form A B C
+@method_decorator(login_required, 'dispatch')
+class ConnectionDisbursementReviewFormAbcView(FormView, ApplicationView):
+    model = ConnectionDisbursement
+    template_name = 'ujjwala/connection-disbursement/forms/review_form_abc.html'
+    form_class = LegalDocumentsReviewAdminForm
+
+    def get_success_url(self):
+        if '_back_list_view' in self.request.POST:
+            return reverse('ujjwala:connection_disbursement_review_form_abc_list')
+        if '_next_form_view' in self.request.POST:
+            obj = self.get_object()
+            return reverse(
+                'ujjwala:connection_disbursement_sv_label_print_view',
+                kwargs={'pk': obj.pk}
+            )
+        return '.'
+
+    def dispatch(self, request, *args, **kwargs):
+        application_id = request.GET.get('application_id', '')
+        if application_id:
+            connection_disbursement = self.get_object()
+            if connection_disbursement.status != ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW:
+                messages.add_message(
+                    request, messages.ERROR, "Application Id: {} - {}".format(
+                        connection_disbursement.parent_id, connection_disbursement.status
+                    )
+                )
+                return redirect('ujjwala:connection_disbursement_review_form_abc_list')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset=queryset)
+        return obj
+
+    def form_valid(self, form):
+        obj = self.get_object()
+        data = form.cleaned_data
+        obj.transition_legal_documents_reviewed(
+            review_status=data['review_status'],
+            by=get_current_user(),
+            description='{} - {}'.format(data.get('review_status'), data.get('rejected_reason' ''))
+        )
+        obj.save()
+        return redirect(self.get_success_url())
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        # connection_disbursement = self.get_object()
+        # kwargs['connection_disbursement'] = connection_disbursement
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        obj = self.get_object()
+        documents = ConnectionDisbursementDocuments.objects.filter(parent_id=obj.id)
+        context.update({
+            "obj": obj,
+            "documents": documents
+        })
+        return context
+
+
+# Step - 3 SV Label Print List View & Form View
 @method_decorator(login_required, 'dispatch')
 class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
     model = ConnectionDisbursement
@@ -799,8 +911,17 @@ class ConnectionDisbursementSvLabelPrintView(FormView, ApplicationView):
     model = ConnectionDisbursement
     template_name = 'ujjwala/connection-disbursement/forms/sv_label_print.html'
     form_class = ConnectionDisbursementSvLabelPrintForm
-    success_url = '.'
 
+    def get_success_url(self):
+        if '_back_list_view' in self.request.POST:
+            return reverse('ujjwala:connection_disbursement_sv_label_print_list')
+        if '_next_form_view' in self.request.POST:
+            obj = self.get_object()
+            return reverse(
+                'ujjwala:connection_disbursement_social_media_updates_view',
+                kwargs={'pk': obj.pk}
+            )
+        return '.'
 
     def dispatch(self, request, *args, **kwargs):
         application_id = request.GET.get('application_id', '')
@@ -821,7 +942,7 @@ class ConnectionDisbursementSvLabelPrintView(FormView, ApplicationView):
 
     def form_valid(self, form):
         form.save()
-        return redirect('ujjwala:connection_disbursement_sv_label_print_list')
+        return redirect(self.get_success_url())
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -843,7 +964,7 @@ class ConnectionDisbursementSvLabelPrintView(FormView, ApplicationView):
         return context
 
 
-# Step - 3 Social Media Updates List View & Form View
+# Step - 4 Social Media Updates List View & Form View
 @method_decorator(login_required, 'dispatch')
 class UjjwalaConnectionDisbursementSocialMediaUpdatesListView(ListView):
     model = ConnectionDisbursement
@@ -887,7 +1008,17 @@ class ConnectionDisbursementSocialMediaUpdatesView(FormView, ApplicationView):
     model = ConnectionDisbursement
     template_name = 'ujjwala/connection-disbursement/forms/social_media_updates.html'
     form_class = ConnectionDisbursementSocialMediaUpdatesForm
-    success_url = '.'
+
+    def get_success_url(self):
+        if '_back_list_view' in self.request.POST:
+            return reverse('ujjwala:connection_disbursement_social_media_updates_list')
+        if '_next_form_view' in self.request.POST:
+            obj = self.get_object()
+            return reverse(
+                'ujjwala:connection_disbursement_material_delivery_view',
+                kwargs={'pk': obj.pk}
+            )
+        return '.'
 
     def dispatch(self, request, *args, **kwargs):
         application_id = request.GET.get('application_id', '')
@@ -908,7 +1039,7 @@ class ConnectionDisbursementSocialMediaUpdatesView(FormView, ApplicationView):
 
     def form_valid(self, form):
         form.save()
-        return redirect('ujjwala:connection_disbursement_social_media_updates_list')
+        return redirect(self.get_success_url())
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -924,7 +1055,7 @@ class ConnectionDisbursementSocialMediaUpdatesView(FormView, ApplicationView):
         return context
 
 
-# Step - 4 Material Delivery List View & Form View
+# Step - 5 Material Delivery List View & Form View
 @method_decorator(login_required, 'dispatch')
 class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
     model = ConnectionDisbursement
@@ -1063,6 +1194,7 @@ class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
 
     def form_valid(self, form):
         form.save()
+
         return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
@@ -1199,6 +1331,20 @@ class PreInspectionConvertToView(FormView):
     # model = ConnectionDisbursementInvitation
     form_class = PreInspectionConvertForm
     template_name = "ujjwala/pre-Inspection-form/pre_inspection_conversion.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj:
+            if obj.status in (
+                    PreInspectionStatusEnum.SUBMITTED,
+                    PreInspectionStatusEnum.ACCEPTED,
+            ):
+                return HttpResponse("Pre Inspection Already Submitted")
+            if self.kwargs.get('convert_to') == 'mech' and obj.type == PreInspectionTypeEnum.MECHANIC:
+                return redirect('ujjwala:pre_inspection_form_view', type="mech", pk=obj.pk)
+            elif self.kwargs.get('convert_to') == 'self' and obj.type == PreInspectionTypeEnum.SELF:
+                return redirect('ujjwala:pre_inspection_form_view', type="self", pk=obj.pk)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_object(self, queryset=None):
         try:

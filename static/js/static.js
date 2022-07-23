@@ -337,7 +337,31 @@ function submit_form(signature_url) {
     });
 }
 
+function valid() {
+    let files = [
+        validateUppy(customerpictureuppy, 'CUSTOMER_PHOTO', 'Customer Picture or Selfie (ग्राहक की फोटो)*', false),
+        validateUppy(bankdetailuppy, 'BANK_DETAIL', 'Bank Detail (पास बुक का विवरण)', false)
+    ]
 
+    if (!files.reduce((aggr, current) => {
+        return current.valid && aggr
+    }, true)) {
+        let error = files.reduce((aggr, current) => {
+            if (current.msg) {
+                return aggr + '\n' + current.msg
+            } else {
+                return aggr
+            }
+        }, '');
+        window.alert(error);
+        return null;
+    }
+    let documentArray = files.filter(e => e.url).map(e => {
+        return {type: e.key, link: e.url}
+    });
+    console.log(documentArray);
+    return documentArray;
+}
 
 function validateUppy(uppyObj, key, label, fileMandatory) {
 

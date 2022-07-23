@@ -50,16 +50,16 @@
 
 				<div class="row m-0 multi_buttons mb-2">
 					<div class="col pl-1">
-                                                <a id="print_label" class="btn btn-danger text-white {% if not bridge_available %}disabled{% endif %}" style="width: 100%;"
-                                                onclick="sendPrint('print_label', '{{ bridge_link }}/print_label?url={{bluebook_label_print_url}}')">
-                                                <i class="material-icons">local_printshop</i>Print Label
-                                                </a>
+						<a id="print_label" class="btn btn-danger text-white {% if not bridge_available %}disabled{% endif %}" style="width: 100%;"
+						onclick="sendPrint('print_label', '{{ bridge_link }}/print_label?url={{bluebook_label_print_url}}')">
+						<i class="material-icons">local_printshop</i>Print Label
+						</a>
 					</div>
 					<div class="col pr-1">
-                                                <a id="print_sv" class="btn btn-danger text-white {% if bridge_available and obj.valid_sv_link %}{% else %}disabled{% endif %}" style="width: 100%;"
-                                                onclick="sendPrint('print_sv', '{{ bridge_link }}/print_ujjwala_sv?url={{ obj.valid_sv_link }}')">
-							<i class="material-icons">local_printshop</i> Print SV
-                        			</a>
+						<a id="print_sv" class="btn btn-danger text-white {% if bridge_available and obj.valid_sv_link %}{% else %}disabled{% endif %}" style="width: 100%;"
+						onclick="sendPrint('print_sv', '{{ bridge_link }}/print_ujjwala_sv?url={{ obj.valid_sv_link }}')">
+						<i class="material-icons">local_printshop</i> Print SV
+						</a>
 					</div>
 				</div>
                 </br>
@@ -77,7 +77,9 @@
     			<p class="pl-2 mt-5" style=" font-weight: 600;"><input required id="accept_form_abc_check" type="checkbox" style="opacity: 1; margin-right:10px; position:relative; pointer-events: unset;" >I have collected Signed Form ABC and SV Voucher from Customer.</p>
 			</div>
             <div class="card-footer">
-                <input class="btn btn-primary float-right" type="submit" id="form"  value="Submit"/>
+                <input class="btn btn-primary text-white float-left" type="submit" value="Submit And Back" name="_back_list_view">
+                <input class="btn btn-primary text-white float-right" type="submit" value="Submit And Next" name="_next_form_view">
+{#                <input class="btn btn-primary float-right" type="submit" id="form"  value="Submit"/>#}
             </div>
         </div>
     </form>

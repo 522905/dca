@@ -1,0 +1,61 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+
+<style>
+    .hidden-field{ display: none;}
+</style>
+<div class="form_label p-2">
+	<div class="card card-profile pt-0 mt-0 " style="width: 100%;" >
+		<div class="row justify-content-center m-0" style="width: 100%; margin: 0 auto !important; padding: 10px;">
+			<div style="width: 30%; float:left">
+				<div class="card-profile-image">
+					<a href="#">
+						<img style="width:100%" src="{{obj.parent.document_self}}">
+					</a>
+				</div>
+			</div>
+			<div style="width: 70%; float:right">
+				<div class="card-body pt-0">
+					<div class="text-center">
+						<h5 class="h3">{{ obj.parent.name }}({{ obj.parent.id }})<span class="font-weight-light"></span></h5>
+						<div class="h5 font-weight-300">
+							<i class="ni location_pin mr-2"></i>{{ obj.parent.contact_mobile }}
+						</div>
+						<div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
+							{% if address_json == address_json  %}
+								{% for key,data in obj.parent.address_json.items %}
+									{{data}},
+								{% endfor %}
+							{% else %}
+								{{ obj.parent.address }}
+							{% endif%}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+    <div class="card card-profile pt-0 mt-0 " style="width: 100%;">
+    {% for doc in documents %}
+        <a class="text-white btn btn-primary mb-3 float-left" href="{{ doc.link }}">{{ doc.type }}</a>
+    {% endfor %}
+    </div>
+    <form method="post" id="form" >
+        {% csrf_token %}
+        <div class="card pt-4">
+			<div class="p-2">
+                <p>Review Form ABC</p>
+                {{ form }}
+            </div>
+			<div class="card-footer">
+                <input class="text-white btn btn-danger mb-3 float-left" type="submit" value="Submit And Back" name="_back_list_view">
+                <input class="text-white btn btn-danger mb-3 float-right" type="submit" value="Submit And Next" name="_next_form_view">
+			</div>
+        </div>
+    </form>
+</div>
+{% endblock %}

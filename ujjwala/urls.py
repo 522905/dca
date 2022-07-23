@@ -52,7 +52,11 @@ urlpatterns = [
         views.UjjwalaConnectionDisbursementListView.as_view(),
         name="connection_disbursement_list"
     ),
-    path('portal/pre-inspection/review/', views.PreInspectionReviewView.as_view(), name="review"),
+
+    path('portal/connection-disbursement/review_form_abc/',
+         views.ConnectionDisbursementReviewFormAbcListView.as_view(),
+         name="connection_disbursement_review_form_abc_list"
+    ),
 
     path(
         'portal/pre-inspection/create/',
@@ -112,6 +116,12 @@ urlpatterns = [
     #     views.SendInvitationView.as_view(),
     #     name="connection_disbursement_send_invitation_view"
     # ),
+
+    url(
+        '^portal/connection-disbursement/(?P<pk>[^/.]+)/review_form_abc/$',
+        views.ConnectionDisbursementReviewFormAbcView.as_view(),
+        name="connection_disbursement_review_form_abc_view"
+    ),
 
     url(
         '^portal/connection-disbursement/(?P<pk>[^/.]+)/barcode_label_print/$',

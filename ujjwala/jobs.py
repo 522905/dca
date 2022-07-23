@@ -11,7 +11,7 @@ import magic
 # @job
 from domestic_app.utils import get_minio_public_url
 from sdms.services import IoclOmcDedup
-from ujjwala.enums import RoboSdmsDedeupStatusEnum
+from ujjwala.enums import RoboSdmsDedeupStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum
 
 dedup_portal = IoclOmcDedup('305948', 'Arun@305948')
 
@@ -102,7 +102,7 @@ def move_ujjwala_files_to_minio_processing(obj):
 
 
 def do_primary_omc_dedupe_check(id):
-    from ujjwala.models import UjjwalaV2Application
+    from ujjwala.models import UjjwalaV2Application, PreInspection
 
     application = UjjwalaV2Application.objects.filter(pk=id).first()
     omc_dedupe_check_passed = True
@@ -132,7 +132,12 @@ def do_primary_omc_dedupe_check(id):
 
     if omc_dedupe_check_passed:
         application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE
-        application.event_invite_for_ekyc_channel_whatsapp()
+        obj = PreInspection.objects.create(
+            parent_id=application.id,
+            status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+            type=PreInspectionTypeEnum.SELF
+        )
+        application.event_whatsapp_pre_inspection_type_self(obj.id)
         application.save()
     else:
         if iocl_investigation_required:
