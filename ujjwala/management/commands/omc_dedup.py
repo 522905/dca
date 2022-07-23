@@ -28,9 +28,9 @@ class Command(BaseCommand):
         dedup_portal.login()
 
         for application in UjjwalaV2Application.objects.filter(
-            id__lte=500,
-            status=UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED
-        ):
+#            id__gte=5000,
+            status=UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD
+        ).exclude(family_members__uid_no__in=('999999999999', '0', '1')):
             for fm in application.family_members.all():
 
                 resp = dedup_portal.omc_aadhar_dedup(fm.uid_no)
@@ -55,9 +55,10 @@ class Command(BaseCommand):
                             )})
                         form.is_valid()
                         application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE
-                        if application.status == 'DOCUMENTS_UPLOADED':
-                            application.application_rejected(**form.cleaned_data)
-                            application.event_ioc_dedupe_reject_channel_whatsapp()
+#                       if application.status == 'DOCUMENTS_UPLOADED':
+                        application.application_rejected(**form.cleaned_data)
+                        application.event_ioc_dedupe_reject_channel_whatsapp()
+                        application.save()
                     except Exception as e:
                         print(e)
                         pass
