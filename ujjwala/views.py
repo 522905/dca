@@ -666,14 +666,20 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
 
     def dispatch(self, request, *args, **kwargs):
         connection_disbursement = self.get_object()
-        if connection_disbursement and \
-                connection_disbursement.parent.status in (
+        if connection_disbursement:
+            if connection_disbursement.parent.status in (
                 UjjwalaV2ApplicationStatus.NIC_CLEARED,
                 UjjwalaV2ApplicationStatus.READY_FOR_DISBURSEMENT
-        ):
-            if not connection_disbursement.walk_in_date or \
-                    (connection_disbursement.walk_in_date.date() != datetime.datetime.today().date()):
-                return self.otp_verification(connection_disbursement)
+            ):
+                if not connection_disbursement.walk_in_date or \
+                        (connection_disbursement.walk_in_date.date() != datetime.datetime.today().date()):
+                    return self.otp_verification(connection_disbursement)
+            else:
+                messages.add_message(
+                    request, messages.ERROR, "Application Id : {} Status: {}".format(
+                        connection_disbursement.parent_id, connection_disbursement.parent.status
+                    )
+                )
         else:
             pi_obj = PreInspection.objects.filter(
                 parent_id=self.kwargs.get('pk')).first()
