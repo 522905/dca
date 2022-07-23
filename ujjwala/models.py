@@ -791,7 +791,7 @@ class PreInspection(models.Model):
 		self.save()
 		create_txn_status_job_function = partial(
 			django_rq.enqueue,
-			"compress_pre_inspection_documents",
+			"ujjwala.jobs.compress_pre_inspection_documents",
 			parent_id=self.id
 		)
 		transaction.on_commit(create_txn_status_job_function)
@@ -1002,7 +1002,7 @@ class ConnectionDisbursement(models.Model):
 		self.parent.save()
 		create_txn_status_job_function = partial(
 			django_rq.enqueue,
-			"compress_connection_disbursement_documents",
+			"ujjwala.jobs.compress_connection_disbursement_documents",
 			parent_id=self.id
 		)
 		transaction.on_commit(create_txn_status_job_function)

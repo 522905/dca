@@ -220,7 +220,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
                 create_txn_status_job_function = partial(
                     django_rq.enqueue,
-                    "compress_connection_disbursement_documents",
+                    "ujjwala.jobs.compress_connection_disbursement_documents",
                     parent_id=connection_disbursement.id
                 )
                 transaction.on_commit(create_txn_status_job_function)
