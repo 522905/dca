@@ -104,10 +104,9 @@ class Command(BaseCommand):
             for customer_doc in application.documents.all():
                 print("Customer Doc {} {}".format(customer_doc.type, customer_doc.link))
                 success, upload_url, file_size = upload_compressed_file_to_tus(customer_doc.link)
-                if success:
-                    if not customer_doc.link == upload_url:
-                        customer_doc.link = upload_url
-                        customer_doc.compressed = True
+                if success and not customer_doc.link == upload_url:
+                    customer_doc.link = upload_url
+                    customer_doc.compressed = True
 
                 customer_doc.file_size = file_size
                 customer_doc.save()
@@ -115,20 +114,18 @@ class Command(BaseCommand):
             for family_member in application.family_members.all():
                 print("UID Front {}".format(family_member.uid_front_link))
                 success, upload_url, file_size = upload_compressed_file_to_tus(family_member.uid_front_link)
-                if success:
-                    if not family_member.uid_front_link == upload_url:
-                        family_member.uid_front_link = upload_url
-                        family_member.uid_front_compressed = True
+                if success and not family_member.uid_front_link == upload_url:
+                    family_member.uid_front_link = upload_url
+                    family_member.uid_front_compressed = True
 
                 family_member.uid_front_file_size = file_size
                 family_member.save()
 
                 print("UID Back {}".format(family_member.uid_back_link))
                 success, upload_url, file_size = upload_compressed_file_to_tus(family_member.uid_back_link)
-                if success:
-                    if not family_member.uid_back_link == upload_url:
-                        family_member.uid_back_link = upload_url
-                        family_member.uid_back_compressed = True
+                if success and not family_member.uid_back_link == upload_url:
+                    family_member.uid_back_link = upload_url
+                    family_member.uid_back_compressed = True
 
                 family_member.uid_back_file_size = file_size
                 family_member.save()
