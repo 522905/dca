@@ -942,8 +942,11 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
     @action(methods=['get'], detail=False, url_path='get_iocl_investigation_records')
     def get_iocl_investigation_records(self, request, *args, **kwargs):
+        # record_list = UjjwalaV2Application.objects.filter(
+        #     robo_sdms_dedup=RoboSdmsDedeupStatusEnum.IOCL_INVESTIGATION_REQUIRED
+        # ).order_by("id")
         record_list = UjjwalaV2Application.objects.filter(
-            robo_sdms_dedup=RoboSdmsDedeupStatusEnum.IOCL_INVESTIGATION_REQUIRED
+            id=11351
         ).order_by("id")
 
         return JsonResponse([
@@ -967,10 +970,10 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         invalid_result_relation = ''
         application_obj = UjjwalaV2Application.objects.get(pk=request.data.get('id'))
 
-        self_result = [
+        self_record = [
             i for i in request.data['family_members'] if i['relation'] == 'SELF'
         ][0]
-        self_consumer_id = self_result.get('consumer_id', '')
+        self_consumer_id = self_record['result'].get('consumer_id', '')
 
         if self_consumer_id:
             for member in request.data['family_members']:
@@ -1014,8 +1017,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 )})
             form.is_valid()
             application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE
-            if application_obj.status == 'DOCUMENTS_UPLOADED':
-                application_obj.application_rejected(**form.cleaned_data)
-                application_obj.event_ioc_dedupe_reject_channel_whatsapp()
+            application_obj.application_rejected(**form.cleaned_data)
+            application_obj.event_ioc_dedupe_reject_channel_whatsapp()
         application_obj.save()
         return HttpResponse('OK')
