@@ -23,9 +23,14 @@ COMPILED_REGEX_PATTERN_AADHAR_EXISTS = re.compile(
     """Aadhaar already exists for customer (?P<contact_name>.*?) of (?P<distributor_name>.*)\(SBL-EXL-00151\)"""
 )
 
-COMPILED_REGEX_PATTERN_BPC = re.compile(
+COMPILED_REGEX_PATTERN_BPC_1 = re.compile(
     "Available with (?P<omc>.*). Already exists with lpgid: (?P<consumer_id>.*) and distcode: (?P<distributor_name>.*)"
 )
+
+COMPILED_REGEX_PATTERN_BPC_2 = re.compile(
+    "Available with (?P<omc>.*). Duplicate UID already exists (?:in|with) (?:New KYC Family with)?(?P<consumer_id>.*)"
+)
+
 COMPILED_REGEX_PATTERN_OTHERS = re.compile(
     "Available with (?P<omc>.*) LPGId : (?P<consumer_id>.*) DistName : (?P<distributor_name>.*)"
 )
@@ -34,13 +39,13 @@ COMPILED_REGEX_PATTERN_OTHERS = re.compile(
 def valid_file_uploaded(url):
     res = requests.head(url, headers={"Tus-Resumable": "1.0.0"})
     header_info = res.headers
-
-    if int(header_info['Upload-Length']) == 0 or int(header_info['Upload-Offset']) == 0:
-        return False, header_info['Upload-Length']
+    upload_length = int(header_info['Upload-Length'])
+    if upload_length == 0 or int(header_info['Upload-Offset']) == 0:
+        return False, upload_length
     elif header_info['Upload-Length'] != header_info['Upload-Offset']:
-        return False, header_info['Upload-Length']
+        return False, upload_length
     else:
-        return True, header_info['Upload-Length']
+        return True, upload_length
 
 
 def get_compressed_file_link_jpeg(url):
@@ -656,14 +661,24 @@ def process_omc_dedupe_result(omc_dedup_result):
     for key, value in omc_dedup_result.items():
         if not "not available with" in value.lower():
             if key == 'bpcl':
-                m = COMPILED_REGEX_PATTERN_BPC.match(value)
+                m = COMPILED_REGEX_PATTERN_BPC_1.match(value)
+                if m:
+                    result_dict = m.groupdict()
+                    result_dict.update({
+                        'distributor_name': "{} Id {}".format(result_dict['omc'], result_dict['distributor_name'])
+                    })
+                    return result_dict
+
+                m = COMPILED_REGEX_PATTERN_BPC_2.match(value)
                 result_dict = m.groupdict()
                 result_dict.update({
-                    'distributor_name': "{} Id {}".format(result_dict['omc'], result_dict['distributor_name'])
+                    'distributor_name': "BPCL Distributor"
                 })
                 return result_dict
             else:
                 m = COMPILED_REGEX_PATTERN_OTHERS.match(value)
                 result_dict = m.groupdict()
+                if not result_dict and 'invalid response (p)' in value.lower():
+                    return {'consumer_id': 'IdNotAvaliable', 'distributor_name': key, 'contact_address': ''}
                 return result_dict
     return {}
