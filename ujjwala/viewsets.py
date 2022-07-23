@@ -892,7 +892,9 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 'family_members': [{
                     'id': member.id,
                     'uid': member.uid_no
-                } for member in record.family_members.all()]
+                } for member in record.family_members.exclude(
+                    uid_no__in=('999999999999', '666666666666', '0', '1')
+                )]
             } for record in record_list
         ], safe=False)
 
@@ -949,8 +951,11 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 'id': record.id,
                 'family_members': [{
                     'id': member.id,
+                    'relation': member.relation,
                     'uid': member.uid_no
-                } for member in record.family_members.all()]
+                } for member in record.family_members.exclude(
+                    uid_no__in=('999999999999', '666666666666', '0', '1')
+                )]
             } for record in record_list
         ], safe=False)
 
@@ -961,6 +966,17 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         invalid_result = {}
         invalid_result_relation = ''
         application_obj = UjjwalaV2Application.objects.get(pk=request.data.get('id'))
+
+        self_result = [
+            i for i in request.data['family_members'] if i['relation'] == 'SELF'
+        ][0]
+        self_consumer_id = self_result.get('consumer_id', '')
+
+        if self_consumer_id:
+            for member in request.data['family_members']:
+                if member['relation'] == 'SELF': continue
+                if member['result']['consumer_id'] == self_consumer_id:
+                    member['result'] = {}
 
         for member in request.data['family_members']:
             family_member_obj = FamilyMembers.objects.get(pk=member.get('id'))
@@ -983,6 +999,11 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
         if record_valid:
             application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE
+            if self_consumer_id:
+                application_obj.consumer_id = self_consumer_id
+
+                if application_obj.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
+                    application_obj.ekyc_accepted_or_rejected(description="Bot Processed")
         else:
             form = ApplicationRejected(data={
                 'rejected_reason': 'CONNECTION_ALREADY_EXIST',
