@@ -167,7 +167,6 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
         else:
             return HttpResponse("No records found.")
 
-
     @action(methods=['post'], detail=False, url_path='update_mobile_number_sdms_record')
     def update_mobile_number_sdms_record(self, request: HttpRequest, *args, **kwargs):
         consumer_id = request.data.get('consumer_id')
@@ -193,6 +192,16 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     @action(methods=['post'], detail=False, url_path='wf')
     def web_form(self, request, *args, **kwargs):
         request.PERFORM_SUBMIT = True
+        self_family_member = FamilyMembers.objects.filter(uid_no=request.data.get('SELF-uid_no')).first()
+        if self_family_member:
+            existing_application = UjjwalaV2Application.objects.filter(id=self_family_member.parent_id).first()
+            if existing_application:
+                if existing_application.status == UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD:
+                    pre_inspection_obj = PreInspection.objects.filter(parent_id=existing_application.id).first()
+                    if pre_inspection_obj:
+                        pre_inspection_obj.delete()
+                    existing_application.family_members.all().delete()
+                    existing_application.delete()
         return super().create(request, *args, **kwargs)
 
     @action(methods=['post'], detail=False, url_path='legal_documents_upload')
@@ -271,21 +280,19 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         ).order_by('-id')
 
         if applications:
-            # if application.status != 'DOCUMENTS_REUPLOAD':
-            # status_url = reverse('application_status', kwargs={'pk': application.first().pk})
+            if len(applications) == 1:
+                if applications.first().status == UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD:
+                    return JsonResponse({
+                        "status": True,
+                        "msg": "VALID_APPLICATION",
+                        "data": {}
+                    })
             result = {
                 "status": False,
             }
             msg = get_existing_duplicate_applications_detail(applications)
             result.update(msg)
             return JsonResponse(result)
-
-            # return JsonResponse({
-            #         "status": False,
-            #         "msg": "Application Id: {} exist with contact number: {} status: {}".format(
-            #             application.pk, contact_mobile, application.status
-            #         )
-            #     })
 
         return JsonResponse({
             "status": True,
@@ -303,15 +310,24 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 "data": {}
             })
 
-        exiting_applications = UjjwalaV2Application.objects.filter(family_members__uid_no=uid).order_by('-id')
-        if not exiting_applications.exists():
+        existing_applications = UjjwalaV2Application.objects.filter(family_members__uid_no=uid).order_by('-id')
+        if existing_applications:
+            if len(existing_applications) == 1:
+                if existing_applications.first().status == UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD:
+                    return JsonResponse({
+                        "status": True,
+                        "msg": "VALID_APPLICATION",
+                        "data": {}
+                    })
+
+        if not existing_applications.exists():
             return JsonResponse({
                 "status": True,
                 "msg": "VALID_APPLICATION",
                 "data": {}
             })
 
-        result = get_existing_duplicate_applications_detail(exiting_applications)
+        result = get_existing_duplicate_applications_detail(existing_applications)
         result.update({
             "status": False,
         })
@@ -665,7 +681,6 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 # ))
             except:
                 pass
-
         return application
 
     @action(methods=['get'], detail=True, url_path='download_ujjwala_legal_docs')
