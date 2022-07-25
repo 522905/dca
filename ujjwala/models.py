@@ -29,7 +29,7 @@ from ujjwala.forms import UjjwalaLegalDocumentsUpload, \
 	ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewForm, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
 	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm, NewRelationCreated
-from ujjwala.ujjwala_functions import download_ujjwala_physical_legal_docs
+from ujjwala.ujjwala_functions import download_ujjwala_physical_legal_docs, is_application_ready_for_disbursement
 from utils.global_functions import move_file_to_minio_bucket, upload_file_to_minio_bucket, old_address_to_description
 
 
@@ -90,6 +90,9 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			("can_upload_post_installation", "Can upload post installation"),
 			("can_reject_application", "Can reject application")
 		)
+
+	def pre_inspection_accepted(self):
+		return self.pre_inspection
 
 	def pre_inspection_form(self):
 		# if self.status == UjjwalaV2ApplicationStatus.PRE_INSPECTION_SUBMITTED:
@@ -176,7 +179,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		return self.documents.filter(type=UjjwalaApplicationDocumentsEnum.WITNESS_PHOTO).first().link
 
 	def physical_legal_document_link(self):
-		record = self.pre_inspection_accepted.documents.filter(
+		record = self.pre_inspection.documents.filter(
 			type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT
 		).first()
 		if record: return record.link
@@ -324,6 +327,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		permission='ujjwala.can_approve_connection',
 	)
 	def transition_nic_cleared(self, *args, **kwargs):
+		is_application_ready_for_disbursement(self.pk)
 		pass
 
 	# @fsm_log_description
@@ -843,6 +847,7 @@ class PreInspection(models.Model):
 			# self.parent.pre_inspection_accepted = self
 			self.parent.save()
 			self.parent.event_legal_documents_upload_channel_whatsapp()
+			is_application_ready_for_disbursement(self.parent_id)
 		else:
 			if self.type == PreInspectionTypeEnum.SELF:
 				# Send Whatsapp Message
