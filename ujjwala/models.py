@@ -70,7 +70,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	sv = models.CharField(max_length=25, null=True, blank=True)
 	documents_required_for_reupload = models.JSONField(null=True, blank=True)
 	last_execution_state = models.CharField(max_length=50, null=True, blank=True)
-	pre_inspection_accepted = models.OneToOneField("PreInspection", on_delete=models.CASCADE, null=True, blank=True)
+	# pre_inspection_accepted = models.OneToOneField("PreInspection", on_delete=models.CASCADE, null=True, blank=True)
 	sync_with_sdms = models.BooleanField(default=True)
 	applicant_verified = models.BooleanField(default=False)
 	applicant_verified_on = models.DateTimeField(null=True, blank=True)
@@ -650,7 +650,7 @@ class UserDocuments(models.Model):
 
 
 class PreInspection(models.Model):
-	parent = models.ForeignKey(
+	parent = models.OneToOneField(
 		UjjwalaV2Application, on_delete=models.PROTECT, related_name='pre_inspection'
 	)
 	created_on = models.DateTimeField(auto_now_add=True, null=True)
@@ -840,7 +840,7 @@ class PreInspection(models.Model):
 			self.parent.latitude = self.latitude
 			self.parent.longitude = self.longitude
 			self.parent.accuracy = self.accuracy
-			self.parent.pre_inspection_accepted = self
+			# self.parent.pre_inspection_accepted = self
 			self.parent.save()
 			self.parent.event_legal_documents_upload_channel_whatsapp()
 		else:

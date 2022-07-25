@@ -173,13 +173,18 @@ class UjjwalaWhatsappCommunication(object):
 		)
 
 	def event_legal_documents_upload_channel_whatsapp(self):
-		from ujjwala.models import ConnectionDisbursement
+		from ujjwala.models import ConnectionDisbursement, PreInspection
 
 		connection_disbursement = ConnectionDisbursement.objects.get(parent_id=self.pk)
 
-		physical_legal_doc_link = self.pre_inspection_accepted.documents.filter(
-			type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT
-		).first().link
+		pre_inspection = PreInspection.objects.get(
+			parent_id=self.pk, type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT
+		)
+		#
+		# physical_legal_doc_link = self.pre_inspection_accepted.documents.filter(
+		# 	type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT
+		# ).first().link
+		physical_legal_doc_link = pre_inspection.link
 
 		body_text = {
 			"countryCode": "+91",

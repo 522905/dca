@@ -152,6 +152,7 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
         else:
             fields = super().get_fields(request, obj)
             fields.append('connection_disbursement')
+            fields.append('pre_inspection')
             return fields
 
     def get_readonly_fields(self, request, obj=None):

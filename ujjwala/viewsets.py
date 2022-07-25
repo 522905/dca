@@ -201,6 +201,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                     if pre_inspection_obj:
                         pre_inspection_obj.delete()
                     existing_application.family_members.all().delete()
+                    existing_application.documents.all().delete()
                     existing_application.delete()
         return super().create(request, *args, **kwargs)
 
