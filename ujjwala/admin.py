@@ -228,10 +228,12 @@ class PreInspectionAdmin(ExportActionMixin, FSMTransitionCustomMixin, admin.Mode
         'id',
         'parent',
         'witness_mobile_number',
+        'type',
         'mechanic_name',
+        'submitted_on',
         'status',
     )
-    list_filter = ('mechanic', 'status')
+    list_filter = ('mechanic', 'status', 'submitted_on', 'type')
     inlines = (PreInspectionDocumentsAdmin, StateLogInline,)
     fsm_fields = ['status', ]
     search_fields = ('id', 'parent__id', 'parent__consumer_id')
