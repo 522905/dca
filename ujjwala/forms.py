@@ -17,7 +17,7 @@ from django_currentuser.middleware import get_current_user
 
 from otp.models import Otp
 from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
-	RejectionTypeEnum, PreInspectionTypeEnum
+	RejectionTypeEnum, PreInspectionTypeEnum, RoboSdmsDedeupStatusEnum
 from ujjwala.models import UjjwalaApplicationDocumentsEnum
 from formtools.wizard.views import SessionWizardView
 
@@ -312,10 +312,20 @@ class PreInspectionInitialForm(forms.Form):
 		application = UjjwalaV2Application.objects.filter(
 			pk=value
 		).first()
+
 		if not application:
 			raise forms.ValidationError("Invalid Application Id")
-		elif not application.status == UjjwalaV2ApplicationStatus.NIC_CLEARED:
-			raise forms.ValidationError("Application Status: {}".format(application.status))
+
+		elif not (
+			application.robo_sdms_dedup == RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE and\
+			application.status not in (
+				UjjwalaV2ApplicationStatus.APPLICATION_REJECTED,
+				UjjwalaV2ApplicationStatus.OMC_REJECTED
+			)
+		):
+			raise forms.ValidationError("Application Status: {} \n Dedup status".format(
+				application.status, application.robo_sdms_dedup
+			))
 		return value
 
 
@@ -324,7 +334,7 @@ class PreInspectionGenerateOtpForm(forms.Form):
 	application_id = forms.IntegerField(widget=forms.HiddenInput)
 	mobile = forms.ChoiceField(
 		widget=forms.RadioSelect,
-	    label='Select Mobile Number for Sending OTP(ओटीपी भेजने के लिए मोबाइल नंबर चुनें)'
+		label='Select Mobile Number for Sending OTP(ओटीपी भेजने के लिए मोबाइल नंबर चुनें)'
 	)
 
 	def __init__(self, mobile_nos=None, *args, **kwargs):
