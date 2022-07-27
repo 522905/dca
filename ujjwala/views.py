@@ -124,7 +124,7 @@ class UjjwalaPreInspectionListView(ListView):
     def get_queryset(self):
         return PreInspection.objects.filter(
             mechanic=get_current_user()
-        )
+        ).order_by('-submitted_on')
 
     def get_template_names(self):
         return 'ujjwala/pre_inspection_listview.html'
