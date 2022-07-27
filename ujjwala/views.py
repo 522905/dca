@@ -181,7 +181,7 @@ class InstallationView(FormView):
         if installation.status in (
                 ConnectionDisbursementStatusEnum.INSTALLATION_UPLOADED,
         ):
-            return render(self.request, 'ujjwala/installation_status.html', context={
+            return render(self.request, 'ujjwala/Installation-form/installation_status.html', context={
                 'installation': installation
             })
         return super().dispatch(request, *args, **kwargs)
@@ -248,7 +248,7 @@ class InstallationListView(ListView):
         # )
 
     def get_template_names(self):
-        return 'ujjwala/installation_listview.html'
+        return 'ujjwala/Installation-form/installation_listview.html'
 
 
 @method_decorator(login_required_if_mech_inspection, 'dispatch')

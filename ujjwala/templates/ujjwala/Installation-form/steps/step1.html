@@ -1,0 +1,101 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.css" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap"
+    rel="stylesheet">
+<script src="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.js"></script>
+<style>
+     .lacation_field span{ float: left; width: 100px; } 
+</style>
+<div class="main p-2 pt-0 form_label">
+    <form method="post" id="">
+        {% csrf_token %}
+        <div class="card">
+            <div class="card-body">
+                {{form.form_type}}
+                {{form.application_id}}
+                <div class="row mb-2 M-0">
+                    <div class="col-sm-12 photo_block">
+                        <span class="hidden_field">{{ form.kitchen_photo }}</span>
+                        <label>Photo of customer with kitchen<br> (रसोईघर के साथ ग्राहक की तस्वीर)</label>
+                        <p id="kitchen_photo"></p>
+                        {{ form.kitchen_photo.errors }}
+                    </div>
+                    <div class="col-sm-12 photo_block">
+                        <span class="hidden_field">{{ form.stove_photo }}</span>
+                        <label>Photo of Stove with Sticker (स्टिकर के साथ चूल्हा की तस्वीर )</label>
+                        <p id="stove_photo"></p>
+                        {{ form.stove_photo.errors }}
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer float-right">
+                <input class="btn btn-success float-right rounded-0" type="submit" value="Submit" />
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+    // kitchen Photo
+    window.kitchenPhotoUppy = new Uppy.Core({
+		debug: true,
+		autoProceed: true,
+		restrictions: {
+			maxFileSize: 50000000,
+			maxNumberOfFiles: 1,
+			minNumberOfFiles: 1,
+			allowedFileTypes: ['image/*'],
+		}
+	})
+    .use(Uppy.Dashboard, {
+        trigger: '#kitchen_photo',
+        inline: true,
+        target: '#kitchen_photo',
+        showProgressDetails: true,
+        note: 'Images and video only, 2–3 files, up to 10 MB',
+        height: 200,
+        metaFields: [],
+        id: 'kitchen_photo',
+        browserBackButtonClose: false
+    })
+    .use(Uppy.Tus, {
+        endpoint: 'https://tus.dca.arungas.com/files/',
+    })
+    kitchenPhotoUppy.on('complete', result => {
+		$('#id_kitchen_photo').val(result.successful[0].uploadURL);
+	})
+
+    // Stove Photo
+
+    window.stovePhotoUppy = new Uppy.Core({
+		debug: true,
+		autoProceed: true,
+		restrictions: {
+			maxFileSize: 50000000,
+			maxNumberOfFiles: 1,
+			minNumberOfFiles: 1,
+			allowedFileTypes: ['image/*'],
+		}
+	})
+    .use(Uppy.Dashboard, {
+        trigger: '#stove_photo',
+        inline: true,
+        target: '#stove_photo',
+        showProgressDetails: true,
+        note: 'Images and video only, 2–3 files, up to 10 MB',
+        height: 200,
+        metaFields: [],
+        id: 'stove_photo',
+        browserBackButtonClose: false
+    })
+    .use(Uppy.Tus, {
+        endpoint: 'https://tus.dca.arungas.com/files/',
+    })
+    stovePhotoUppy.on('complete', result => {
+		$('#id_stove_photo').val(result.successful[0].uploadURL);
+	})
+</script>
+{% endblock %}
