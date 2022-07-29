@@ -753,7 +753,7 @@ class PreInspection(models.Model):
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=PreInspectionStatusEnum.KITCHEN_PHOTO,
+		source=[PreInspectionStatusEnum.KITCHEN_PHOTO, PreInspectionStatusEnum.REJECTED],
 		target=PreInspectionStatusEnum.PREVIEW_INSPECTION,
 		custom=dict(short_description='Upload Main Gate Pic & Location', admin=False),
 	)
