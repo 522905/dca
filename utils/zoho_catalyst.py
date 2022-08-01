@@ -114,30 +114,33 @@ class ZohoCatalyst(object):
 
 		if resp.get('status') == 'failure' and resp.get('data').get('error_code') == 'INVALID_TOKEN':
 			self.refresh_access_token()
+			return self.get_details_from_aadhaar(uid_front_url, uid_back_url)
 
 		return resp
 
 
-if __name__ == '__main__':
-	CLIENT_ID = '1000.H866HTZGYIFX08EDVR1O3EB8FA8W4O'
-	CLIENT_SECRET = '73c4639821eabfec098309fe0f20327ce6e5afb3f9'
-	PROJECT_ID = '12429000000003010'
+CLIENT_ID = '1000.H866HTZGYIFX08EDVR1O3EB8FA8W4O'
+CLIENT_SECRET = '73c4639821eabfec098309fe0f20327ce6e5afb3f9'
+PROJECT_ID = '12429000000003010'
+zoho_client = ZohoCatalyst(CLIENT_ID, CLIENT_SECRET, PROJECT_ID)
+zoho_client.refresh_token = '1000.2427366417cb1038d2277f0d40083bdb.e9ff4ae0d06469c9a848718e7aa8ca32'
+zoho_client.access_token = '1000.01d174629404b30ef59b885d7a2e7dfd.157608e0e2e52b6ea032da6085a35340'
+
+# if __name__ == '__main__':
 
 	# CLIENT_ID = '1000.4X2MDNIG0V54BM2N4W41GEDFXXRR8T'
 	# CLIENT_SECRET = 'e8d188920b6acd0641772788b88cead707347030c6'
 	# PROJECT_ID = '1406000000009001'
 
-	zc = ZohoCatalyst(CLIENT_ID, CLIENT_SECRET, PROJECT_ID)
+
 	# grant_code = '1000.e8b2dfc4c366f8af93b03b6dd701197d.80f88e4cf6b70496ec81dd476679cab8'
 	# zc.create_refresh_token(grant_code)
 
-	zc.refresh_token = '1000.2427366417cb1038d2277f0d40083bdb.e9ff4ae0d06469c9a848718e7aa8ca32'
-	zc.access_token = '1000.01d174629404b30ef59b885d7a2e7dfd.157608e0e2e52b6ea032da6085a35340'
-	uid_ocr = zc.get_details_from_aadhaar(
-		'http://dca.arungas.com:6988/unsafe/filters:format(jpeg)/https://tus.dca.arungas.com/files/f77d002dcf3b284fba090264a31c007e',
-		'http://dca.arungas.com:6988/unsafe/filters:format(jpeg)/https://tus.dca.arungas.com/files/4096a8a0efba9a075e03161e355afeb9'
-	)
-	# zc.get_refresh_token_from_grant_code(grant_code)
-
-
-	print(uid_ocr)
+	# uid_ocr = zc.get_details_from_aadhaar(
+	# 	'http://dca.arungas.com:6988/unsafe/filters:format(jpeg)/https://tus.dca.arungas.com/files/f77d002dcf3b284fba090264a31c007e',
+	# 	'http://dca.arungas.com:6988/unsafe/filters:format(jpeg)/https://tus.dca.arungas.com/files/4096a8a0efba9a075e03161e355afeb9'
+	# )
+	# # zc.get_refresh_token_from_grant_code(grant_code)
+	#
+	#
+	# print(uid_ocr)
