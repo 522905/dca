@@ -47,7 +47,7 @@ class ConnectionApplication(models.Model):
 	address = models.TextField()
 	application_type = models.CharField(max_length=25, choices=ApplicationTypeEnum.choices)
 	item_code = models.CharField(max_length=25, choices=ItemCodeEnum.choices)
-	connection_type = models.CharField(max_length=25, choices=ConnectionTypeEnum.choices)
+	connection_type = models.CharField(max_length=25, choices=ConnectionTypeEnum.choices, null=True)
 	referral_code = models.CharField(max_length=16, null=True, blank=True)
 
 	documents_reupload_remarks = models.TextField(null=True, blank=True)
@@ -236,6 +236,7 @@ class ConnectionApplication(models.Model):
 				content_type=connection_application_content_type,
 				object_id=self.pk,
 				event="submit", channel="whatsapp",
+				channel_subscriber=self.mobile,
 				message_id=data.get('id')
 			)
 		else:

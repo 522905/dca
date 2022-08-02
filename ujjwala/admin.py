@@ -35,6 +35,7 @@ from .forms import ReviewNicErrorUpdatedAddressForm
 
 
 def filter_walk_in_qs(queryset, state):
+    queryset =  queryset.order_by('walk_in_date')
     today = datetime.today()
     if state == 'WALK_IN_TODAY':
         return queryset.filter(walk_in_date__date=today.date())

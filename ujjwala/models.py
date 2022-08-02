@@ -810,7 +810,6 @@ class PreInspection(models.Model):
 			self.mechanic = None
 		else:
 			self.mechanic = get_current_user()
-
 		self.submitted_on = datetime.datetime.now()
 		self.save()
 		create_txn_status_job_function = partial(

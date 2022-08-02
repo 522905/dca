@@ -73,8 +73,8 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
         ).exclude(marital_status__in=[
             MaritalStatusEnum.DIVORCED, MaritalStatusEnum.WIDOW
         ]).exclude(
-		family_members__dob__gte='2004-06-23'
-	).order_by('-sdms_last_updated_on')
+		family_members__dob__gte='2004-07-30'
+	).exclude(version='V1').order_by('-sdms_last_updated_on')
         page = self.paginate_queryset(queryset)
         return self.get_paginated_response([
             {
@@ -556,7 +556,8 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 'connection_disbursement_id': record.id,
                 'application_id': record.parent_id,
                 'consumer_id': record.parent.consumer_id,
-                'name': record.parent.name
+                'name': record.parent.name,
+                'product': record.parent.product
             } for record in connection_disbursement_list
         ], safe=False)
 
@@ -671,7 +672,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 transaction.on_commit(create_compress_docs_job_function)
 
                 # commented for development
-                # application.event_submit_channel_whatsapp()
+                application.event_submit_channel_whatsapp()
                 # result = django_rq.enqueue(do_primary_omc_dedupe_check, args=(application.id,))
                 # Add lead to vicicial
                 requests.post(
@@ -926,20 +927,26 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
         for member in request.data['family_members']:
             result = process_omc_dedupe_result(member['omc_dedup_result'])
+
             if not result:
                 continue
-            else:
-                record_valid = False
-                family_member_obj = FamilyMembers.objects.get(pk=member.get('id'))
-                family_member_obj.uid_check_result = result
-                family_member_obj.save()
-                if family_member_obj.relation == 'SELF':
-                    invalid_result_relation = 'SELF'
-                    invalid_result = result
-                else:
-                    if not invalid_result:
-                        invalid_result_relation = family_member_obj.relation
-                        invalid_result = result
+
+            family_member_obj = FamilyMembers.objects.get(pk=member.get('id'))
+            family_member_obj.uid_check_result = result
+            family_member_obj.save()
+
+            if family_member_obj.relation == 'SELF' and 'arun indane' in family_member_obj.uid_check_result['distributor_name'].lower():
+                continue
+
+            record_valid = False
+
+            if family_member_obj.relation == 'SELF':
+                invalid_result_relation = 'SELF'
+                invalid_result = result
+            elif not invalid_result:
+                invalid_result_relation = family_member_obj.relation
+                invalid_result = result
+
         if record_valid:
             application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESS_MANUAL
             application_obj.save()

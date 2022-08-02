@@ -165,26 +165,26 @@ class UjjwalaWhatsappCommunication(object):
 				message_id=data.get('id')
 			)
 
-		res = requests.post(
-			"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
-			"&function=add_lead&phone_number={}&list_id=1007&first_name={}&last_name={}".format(
-				self.contact_mobile, self.name, self.pk
-			)
-		)
+		#res = requests.post(
+		#	"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+		#	"&function=add_lead&phone_number={}&list_id=1007&first_name={}&last_name={}".format(
+		#		self.contact_mobile, self.name, self.pk
+		#	)
+		#)
 
 	def event_legal_documents_upload_channel_whatsapp(self):
 		from ujjwala.models import ConnectionDisbursement, PreInspection
 
 		connection_disbursement = ConnectionDisbursement.objects.get(parent_id=self.pk)
 
-		pre_inspection = PreInspection.objects.get(
-			parent_id=self.pk, type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT
-		)
+		physical_legal_doc_link = self.pre_inspection.documents.filter(
+			type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT
+		).first().link
 		#
 		# physical_legal_doc_link = self.pre_inspection_accepted.documents.filter(
 		# 	type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT
 		# ).first().link
-		physical_legal_doc_link = pre_inspection.link
+		#physical_legal_doc_link = pre_inspection.link
 
 		body_text = {
 			"countryCode": "+91",
@@ -355,7 +355,7 @@ class UjjwalaWhatsappCommunication(object):
 			# "callbackData": "some_callback_data",
 			"template": {
 				# "name": "ujjwala_application_submitted_",
-				"name": "pre_inspection_self_19072022",
+				"name": "pre_inspection_type_self_19072022",
 				"languageCode": "hi",
 				"headerValues": [
 					# "Alert",  #
@@ -409,7 +409,7 @@ class UjjwalaWhatsappCommunication(object):
 			# "callbackData": "some_callback_data",
 			"template": {
 				# "name": "ujjwala_application_submitted_",
-				"name": "pre_inspection_self_19072022",
+				"name": "pre_inspection_type_self_19072022",
 				"languageCode": "hi",
 				"headerValues": [
 					# "Alert",  #
