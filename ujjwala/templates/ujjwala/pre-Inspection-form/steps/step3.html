@@ -53,7 +53,7 @@
                         <p style="color: #2957A4; font-weight: bold; margin-bottom: 10px !important;">किसी खुले क्षेत्र में जाएं और लोकेशन को  कैप्चर करें। 
                         </p>                            
                     </div>
-                    <div class="lacation_field col-sm-6">
+                    <div class="lacation_field col-sm-12">
                         <div class="" style="width: 100%; clear:both;">
                             <span>{{ form.latitude }}</span>
                             <span>{{ form.longitude }}</span>
@@ -90,7 +90,7 @@
         allowLocationNav();
     });
 
-     window.kitchenPhotoUppy = new Uppy.Core({
+     window.mainGatePhotoUppy = new Uppy.Core({
 		debug: true,
 		autoProceed: true,
 		restrictions: {
@@ -109,6 +109,7 @@
         height: 200,
         metaFields: [],
         id: 'main_gate',
+        waitForThumbnailsBeforeUpload: true,
         doneButtonHandler: () => {
             // this.uppy.reset()
             // this.requestCloseModal()
@@ -127,7 +128,7 @@
     .use(Uppy.Tus, {
         endpoint: 'https://tus.dca.arungas.com/files/',
     })
-    kitchenPhotoUppy.on('complete', result => {
+    mainGatePhotoUppy.on('complete', result => {
 		$('#id_main_gate').val(result.successful[0].uploadURL);
 	})
 </script>

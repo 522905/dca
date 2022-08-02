@@ -59,7 +59,8 @@
         height: 200,
         metaFields: [],
         id: 'kitchen_photo',
-        browserBackButtonClose: false
+        browserBackButtonClose: false,
+        waitForThumbnailsBeforeUpload: true,
     })
     .use(Uppy.Tus, {
         endpoint: 'https://tus.dca.arungas.com/files/',
@@ -89,7 +90,8 @@
         height: 200,
         metaFields: [],
         id: 'stove_photo',
-        browserBackButtonClose: false
+        browserBackButtonClose: false,
+        waitForThumbnailsBeforeUpload: true,
     })
     .use(Uppy.Tus, {
         endpoint: 'https://tus.dca.arungas.com/files/',
