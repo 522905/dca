@@ -185,6 +185,19 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		if record: return record.link
 		return ''
 
+	def get_form_abc(self):
+		return {
+			"form_a_link": self.connection_disbursement.documents.filter(
+				type=UjjwalaApplicationDocumentsEnum.LEGAL_DOC_PRE_INSPECTION
+			).first().link,
+			"form_b_link": self.connection_disbursement.documents.filter(
+				type=UjjwalaApplicationDocumentsEnum.LEGAL_DOC_FAMILY_OCCUPANCY
+			).first().link,
+			"form_c_link": self.connection_disbursement.documents.filter(
+				type=UjjwalaApplicationDocumentsEnum.LEGAL_DOC_ANNEXURE_14_POINTS
+			).first().link
+		}
+
 	def is_sv_uploaded(self):
 		connection_disbursement = ConnectionDisbursement.objects.filter(parent_id=self.id).first()
 		connection_disbursement_invitation = ConnectionDisbursementInvitation.objects.filter(
@@ -237,7 +250,9 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD,
 			UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD,
 			UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
-			UjjwalaV2ApplicationStatus.AUDIT_APPLICATION
+			UjjwalaV2ApplicationStatus.AUDIT_APPLICATION,
+			UjjwalaV2ApplicationStatus.NIC_CLEARED,
+			UjjwalaV2ApplicationStatus.READY_FOR_DISBURSEMENT
 		],
 		target=UjjwalaV2ApplicationStatus.APPLICATION_REJECTED,
 		custom=dict(short_description='Reject Application', admin=True, form=ApplicationRejected),
@@ -481,7 +496,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		),
 		permission='ujjwala.can_approve_connection',
 	)
-	def transition_ready_for_disbrusement(self, *args, **kwargs):
+	def transition_ready_for_disbursement(self, *args, **kwargs):
 		pass
 
 	@fsm_log_description
@@ -791,6 +806,11 @@ class PreInspection(models.Model):
 		custom=dict(short_description='Submit Pre-Inspection', admin=False),
 	)
 	def transition_pre_inspection_submit(self, *args, **kwargs):
+		if self.type == PreInspectionTypeEnum.SELF:
+			self.mechanic = None
+		else:
+			self.mechanic = get_current_user()
+
 		self.submitted_on = datetime.datetime.now()
 		self.save()
 		create_txn_status_job_function = partial(
