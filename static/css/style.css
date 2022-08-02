@@ -141,33 +141,7 @@ main .content{     display: block;
 
 .uppy-Dashboard-AddFiles .uppy-Dashboard-AddFiles-title{ font-size: 12px !important; margin: 0 !important;}
 .uppy-Dashboard-inner .uppy-Dashboard-files{ padding: 0 !important;}
-#family_members_tree .uppy-Dashboard-inner .uppy-StatusBar.is-complete{ width: 50% !important;}
-#family_members_tree .uppy-Dashboard-inner .uppy-StatusBar-actions{ right: -100px !important; top: -65px;}
-#family_members_tree .uppy-DashboardContent-title{ color: #fff; top: -6px;}
-#family_members_tree .uppy-StatusBar-actionBtn--done{left: 91px;
-    z-index: 99999;
-    opacity: 0;
-    padding: 10px;
-    position: absolute;
-    width: 73px;
-    top: -26px;}
-#family_members_tree .uppy-StatusBar-actions:after{ padding: 0 17px; content: "Re-upload";
-z-index: 9999;
-position: absolute;
-height: 30px;
-width: 200px;left: 77px; top: -34px;
-color: #222; font-weight: bold; text-transform: uppercase; }
-#family_members_tree  .uppy-StatusBar-actions{ position: relative;}
-#family_members_tree .uppy-Dashboard-inner {
-    border: 0;
-    border-radius: 3px;
-}
-#family_members_tree p{
-    margin-top: 0;
-    margin-bottom: 1rem;
-    font-size: 13px;
-    font-weight: 500;
-}
+
 .uppy-Dashboard-Add -title {
     font-size: 12px;
     margin: auto;
@@ -279,3 +253,30 @@ color: #222; font-weight: bold; text-transform: uppercase; }
 #id_review_status{ display: block;}
 #id_rejected_reason{ margin-top: 10px;}
 #id_rejected_reason{ border: 1px solid #ccc !important;}
+.spinner-border {
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    background: url('https://c.tenor.com/je-huTL1vwgAAAAi/loading-buffering.gif') 50% 50% no-repeat rgb(249,249,249);
+    opacity: .8;
+}
+
+@media only screen and (max-width: 600px) {
+    .mobile_review {
+        display: block;
+    }
+    .desktop_review{
+        display: none;
+    }
+} 
+@media only screen and (min-width: 601px) {
+    .mobile_review {
+        display: none;
+    }
+    .desktop_review {
+        display: block;
+    }
+} 
