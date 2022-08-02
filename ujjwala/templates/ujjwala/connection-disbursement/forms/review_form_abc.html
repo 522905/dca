@@ -1,6 +1,7 @@
 {% extends "material/frontend/base_module.html" %}
 {% load static %}
 {% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/xzoom.css' %}" media="all" /> 
 <link rel="stylesheet" href="{% static '/css/style.css' %}" >
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
 
@@ -40,10 +41,38 @@
 	</div>
 
     <div class="card card-profile pt-0 mt-0 " style="width: 100%;">
-    {% for doc in documents %}
-        <a class="text-white btn btn-primary mb-3 float-left" href="{{ doc.link }}">{{ doc.type }}</a>
-    {% endfor %}
+        <a class="text-white btn btn-primary mb-3 float-left" href="{{ form_abc.form_a_link }}">Form A</a>
+        <a class="text-white btn btn-primary mb-3 float-left" href="{{ form_abc.form_b_link }}">Form B</a>
+        <a class="text-white btn btn-primary mb-3 float-left" href="{{ form_abc.form_c_link }}">Form C</a>
     </div>
+
+    <div class="large-5 column mt-2">
+        <div class="large-5 column">
+            <div class="xzoom-container">
+                <div class="zoom_imge_container">
+                    <img class="xzoom" id="xzoom-default" src="{{ form_abc.form_a_link }}"/>
+                </div>
+                <div class="xzoom-thumbs" style="margin-top:20px;">
+                    <a href="{{ form_abc.form_a_link }}">
+                        <img class="xzoom-gallery" width="80" height="80" src="{{ form_abc.form_a_link }}"
+                            xpreview="{{ form_abc.form_a_link }}" title="Form A">
+                            <p>Form A</p>
+                    </a>
+                    <a href="{{ form_abc.form_b_link }}">
+                        <img class="xzoom-gallery" width="80" height="80" src="{{ form_abc.form_b_link }}"
+                        title="Form B">
+                        <p>Form B</p>
+                    </a>
+                    <a href="{{ form_abc.form_c_link }}">
+                        <img class="xzoom-gallery" width="80" height="80" src="{{ form_abc.form_c_link }}"
+                        title="The description goes here">
+                        <p>Form C</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <form method="post" id="form" >
         {% csrf_token %}
         <div class="card pt-4">
@@ -56,6 +85,35 @@
                 <input class="text-white btn btn-danger mb-3 float-right" type="submit" value="Submit And Next" name="_next_form_view">
 			</div>
         </div>
+
+{#		<div class="large-5 column">#}
+{#			<div class="xzoom-container">#}
+{#				<div class="zoom_imge_container">#}
+{#					<img class="xzoom" id="xzoom-default" src="{{ doc.link }}" xoriginal="{{ doc.link }}"/>#}
+{#				</div>#}
+{#				<div class="xzoom-thumbs" style="margin-top:20px;">#}
+{#					{{documents}}#}
+{#					{% for doc in documents %}#}
+{#						<a class="text-white btn btn-primary mb-3 float-left" href="{{ doc.link }}">#}
+{#							<img class="xzoom-gallery" width="80" src="{{ doc.link }}" xpreview="{{ doc.link }}">#}
+{#							{{ doc.type }}#}
+{#						</a>#}
+{#					{% endfor %}#}
+{#					<!-- <a href="https://tus.dca.arungas.com/files/54638f82d16a988dfcdb7eb05ac6542e">#}
+{#						<img class="xzoom-gallery" width="80" src="https://tus.dca.arungas.com/files/54638f82d16a988dfcdb7eb05ac6542e"  #}
+{#						xpreview="https://tus.dca.arungas.com/files/834b43616863aebbf06fcdb14d32e24e" title="The description goes here"></a>#}
+{#					<a href="images/02_o_car.jpg"><img class="xzoom-gallery" width="80" src="images/02_o_car.jpg" title="The description goes here"></a>#}
+{#					<a href="images/03_r_car.jpg"><img class="xzoom-gallery" width="80" src="images/03_r_car.jpg" title="The description goes here"></a> -->#}
+{#				</div>#}
+{#			</div>        #}
+{#		</div>#}
     </form>
 </div>
+
+<script type="text/javascript" src="{% static '/js/setup.js' %}"></script>
+<script type="text/javascript" src="{% static '/js/xzoom.min.js' %}"></script>
+<style>
+	#xzoom-default{ width: 500px !important;}
+	.xzoom{ max-height: 500px !important;}
+  </style>
 {% endblock %}

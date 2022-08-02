@@ -4,20 +4,27 @@ import re
 import string
 import zipfile
 import base64
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 from time import timezone
 
 import magic
 import requests
+import track
 from PyPDF2 import PdfFileMerger
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
+from django.core.signing import Signer
 from django.db.models import Q, QuerySet
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
+from django.urls import reverse
 
+from communication_log.models import CommunicationLog
 from ujjwala.enums import UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, ResidentialStatusEnum, \
 	MaritalStatusEnum, UjjwalaV2ApplicationStatus, PreInspectionStatusEnum
+from datetime import datetime
+
 
 COMPILED_REGEX_PATTERN_AADHAR_EXISTS = re.compile(
 	"""Aadhaar already exists for customer (?P<contact_name>.*?) of (?P<distributor_name>.*)\(SBL-EXL-00151\)"""
@@ -695,3 +702,83 @@ def is_application_ready_for_disbursement(application_id):
 				application.pre_inspection.status == PreInspectionStatusEnum.ACCEPTED:
 			application.transition_ready_for_disbrusement()
 			application.save()
+
+
+def send_whatsapp_contact_otp(request, contact_mobile):
+	from otp.models import Otp
+
+	ref_no = None
+
+	while True:
+		ref_no = __get_ref_no__()
+		try:
+			Otp.objects.get(reference_number=ref_no)
+		except Otp.DoesNotExist:
+			break
+
+	otp = id_generator(4, chars=string.digits)
+	valid_till = datetime.now() + timedelta(minutes=5)
+	closed = False
+
+	otp_obj = Otp.objects.create(
+		reference_number=ref_no,
+		mobile=contact_mobile,
+		otp=otp,
+		valid_till=valid_till,
+		closed=closed,
+		extra={
+			"contact_mobile": contact_mobile
+		}
+	)
+
+	body_text = {
+		"countryCode": "+91",
+		"phoneNumber": otp_obj.mobile,
+		"type": "Template",
+		"traits": {
+			"name": otp_obj.mobile,
+		},
+		# "callbackData": "some_callback_data",
+		"template": {
+			"name": "ujjwala_application_whatsapp_otp",
+			"languageCode": "hi",
+			"headerValues": [
+			],
+			"bodyValues": [
+				request.build_absolute_uri(
+					reverse('ujjwala:ujjwala_application_display_otp', kwargs={'ref_no': otp_obj.reference_number})
+				)
+			]
+		}
+	}
+
+	data = track.client.post(
+		api_key=settings.INTERAKT_API_KEY,
+	    path="/v1/public/message/",
+	    body=body_text
+	).json()
+
+	if data.get('result', ''):
+		CommunicationLog.objects.create(
+			channel_subscriber=contact_mobile,
+			event="ujjwala_application_whatsapp_contact_otp", channel="whatsapp",
+			message_id=data.get('id')
+		)
+		return ref_no
+
+
+def verify_whatsapp_contact_otp(reference_number, otp):
+	from otp.models import Otp
+
+	obj = Otp.objects.filter(reference_number=reference_number).first()
+	if obj:
+		if otp == obj.otp:
+			signer = Signer()
+			value = signer.sign(obj.mobile)
+			return {
+				"verified": True,
+				"signed_value": value
+			}
+	return {
+		"verified": False,
+	}

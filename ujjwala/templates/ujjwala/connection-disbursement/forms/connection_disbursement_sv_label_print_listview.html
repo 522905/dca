@@ -66,19 +66,10 @@
         <div class="card-footer p-2">
             <p><b>Address:</b>  {{ obj.parent.formatted_address }}</p>
         </div>
-        <div class="card-footer">
-            <a class="text-white btn btn-danger mb-3 float-left " href="{% url 'ujjwala:connection_disbursement_list' %}">
-                <i class="material-icons">keyboard_backspace</i> BACK TO LIST VIEW
-            </a>
-            <a class="text-white btn btn-danger mb-3 float-right" href="{% url 'ujjwala:connection_disbursement_sv_label_print_view' pk=obj.id %}">
-                <i class="material-icons">arrow_forward</i> NEXT
-            </a>
-        </div>
     </div>
-    
     {% endfor %}
 </div>
-    
+
     <script>
         window.onload=function(){
 

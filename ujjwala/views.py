@@ -146,6 +146,20 @@ class UjjwalaPreInspectionReviewListView(ListView):
         return 'ujjwala/pre_inspection_review_listview.html'
 
 
+class UjjwalaApplicationDisplayOtp(View):
+    model = Otp
+
+    def get(self, request, *args, **kwargs):
+        obj = Otp.objects.filter(reference_number=kwargs.get('ref_no')).first()
+
+        if obj:
+            return render(self.request, "ujjwala/ujjwala_application_display_otp.html", {
+                "obj": obj
+            })
+        else:
+            return HttpResponse(content="Invalid Reference Number")
+
+
 @method_decorator(login_required, 'dispatch')
 class UjjwalaApplicationReuploadView(DetailView):
     model = UjjwalaV2Application
@@ -811,8 +825,7 @@ class ConnectionDisbursementReviewFormAbcListView(ListView):
                     )
                 else:
                     return redirect('ujjwala:connection_disbursement_review_form_abc_view',
-                                    pk=object.pk
-                                    )
+                                    pk=object.pk)
             else:
                 messages.add_message(
                     request, messages.ERROR, "Application Id: {} not found".format(application_id)
@@ -875,10 +888,10 @@ class ConnectionDisbursementReviewFormAbcView(FormView, ApplicationView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         obj = self.get_object()
-        documents = ConnectionDisbursementDocuments.objects.filter(parent_id=obj.id)
+        form_abc = obj.parent.get_form_abc()
         context.update({
             "obj": obj,
-            "documents": documents
+            "form_abc": form_abc
         })
         return context
 

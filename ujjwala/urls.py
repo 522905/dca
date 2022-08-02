@@ -11,13 +11,13 @@ from connection_app.viewsets import ConnectionApplicationViewSet
 
 from . import views
 from .robos.nic_error_robo import UjjwalaApplicationNicErrorRobotAPIViewSet
-from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet
+from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet, UjjwalaApplicationOtpViewSet
 
 router = routers.DefaultRouter()
 router.register(r'ujjwala-application', UjjwalaApplicationViewSet)
 router.register(r'ujjwala-bot', UjjwalaApplicationAPIViewSet)
 router.register(r'ujjwala-bot-nic-error', UjjwalaApplicationNicErrorRobotAPIViewSet)
-
+router.register(r'ujjwala-otp', UjjwalaApplicationOtpViewSet, basename='ujjwala_otp')
 
 urlpatterns = [
     path('', views.index),
@@ -62,6 +62,12 @@ urlpatterns = [
         'portal/pre-inspection/create/',
         views.PreInspectionCreateView.as_view(),
         name="pre_inspection_create"
+    ),
+
+    url(
+        '^ujjwala-otp/display_otp/(?P<ref_no>[^/.]+)/$',
+        views.UjjwalaApplicationDisplayOtp.as_view(),
+        name="ujjwala_application_display_otp"
     ),
 
     url(

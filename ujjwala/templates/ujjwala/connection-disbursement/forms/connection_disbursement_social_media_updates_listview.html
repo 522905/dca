@@ -67,15 +67,7 @@
         <div class="card-footer p-2">
             <p><b>Address:</b>  {{ obj.parent.formatted_address }}</p>
         </div>
-        <div class="card-footer">
-            <a class="text-white btn btn-danger mb-3 float-left " href="{% url 'ujjwala:connection_disbursement_list' %}">
-                <i class="material-icons">keyboard_backspace</i> BACK TO LIST VIEW
-            </a>
-            <a href="{% url 'ujjwala:connection_disbursement_material_delivery_view' pk=obj.id %}" data-turbolinks="false">
-                <i class="material-icons">arrow_forward</i> NEXT
-            </a>
-        </div>
-        
+
     </div>
     
     {% endfor %}
