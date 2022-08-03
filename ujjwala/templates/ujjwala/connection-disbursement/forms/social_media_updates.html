@@ -6,26 +6,23 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
 <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap"
     rel="stylesheet">
-<script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
-<style>
-     .lacation_field span{ float: left; width: 100px; } 
-</style>
+<script src="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.js"></script>
 <div class="form_label p-2">
-    <div class="card card-profile pt-0 mt-0 " style="width:100%">
+    <div class="main-header bg-heading mb-2" style="background-color: #2957A4;">
+        <span class="text-white">Social Media Photo</span>
+    </div>
+    <div class="card card-profile pt-0 mt-0" style="width:100%; margin: 0;">
 		<div class="row justify-content-center m-0" style="max-width: 400px; margin: 0 auto !important; padding: 10px;">
-			<div style="width: 50%; float:left">
+			<div style="width: 30%; float:left">
 				<div class="card-profile-image">
-					<a href="#">
-						<img style="max-height:150px" src="{{obj.parent.document_self}}">
-					</a>
+					<img style="max-height:150px; width: 100%;" src="{{obj.parent.document_self}}">
 				</div>
 			</div>
-			<div style="width: 50%; float:right">
-				<div class="card-body pt-0">
+			<div style="width: 70%; float:right">
+				<div class="card-body pt-0 pb-0">
 					<div class="text-center">
-						<h5 class="h3">{{ obj.parent.name }}({{ obj.parent.id }})<span class="font-weight-light"></span></h5>
 						<div class="h5 font-weight-300">
-							<i class="ni location_pin mr-2"></i>{{ obj.parent.contact_mobile }}
+							<i class="location_pin mr-2"></i>{{ obj.parent.contact_mobile }}
 						</div>
 						<div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
 							{% if address_json == address_json  %}
@@ -45,22 +42,21 @@
 <div class="main p-2 pt-0 form_label">
     <form method="post" id="">
         {% csrf_token %}
-        <div class="card">
+        <div class="card m-0 ">
             <div class="card-body">
                 {{form.application_id}}
                 <div class="row mb-2 M-0">
                     <div class="col-sm-12 photo_block">
                         <span class="hidden-field">{{ form.social_media_photo }}</span>
-                        <label>Social Media Photo<br> (फोटो)</label>
+                        <label></label>
                         <p id="social_media_photo"></p>
                         {{ form.social_media_photo.errors }}
                     </div>
                 </div>
             </div>
             <div class="card-footer">
-                <input class="btn btn-primary text-primary float-left" type="submit" value="Submit And Back" name="_back_list_view">
-                <input class="btn btn-primary text-primary float-right" type="submit" value="Submit And Next" name="_next_form_view">
-{#                <input class="btn btn-success float-right rounded-0" type="submit" value="Submit" />#}
+                <input class="btn btn-primary float-left" type="submit" value="Submit And Back" name="_back_list_view">
+                <input class="btn btn-primary float-right" type="submit" value="Submit And Next" name="_next_form_view">
             </div>
         </div>
     </form>
