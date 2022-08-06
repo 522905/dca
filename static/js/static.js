@@ -76,9 +76,13 @@ function checkMobileValidity() {
         return;
     }
     $("#mobile_detail").show();
-    $("#mobile_detail").html('<img style="width:18px; margin-left:10px;" align="left">&nbsp;Checking Mobile...');
+    $("#mobile_detail").html('<img style="width:18px; margin-left:10px;" align="left"> Checking Mobile...');
 
     $("#mobile_detail" ).attr("validated_value", mobile);
+
+    //Disable Dedup
+
+    $('#verifyWhatsappButton').attr('disabled', true);
 
     jQuery.ajax({
         url: '/ujjwala/ujjwala-application/check_phone/',
@@ -91,6 +95,7 @@ function checkMobileValidity() {
                 $("#mobile_detail").html('✔ Available for New Application').css({'color': 'green', 'font-size' : '14px'});
                 document.getElementById("contact_mobile").setCustomValidity("")
                 document.getElementById("contact_mobile").reportValidity();
+                $('#verifyWhatsappButton').attr('disabled', false);
                 return true;
             } else {
                 console.log(response);
@@ -124,7 +129,7 @@ function validate_pincode() {
         return;
     }
     pincode = parseInt($('#pincode').val());
-    if(pincode && pincode >= 141001 && pincode <= 141014) {
+    if(pincode && pincode >= 141001 && pincode <= 141015) {
         return true;
     }
     alert("We don't provide service this Pin code area. हम इस पिन कोड क्षेत्र में सेवा प्रदान नहीं करते हैं");
@@ -141,10 +146,10 @@ function validateAadhaarrUniquness() {
         return false;
     }
 
-    if ($('[id="applicant-uid_no"]').val() != $('[id="SELF-uid_no"]').val()) {
-        alert("Applicant UID mismatch, please enter UID again");
-        return false;
-    }
+    // if ($('[id="applicant-uid_no"]').val() != $('[id="SELF-uid_no"]').val()) {
+    //     alert("Applicant UID mismatch, please enter UID again");
+    //     return false;
+    // }
     return true;
 
 }
@@ -163,6 +168,18 @@ function upload_sign_and_submit() {
         return;
     }
 
+    if (!whatsapp_verifier.is_valid()) {
+        return;
+    }
+
+    if (!family_member_service.is_valid()) {
+        return;
+    }
+
+    if(!validateAadhaarrUniquness()) {
+        return;
+    }
+
     if (!validate_pincode()) {
         return;
     }
@@ -171,7 +188,7 @@ function upload_sign_and_submit() {
         return;
     }
 
-    if(!validateAadhaarrUniquness()) {
+    if (valid() == null) {
         return;
     }
 
@@ -339,9 +356,9 @@ function submit_form(signature_url) {
 
 function valid() {
     let files = [
-        validateUppy(customerpictureuppy, 'CUSTOMER_PHOTO', 'Customer Picture or Selfie (ग्राहक की फोटो)*', false),
-        validateUppy(bankdetailuppy, 'BANK_DETAIL', 'Bank Detail (पास बुक का विवरण)', false)
-    ]
+        validateUppy(customerpictureuppy, 'CUSTOMER_PHOTO', 'Customer Picture or Selfie (ग्राहक की फोटो)*', true),
+        validateUppy(bankdetailuppy, 'BANK_DETAIL', 'Bank Detail (पास बुक का विवरण)', true)
+    ];
 
     if (!files.reduce((aggr, current) => {
         return current.valid && aggr
@@ -382,7 +399,6 @@ function validateUppy(uppyObj, key, label, fileMandatory) {
 
 function validmain() {
     let file = [
-
         validateUppy(aadharcarduppy, 'UID_FRONT', 'Aadhaar Card Frontside Picture (आधार कार्ड की फोटो)*', true),
         validateUppy(aadharcardbackuppy, 'UID_BACK', 'Aadhaar Card Backside Picture (आधार कार्ड की फोटो)*', true),
     ]
@@ -407,55 +423,17 @@ function validmain() {
     return documentsRelationArray;
 }
 
-function validateFamilyMembersFiles() {
-
-    members = $.map($('.familyMemberLineItem'), member => {
-
-        return $(member).find('input,select').serializeArray().reduce(
-            function (accum, item) {
-                if (item.value !== null) {
-                    accum[item.name.split('-')[1]] = item.value;
-                }
-                return accum;
-            },
-            {}
-        );
-
-    })
-
-
-    file_list_front = $.map(members, memberMap =>
-        validateUppy(window[`${memberMap.relation}-uid_front_link_uppy`], 'UID_FRONT', `${memberMap.relation} Aadhaar Card Frontside Picture (आधार कार्ड की फोटो)*`, true),
-        validateUppy(window[`${memberMap.relation}-uid_front_link_uppy`], 'FATHER_UID_FRONT', `${memberMap.relation}Father Aadhaar Card Frontside Picture (आधार कार्ड की फोटो)*`, true)
-    );
-
-    file_list_back = $.map(members, memberMap =>
-        validateUppy(window[`${memberMap.relation}-uid_back_link_uppy`], 'UID_BACK', `${memberMap.relation} Aadhaar Card Backside Picture (आधार कार्ड की फोटो)*`, true),
-        validateUppy(window[`${memberMap.relation}-uid_back_link_uppy`], 'FATHER_UID_FRONT', `${memberMap.relation}Father Aadhaar Card Frontside Picture (आधार कार्ड की फोटो)*`, true)
-    );
-
-    files = file_list_front.concat(file_list_back);
-
-    if (!files.reduce((aggr, current) => {
-        return current.valid && aggr
-    }, true)) {
-        let error = files.reduce((aggr, current) => {
-            if (current.msg) {
-                return aggr + '\n' + current.msg
-            } else {
-                return aggr
-            }
-        }, '');
-        window.alert(error);
-        return null;
-    }
-
-}
-
 function gatherFamilyMembersData() {
     return $.map($('.familyMemberLineItem'), member => {
 
-        memberMap = $(member).find('input,select').serializeArray().reduce(
+        var fields = [
+            ...$.map($(member).find('.form-img-input'), (e) => {
+                return {name: e.id, value: e.src}
+            }),
+            ...$(member).find('input,select').serializeArray()
+        ];
+
+        memberMap = fields.reduce(
             function (accum, item) {
                 if (item.value !== null) {
                     accum[item.name.split('-')[1]] = item.value;
@@ -464,9 +442,6 @@ function gatherFamilyMembersData() {
             },
             {}
         );
-
-        memberMap.uid_front_link = Object.values(window[`${memberMap.relation}-uid_front_link_uppy`].state.files)[0].uploadURL;
-        memberMap.uid_back_link = Object.values(window[`${memberMap.relation}-uid_back_link_uppy`].state.files)[0].uploadURL;
 
         memberMap.additional_details = {
             profession: memberMap.profession,
@@ -479,24 +454,9 @@ function gatherFamilyMembersData() {
 
 }
 
-function removeAllFamilyMembersExceptSelf() {
-    $.each($('.familyMemberLineItem'), (index, member) => {
 
-        memberMap = $(member).find('input').serializeArray().reduce(
-            function (accum, item) {
-                if (item.value !== null) {
-                    accum[item.name.split('-')[1]] = item.value;
-                }
-                return accum;
-            },
-            {}
-        );
-        delete window[`${memberMap.relation}-uid_front_link_uppy`];
-        delete window[`${memberMap.relation}-uid_back_link_uppy`];
-
-    });
-
-    $('#family_members_tree').html('');
+function removeFamilyMemberFromDom(relation) {
+    $(`.${relation}-familyMemberLineItem`).remove();
 }
 
 function addFamilyMember(relation_name, relation_label) {
@@ -504,147 +464,115 @@ function addFamilyMember(relation_name, relation_label) {
     let relation_block = `<input type="hidden" name="${relation_name}-relation" value="${relation_name}"/>`
 
     let farilyBlockElement = `
-
-    <div class="form-group initialize familyMemberLineItem">
+    <div class="form-group mb-0 initialize familyMemberLineItem ${relation_name}-familyMemberLineItem">
         ${relation_block}
-        <div class="card m-2 pb-4 pt-2">
-            <div class="row m-0 pl-sm-2">
+        <div class="border-bottom pt-2 pb-2">
+           
+            <div class="row m-0">
                 <div class="col-sm-4">
                     <div class="">
-                        <p>${relation_label} Name<strong style="color:red">*</strong></p>
-                        <input type="text" class="form-control" id="${relation_name}-name"  name="${relation_name}-name" value="" required   />
+                        <p>${relation_label} का नाम (Name)<strong style="color:red">*</strong></p>
+                        <input type="text" class="form-control aadhaar_ocr" id="${relation_name}-name"  name="${relation_name}-name" value="" required readonly/>
                     </div>
                 </div>
                 <div class="col-sm-4">
-                    <p>${relation_label} Date Of Birth<strong style="color:red">*</strong></p>
+                    <p>${relation_label} का जन्म की तारीख (Date Of Birth) <strong style="color:red">*</strong></p>
                     <div class="">
-                        <input type="date" class="form-control" name="${relation_name}-dob" id="${relation_name}-dob" required></input>
+                        <input type="date" class="form-control aadhaar_ocr" name="${relation_name}-dob" id="${relation_name}-dob" required readonly />
                     </div>
                 </div>
                 <div class="col-sm-4">
-                    <p>${relation_label} Aadhaar No.<strong style="color:red">*</strong></p>
+                    <p>${relation_label} का (Gender) <strong style="color:red">*</strong></p>
                     <div class="">
-                        <input required maxlength="12" minlength="12" type="tel" class="aadhar_on_blur form-control" name="${relation_name}-uid_no" id="${relation_name}-uid_no"  pattern="[0-9]{12}"></input>
+                        <input type="text" class="form-control aadhaar_ocr" id="${relation_name}-gender" name="${relation_name}-gender" value="" required readonly />
                     </div>
                 </div>
             </div>
-            <div class="row m-0 pl-4 pt-3 mt-4">
+            <div class="row m-0 mt-2">
                 <div class="col-sm-4">
-                    <div>
-                        <p>${relation_label} Aadhaar Card Front Photo (आधार कार्ड की फोटो)<strong
-                                style="color:red">*</strong></p>
-                        <span class="custom-file-input" name="${relation_name}-uid_front_link" id="${relation_name}-uid_front_link">
-                        </span><br>
+                    <p>${relation_label} का आधार संख्या (Aadhaar Number).<strong style="color:red">*</strong></p>
+                    <div class="">
+                        <input required maxlength="12" minlength="12" type="tel" class="aadhar_on_blur form-control aadhaar_ocr" name="${relation_name}-uid_no" id="${relation_name}-uid_no" pattern="[0-9]{12}" readonly>
                     </div>
                 </div>
                 <div class="col-sm-4">
                     <div class="">
-                        <p>${relation_label} Aadhaar Card Back Photo (आधार कार्ड की फोटो)<strong style="color:red">*</strong>
-                        </p>
-                        <span class="custom-file-input" name="${relation_name}-uid_back_link" id="${relation_name}-uid_back_link">
-                        </span><br>
-                    </div>
-                </div>
-                <div class="col-sm-4">
-                    <div class="">
-                        <p>${relation_label} Profession(पेशा)<strong style="color:red">*</strong>
-                        </p>
+                        <p>${relation_label} का पेशा (Profession)<strong style="color:red">*</strong></p>
                         <input type="text" class="form-control" id="${relation_name}-profession"  name="${relation_name}-profession" value="" required   />
                     </div>
                 </div>
-            </div>
-
-            <div class="row m-0 pl-4 pt-3 mt-4">
                 <div class="col-sm-4">
                     <div class="">
-                        <p>${relation_label} Industry Name(कंपनी का नाम)<strong style="color:red">*</strong>
+                        <p>${relation_label} कंपनी का नाम (Industry Name)<strong style="color:red">*</strong>
                         </p>
                         <input type="text" class="form-control" id="${relation_name}-company_name"  name="${relation_name}-company_name" value="" required   />
+                    </div>
+                </div>
+            </div>
+            <div class="row ocr_aadhaar_img m-0 mt-2">
+                <div class="col-sm-8">
+                <ul>
+                    <li>
+                        <p>${relation_label} Aadhaar Front<strong style="color:red">*</strong></p>
+                            <img class="form-img-input" id="${relation_name}-uid_front_link">
+                    </li>
+                    <li>
+                        <p>${relation_label} Aadhaar Back<strong style="color:red">*</strong></p>
+                            <img class="form-img-input" id="${relation_name}-uid_back_link">
+                    </li>
+                    </ul>
+                </div>
+                <div class="col-sm-4 mt-2">
+                    <div class="">
+                        <button type="button" class="btn btn-primary float-left pr-2"
+                            onclick="family_member_service.update_fm_via_ocr('${relation_name}')">
+                               Clear
+                        </button>
+                        <button type="button" class="btn btn-primary float-right"
+                        onclick="family_member_service.update_fm_via_ocr('${relation_name}')">
+                            Upload Aadhaar
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     `;
-
     $('#family_members_tree').append($(farilyBlockElement));
 
-    setTimeout(() => {
-        initUppyUpload(`${relation_name}-uid_back_link`, `${relation_name}-uid_back_link_uppy`);
-        initUppyUpload(`${relation_name}-uid_front_link`, `${relation_name}-uid_front_link_uppy`);
-    }, 0);
-
 }
-
-function initUppyUpload(elementId, elementVariable) {
-
-    window[elementVariable] = new Uppy.Core({
-        debug: true,
-        autoProceed: true,
-        restrictions: {
-            maxFileSize: 50000000,
-            maxNumberOfFiles: 1,
-            minNumberOfFiles: 1,
-            allowedFileTypes: ['image/*'],
-        }
-    })
-        .use(Uppy.Dashboard, {
-            trigger: `#${elementId}`,
-            inline: true,
-            target: `#${elementId}`,
-            showProgressDetails: true,
-            note: 'Image, 1 file, up to 10 MB',
-            height: 40,
-            metaFields: [],
-            id: elementId,
-            browserBackButtonClose: false
-        })
-        .use(Uppy.Tus, {
-            endpoint: 'https://tus.dca.arungas.com/files/',
-        });
-
-}
-
 
 //aadhaar check 
-function checkApplicantsAadhaarValidity() {
-    var e = document.getElementById('applicant-uid_no');
-    var uid = e.value;
-    if($("#applicant-uid_no" ).attr("validated_value")==uid) return;
-    
-    if(!validateAadhaar(uid)) {
-        e.setCustomValidity("Invalid aadhaar, please check again.");
-    } else {
-        if($('#family_members_tree .aadhar_on_blur:not([id="SELF-uid_no"]').get().map((e)=> e.value).indexOf(uid) >= 0) {
-            e.setCustomValidity("Aadhaar already entered in Family Members List");
-        } else {
-            $("#self-uid-msg").html('Checking Aadhaar...');
-
-            $("#applicant-uid_no" ).attr("validated_value", uid);
-
-            jQuery.ajax({
-                url: '/ujjwala/ujjwala-application/check_uid/',
-                type: "GET",
-                data: {'uid': uid},
-                success: function (data) {
-                    response = data;
-                    if (response.status === true) {
-                        e.setCustomValidity("");
-                        $('#family_members_tree [id="SELF-uid_no"]').val(uid);
-                        $("#self-uid-msg").html('<p style=" color:green; "> ✔ आप आवेदन कर सकते है। </p>');
-                    } else {
-                        e.setCustomValidity(`ID: ${data.data.applications[0].id} Name: ${data.data.applications[0].name}`);
-                        e.focus();
-
-                        msg = data.data.applications.map(e=>`<p>आपका आवेदन पहले से मौजूद है ${e.id} Name: ${e.name}</p>`).join('');
-                        $("#self-uid-msg").html(msg).css({'color': 'red', 'font-size' : '17px'});
-
-                    }
-                },
-            });
+function checkApplicantsAadhaarValidity(uid_data) {
+    return new Promise((resolve, reject) => {
+        var uid = uid_data.aadhaar.value;
+        
+        if(!validateAadhaar(uid)) {
+            return reject("Invalid aadhaar, please check again.");
         }
-    }
-    e.reportValidity();
+        if($('#family_members_tree .aadhar_on_blur').get().map((e)=> e.value).indexOf(uid) >= 0) {
+            return reject("Aadhaar already entered in Family Members List");
+        }
+
+        jQuery.ajax({
+            url: '/ujjwala/ujjwala-application/check_uid/',
+            type: "GET",
+            data: {'uid': uid},
+            success: function (data) {
+                response = data;
+                if (response.status === true) {
+                    $("#self-uid-msg").html('<p style=" color:green; "> ✔ आप आवेदन कर सकते है। </p>');
+                    return resolve(uid_data);
+                }
+
+                // msg = data.data.applications.map(e=>`<p>आपका आवेदन पहले से मौजूद है ${e.id} Name: ${e.name}</p>`).join('');
+                // $("#self-uid-msg").html(msg).css({'color': 'red', 'font-size' : '17px'});
+
+                return reject(`ID: ${data.data.applications[0].id} Name: ${data.data.applications[0].name}`);
+            },
+        });
+       
+    });
 }
 
 
@@ -721,14 +649,16 @@ $(document).ready(function() {
         setMaritalStatus = marital_status;
         setOccupancyStatus = occupancy_status;
 
-        removeAllFamilyMembersExceptSelf();
-        addFamilyMember('SELF', 'Self');
+        // removeAllFamilyMembersExceptSelf();
 
         if (setMaritalStatus == 'UNMARRIED' && occupancy_status == 'LIVING_WITH_FAMILY') {
-            addFamilyMember('FATHER', 'Father');
-            addFamilyMember('MOTHER', 'Mother');
+            family_member_service.remove_fm('HUSBAND');
+            family_member_service.add_fm('FATHER');
+            family_member_service.add_fm('MOTHER');
         } else if (setMaritalStatus == 'MARRIED' && occupancy_status == 'LIVING_WITH_FAMILY') {
-            addFamilyMember('HUSBAND', 'Husband');
+            family_member_service.remove_fm('FATHER');
+            family_member_service.remove_fm('MOTHER');
+            family_member_service.add_fm('HUSBAND');
         }
         $('#family_members_tree [id="SELF-uid_no"]').attr("readonly", true);
         
@@ -778,8 +708,8 @@ $(document).ready(function() {
          if($(this).closest('ul').hasClass('secondLevel')){
               $(this).parents('li').addClass('active');
              
-         //this is a parent element
-         }else{
+            //this is a parent element
+         } else {
               $(this).addClass('active');
          }
      });
