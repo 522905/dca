@@ -42,6 +42,12 @@ COMPILED_REGEX_PATTERN_OTHERS = re.compile(
 	"Available with (?P<omc>.*) LPGId : (?P<consumer_id>.*) DistName : (?P<distributor_name>.*)"
 )
 
+SMS_OTP_MESSAGE = \
+"""
+Dear Customer, 
+Your Verification code for {{for}} is {{code}}
+"""
+
 
 def valid_file_uploaded(url):
 	res = requests.head(url, headers={"Tus-Resumable": "1.0.0"})
@@ -700,7 +706,7 @@ def is_application_ready_for_disbursement(application_id):
 	if application:
 		if application.status == UjjwalaV2ApplicationStatus.NIC_CLEARED and \
 				application.pre_inspection.status == PreInspectionStatusEnum.ACCEPTED:
-			application.transition_ready_for_disbrusement()
+			application.transition_ready_for_disbursement()
 			application.save()
 
 
@@ -740,7 +746,7 @@ def send_whatsapp_contact_otp(request, contact_mobile):
 		},
 		# "callbackData": "some_callback_data",
 		"template": {
-			"name": "ujjwala_application_whatsapp_otp",
+			"name": "ujjwala_application_whatsapp_otp_02082022",
 			"languageCode": "hi",
 			"headerValues": [
 			],
@@ -782,3 +788,141 @@ def verify_whatsapp_contact_otp(reference_number, otp):
 	return {
 		"verified": False,
 	}
+
+
+# Send OTP SMS
+def send_sms_contact_otp(contact_mobile):
+	from otp.models import Otp
+
+	ref_no = None
+
+	while True:
+		ref_no = __get_ref_no__()
+		try:
+			Otp.objects.get(reference_number=ref_no)
+		except Otp.DoesNotExist:
+			break
+
+	otp = id_generator(4, chars=string.digits)
+	valid_till = datetime.now() + timedelta(minutes=5)
+	closed = False
+
+	otp_obj = Otp.objects.create(
+		reference_number=ref_no,
+		mobile=contact_mobile,
+		otp=otp,
+		valid_till=valid_till,
+		closed=closed,
+		extra={
+			"contact_mobile": contact_mobile
+		}
+	)
+
+	context = {
+		"for": "Phone Number Verification: {}".format(contact_mobile),
+		"code": otp,
+	}
+
+	message = SMS_OTP_MESSAGE.format(**context)
+
+	data = requests.post("https://4r198.api.infobip.com/sms/2/text/advanced", json={
+		"messages": [
+			{
+				"from": "ARUNGS",
+				"destinations": [
+					{
+						"to": "+91{}".format(contact_mobile)
+					}
+				],
+
+				"text": message,
+				"flash": False,
+
+				"regional": {
+					"indiaDlt": {
+						"principalEntityId": "1101546710000030317",
+						"contentTemplateId": "1107161183026272363"
+					}
+				},
+				"notifyUrl": "https://dca.arungas.com/commlog/infobip/webhook/",
+				"notifyContentType": "application/json",
+				# "callbackData": "DLR callback data",
+				# "validityPeriod": 720
+			}
+		]
+	}, headers={
+		'Authorization': 'App 140a3abf6dd9134f5defb703a54dfcf0-e3df520b-f144-4282-a174-aa3765c7b438'
+	})
+
+	if data.get('result', ''):
+		CommunicationLog.objects.create(
+			channel_subscriber=contact_mobile,
+			event="ujjwala_application_whatsapp_contact_otp", channel="whatsapp",
+			message_id=data.get('id')
+		)
+		return ref_no
+
+
+def verify_sms_contact_otp(reference_number, otp):
+	from otp.models import Otp
+
+	obj = Otp.objects.filter(reference_number=reference_number).first()
+	if obj:
+		if otp == obj.otp:
+			signer = Signer()
+			value = signer.sign(obj.mobile)
+			return {
+				"verified": True,
+				"signed_value": value
+			}
+	return {
+		"verified": False,
+	}
+
+
+def send_ujjwala_application_whatsapp_link(contact_mobile, contact_mobile_base64, url):
+	body_text = {
+		"countryCode": "+91",
+		"phoneNumber": contact_mobile,
+		"type": "Template",
+		"traits": {
+			"name": contact_mobile,
+		},
+		# "callbackData": "some_callback_data",
+		"template": {
+			# "name": "ujjwala_application_whatsapp_otp_02082022",
+			"name": "ujjwala_application_shared_link",
+			"languageCode": "hi",
+			"headerValues": [
+			],
+			"bodyValues": [
+				url
+			],
+			"buttonValues": {
+				"0": [
+					"ujjwala/portal/whatsapp_ujjwala_application_link/{}/".format(
+						contact_mobile_base64
+					)
+				]
+			}
+		}
+	}
+
+	data = track.client.post(
+		api_key=settings.INTERAKT_API_KEY,
+		path="/v1/public/message/",
+		body=body_text
+	).json()
+
+	if data.get('result', ''):
+		CommunicationLog.objects.create(
+			channel_subscriber=contact_mobile,
+			event="ujjwala_application_shared_link", channel="whatsapp",
+			message_id=data.get('id')
+		)
+		return True
+	return False
+
+
+def find_ujjwala_application_using_contact(contact_mobile):
+	return True

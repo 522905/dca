@@ -1,0 +1,1078 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ARUN GAS SERVICE</title>
+    <link rel="icon" type="image/png" href="https://dca.arungas.com/static/img/logo2.png">
+    <meta charset="utf-8"></meta>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,600,800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap">
+    <link rel="stylesheet" href="https://arungas.com/public/ujwalla/css/signature-pad.css">
+    <link rel="stylesheet" href="https://arungas.com/public/ujwalla/css/style.css">
+    <link rel="stylesheet" href="{% static '/css/style.css' %}">
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
+    <script src="https://arungas.com/public/ujwalla/js/signature_pad.umd.js"></script>
+    <script src="{% static '/js/static.js' %}"></script>
+    <!--  .uppy-StatusBar.is-complete -->
+</head>
+<style>
+    .ocr_aadhaar_img img{ width:100%; object-fit: contain; height: 100px;  margin-bottom: 10px; }
+    .ocr_aadhaar_img ul{ padding:0}
+    .ocr_aadhaar_img li{ display: inline-block; padding-right: 10px;}
+</style>
+<body id="background_image_styles" style="background-color: #efefef;">
+    <div class="loader" style="display: none;">
+        <div class="loader_outer">
+            <div class="loader_outer_inner">
+                <img src="{% static 'img/VAyR.gif' %}"><br><span id="ocr_loader"></span>
+            </div>
+        </div>
+    </div>
+    <div class="container" style="background-color: #fff;">
+        <div class="">
+            <div class="row justify-content-start ">
+                <div class="col-6">
+                    <h1 class="" style=" background-color: #fff;">
+                        <img style="max-width:200px; width: 100%; padding: 10px; margin-top: 18px;"
+                            src="https://www.arungas.com/wp-content/uploads/2022/04/Arungas-new-logo.png">
+                    </h1>
+                </div>
+
+                <div class="col-6">
+                    <h4 class="header2" style="float: right; margin-bottom: 0;">
+                        <img width="100px" src="https://www.pmuy.gov.in/hi/assets/images/logo.png">
+                    </h4>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <h3 class="" style="font-size: 20px; margin-top: 0px; text-align: center;">प्रधानमंत्री उज्ज्वला
+                        योजना 2.0<br><span style="font-size: 12px;">(फ्री गैस कनेक्शन पात्रता योग्य प्रवासी ज़रूरतमंद
+                            महिलाओं के लिए) <br>आवेदन करने की अंतिम तिथि <b style="color: #f37022">31 अगस्त
+                                2022</b></span>
+                    </h3>
+                    <p style="font-size: 12px; text-align: center; color: #2d5593; font-weight: bold;"> प्रधानमंत्री
+                        उज्ज्वला योजना हमारे देश के प्रधानमंत्री जी के द्वारा आरंभ की गई है।<br><i
+                            style="color: #c8860f;">हम सिर्फ़ माध्यम है</i></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- start Whatsapp OTP Verification Modal -->
+    <div class="modal fade" id="verifyMobileOtp" tabindex="-1" role="dialog" aria-labelledby="verifyMobileOtp" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h6 class="modal-title text-center" id="verifyMobileOtp">OTP Sent on <span id="verifyMobileNumber"></span></h6>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                </div>
+                <div class="modal-body">
+                    <input name="whatsapp_otp" style="margin: 0 auto; max-width: 150px;" type="tel" class="form-control" id="whatsapp_otp"
+                    required />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Change Number</button>
+                    <button type="button" class="btn btn-primary" onclick="whatsapp_verifier.verify_otp()">Verify & Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+     <!-- end Whatsapp OTP Verification Modal -->
+    <div class="container p-0 border-top" style="background-color: #fff;">
+        <form class="form-horizontal reno-bg p-4 " id="form" method="POST">
+            <input type="hidden" name="version" value="V5" />
+
+            <div class="card mb-2">
+                <div class="main-header bg-heading rounded-0 mb-2" style="background-color: #2957A4;">
+                    <span class="text-white">Enter Personal Detail</span>
+                </div>
+                
+                <div class="p-2">
+                    <div id="uid_linked_mobile_form_group" class="form-group">
+                        <label style="margin-bottom: 0;">Own or Family Whatsapp Number(अपना या परिवार के किसी सदस्य का
+                            व्हाट्सएप नंबर) <i class="fa fa-whatsapp" aria-hidden="true"></i> <strong
+                                style="color:red">*</strong></label>
+                            <span style="color:red; font-size:12px; display: block; width: 100%;">जो कि कनेक्शन मिलने तक
+                            चलता रहे ताकि हम आपको संपर्क कर सके</span>
+                        <div class="row m-0">
+                            <div class="col-8 pl-0">
+                                <input type="tel" class="form-control" id="contact_mobile"
+                                pattern="[6789][0-9]{9}" name="contact_mobile" maxlength="10" required />
+                                
+                            </div>
+                            <div class="col-4 pr-0">
+                                <button type="button" id="verifyWhatsappButton" class="btn btn-primary float-right" 
+                                onclick="whatsapp_verifier.start_verification()">
+                                    Verify
+                                </button>
+                                <button type="button" id="changeWhatsappButton" class="btn btn-primary float-right" 
+                                onclick="whatsapp_verifier.reset_verification()" style="display: none;">
+                                    Change
+                                </button>
+                            </div>
+                        </div>
+                        <div class="row m-0">
+                            <span id="contact_mobile_detail_whatsapp"></span>
+                        </div>
+                    </div>
+
+                    <span id="self-details"></span>
+                    
+                    <div class="form-group">
+                        <label>Applicant Mobile Number. (आवेदक का मोबाइल नंबर)<strong style="color:red">*</strong></label>
+                        <input type="tel" class="form-control" id="uid_linked_mobile" onblur="checkContactMobileValidity();" pattern="[6789][0-9]{9}" name="uid_linked_mobile"
+                            maxlength="10" required />
+                            <div class="row m-0">
+                                <span id="contact_mobile_detail"></span>
+                            </div>
+                    </div>
+
+                    <div class="form-group ">
+                        <label>Marital Status (वैवाहिक स्थिति)<strong style="color:red">*</strong></label>
+                        <select required class="selectpicker form-control" id="marital_status" name="marital_status">
+                            <option value="" selected="selected" id="status">
+                                Select Marital Status (चुनें वैवाहिक स्थिति)
+                            </option>
+                            <option value="MARRIED">Married (विवाहित)</option>
+                            <option value="UNMARRIED">Unmarried (अविवाहित)</option>
+                            <!-- <option value="DIVORCED">Divorced (तलाक)</option>
+                                <option value="WIDOW">WIDOW ()</option> -->
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-0">
+                        <div class="row">
+                            <div class="col-sm-12 col">
+                                <label>Your Picture or Selfie (प्रार्थी की फोटो)<strong
+                                        style="color:red">*</strong></label>
+                                <span class="custom-file-input" name="customerpicture" id="customerpicture"></span><br>
+                                <span id="customerpicture_detail" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" id="occupancy_status" name="residential_status" value="LIVING_WITH_FAMILY">
+
+            <div class="card mb-2 family_heading">
+                <div class="main-header bg-heading rounded-0" style="background-color: #2957A4;">
+                    <span class="text-white">(Family Detail) परिवार का डेटा </span>
+                </div>
+                <div id="family_members_tree" class="container p-0">
+                </div>
+            </div>
+
+            <div class="card mb-2">
+                <div class="main-header bg-heading rounded-0 mb-2" style="background-color: #2957A4;">
+                    <span class="text-white">Current Address (वर्तमान पता)</span>
+                </div>
+                <div class="p-2">
+                    <div class="row">
+                        <div class="col pr-0">
+                            <div class="form-group">
+                                <label for="house_no">House No. <br> (घर का नंबर)<strong style="color:red">*</strong></label>
+                                <input required type="text" class="form-control" id="house_no" name="house_no"
+                                    placeholder="House No.">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="room_no">Room No.<br> (कमरा सं.)<strong style="color:red">*</strong></label>
+                                <input type="text" class="form-control" id="room_no" name="room_no" required />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col pr-0">
+                            <div class="form-group">
+                                <label for="floor">Floor(तल सं.)<strong style="color:red">*</strong></label>
+                                <input type="text" class="form-control" id="floor" name="floor" required />
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="street_no">Street No. (गली नंबर)<strong style="color:red">*</strong></label>
+                                <input type="text" class="form-control" id="street_no" name="street_no" required />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="landmark">Land Mark (नजदीकी स्थान)<strong style="color:red">*</strong></label>
+                                <input type="text" class="form-control" id="landmark" name="landmark" required />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="village">Locality Village (रोड/गांव/मोहल्ला/इलाका)<strong
+                                        style="color:red">*</strong></label>
+                                <input type="text" class="form-control" id="village" name="village" required />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col pr-0">
+                            <div class="form-group">
+                                <label for="ward_no">Ward No.<br> (वर्ड नंबर)<strong style="color:red">*</strong></label>
+                                <input type="text" class="form-control" id="ward_no" name="ward_no" required />
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="post_office">Post Office <br>(पोस्ट ऑफीस)<strong
+                                        style="color:red">*</strong></label>
+                                <input type="text" class="form-control" id="post_office" name="post_office" required />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col pr-0">
+                            <div class="form-group">
+                                <label for="city">City (शहर)<strong style="color:red">*</strong></label>
+                                <input type="text" class="form-control" value="Ludhiana" id="ludhiana" name="" required />
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="pincode">Pincode (पिनकोड)<strong style="color:red">*</strong></label>
+                                <input type="tel" class="form-control" id="pincode" name="pincode"
+                                    onblur="validate_pincode();" pattern="[1-9]{1}[0-9]{5}" required />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-2">
+                <div class="main-header bg-heading rounded-0 mb-2" style="background-color: #2957A4;">
+                    <span class="text-white">Bank Detail</span>
+                </div>
+                <div class="row p-2">
+                    <div class="col-sm-4">
+                        <label>Bank Detail (पास बुक का विवरण)<strong style="color:red">*</strong></label>
+                        <span class="custom-file-input" name="bankdetail" id="bankdetail"></span>
+                    </div>
+                    <div class="col-sm-4">
+                        <label>Enter Bank Account No (बैंक खाता संख्या)<strong style="color:red">*</strong></label>
+                        <input type="number"  class="form-control" pattern = "[0-9]" maxlength="19" id="bank_account_number"
+                            name="bank_account_number" required />
+                    </div>
+                    <div class="col-sm-4 p-sm-t-2" id="ifsccontainer">
+                        <!-- SBIN0050873 -->
+                        <label>Enter the IFSC code:</label>
+                        <!-- ^[A-Z]{4}0[A-Z0-9]{6}$ -->
+                        <input class="input_field form-control" placeholder="IFSC" id="ifsc_code"name="ifsc_code" required onblur="checkIfscCodeValidity();">
+                        <p id="ifscmess"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-2">
+                <div class="main-header bg-heading rounded-0 mb-2 " style="background-color: #2957A4;">
+                    <span class="text-white">Other Detail</span>
+                </div>
+                <div class="p-2">
+                    <div id="show">
+                        <div class="form-group pt-2">
+                            <p>Referral Code</p>
+                            <input type="text" class="form-control" id="reference" name="referral_code" value="">
+                            <br>
+                            <p style="font-size: 14px;">
+                                <input id="term_condition_agree" type="checkbox" name="terms"
+                                    style="margin-right: 10px; font-size: 13px;">
+                                <a class="term_link" target="_blank" href="https://www.arungas.com/public/ujwalla/terms.pdf"
+                                    style="color: #000; text-decoration: underline;">
+                                    मैं प्रवासी हूँ, मैंने शर्तें पढ़ ली है और मुझे सारी शर्तें बताई भी गई है मैं सब कुछ जान
+                                    कर ये घोषणा करती हूं कि उपर दी गई सभी जानकारी सत्य एवं सही हैं इसमें कुछ भी छिपा नहीं
+                                    है</a>
+                            </p>
+                            <p style="font-size: 14px;">
+                                <span style="color: red;"><br><b> ज़रूरी सूचना :- </b><br></span>
+                                उज्जवला स्कीम का अवेदन करने का हम सिर्फ माध्यम हैं कनेक्शन की मंजूरी सरकार पर निर्भर करती है
+                            </p>
+                            <div id="signature-pad" class="signature-pad">
+                                <div class="signature-pad--body">
+                                    <canvas></canvas>
+                                </div>
+                                <div class="signature-pad--footer">
+                                    <div class="signature-pad--actions">
+                                        <div>
+                                            <button type="button" class="button clear" data-action="clear">Clear</button>
+                                        </div>
+                                        <div>
+                                            <button type="button" id="submit" name="submit"
+                                                onclick="upload_sign_and_submit()" class="btn btn-success">Upload Signature
+                                                & Submit</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div id="message"></div>
+
+    <!-- Aadhar OCR Modal -->
+    <div class="modal fade"
+        id="uid_ocr_modal" tabindex="-1" role="dialog"
+        aria-labelledby="uid_ocr_modal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title" id="${relation_label}_ModalLabel">Upload Aadhaar</h6>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-1">
+                    <div class="col-sm-4">
+                        <div>
+                            <p style="font-size:12px;">Aadhaar Card Front Photo (आधार फ्रंट फोटो)<strong
+                                    style="color:red">*</strong></p>
+                            <span class="custom-file-input" name="uid_front_link" id="uid_front_link">
+                            </span><br>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="">
+                            <p style="font-size:12px;">Aadhaar Card Back Photo (आधार बैक की फोटो)<strong style="color:red">*</strong>
+                            </p>
+                            <span class="custom-file-input" name="uid_back_link" id="uid_back_link">
+                            </span><br>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    Close
+                </button>
+
+                <button type="button" class="btn btn-secondary"
+                onclick="aadhaar_ocr_service_obj.reset_service()">
+                    Reset
+                </button>
+
+                <button
+                type="button"
+                class="btn btn-primary"
+                onclick="aadhaar_ocr_service_obj.process_files()">
+                    RUN OCR
+                </button>
+            </div>
+        </div>
+        </div>
+    </div>
+</body>
+
+</html>
+
+<script src="https://arungas.com/public/ujwalla/js/app.js"></script>
+<script>
+
+// customerpictureuppy
+window.customerpictureuppy = new Uppy.Core({
+    debug: true,
+    autoProceed: true,
+    restrictions: {
+        maxFileSize: 50000000,
+        maxNumberOfFiles: 1,
+        minNumberOfFiles: 1,
+        allowedFileTypes: ['image/*'],
+    }
+})
+.use(Uppy.Dashboard, {
+    trigger: '#customerpicture',
+    inline: true,
+    target: '#customerpicture',
+    showProgressDetails: true,
+    note: 'Images only, 1 file, up to 10 MB',
+    height: 250,
+    metaFields: [],
+    id: 'customerpicture',
+    browserBackButtonClose: false
+})
+.use(Uppy.Tus, {
+    endpoint: 'https://tus.dca.arungas.com/files/',
+})
+customerpictureuppy.on('complete', result => {
+    console.log('successful files:', result.successful)
+    console.log('failed files:', result.failed)
+});
+
+// bankdetailuppy
+window.bankdetailuppy = new Uppy.Core({
+    debug: true,
+    autoProceed: true,
+    restrictions: {
+        maxFileSize: 50000000,
+        maxNumberOfFiles: 1,
+        minNumberOfFiles: 1,
+        allowedFileTypes: ['image/*'],
+    }
+})
+.use(Uppy.Dashboard, {
+    trigger: '#bankdetail',
+    inline: true,
+    target: '#bankdetail',
+    showProgressDetails: true,
+    note: 'Images only, 1 file, up to 10 MB',
+    height: 250,
+    metaFields: [],
+    id: 'bankdetail',
+    browserBackButtonClose: false
+})
+.use(Uppy.Compressor, {
+    quality: 0.9,
+    maxWidth: 2048,
+    resize: 'contain',
+    limit: 10,
+})
+.use(Uppy.Tus, {
+    endpoint: 'https://tus.dca.arungas.com/files/',
+})
+
+bankdetailuppy.on('complete', result => {
+    console.log('successful files:', result.successful)
+    console.log('failed files:', result.failed)
+});
+
+
+function checkIfscCodeValidity() {
+    var ifsc_element = $('#ifsc_code')[0];
+    var ifsc = ifsc_element.value;
+
+    if ($('#ifsc_code').attr('x-last-value') == ifsc) return;
+    $('#ifsc_code').attr('x-last-value', ifsc);
+
+    ifsc_element.setCustomValidity('');
+    if(!ifsc_element.reportValidity()) {
+        return;
+    }
+
+    if (!(ifsc && ifsc!='')) {
+        alert("IFSC can't be blank!");
+    }
+
+    $.getJSON('https://ifsc.razorpay.com/' + ifsc, (data) => {
+        var table = '<div class="striped">'
+            + '<p><b>Bank Name:</b> ' + data.BANK + ', ' + data.CITY + ', ' + data.STATE + ' </p>'
+            + '<p><b>Branch:</b> ' + data.BRANCH + ' </p>'
+            + '</div>';
+        $('#ifscmess').html(table);
+    }).fail(function () {
+        alert("Invalid IFSC code");
+        var msg = '<div id="errMsg">Invalid IFSC code</div>';
+        $('#ifscmess').html(msg);
+        ifsc_element.setCustomValidity('Invalid IFSC code');
+        ifsc_element.reportValidity()
+    });
+}
+
+
+function WhatsappMobileVerifiedController() {
+    var state = 'INITIAL';
+    var whatsappRefNo = undefined;
+
+    function setAsVerified() {
+        state = 'VERIFIED';
+        $("#contact_mobile_detail_whatsapp").show();
+        $("#contact_mobile_detail_whatsapp").html('✔ Whatsapp Verified').css({'color': 'green', 'font-size' : '14px'});
+
+        $('#changeWhatsappButton').show();
+        $('#verifyWhatsappButton').hide();
+
+        $('[name="contact_mobile"]').attr('readonly', true);
+    }
+
+    function resetVerification() {
+        state = 'INITIAL';
+        $("#contact_mobile_detail_whatsapp").hide();
+        $("#contact_mobile_detail_whatsapp").html('');
+
+        $('#changeWhatsappButton').hide();
+        $('#verifyWhatsappButton').show();
+
+        $('#whatsapp_otp').val('');
+        $('[name="contact_mobile"]').val('');
+
+        $('[name="contact_mobile"]').attr('readonly', false);
+    }
+
+    return {
+        start_verification: () => {
+            // reset custom validity
+            $('[name="contact_mobile"]')[0].setCustomValidity('');
+
+            if (!$('[name="contact_mobile"]')[0].reportValidity()) return;
+            
+            var mobile = $('[name="contact_mobile"]').val();
+            $('#verifyWhatsappButton').attr('disabled', true);
+
+            return jQuery.ajax({
+                url: '/ujjwala/ujjwala-application/check_phone/',
+                type: "GET",
+                data: {'contact_mobile': mobile}
+            }).
+            then(response => {
+                if (response.status != true) {
+                    console.log(response);
+                    var data = response.data;
+                    var msg = response.msg;
+                    var status = response.status;
+                    var applications = data.applications;
+
+                    $('[name="contact_mobile"]')[0].setCustomValidity(
+                        `ID: ${applications[0].id} Name: ${applications[0].name}`
+                    );
+                    $('[name="contact_mobile"]')[0].reportValidity();
+
+                    msg = applications.map(e=>`<p>आपका आवेदन पहले से मौजूद है ${e.id} Name: ${e.name}</p>`).join('');
+
+                    $("#contact_mobile_detail_whatsapp").html(msg).css({'color': 'red', 'font-size' : '17px'});
+                    throw new Error(`आपका आवेदन पहले से मौजूद है आइ डी: ${applications[0].id} और नाम ${applications[0].name} स्टेटस ` + msg);
+                }
+                return true;
+            }).
+            then(() => {
+                return jQuery.ajax({
+                    url: '/ujjwala/ujjwala-otp/send_whatsapp_otp/',
+                    type: "GET",
+                    data: {
+                        contact_mobile: mobile
+                    },
+                    headers: {'X-CSRFToken': getCookie('csrftoken')}
+                });
+            }).
+            then(data=> {
+                $('#verifyMobileNumber')[0].innerHTML = mobile;
+                $('#verifyMobileOtp').modal('show');
+                whatsappRefNo = data.reference_number;
+                return whatsappRefNo;
+            }).
+            fail(e => {
+                alert(e);
+            }).
+            always(() => {
+                $('#verifyWhatsappButton').attr('disabled', false);
+            });
+        },
+
+        verify_otp: () => {
+            var whatsapp_otp = $('#whatsapp_otp').val();
+            return new Promise((resolve, reject) => {
+                $('.modal-footer button').attr('disabled', true);
+                
+                jQuery.ajax({
+                    url: '/ujjwala/ujjwala-otp/verify_whatsapp_otp/',
+                    type: "POST",
+                    data: {
+                        "otp": whatsapp_otp,
+                        "reference_number": whatsappRefNo
+                    },
+                    headers: {'X-CSRFToken': getCookie('csrftoken')},
+                    success: function (data) {
+                        $('#verifyMobileOtp').modal('show');
+                        if (data.verified) {
+                            return resolve(data.signed_value);
+                        }
+                        return reject("Invalid Code, enter again");
+                    },
+                });
+            }).
+            then(signed_number=> {
+                $('[name="contact_mobile"]').val(signed_number);
+                $('.modal.show').modal('hide');
+                setAsVerified();
+            }).
+            catch((e) => {
+                alert(e);
+            }).
+            finally(() => {
+                $('.modal-footer button').attr('disabled', false);
+            });
+        },
+
+        reset_verification: () => {
+            resetVerification();
+        },
+
+        is_valid: () => {
+            if (state !== 'VERIFIED') {
+                alert(`Whatsapp Number Not Validated`);
+                setTimeout(() => {
+                    $("#verifyWhatsappButton").focus();
+                }, 0);
+                return false;
+            }
+            return true;
+        },
+
+        get_validated_data: () => {
+            return {
+                'contact_mobile': $('[name="contact_mobile"]').val()
+            }
+        }
+    }
+}
+
+whatsapp_verifier = WhatsappMobileVerifiedController();
+
+
+function AadhaarOcrService() {
+    var callback = undefined;
+    var uid_front_uppy = new Uppy.Core({
+        debug: true,
+        autoProceed: true,
+        restrictions: {
+            maxFileSize: 50000000,
+            maxNumberOfFiles: 1,
+            minNumberOfFiles: 1,
+            allowedFileTypes: ['image/*'],
+        }
+    })
+    .use(Uppy.Dashboard, {
+        trigger: `#uid_front_link`,
+        inline: true,
+        target: `#uid_front_link`,
+        showProgressDetails: true,
+        note: 'Image, 1 file, up to 10 MB',
+        height: 40,
+        metaFields: [],
+        id: 'uid_front_link',
+        browserBackButtonClose: false
+    })
+    .use(Uppy.Compressor, {
+        quality: 0.8,
+        maxWidth: 1520,
+        resize: 'contain',
+        limit: 10,
+    })
+    .use(Uppy.Tus, {
+        endpoint: 'https://tus.dca.arungas.com/files/',
+    });
+
+    var uid_back_uppy = new Uppy.Core({
+        debug: true,
+        autoProceed: true,
+        restrictions: {
+            maxFileSize: 50000000,
+            maxNumberOfFiles: 1,
+            minNumberOfFiles: 1,
+            allowedFileTypes: ['image/*'],
+        }
+    })
+    .use(Uppy.Dashboard, {
+        trigger: `#uid_back_link`,
+        inline: true,
+        target: `#uid_back_link`,
+        showProgressDetails: true,
+        note: 'Image, 1 file, up to 10 MB',
+        height: 40,
+        metaFields: [],
+        id: 'uid_back_link',
+        browserBackButtonClose: false
+    })
+    .use(Uppy.Compressor, {
+        quality: 0.8,
+        maxWidth: 1520,
+        resize: 'contain',
+        limit: 10,
+    })
+    .use(Uppy.Tus, {
+        endpoint: 'https://tus.dca.arungas.com/files/',
+    });
+
+
+    function uppy_has_uploaded_file(uppyObj, label) {
+        if (!uppyObj.state || uppyObj.state.totalProgress == 0) {
+            alert(`${label} is required`);
+            return {valid: false};
+        } else if (uppyObj.state.totalProgress < 100) {
+            alert(`${label} upload in Progress(अपलोड प्रगति पर है)`);
+            return {valid: false};
+        } else {
+            return {valid: true, url: Object.values(uppyObj.state.files)[0].uploadURL};
+        }
+    }
+
+    this.start_capture = (cb) => {
+        $('#uid_ocr_modal').modal('show');
+        callback = cb;
+    };
+
+    this.process_files = () => {
+        //upload files for ocr
+        var uid_front_link = uppy_has_uploaded_file(uid_front_uppy, 'Aadhaar Front');
+        if (!uid_front_link.valid) return;
+        uid_front_link = uid_front_link.url;
+
+        var uid_back_link = uppy_has_uploaded_file(uid_back_uppy, 'Aadhaar Back');
+        if (!uid_back_link.valid) return;
+        uid_back_link = uid_back_link.url;
+
+        var this_service = this;
+
+        return new Promise((resolve, reject) => {
+            $('.modal-footer button').attr('disabled', true);
+            $(".loader").attr("style", "display:block");
+            $("#ocr_loader").html( "OCR 30 सेकंड लेता है, कृपया प्रतीक्षा करें" );
+
+            jQuery.ajax({
+                url: '/app_utilities/application-utilities/get_details_for_aadhar/',
+                type: "POST",
+                data: {
+                    "uid_front_url": uid_front_link,
+                    "uid_back_url": uid_back_link
+                },
+                headers: {'X-CSRFToken': getCookie('csrftoken')},
+                success: function (data) {
+                    response = data;
+                    if (data.status != "success") {
+                        return reject("Error OCRing uid");
+                    }
+                    var uid_data = JSON.parse(data.data.text);
+                    if (uid_data.name == undefined || uid_data.name.prob==0) {
+                        return reject("Unable to capture uid data, make sure that clear pic aadhaar is uploaded.");
+                    }
+                    callback(data);
+                    this_service.stop_capture();
+
+                    return resolve(uid_data);
+                },
+                error: (e) => {
+                    console.log(e);
+                    reject("Something Went Wrong With OCR api, please report");
+                }
+            });
+        }).
+        catch(e => {
+            alert(e);
+        }).
+        finally(() => {
+            $('.modal-footer button').attr('disabled', false);
+            $(".loader").attr("style", "display:none");
+        });
+    };
+
+    this.reset_service = () => {
+        //reset uppy instances
+        uid_front_uppy.reset();
+        uid_back_uppy.reset();
+    };
+
+    this.stop_capture = () => {
+        this.reset_service();
+        $('#uid_ocr_modal').modal('hide');
+    };
+
+    return this;
+}
+
+function MockAadhaarOcrService() {
+    var callback = undefined;
+    return {
+        start_capture: function(cb) {
+            callback = cb;
+        },
+        process_files: function () {
+            callback({
+                "status": "success",
+                "data": {
+                    "text": "{\"pincode\":\"141015\",\"address\":{\"prob\":0.5,\"value\":\"0, Baba Deep udhiana,\"},\"gender\":{\"prob\":0.8,\"value\":\"FEMALE\"},\"dob\":{\"prob\":0.8,\"value\":\"01/01/1966\"},\"name\":{\"prob\":0.5,\"value\":\"Parmjit Kaur\"},\"aadhaar\":{\"prob\":0.8,\"value\":\"331029404185\"}}"
+                },
+                "uid_front_url": "https://tus.dca.arungas.com/files/f52f8709d935e1cfde053366adfcc125",
+                "uid_back_url": "https://tus.dca.arungas.com/files/322b9dad809daf2eeeaa09808917a3b5"
+            });
+        },
+        reset_service: function() {
+            //reset uppy instances
+        },
+        stop_capture() {
+            this.reset_service();
+        }
+    }
+}
+
+{#var aadhaar_ocr_service_obj = MockAadhaarOcrService();#}
+var aadhaar_ocr_service_obj = new AadhaarOcrService();
+
+function FamilyMemberService(html_block_id, aadhaar_ocr_service) {
+    let familyMembers = [];
+
+    function is_fm_dom_data_complete(fm) {
+        if(fm.uid_no == undefined || fm.uid_no == '') return false;
+        if(fm.name == undefined || fm.name == '') return false;
+        return true;
+    }
+
+    function add_fm_to_dom(fm) {
+        addFamilyMember(fm.relation, fm.relation)
+    }
+
+    function remove_fm_from_dom(relation) {
+        removeFamilyMemberFromDom(relation)
+    }
+
+    function update_data_from_ocr_response(fm, ocr_api_resp) {
+        var data = ocr_api_resp.data.text;
+        //update fm
+
+        fm.name = !/[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~\d]/.test(data.name.value)?data.name.value:'';
+
+        var dob_data = data.dob.value.split('/').reverse();
+        if (dob_data.length === 1) {
+            dob_data.push('01-01');
+            data.dob.prob = .5;
+        }
+
+        fm.dob = dob_data.join('-');
+        fm.gender = data.gender.value;
+        fm.uid_no = data.aadhaar.value;
+        fm.src_data = data;
+
+        fm.src_data.uid_front_url = ocr_api_resp.uid_front_url;
+        fm.src_data.uid_back_url = ocr_api_resp.uid_back_url;
+
+        update_dom_fm(fm);
+    }
+
+    function update_dom_fm(fm) {
+        console.log(fm);
+        var field_selector = `.${fm.relation}-familyMemberLineItem #${fm.relation}`;
+        $(`${field_selector}-name`).val(fm.name);
+        $(`${field_selector}-dob`).val(fm.dob);
+        $(`${field_selector}-gender`).val(fm.gender);
+        $(`${field_selector}-uid_no`).val(fm.uid_no);
+
+        $.each(['name', 'dob', 'gender', 'uid_no'], (i, key) => {
+            var prob = fm.src_data[key=='uid_no'?'aadhaar':key].prob;
+            if (prob < .8) {
+                $(`${field_selector}-${key}`).removeAttr('readonly');
+            } else {
+                $(`${field_selector}-${key}`).attr('readonly', '');
+            }
+        });
+
+        $(`#${fm.relation}-uid_front_link`).attr('src',fm.src_data.uid_front_url);
+        $(`#${fm.relation}-uid_back_link`).attr('src', fm.src_data.uid_back_url);
+    }
+
+    this.add_fm = (relation) => {
+        var fm = this.find_fm_by_relation(relation);
+        if (fm == null) {
+            fm = {
+                'relation': relation
+            }
+            familyMembers.push(fm);
+            add_fm_to_dom(fm);
+        }
+        return fm;
+    };
+    this.remove_fm = (relation) => {
+        var fm = this.find_fm_by_relation(relation);
+        if (fm != null) {
+            var idx = familyMembers.indexOf(fm);
+            if (idx >= 0) {
+                familyMembers.splice(idx, 1);
+                remove_fm_from_dom(relation);
+            }
+        }
+    }
+    this.find_fm_by_relation = (relation) => {
+        var fm = familyMembers.filter(e => e.relation === relation);
+        if (fm.length === 0) return null;
+        return fm[0]
+    }
+    this.find_fm_by_uid = (uid) => {
+        var fm = familyMembers.filter(e => e.uid_no === uid);
+        if (fm.length === 0) return null;
+        return fm[0]
+    }
+
+    this.update_fm_via_ocr = (relation) => {
+        var fm = this.find_fm_by_relation(relation);
+        // check if fm exists
+
+        aadhaar_ocr_service.start_capture(resp => {
+            var ocr_data = JSON.parse(resp.data.text);
+            resp.data.text = ocr_data;
+
+            if((relation == 'SELF' || relation == 'MOTHER') && ocr_data.gender.value.toLowerCase() != 'female') {
+                alert(`${relation} must be Female, Check uploaded Aadhaar`);
+                return;
+            } else if ((relation == 'FATHER' || relation == 'HUSBAND') && ocr_data.gender.value.toLowerCase() != 'male') {
+                alert(`${relation} must be Male, Check uploaded Aadhaar`);
+                return;
+            }
+
+            // Run Dedup Over Api
+            jQuery.ajax({
+                url: '/ujjwala/ujjwala-application/check_uid/',
+                type: "GET",
+                data: {'uid': ocr_data.aadhaar.value}
+            }).then(response => {
+                if (response.status === true) {
+                    return ocr_data;
+                }
+                throw new Error(response.msg);
+            }).then(ocr_data => {
+                // Run Dedup Over All Family Members Data
+                var fm = this.find_fm_by_uid(ocr_data.aadhaar.value);
+                if (fm !== null) {
+                    throw new Error(`${fm.name} already added as ${fm.relation}`);
+                }
+                return ocr_data
+            }).then(ocr_data => {
+                update_data_from_ocr_response(fm, resp);
+            }).fail(e => {
+                alert(e);
+            });
+        })
+    }
+
+    this.is_valid = () => {
+        var marital_status = $('#marital_status').val();
+        if (marital_status=='') {
+            $('#marital_status').focus();
+            alert("Material Status Is Mandatory");
+            return false;
+        }
+
+        var family_members = gatherFamilyMembersData();
+        
+        if (
+            (marital_status == 'MARRIED' && family_members.length != 2) ||
+            (marital_status == 'UNMARRIED' && family_members.length != 3)
+        ) {
+            alert("Reselect marital status");
+            return false;
+        }
+
+        for (let i = 0; i < family_members.length; i++) {
+            var member = family_members                                                                                                                                                                             [i];
+            if(!is_fm_dom_data_complete(member)) {
+                $(`.${member.relation}-familyMemberLineItem .btn`).focus();
+                alert(`Upload Aadhaar of ${member.relation}`);
+                return false;
+            }
+        }
+
+        var self_fm = this.find_fm_by_relation('SELF').dob.split('-')[0];
+        if (marital_status === 'UNMARRIED') {
+            var mother_fm = this.find_fm_by_relation('MOTHER').dob.split('-')[0];
+            var father_fm = this.find_fm_by_relation('FATHER').dob.split('-')[0];
+
+            var self_mother_diff = self_fm - mother_fm;
+            var self_father_diff = self_fm - father_fm;
+            var father_mother_diff = Math.abs(father_fm - mother_fm);
+
+            if (self_mother_diff <= 16 || self_father_diff <= 16) {
+                alert('Check Self and Mother/Father Aadhaar card, age gap too low');
+                return false;
+            } else if (father_mother_diff > 15) {
+                alert('Check Mother and Father Aadhaar card, Huge age gap.');
+                return false;
+            }
+        } else if (marital_status === 'MARRIED') {
+            var husband_fm = this.find_fm_by_relation('HUSBAND').dob.split('-')[0];
+            var self_husband_diff = Math.abs(self_fm - husband_fm);
+
+            if (self_husband_diff > 15) {
+                alert('Check Self and Husband Aadhaar card, Huge age gap.');
+                return false;
+            }
+        }
+
+        return true;
+    }
+    this.get_validated_data = () => {
+        var family_members = gatherFamilyMembersData();
+        return family_members;
+    }
+
+    return this;
+}
+
+var family_member_service = new FamilyMemberService('', aadhaar_ocr_service_obj);
+family_member_service.add_fm('SELF');
+
+// $(".aadhaar_ocr:not([readonly])").css("border: 1px dashed ; -webkit-animation: blink .5s step-end infinite alternate;");
+// ocr_loader
+$(window).load(function() {
+    $(".loader").fadeOut("slow");
+});
+</script>
+<style>
+    .modal_disabled{ background-color: rgba(0,0,0,0.9);}
+    @media only screen and (max-width: 600px) {
+        .mobile_review {
+            display: block;
+        }
+        .desktop_review{
+            display: none;
+        }
+    } 
+    @media only screen and (min-width: 601px) {
+        .mobile_review {
+            display: none;
+        }
+        .desktop_review {
+            display: block;
+        }
+    } 
+    @-webkit-keyframes blink { 50% { border-color: #ff0000; }  }
+
+
+    .aadhaar_ocr:not(input[readonly]) {
+        border: 1px dashed ;
+        -webkit-animation: blink .5s step-end infinite alternate;
+    }
+    .loader {
+        position: fixed;
+        height: 100vh;
+        background-color: (0,0,0,0.9);
+        z-index: 9999;
+        margin: 0 auto;
+        width: 100%;
+    }
+    .loader_outer_inner img{ height: 100px; width: 100px;}
+    #ocr_loader{
+        font-size: 20px;
+        color: #fff;
+        max-width: 200px;
+    }
+    .loader_outer {   
+        display: table;
+        height: 100vh;
+        margin: 0 auto;
+        text-align: center;
+        width: 100%;
+        background-color: (0,0,0,0.9) !important; 
+    }   
+    .loader_outer_inner {
+        display: table-cell;
+        vertical-align: middle;
+        background-color: #000;
+    }
+    #verifyMobileOtp{ z-index: 99;}
+ 
+</style>

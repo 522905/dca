@@ -1,4 +1,6 @@
 import io
+import math
+import os
 import uuid
 
 import magic
@@ -6,6 +8,8 @@ import requests
 from PyPDF2 import PdfFileMerger
 
 # THUMBOR_URL = "http://dca.arungas.com:6988/unsafe/fit-in/1520x2688/filters:quality(80)/"
+from ujjwala.management.commands.ujjwala_file_worker import tus_client
+
 THUMBOR_URL = "http://dca.arungas.com:6988/unsafe/fit-in/{}x{}/filters:quality({})/"
 
 
@@ -35,8 +39,11 @@ def compress_file(file_url, target_size=500):
         if response.status_code != 200:
             return False, file_url, '-2'
 
-        # if compressed_file_size > target_size:
+        if compressed_file_size <= target_size:
+            break
 
+        divisor = math.sqrt(int(compressed_file_size/target_size))
+        resolution_x, resolution_y = int(resolution_x/divisor), int(resolution_y/divisor)
 
     doc_file_bytes = io.BytesIO(response.content)
     descriptor = magic.detect_from_content(doc_file_bytes.read(2048))

@@ -5,12 +5,14 @@ from django.contrib import admin
 from email.mime import application
 
 from django.views import generic
+from django.views.generic import TemplateView
 from rest_framework import routers
 
 from connection_app.viewsets import ConnectionApplicationViewSet
 
 from . import views
 from .robos.nic_error_robo import UjjwalaApplicationNicErrorRobotAPIViewSet
+from .views import UjjwalaApplicationWebFormView
 from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet, UjjwalaApplicationOtpViewSet
 
 router = routers.DefaultRouter()
@@ -28,6 +30,7 @@ urlpatterns = [
     #     name="legal_documents_upload"),
     # path('portal/', generic.TemplateView.as_view(template_name="ujjwala/frontend.html"), name="index"),
 
+    path('portal/web-form/', UjjwalaApplicationWebFormView.as_view(), name="web_form"),
     path('portal/pre-inspection/', views.UjjwalaPreInspectionListView.as_view(), name="index"),
 
     path(
@@ -71,6 +74,17 @@ urlpatterns = [
     ),
 
     url(
+        '^portal/whatsapp_ujjwala_application_link/(?P<contact_mobile>[^/.]+)/$',
+        views.UjjwalaApplicationSendWhatsappLinkView.as_view(),
+        name="whatsapp_ujjwala_application_link"
+    ),
+    url(
+        '^portal/ujjwala_application_link/(?P<data>[^/.]+)/$',
+        views.UjjwalaApplicationSharedLinkView.as_view(),
+        name="ujjwala_application_link"
+    ),
+
+    url(
         '^portal/whatsapp_nic_error_update_address/(?P<pk>[^/.]+)/$',
         views.WhatsappNicErrorUpdateAddress.as_view(),
         name="whatsapp_nic_error_update_address"
@@ -110,6 +124,11 @@ urlpatterns = [
         '^portal/legal_documents_upload/(?P<pk>[^/.]+)/$',
         views.UjjwalaApplicationLegalDocumentsUpload.as_view(),
         name="legal_documents_upload"
+    ),
+    url(
+        '^portal/set_primary_phone_number/(?P<pk>[^/.]+)/$',
+        views.SetPrimaryPhoneNumberView.as_view(),
+        name="set_primary_phone_number"
     ),
     url(
         '^portal/nic_error_update_address/(?P<pk>[^/.]+)/$',

@@ -172,9 +172,8 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
                 'whatsapp_nic_error_update_address'
             ]
 
-
         readonly_fields = readonly_fields + [
-            'whatsapp_pre_inspection_type_self', 'whatsapp_form_a_b_c'
+            'set_primary_phone_number', 'whatsapp_pre_inspection_type_self', 'whatsapp_form_a_b_c'
         ]
         return readonly_fields
 

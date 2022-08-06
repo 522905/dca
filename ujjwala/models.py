@@ -126,6 +126,15 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		return mark_safe(html)
 
 
+	def set_primary_phone_number(self):
+		# WhatsappUploadLegalForms
+		url = reverse('ujjwala:set_primary_phone_number', kwargs={'pk': self.pk})
+		html = '''
+		<a href="{}">Set Primary Phone Number</a>
+		'''.format(url)
+		return mark_safe(html)
+
+
 	@property
 	def formatted_address(self):
 		if self.version in ('V1', 'V2'):
@@ -182,7 +191,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		record = self.pre_inspection.documents.filter(
 			type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT
 		).first()
-		if record: return record.link
+		if record:
+			return record.link
 		return ''
 
 	def get_form_abc(self):
@@ -239,6 +249,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		permission='ujjwala.can_do_ekyc'
 	)
 	def ekyc_accepted_or_rejected(self, *args, **kwargs):
+		self.sdms_mobile_number = kwargs.get('sdms_mobile_number')
+		self.save()
 		pass
 
 	@fsm_log_description
@@ -868,9 +880,7 @@ class PreInspection(models.Model):
 			self.parent.event_legal_documents_upload_channel_whatsapp()
 			is_application_ready_for_disbursement(self.parent_id)
 		else:
-			if self.type == PreInspectionTypeEnum.SELF:
-				# Send Whatsapp Message
-				pass
+			self.parent.event_whatsapp_pre_inspection_reject(self.id, kwargs.get('rejected_reason'))
 
 
 class PreInspectionDocuments(models.Model):

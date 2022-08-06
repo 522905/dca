@@ -14,6 +14,8 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from django.core.signing import Signer
+
+from domestic_app import settings
 from sdms.models import SdmsCustomerRecord
 from utils.global_functions import upload_file_to_minio_bucket, upload_file_type_obj_to_minio_bucket
 from . import models
@@ -28,7 +30,8 @@ from .serializers import UjjwalaV2ApplicationSerializer
 from .ujjwala_functions import download_ujjwala_documents, get_salutation, \
     download_pre_installation_documents, get_existing_duplicate_applications_detail, \
     download_ujjwala_legal_docs_to_upload, download_ujjwala_physical_legal_docs, \
-    process_family_uid_result, process_omc_dedupe_result, send_whatsapp_contact_otp, verify_whatsapp_contact_otp
+    process_family_uid_result, process_omc_dedupe_result, send_whatsapp_contact_otp, verify_whatsapp_contact_otp, \
+    send_sms_contact_otp, verify_sms_contact_otp
 from django.urls import reverse
 
 
@@ -452,7 +455,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 type=PreInspectionTypeEnum.SELF
             )
             application_obj.event_whatsapp_pre_inspection_type_self(obj.id)
-            application_obj.event_invite_for_ekyc_channel_whatsapp()
+            # application_obj.event_invite_for_ekyc_channel_whatsapp()
             if application_obj.consumer_id and \
                     application_obj.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
                 application_obj.ekyc_accepted_or_rejected(description="Bot Processed")
@@ -531,10 +534,15 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 type=PreInspectionTypeEnum.SELF
             )
             application_obj.event_whatsapp_pre_inspection_type_self(obj.id)
-            application_obj.event_invite_for_ekyc_channel_whatsapp()
+            # application_obj.event_invite_for_ekyc_channel_whatsapp()
             if application_obj.consumer_id and \
                     application_obj.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
-                application_obj.ekyc_accepted_or_rejected(description="Bot Processed")
+                self_fm = application_obj.family_members.filter(relation=FamilyMemberRelationEnum.SELF).first()
+                sdms_mobile_number = self_fm.uid_check_result.get('phone_number', '')
+                application_obj.ekyc_accepted_or_rejected(
+                    sdms_mobile_number=sdms_mobile_number,
+                    description="Bot Processed"
+                )
         application_obj.save()
         return HttpResponse('OK')
 
@@ -632,7 +640,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             self_family_member.save()
 
             application.consumer_id = result.get('consumer_id', '')
-
+            application.sdms_mobile_number = result.get('phone_number', '')
             if application.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
                 application.ekyc_accepted_or_rejected(description="Bot Processed")
         else:
@@ -1064,4 +1072,19 @@ class UjjwalaApplicationOtpViewSet(viewsets.ViewSet):
         reference_number = request.data.get('reference_number', '')
         otp = request.data.get('otp', '')
         result = verify_whatsapp_contact_otp(reference_number, otp)
+        return JsonResponse(result, safe=False)
+
+    @action(methods=['get'], detail=False, url_path='send_sms_otp')
+    def send_sms_otp(self, request: HttpRequest, *args, **kwargs):
+        contact_mobile = request.GET.get('contact_mobile')
+        result = send_sms_contact_otp(request, contact_mobile)
+        return JsonResponse({
+            "reference_number": result
+        })
+
+    @action(methods=['post'], detail=False, url_path='verify_sms_otp')
+    def verify_sms_otp(self, request: HttpRequest, *args, **kwargs):
+        reference_number = request.data.get('reference_number', '')
+        otp = request.data.get('otp', '')
+        result = verify_sms_contact_otp(reference_number, otp)
         return JsonResponse(result, safe=False)

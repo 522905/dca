@@ -1076,3 +1076,16 @@ class NewRelationCreated(forms.Form):
 
 class PreInspectionConvertForm(forms.Form):
 	convert_to = forms.CharField(widget=forms.HiddenInput(), required=True)
+
+
+class SetPrimaryPhoneNumberForm(forms.Form):
+	mobile = forms.ChoiceField(
+		widget=forms.RadioSelect,
+		label='Select Mobile Number for Sending OTP(ओटीपी भेजने के लिए मोबाइल नंबर चुनें)'
+	)
+
+	def __init__(self, mobile_nos=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		if mobile_nos:
+			self.fields['mobile'].choices = [(i, i) for i in mobile_nos]
+

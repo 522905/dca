@@ -124,7 +124,6 @@ class UjjwalaWhatsappCommunication(object):
 				message_id=data.get('id')
 			)
 
-	# Invite For Ekyc After SDMS Dedupe
 	def event_invite_for_ekyc_channel_whatsapp(self):
 		body_text = {
 			"countryCode": "+91",
@@ -180,11 +179,6 @@ class UjjwalaWhatsappCommunication(object):
 		physical_legal_doc_link = self.pre_inspection.documents.filter(
 			type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT
 		).first().link
-		#
-		# physical_legal_doc_link = self.pre_inspection_accepted.documents.filter(
-		# 	type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT
-		# ).first().link
-		#physical_legal_doc_link = pre_inspection.link
 
 		body_text = {
 			"countryCode": "+91",
@@ -243,7 +237,6 @@ class UjjwalaWhatsappCommunication(object):
 		# 		self.contact_mobile, self.name, self.pk
 		# 	)
 		# )
-
 
 	def event_legal_documents_reupload_channel_whatsapp(self):
 		body_text = {
@@ -450,3 +443,51 @@ class UjjwalaWhatsappCommunication(object):
 		# 		self.contact_mobile, self.name, self.pk
 		# 	)
 		# )
+
+	def event_whatsapp_pre_inspection_reject(self, pre_inspection_id, reject_reason=''):
+		body_text = {
+			"countryCode": "+91",
+			"phoneNumber": self.contact_mobile,
+			"type": "Template",
+			"traits": {
+				"name": self.name,
+			},
+			# "callbackData": "some_callback_data",
+			"template": {
+				# "name": "ujjwala_application_submitted_",
+				"name": "pre_inspection_type_self_rejected_20072022",
+				"languageCode": "hi",
+				"headerValues": [
+					# "Alert",  #
+				],
+				"bodyValues": [
+					self.name,
+					reject_reason,
+					'https://youtu.be/pQNdDHklka0',
+					"https://dca.arungas.com/ujjwala/portal/pre-inspection/self/{}/".format(str(pre_inspection_id))
+				],
+				"buttonValues": {
+					"0": [
+						"ujjwala/portal/pre-inspection/self/{}/".format(pre_inspection_id)
+					]
+				}
+			}
+		}
+
+		ujjwala_v2_application_content_type = ContentType.objects.get(
+			app_label='ujjwala', model='ujjwalav2application'
+		)
+		data = track.client.post(
+			api_key=settings.INTERAKT_API_KEY,
+			path="/v1/public/message/",
+			body=body_text
+		).json()
+
+		if data.get('result', ''):
+			CommunicationLog.objects.create(
+				content_type=ujjwala_v2_application_content_type,
+				object_id=self.pk,
+				channel_subscriber=self.contact_mobile,
+				event="pre_inspection_reject", channel="whatsapp",
+				message_id=data.get('id')
+			)

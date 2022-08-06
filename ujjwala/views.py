@@ -1,3 +1,4 @@
+import base64
 import datetime
 import json
 import re
@@ -7,7 +8,8 @@ import django_rq
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.core.signing import Signer
+from django.http import HttpResponse, Http404, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
 from django.template import loader
 from django.urls import reverse
@@ -31,11 +33,12 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
     UjjwalaApplicationOtpInitialForm, UjjwalaApplicationGenerateOtpForm, UjjwalaApplicationValidateOtpForm, \
     ConnectionDisbursementMaterialDeliveryForm, ConnectionDisbursementInvitationForm, \
     ConnectionDisbursementSocialMediaUpdatesForm, ConnectionDisbursementSearchForm, NicUpdateAddressForm, \
-    PreInspectionConvertForm, LegalDocumentsReviewAdminForm
+    PreInspectionConvertForm, LegalDocumentsReviewAdminForm, SetPrimaryPhoneNumberForm
 from ujjwala.global_functions import login_required_if_mech_inspection
 
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
     ConnectionDisbursementInvitation, ConnectionDisbursementDocuments
+from ujjwala.ujjwala_functions import send_ujjwala_application_whatsapp_link, find_ujjwala_application_using_contact
 
 
 def index(request):
@@ -83,6 +86,53 @@ class WhatsappPreInspectionTypeSelf(View):
             )
 
 
+class UjjwalaApplicationSharedLinkView(View):
+    def get(self, request, *args, **kwargs):
+        data = kwargs.get('data', '')
+        if data:
+            signer = Signer()
+            data = base64.urlsafe_b64decode(data)
+            data = eval(signer.unsign(data.decode('ascii')))
+            application = UjjwalaV2Application.objects.filter(contact_mobile=data['contact_mobile'])
+            if application:
+                return HttpResponse(
+                    content="An application already exist with id: {}".format(application.id)
+                )
+            else:
+                return HttpResponse(content=data)
+        else:
+            return HttpResponse(content="Invalid Link")
+
+
+class UjjwalaApplicationSendWhatsappLinkView(View):
+    def get(self, request, *args, **kwargs):
+        contact_mobile = kwargs.get('contact_mobile', '')
+        if contact_mobile:
+            user = get_current_user()
+            data = {
+                'contact_mobile': contact_mobile,
+                'user': user.id,
+                'creation': datetime.datetime.now()
+            }
+            signer = Signer()
+            data_signed = signer.sign(data)
+            data_signed_base64 = base64.urlsafe_b64encode(data_signed.encode('ascii'))
+            data = data_signed_base64.decode('ascii')
+
+            url = request.build_absolute_uri(
+                reverse('ujjwala:ujjwala_application_link', kwargs={'data': data})
+            )
+            print(url)
+            res = send_ujjwala_application_whatsapp_link(contact_mobile, data_signed_base64, url)
+            if res:
+                return HttpResponse(
+                    content="<h2>Ujjwala Application Link Shared To Contact Mobile: {}<h2>".format(contact_mobile)
+                )
+        return HttpResponse(
+            content="Ujjwala Application Link Could Not Send To Contact Mobile: {}".format(contact_mobile)
+        )
+
+
 class WhatsappUploadLegalForms(View):
     def get(self, request, *args, **kwargs):
         application = UjjwalaV2Application.objects.filter(id=kwargs.get('pk')).first()
@@ -112,6 +162,11 @@ class ApplicationStatusView(DetailView):
 
     def get_template_names(self):
         return 'ujjwala/status.html'
+
+
+@method_decorator(login_required, 'dispatch')
+class UjjwalaApplicationWebFormView(TemplateView):
+    template_name = "ujjwala/web_form.html"
 
 
 @method_decorator(login_required, 'dispatch')
@@ -158,6 +213,7 @@ class UjjwalaApplicationDisplayOtp(View):
             })
         else:
             return HttpResponse(content="Invalid Reference Number")
+
 
 
 @method_decorator(login_required, 'dispatch')
@@ -642,6 +698,8 @@ class UjjwalaConnectionDisbursementListView(ListView):
             status__in=[
                 ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
                 ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
+                ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
+                ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
                 ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
             ],
             walk_in_date__date=datetime.datetime.today().date()
@@ -1274,7 +1332,54 @@ class SendInvitationView(FormView):
         })
 
 
+@method_decorator(login_required, 'dispatch')
+class SetPrimaryPhoneNumberView(FormView):
+    form_class = SetPrimaryPhoneNumberForm
+    template_name = "ujjwala/set_primary_number.html"
+
+    def get_object(self, queryset=None):
+        try:
+            obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
+        except:
+            raise Http404(
+                "No application found with Application Id: {}".format(self.kwargs.get('pk'))
+            )
+        return obj
+
+    def form_valid(self, form):
+        obj = self.get_object()
+        data = form.cleaned_data
+        obj.uid_linked_mobile = obj.contact_mobile
+        obj.contact_mobile = data.get('mobile')
+        obj.save()
+        return HttpResponse(content="Primary Number Changed Successfully")
+
+
+    # def get_success_url(self):
+    #     return reverse('admin:ujjwala_connectiondisbursement_change', kwargs={
+    #         'object_id': self.kwargs.get('pk')
+    #     })
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        obj = self.get_object()
+        context.update({
+            "obj": obj,
+        })
+        return context
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        obj = self.get_object()
+        kwargs.update({
+            'mobile_nos': obj.all_contacts
+        })
+        return kwargs
+
+
 class BarCodeLabelPrintView(View):
+
     def create_context_data(self, obj: ConnectionDisbursement):
         consumer_no = obj.parent.get_consumer_number()
         context_dict = dict([(f'con_id{index}', val) for index, val in enumerate(consumer_no)])
