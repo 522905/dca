@@ -524,10 +524,6 @@ function addFamilyMember(relation_name, relation_label) {
                 </div>
                 <div class="col-sm-4 mt-2">
                     <div class="">
-                        <button type="button" class="btn btn-primary float-left pr-2"
-                            onclick="family_member_service.update_fm_via_ocr('${relation_name}')">
-                               Clear
-                        </button>
                         <button type="button" class="btn btn-primary float-right"
                         onclick="family_member_service.update_fm_via_ocr('${relation_name}')">
                             Upload Aadhaar
@@ -660,45 +656,45 @@ $(document).ready(function() {
             family_member_service.remove_fm('MOTHER');
             family_member_service.add_fm('HUSBAND');
         }
-        $('#family_members_tree [id="SELF-uid_no"]').attr("readonly", true);
+        // $('#family_members_tree [id="SELF-uid_no"]').attr("readonly", true);
         
-        $('#family_members_tree [id="SELF-uid_no"]').val(
-            $('input[id="applicant-uid_no"]').val()
-        );
+        // $('#family_members_tree [id="SELF-uid_no"]').val(
+        //     $('input[id="applicant-uid_no"]').val()
+        // );
 
     });
 
-    $('#family_members_tree').on("blur", ".aadhar_on_blur", function() {
-        var e = this
-        var uid = this.value;
+    // $('#family_members_tree').on("blur", ".aadhar_on_blur", function() {
+    //     var e = this
+    //     var uid = this.value;
     
-        if(!validateAadhaar(e.value)) {
-            this.setCustomValidity("Invalid aadhaar, please check again.");
-        } else {
-            if($(`#family_members_tree .aadhar_on_blur:not([id="${e.getAttribute('id')}"])`).get().map((i)=> i.value).indexOf(uid) >= 0) {
-                    this.setCustomValidity("Aadhaar already entered in Family Members List");
-            } else {
-                jQuery.ajax({
-                    url: '/ujjwala/ujjwala-application/check_uid/',
-                    type: "GET",
-                    data: {'uid': uid},
-                    success: function (data) {
-                        response = data;
+    //     if(!validateAadhaar(e.value)) {
+    //         this.setCustomValidity("Invalid aadhaar, please check again.");
+    //     } else {
+    //         if($(`#family_members_tree .aadhar_on_blur:not([id="${e.getAttribute('id')}"])`).get().map((i)=> i.value).indexOf(uid) >= 0) {
+    //                 this.setCustomValidity("Aadhaar already entered in Family Members List");
+    //         } else {
+    //             jQuery.ajax({
+    //                 url: '/ujjwala/ujjwala-application/check_uid/',
+    //                 type: "GET",
+    //                 data: {'uid': uid},
+    //                 success: function (data) {
+    //                     response = data;
     
-                        if (response.status === true) {
-                            e.setCustomValidity("");
-                        } else {    
-                            e.setCustomValidity(data.msg);
-                            e.focus();
-                        }
-                    },
-                });
-            }
-        }
+    //                     if (response.status === true) {
+    //                         e.setCustomValidity("");
+    //                     } else {    
+    //                         e.setCustomValidity(data.msg);
+    //                         e.focus();
+    //                     }
+    //                 },
+    //             });
+    //         }
+    //     }
     
-        e.reportValidity();
+    //     e.reportValidity();
     
-    });
+    // });
     
     $('#menu').find('li').click(function(){
         //removing the previous selected menu state

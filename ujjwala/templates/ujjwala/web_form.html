@@ -445,6 +445,8 @@ window.bankdetailuppy = new Uppy.Core({
     maxWidth: 2048,
     resize: 'contain',
     limit: 10,
+    convertTypes: ['image/png', 'image/jpg', 'image/jpeg'],
+    convertSize: 1000000,
 })
 .use(Uppy.Tus, {
     endpoint: 'https://tus.dca.arungas.com/files/',
@@ -665,6 +667,8 @@ function AadhaarOcrService() {
         maxWidth: 1520,
         resize: 'contain',
         limit: 10,
+        convertTypes: ['image/png', 'image/jpg', 'image/jpeg'],
+        convertSize: 1000000,
     })
     .use(Uppy.Tus, {
         endpoint: 'https://tus.dca.arungas.com/files/',
@@ -696,6 +700,8 @@ function AadhaarOcrService() {
         maxWidth: 1520,
         resize: 'contain',
         limit: 10,
+        convertTypes: ['image/png', 'image/jpg', 'image/jpeg'],
+        convertSize: 1000000,
     })
     .use(Uppy.Tus, {
         endpoint: 'https://tus.dca.arungas.com/files/',
@@ -933,7 +939,8 @@ function FamilyMemberService(html_block_id, aadhaar_ocr_service) {
                 if (response.status === true) {
                     return ocr_data;
                 }
-                throw new Error(response.msg);
+                var app = response.data.applications[0];
+                throw new Error(`Application alreay exists DCA ${app.id} ${app.name} ${app.status}`);
             }).then(ocr_data => {
                 // Run Dedup Over All Family Members Data
                 var fm = this.find_fm_by_uid(ocr_data.aadhaar.value);
@@ -1017,9 +1024,6 @@ family_member_service.add_fm('SELF');
 
 // $(".aadhaar_ocr:not([readonly])").css("border: 1px dashed ; -webkit-animation: blink .5s step-end infinite alternate;");
 // ocr_loader
-$(window).load(function() {
-    $(".loader").fadeOut("slow");
-});
 </script>
 <style>
     .modal_disabled{ background-color: rgba(0,0,0,0.9);}
