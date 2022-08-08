@@ -37,12 +37,16 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
 from ujjwala.global_functions import login_required_if_mech_inspection
 
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
-    ConnectionDisbursementInvitation, ConnectionDisbursementDocuments
+    ConnectionDisbursementInvitation, ConnectionDisbursementDocuments, FamilyMembers
 from ujjwala.ujjwala_functions import send_ujjwala_application_whatsapp_link, find_ujjwala_application_using_contact
 
 
 def index(request):
     return render(request, 'ujjwala/index.html')
+
+
+def new_form(request):
+    return render(request, 'ujjwala/index2.html')
 
 
 def legal_documents(request):
@@ -213,7 +217,6 @@ class UjjwalaApplicationDisplayOtp(View):
             })
         else:
             return HttpResponse(content="Invalid Reference Number")
-
 
 
 @method_decorator(login_required, 'dispatch')
@@ -684,6 +687,57 @@ class ApplicationView(View):
                 "No Application Exist For Given Application Id"
             )
         return obj
+
+
+@method_decorator(login_required, 'dispatch')
+class UjjwalaApplicationStatusView(TemplateView):
+    template_name = "ujjwala/application_search_status.html"
+
+    def get(self, request, *args, **kwargs):
+        contact_mobile = request.GET.get('contact_mobile', '')
+        uid = request.GET.get('uid', '')
+        application_id = request.GET.get('application_id', '')
+
+        if contact_mobile:
+            application = UjjwalaV2Application.objects.filter(contact_mobile=contact_mobile).first()
+            if application:
+                return redirect('ujjwala:application_search_status',
+                                kwargs={
+                                    'obj': application
+                                }
+                            )
+        if uid:
+            family_member = FamilyMembers.objects.filter(uid_no=uid).first()
+            if family_member:
+                application = family_member.parent
+                if application:
+                    return redirect('ujjwala:application_search_status',
+                                    kwargs={
+                                        'obj': application
+                                    }
+                                )
+        if application_id:
+            application = UjjwalaV2Application.objects.filter(id=application_id).first()
+            if application:
+                return redirect('ujjwala:application_search_status',
+                                kwargs={
+                                    'obj': application
+                                }
+                            )
+
+                # if application.pre_inspection:
+                #     messages.add_message(
+                #         request, messages.ERROR, "Pre-Inspection Id: {} - {}".format(
+                #             application.pre_inspection.id, application.pre_inspection.status
+                #         )
+                #     )
+                # if application.connection_disbursement:
+                #     messages.add_message(
+                #         request, messages.ERROR, "Connection Disbursement Id: {} - {}".format(
+                #             application.connection_disbursement.id, application.connection_disbursement.status
+                #         )
+                #     )
+        return super().get(request, *args, **kwargs)
 
 
 @method_decorator(login_required, 'dispatch')
