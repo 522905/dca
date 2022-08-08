@@ -697,46 +697,22 @@ class UjjwalaApplicationStatusView(TemplateView):
         contact_mobile = request.GET.get('contact_mobile', '')
         uid = request.GET.get('uid', '')
         application_id = request.GET.get('application_id', '')
+        application = {}
 
         if contact_mobile:
             application = UjjwalaV2Application.objects.filter(contact_mobile=contact_mobile).first()
-            if application:
-                return redirect('ujjwala:application_search_status',
-                                kwargs={
-                                    'obj': application
-                                }
-                            )
-        if uid:
+        elif uid:
             family_member = FamilyMembers.objects.filter(uid_no=uid).first()
-            if family_member:
-                application = family_member.parent
-                if application:
-                    return redirect('ujjwala:application_search_status',
-                                    kwargs={
-                                        'obj': application
-                                    }
-                                )
-        if application_id:
+            application = family_member.parent
+        elif application_id:
             application = UjjwalaV2Application.objects.filter(id=application_id).first()
-            if application:
-                return redirect('ujjwala:application_search_status',
-                                kwargs={
-                                    'obj': application
-                                }
-                            )
 
-                # if application.pre_inspection:
-                #     messages.add_message(
-                #         request, messages.ERROR, "Pre-Inspection Id: {} - {}".format(
-                #             application.pre_inspection.id, application.pre_inspection.status
-                #         )
-                #     )
-                # if application.connection_disbursement:
-                #     messages.add_message(
-                #         request, messages.ERROR, "Connection Disbursement Id: {} - {}".format(
-                #             application.connection_disbursement.id, application.connection_disbursement.status
-                #         )
-                #     )
+        if application:
+            return render(request, self.template_name, context={'obj': application})
+        else:
+            messages.add_message(
+                    request, messages.ERROR, "Please Enter Contact Mobile Or Aadhaar Or Application Id To Search"
+                )
         return super().get(request, *args, **kwargs)
 
 

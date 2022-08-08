@@ -1,0 +1,61 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block page_title %}CD Material Delivery {% endblock %}
+{% block content %}
+    <link rel="stylesheet" href="{% static '/css/style.css' %}" >
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+
+    <div class="card mb-2 app_card">
+        <form method="get">
+            <div class="row">
+                <div class="col form-group">
+                    <p>Enter Contact Mobile: </p>
+                    <input class="pl-2" autocomplete="off" type="tel" name="contact_mobile">
+                    <p>Or</p><br>
+                    <p>Enter Aadhar Number: </p><br>
+                    <input class="pl-2" autocomplete="off" type="tel" name="uid">
+                    <p>Or</p><br>
+                    <p>Application Id: </p><br>
+                    <input class="pl-2" autocomplete="off" type="tel" name="application_id">
+                    <br>
+                    <button style="width: 100%;" class="btn btn-primary mb-3 bg-heading">Get Application Status</button>
+                </div>
+            </div>
+        </form>
+        <div class="card-body pb-0 p-2 list_block">
+            <ul class="m-0">
+                <li><p class="float-left">Application Id: </p>
+                    <p class="float-right">
+                        {% if obj.id %}
+                            <a href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">{{ obj.id }}</a></p>
+                        {% else %}
+                            {{ obj.id }}
+                        {% endif %}
+                    </p>
+                </li>
+                <li><p class="float-left">Name: </p><p class="float-right">{{ obj.name }}</p></li>
+                <li><p class="float-left">Address: </p><p class="float-right">{{ obj.formatted_address }}</p></li>
+                <li><p class="float-left">Status: </p><p class="float-right">{{obj.status}}</p></li>
+                <li><p class="float-left">Pre-Inspection Status: </p>
+                    <p class="float-right">
+                        {% if obj.pre_inspection %}
+                            <a href="{% url 'admin:ujjwala_preinspection_change' object_id=obj.pre_inspection.id %}">{{obj.pre_inspection.status}}</a>
+                        {% else %}
+                            {{obj.pre_inspection.status}}
+                        {% endif %}
+                    </p>
+                </li>
+                <li><p class="float-left">Connection Disbursement Status: </p>
+                    <p class="float-right">
+                        {% if obj.pre_inspection %}
+                            <a href="{% url 'admin:ujjwala_connectiondisbursement_change' object_id=obj.connection_disbursement.id %}">{{obj.connection_disbursement.status}}</a>
+                        {% else %}
+                            {{obj.connection_disbursement.status}}
+                        {% endif %}
+                    </p>
+                </li>
+            </ul>
+        </div>
+    </div>
+{% endblock %}
