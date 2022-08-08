@@ -52,6 +52,9 @@
                     </h4>
                 </div>
             </div>
+            <div class="row mb-2">
+                <img src="https://arungas.com/public/har-ghar-tiranga.png" style="width: 100%;">
+            </div>
             <div class="row">
                 <div class="col-12">
                     <h3 class="" style="font-size: 20px; margin-top: 0px; text-align: center;">प्रधानमंत्री उज्ज्वला
@@ -90,7 +93,7 @@
      <!-- end Whatsapp OTP Verification Modal -->
     <div class="container p-0 border-top" style="background-color: #fff;">
         <form class="form-horizontal reno-bg p-4 " id="form" method="POST">
-            <input type="hidden" name="version" value="V5" />
+            <input type="hidden" name="version" value="V6" />
 
             <div class="card mb-2">
                 <div class="main-header bg-heading rounded-0 mb-2" style="background-color: #2957A4;">
@@ -663,7 +666,7 @@ function AadhaarOcrService() {
         browserBackButtonClose: false
     })
     .use(Uppy.ImageEditor, {
-      target: Dashboard,
+      target: Uppy.Dashboard,
       quality: 0.92,
     })
     .use(Uppy.Compressor, {
@@ -700,7 +703,7 @@ function AadhaarOcrService() {
         browserBackButtonClose: false
     })
     .use(Uppy.ImageEditor, {
-      target: Dashboard,
+      id: 'uid_back_ImageEditor',
       quality: 0.92,
     })
     .use(Uppy.Compressor, {
