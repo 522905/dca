@@ -662,8 +662,12 @@ function AadhaarOcrService() {
         id: 'uid_front_link',
         browserBackButtonClose: false
     })
+    .use(Uppy.ImageEditor, {
+      target: Dashboard,
+      quality: 0.92,
+    })
     .use(Uppy.Compressor, {
-        quality: 0.8,
+        quality: 0.92,
         maxWidth: 1520,
         resize: 'contain',
         limit: 10,
@@ -695,8 +699,12 @@ function AadhaarOcrService() {
         id: 'uid_back_link',
         browserBackButtonClose: false
     })
+    .use(Uppy.ImageEditor, {
+      target: Dashboard,
+      quality: 0.92,
+    })
     .use(Uppy.Compressor, {
-        quality: 0.8,
+        quality: 0.92,
         maxWidth: 1520,
         resize: 'contain',
         limit: 10,
