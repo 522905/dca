@@ -1,4 +1,5 @@
 import base64
+import datetime
 import time
 
 import requests
@@ -6,6 +7,8 @@ from django.http import JsonResponse, HttpRequest
 from rest_framework import viewsets
 from rest_framework.decorators import action
 
+from app_utilities.enums import AppUtilitiesErrorApplicationEnum
+from app_utilities.models import UjjwalaApplicationOcrErrorLogs
 from utils.image_utils import compress_file
 from utils.zoho_catalyst import ZohoCatalyst, zoho_client
 import logging
@@ -33,7 +36,7 @@ class ApplicationUtilitiesAPIViewSet(viewsets.ViewSet):
 		# if 'webp' in base64.b64decode(file_type).decode():
 		# 	uid_back_url = 'http://dca.arungas.com:6988/unsafe/filters:format(jpeg)/{}'.format(uid_back_url)
 		# result, uid_back_url, uid_back_file_size = compress_file(uid_back_url)
-
+		generated_on = datetime.datetime.now()
 		response = zoho_client.get_details_from_aadhaar(uid_front_url, uid_back_url)
 		t1 = time.time()
 
@@ -42,7 +45,15 @@ class ApplicationUtilitiesAPIViewSet(viewsets.ViewSet):
 		print("Time Taken For Zoho API{}".format(time_difference))
 		response.update({
 			"uid_front_url": uid_front_url,
-			"uid_back_url": uid_back_url
+			"uid_back_url": uid_back_url,
 		})
+		UjjwalaApplicationOcrErrorLogs.objects.create(
+			generated_on=generated_on,
+			wait_time=time_difference,
+			status=response.get('status', ''),
+			uid_front_url=uid_front_url,
+			uid_back_url=uid_back_url,
+			data=response
+		)
 		print(response)
 		return JsonResponse(response, safe=False)
