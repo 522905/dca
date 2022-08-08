@@ -24,6 +24,7 @@ router.register(r'ujjwala-otp', UjjwalaApplicationOtpViewSet, basename='ujjwala_
 urlpatterns = [
     path('', views.index),
     path('', include(router.urls)),
+    path('ujjwala/new-form/', views.new_form),
     # path(
     #     'portal/legal_documents/upload/',
     #     generic.TemplateView.as_view(template_name="ujjwala/legal_documents_upload.html"),
@@ -100,6 +101,12 @@ urlpatterns = [
         '^portal/whatsapp_form_abc/(?P<pk>[^/.]+)/$',
         views.WhatsappUploadLegalForms.as_view(),
         name="whatsapp_form_abc"
+    ),
+
+    path(
+        'portal/application-status-search/',
+        views.UjjwalaApplicationStatusView.as_view(),
+        name="application_status_search"
     ),
 
     url(
