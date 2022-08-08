@@ -7,7 +7,8 @@ import textwrap
 import django_rq
 from django import forms
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.models import Group
 from django.core.signing import Signer
 from django.http import HttpResponse, Http404, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
@@ -45,12 +46,22 @@ def index(request):
     return render(request, 'ujjwala/index.html')
 
 
-def new_form(request):
-    return render(request, 'ujjwala/index2.html')
+# def web_form_old(request):
+#     return render(request, 'ujjwala/web_form_old.html')
 
 
 def legal_documents(request):
     return render(request, 'ujjwala/legal_documents_upload.html')
+
+
+@method_decorator(login_required, 'dispatch')
+class WebFormOldView(View):
+    def dispatch(self, request, *args, **kwargs):
+        user = get_current_user()
+        if user.has_perm('can_fill_old_ujjwala_form', 'ujjwala'):
+            return render(request, 'ujjwala/web_form_old.html')
+        else:
+            return HttpResponse("You do not have permission to fill this form. Contact Admin")
 
 
 class WhatsappNicErrorUpdateAddress(View):

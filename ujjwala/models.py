@@ -88,11 +88,13 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			("can_collect_legal_documents", "Can collect legal documents"),
 			("can_release_connection", "Can release connection"),
 			("can_upload_post_installation", "Can upload post installation"),
-			("can_reject_application", "Can reject application")
+			("can_reject_application", "Can reject application"),
+			("can_fill_old_ujjwala_form", "Can fill old ujjwala form")
 		)
 
 	def pre_inspection_accepted(self):
 		return self.pre_inspection
+
 
 	def pre_inspection_form(self):
 		# if self.status == UjjwalaV2ApplicationStatus.PRE_INSPECTION_SUBMITTED:

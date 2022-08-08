@@ -1,5 +1,6 @@
 # Routers provide an easy way of automatically determining the URL conf.
 from django.conf.urls import url
+from django.contrib.auth.decorators import permission_required
 from django.urls import path, include
 from django.contrib import admin
 from email.mime import application
@@ -12,7 +13,7 @@ from connection_app.viewsets import ConnectionApplicationViewSet
 
 from . import views
 from .robos.nic_error_robo import UjjwalaApplicationNicErrorRobotAPIViewSet
-from .views import UjjwalaApplicationWebFormView
+from .views import UjjwalaApplicationWebFormView, WebFormOldView
 from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet, UjjwalaApplicationOtpViewSet
 
 router = routers.DefaultRouter()
@@ -24,7 +25,7 @@ router.register(r'ujjwala-otp', UjjwalaApplicationOtpViewSet, basename='ujjwala_
 urlpatterns = [
     path('', views.index),
     path('', include(router.urls)),
-    path('ujjwala/new-form/', views.new_form),
+    path('portal/web-form-old/', WebFormOldView.as_view(), name="web_form_old"),
     # path(
     #     'portal/legal_documents/upload/',
     #     generic.TemplateView.as_view(template_name="ujjwala/legal_documents_upload.html"),
