@@ -1,6 +1,8 @@
 {% if user.is_authenticated %}
 <ul>
+
     <li><a href="{% url 'ujjwala:web_form' %}">Fill New Form</a></li>
+    <li><a href="{% url 'ujjwala:application_status_search' %}">Status Search</a></li>
     <li id="menu" class="parent-menu"><span>Suraksha-Drill</span>
         <ul>
             <li><a href="{% url 'ujjwala:index' %}">Pre-Suraksha-Drill List</a></li>
