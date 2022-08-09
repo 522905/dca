@@ -174,4 +174,5 @@ class ConnectionDisbursementStatusEnum(models.TextChoices):
 
 
 class SchemeOnboardingStatusEnum(models.TextChoices):
-	ON_BOARD = 'ON_BOARD', 'On Board'
+	ONBOARD_WITH_BTC = 'ONBOARD_WITH_BTC', 'Onboard With BTC'
+	ONBOARD_WITH_NCTC = 'ONBOARD_WITH_NCTC', 'Onboard With NCTC'
