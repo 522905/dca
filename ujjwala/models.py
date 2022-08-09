@@ -80,7 +80,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	scheme_onboarding_status = models.CharField(
 		max_length=64, choices=SchemeOnboardingStatusEnum.choices, blank=True, null=True
 	)
-
+	filled_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
+	
 	class Meta:
 		permissions = (
 			("can_edit_record_transition", "Can edit record transition"),
@@ -955,6 +956,12 @@ class ConnectionDisbursement(models.Model):
 		if valid_invitation:
 			return valid_invitation.sv_link
 
+	def sv_exist(self):
+		valid_invitation = self.invitation.filter(status='VALID').first()
+
+		if valid_invitation and valid_invitation.sv_link:
+			return True
+		return False
 
 	@fsm_log_description
 	@fsm_log_by

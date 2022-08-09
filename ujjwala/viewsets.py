@@ -10,6 +10,7 @@ from django.db import connection, transaction
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse, HttpRequest
 from django.utils import timezone
+from django_currentuser.middleware import get_current_user
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -662,6 +663,8 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         application = serializer.save()
+        application.filled_by = get_current_user()
+        application.save()
         if getattr(self.request, "PERFORM_SUBMIT", False):
             try:
                 create_txn_status_job_function = partial(
