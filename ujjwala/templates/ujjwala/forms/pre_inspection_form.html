@@ -1,3 +1,4 @@
+{% load img_utils %}
 <!doctype html>
 <html lang="en">
 <head>
@@ -68,7 +69,7 @@
               <td style="float:right; width:200px;">
                 <ul class="img_block">
                   <li class="float-right">
-                    <img style="object-fit: contain; height: 150px;" src="{{obj.parent.document_self}}">
+                    <img style="object-fit: contain; height: 150px;" src="{{obj.parent.document_self|resize:"1000x150"}}">
                   </li>
                 </ul>
               </td>

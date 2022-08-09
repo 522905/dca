@@ -11,6 +11,7 @@ from .models import UjjwalaApplicationOcrErrorLogs
 class UjjwalaApplicationOcrErrorLogsAdmin(admin.ModelAdmin):
     list_display = (
         'id',
+        'user',
         'generated_on',
         'wait_time',
         'status',
