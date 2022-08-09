@@ -702,7 +702,7 @@ class ApplicationView(View):
 
 @method_decorator(login_required, 'dispatch')
 class UjjwalaApplicationStatusView(TemplateView):
-    template_name = "ujjwala/application_search_status.html"
+    template_name = "ujjwala/application_status/application_search_status.html"
 
     def get(self, request, *args, **kwargs):
         contact_mobile = request.GET.get('contact_mobile', '')
@@ -1376,7 +1376,7 @@ class SendInvitationView(FormView):
 @method_decorator(login_required, 'dispatch')
 class SetPrimaryPhoneNumberView(FormView):
     form_class = SetPrimaryPhoneNumberForm
-    template_name = "ujjwala/set_primary_number.html"
+    template_name = "ujjwala/application_status/set_primary_number.html"
 
     def get_object(self, queryset=None):
         try:

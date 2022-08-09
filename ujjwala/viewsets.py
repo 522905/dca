@@ -210,7 +210,6 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                     existing_application.delete()
         return super().create(request, *args, **kwargs)
 
-
     @action(methods=['post'], detail=False, url_path='legal_documents_upload')
     def legal_documents_upload(self, request, *args, **kwargs):
         connection_disbursement_id = request.data.get('connection_disbursement_id')
@@ -1055,6 +1054,28 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 application_obj.application_rejected(**form.cleaned_data)
                 application_obj.event_ioc_dedupe_reject_channel_whatsapp()
         application_obj.save()
+        return HttpResponse('OK')
+
+    @action(methods=['get'], detail=False, url_path='get_scheme_onboarding_status')
+    def get_scheme_onboarding_status(self, request, *args, **kwargs):
+
+        record_list = UjjwalaV2Application.objects.filter(
+            Q(status=UjjwalaV2ApplicationStatus.MATERIAL_DELIVERED) &
+            (Q(scheme_onboarding_status='') | Q(scheme_onboarding_status=None))
+        ).order_by("id")
+
+        return JsonResponse([
+            {
+                'id': record.id,
+                'consumer_id': record.consumer_id
+            } for record in record_list
+        ], safe=False)
+
+
+    @action(methods=['post'], detail=False, url_path='update_scheme_onboarding_status')
+    def update_scheme_onboarding_status(self, request, *args, **kwargs):
+        application_obj = UjjwalaV2Application.objects.get(pk=request.data.get('id'))
+        application_obj.scheme_onboarding_status = request.data.get('scheme_onboarding_status', '')
         return HttpResponse('OK')
 
 

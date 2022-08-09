@@ -171,3 +171,7 @@ class ConnectionDisbursementStatusEnum(models.TextChoices):
 	MATERIAL_DELIVERED = 'MATERIAL_DELIVERED', 'Material Delivered'
 	INSTALLATION_MAIN_GATE = 'INSTALLATION_MAIN_GATE', 'Installation Main Gate'
 	INSTALLATION_UPLOADED = 'INSTALLATION_UPLOADED', 'Installation Uploaded'
+
+
+class SchemeOnboardingStatusEnum(models.TextChoices):
+	ON_BOARD = 'ON_BOARD', 'On Board'

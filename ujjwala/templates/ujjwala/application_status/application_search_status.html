@@ -1,0 +1,82 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block page_title %}Application Status Search {% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<div class="p-2 pt-0 form_label" style="width: 100%;">
+        <form method="get">
+            <div class="card">
+                <div class="card-body">
+                    <div class="form-group mb-0">
+                        <label>Enter Contact Mobile: </label>
+                        <input autocomplete="off" type="tel" name="contact_mobile" />
+                    </div>
+                    <p class="text-center"><b style="font-size: 15px;">OR</b></p>
+                    <div class="form-group mb-0">
+                        <label>Enter Aadhar Number: </label>
+                        <input autocomplete="off" type="tel" name="uid" />
+                    </div>
+                    <p class="text-center"><b style="font-size: 15px;">OR</b></p>
+                    <div class="form-group mb-0">
+                        <label>Application Id:</label>
+                        <input autocomplete="off" type="tel" name="application_id" />
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button style="width: 100%;" class="btn btn-primary bg-heading">Get Application Status</button>
+                </div>
+            </div>
+        </form>
+        <div class="card">
+            <div class="card-body pb-0 p-2 list_block">
+                <ul class="m-0">
+                    <li><p class="float-left">Application Id: </p>
+                        <p class="float-right">
+                            {% if obj.id %}
+                                <a href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">{{ obj.id }}</a></p>
+                            {% else %}
+                                {{ obj.id }}
+                            {% endif %}
+                        </p>
+                    </li>
+                    <li><p class="float-left">Name: </p>
+                        <p class="float-right">
+                            <img src="{{ obj.document_self }}" width="125 px"><br>{{ obj.name }}
+                        </p>
+                    </li>
+                    <li><p class="float-left">Address: </p><p class="float-right">{{ obj.formatted_address }}</p></li>
+                    <li><p class="float-left">Status: </p><p class="float-right">{{obj.status}}</p></li>
+                    <li><p class="float-left">Pre-Inspection Status: </p>
+                        <p class="float-right">
+                            {% if obj.pre_inspection %}
+                                <a href="{% url 'admin:ujjwala_preinspection_change' object_id=obj.pre_inspection.id %}">{{obj.pre_inspection.status}}</a>
+                            {% else %}
+                                {{obj.pre_inspection.status}}
+                            {% endif %}
+                        </p>
+                    </li>
+                    <li><p class="float-left">Connection Disbursement Status: </p>
+                        <p class="float-right">
+                            {% if obj.connection_disbursement %}
+                                <a href="{% url 'admin:ujjwala_connectiondisbursement_change' object_id=obj.connection_disbursement.id %}">{{obj.connection_disbursement.status}}</a>
+                            {% else %}
+                                {{obj.connection_disbursement.status}}
+                            {% endif %}
+                        </p>
+                    </li>
+                    {% if obj %}
+                        {% if obj.status != 'APPLICATION_REJECTED' %}
+                            <li><p class="float-left">
+                                    <a href="{% url 'ujjwala:set_primary_phone_number' pk=obj.id %}">Set Primary Phone Number</a>
+                                </p>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+        
+</div>
+{% endblock %}

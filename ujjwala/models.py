@@ -77,6 +77,9 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	audit_points = models.TextField(null=True, blank=True)
 	ifsc_code = models.CharField(max_length=16, null=True, blank=True)
 	bank_account_number = models.CharField(max_length=24, null=True, blank=True)
+	scheme_onboarding_status = models.CharField(
+		max_length=64, choices=SchemeOnboardingStatusEnum.choices, blank=True, null=True
+	)
 
 	class Meta:
 		permissions = (
