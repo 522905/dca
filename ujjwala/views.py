@@ -714,7 +714,8 @@ class UjjwalaApplicationStatusView(TemplateView):
             application = UjjwalaV2Application.objects.filter(contact_mobile=contact_mobile).first()
         elif uid:
             family_member = FamilyMembers.objects.filter(uid_no=uid).first()
-            application = family_member.parent
+            if family_member:
+                application = family_member.parent
         elif application_id:
             application = UjjwalaV2Application.objects.filter(id=application_id).first()
 
