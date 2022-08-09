@@ -48,6 +48,9 @@ Dear Customer,
 Your Verification code for {{for}} is {{code}}
 """
 
+PDF_COMPRESSION_OPTIONS = {
+	"pageSize": "A4", "imageDpi": 150, "imageQuality": 80, "lowquality": True
+}
 
 def valid_file_uploaded(url):
 	res = requests.head(url, headers={"Tus-Resumable": "1.0.0"})
@@ -96,7 +99,7 @@ def download_pre_installation_documents(obj):
 			settings.HTML_TO_PDF_SERVER_URL,
 			json={
 				"content": pre_inspection_html,
-				"options": {"pageSize": "A4"}
+				"options": PDF_COMPRESSION_OPTIONS
 			}
 		)
 		attachments.append(('pre_installation_form.pdf', pre_inspection_pdf))
@@ -162,7 +165,7 @@ def download_ujjwala_documents(obj):
 			settings.HTML_TO_PDF_SERVER_URL,
 			json={
 				"content": ujjwala_declaration_html,
-				"options": {"pageSize": "A4"}
+				"options": PDF_COMPRESSION_OPTIONS
 			}
 		)
 		attachments.append(('annexure_14_points.pdf', ujjwala_declaration_pdf))
@@ -187,7 +190,7 @@ def download_ujjwala_documents(obj):
 			settings.HTML_TO_PDF_SERVER_URL,
 			json={
 				"content": occupancy_form_html,
-				"options": {"pageSize": "A4"}
+				"options": PDF_COMPRESSION_OPTIONS
 			}
 		)
 
@@ -282,7 +285,7 @@ def download_ujjwala_legal_docs_to_upload(obj, signature=True):
 		settings.HTML_TO_PDF_SERVER_URL,
 		json={
 			"content": ujjwala_declaration_html,
-			"options": {"pageSize": "A4"}
+			"options": PDF_COMPRESSION_OPTIONS
 		}
 	)
 	attachments.append(('annexure_14_points.pdf', ujjwala_declaration_pdf))
@@ -307,7 +310,7 @@ def download_ujjwala_legal_docs_to_upload(obj, signature=True):
 		settings.HTML_TO_PDF_SERVER_URL,
 		json={
 			"content": occupancy_form_html,
-			"options": {"pageSize": "A4"}
+			"options": PDF_COMPRESSION_OPTIONS
 		}
 	)
 
@@ -399,7 +402,7 @@ def download_ujjwala_physical_legal_docs(obj):
 		settings.HTML_TO_PDF_SERVER_URL,
 		json={
 			"content": ujjwala_declaration_html,
-			"options": {"pageSize": "A4"}
+			"options": PDF_COMPRESSION_OPTIONS
 		}
 	)
 	attachments.append(('annexure_14_points.pdf', ujjwala_declaration_pdf))
@@ -425,7 +428,7 @@ def download_ujjwala_physical_legal_docs(obj):
 		settings.HTML_TO_PDF_SERVER_URL,
 		json={
 			"content": occupancy_form_html,
-			"options": {"pageSize": "A4"}
+			"options": PDF_COMPRESSION_OPTIONS
 		}
 	)
 
@@ -439,7 +442,7 @@ def download_ujjwala_physical_legal_docs(obj):
 		settings.HTML_TO_PDF_SERVER_URL,
 		json={
 			"content": ujjwala_pre_inspection_html,
-			"options": {"pageSize": "A4"}
+			"options": PDF_COMPRESSION_OPTIONS
 		}
 	)
 	attachments.append(('pre_inspection.pdf', ujjwala_pre_inspection_pdf))
@@ -573,7 +576,7 @@ def get_ujjwala_legal_docs_temp_path(obj):
 			settings.HTML_TO_PDF_SERVER_URL,
 			json={
 				"content": ujjwala_declaration_html,
-				"options": {"pageSize": "A4"}
+				"options": PDF_COMPRESSION_OPTIONS
 			}
 		)
 		attachments.append(('annexure_14_points.pdf', ujjwala_declaration_pdf))
@@ -599,7 +602,7 @@ def get_ujjwala_legal_docs_temp_path(obj):
 			settings.HTML_TO_PDF_SERVER_URL,
 			json={
 				"content": occupancy_form_html,
-				"options": {"pageSize": "A4"}
+				"options": PDF_COMPRESSION_OPTIONS
 			}
 		)
 
@@ -613,7 +616,7 @@ def get_ujjwala_legal_docs_temp_path(obj):
 			settings.HTML_TO_PDF_SERVER_URL,
 			json={
 				"content": ujjwala_pre_inspection_html,
-				"options": {"pageSize": "A4"}
+				"options": PDF_COMPRESSION_OPTIONS
 			}
 		)
 		attachments.append(('pre_inspection.pdf', ujjwala_pre_inspection_pdf))

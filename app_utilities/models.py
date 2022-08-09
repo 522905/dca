@@ -1,6 +1,5 @@
+from django.contrib.auth.models import User
 from django.db import models
-
-from app_utilities.enums import AppUtilitiesErrorApplicationEnum
 
 
 class UjjwalaApplicationOcrErrorLogs(models.Model):
@@ -11,5 +10,4 @@ class UjjwalaApplicationOcrErrorLogs(models.Model):
 	uid_front_url = models.URLField(null=True, blank=True)
 	uid_back_url = models.URLField(null=True, blank=True)
 	data = models.JSONField(null=True, blank=True)
-
-
+	user = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)

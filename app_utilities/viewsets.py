@@ -4,6 +4,7 @@ import time
 
 import requests
 from django.http import JsonResponse, HttpRequest
+from django_currentuser.middleware import get_current_user
 from rest_framework import viewsets
 from rest_framework.decorators import action
 
@@ -44,7 +45,8 @@ class ApplicationUtilitiesAPIViewSet(viewsets.ViewSet):
 			status=response.get('status', ''),
 			uid_front_url=uid_front_url,
 			uid_back_url=uid_back_url,
-			data=response
+			data=response,
+			user=get_current_user()
 		)
 		print(response)
 		return JsonResponse(response, safe=False)
