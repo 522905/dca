@@ -1,0 +1,39 @@
+{% for obj in object_list %}
+<div class="card mb-2 app_card">
+    <a href="{% url 'ujjwala:connection_disbursement_material_delivery_view' pk=obj.id %}" data-turbolinks="false">
+        <div class="card-header">
+            <p class="text-center"><b>{{ obj.status }}</b> 
+                <br>Updated On <b>{{ obj.updated_on }}</b>
+            </p>
+        </div>
+        <div class="card-body pb-0 p-2 list_block">
+            <ul class="m-0">
+                <li>
+                    <p class="float-left">Application Id ({{ obj.parent_id }})</p>
+                    <p class="float-right">Connection Disbursement Id({{obj.id}})</p>
+                </li>
+                <li>
+                    <p class="float-left">Name</p>
+                    <p class="float-right">{{ obj.parent.name }}</p>
+                </li>
+                {% for contact in  obj.parent.all_contacts %}
+                <li class="contact_link">
+                    <p class="float-left">Phone {{ forloop.counter }}</p>
+                    <p class="float-right">
+                        <b> <a href="tel:{{ contact}}" onclick="return true;">{{contact}}</a></b>      
+                    </p>
+                </li>
+                 {% endfor %}
+               
+            </ul>
+        </div>
+    </a>
+    <div class="card-footer p-2">
+        <ul class="m-0">
+            <li>
+                <p><b>Address: </b>{{ obj.parent.formatted_address }}</p>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endfor %}

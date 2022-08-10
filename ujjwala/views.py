@@ -953,7 +953,7 @@ class ConnectionDisbursementReviewFormAbcListView(ListView):
 @method_decorator(login_required, 'dispatch')
 class ConnectionDisbursementReviewFormAbcView(FormView, ApplicationView):
     model = ConnectionDisbursement
-    template_name = 'ujjwala/connection-disbursement/forms/review_form_abc.html'
+    template_name = 'ujjwala/disbursement/forms/review_form_abc.html'
     form_class = LegalDocumentsReviewAdminForm
 
     def get_success_url(self):
@@ -1052,9 +1052,10 @@ class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
                         request, messages.ERROR, "Application Id: {} - {}".format(application_id, object.status)
                     )
                 else:
-                    return redirect('ujjwala:connection_disbursement_sv_label_print_view',
-                                    pk=object.pk
-                                    )
+                    return redirect(
+                        'ujjwala:connection_disbursement_sv_label_print_view',
+                        pk=object.pk
+                    )
             else:
                 messages.add_message(
                     request, messages.ERROR, "Application Id: {} not found".format(application_id)
@@ -1065,7 +1066,7 @@ class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
 @method_decorator(login_required, 'dispatch')
 class ConnectionDisbursementSvLabelPrintView(FormView, ApplicationView):
     model = ConnectionDisbursement
-    template_name = 'ujjwala/connection-disbursement/forms/sv_label_print.html'
+    template_name = 'ujjwala/disbursement/forms/sv_label_print.html'
     form_class = ConnectionDisbursementSvLabelPrintForm
 
     def get_success_url(self):
@@ -1172,7 +1173,7 @@ class UjjwalaConnectionDisbursementSocialMediaUpdatesListView(ListView):
 @method_decorator(login_required, 'dispatch')
 class ConnectionDisbursementSocialMediaUpdatesView(FormView, ApplicationView):
     model = ConnectionDisbursement
-    template_name = 'ujjwala/connection-disbursement/forms/social_media_updates.html'
+    template_name = 'ujjwala/disbursement/forms/social_media_updates.html'
     form_class = ConnectionDisbursementSocialMediaUpdatesForm
 
     def get_success_url(self):
@@ -1278,8 +1279,8 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
 @method_decorator(login_required, 'dispatch')
 class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
     model = ConnectionDisbursement
-    material_delivery_template = 'ujjwala/connection-disbursement/forms/material_delivery.html'
-    material_delivery_qrcode_template = 'ujjwala/connection-disbursement/forms/material_delivery_qrcode.html'
+    material_delivery_template = 'ujjwala/disbursement/forms/material_delivery.html'
+    material_delivery_qrcode_template = 'ujjwala/disbursement/forms/material_delivery_qrcode.html'
     form_class = ConnectionDisbursementMaterialDeliveryForm
     success_url = '.'
 
@@ -1403,7 +1404,7 @@ class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
 class SendInvitationView(FormView):
     # model = ConnectionDisbursementInvitation
     form_class = ConnectionDisbursementInvitationForm
-    template_name = "ujjwala/connection-disbursement/send_invitation.html"
+    template_name = "ujjwala/disbursement/send_invitation.html"
 
     def get_object(self, queryset=None):
         try:

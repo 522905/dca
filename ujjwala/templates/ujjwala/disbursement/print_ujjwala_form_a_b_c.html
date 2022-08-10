@@ -1,0 +1,121 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<style>
+    .hidden-field{ display: none;}
+</style>
+{% csrf_token %}
+<div class="m-0 form_label">
+	<div class="bg-heading" style="padding: 10px;">
+		<span class="text-white text">{{ obj.parent.get_physical_legal_documents_status }}</span>
+	</div>
+    <div class="row justify-content-center m-0" style="margin: 0 auto !important; padding: 10px; border-bottom: 1px solid #ccc; margin-bottom: 5px !important;">
+		<div style="width:50%; float:left">
+			<div class="card-profile-image">
+				<a href="#">
+					<img style="width:100%" src="{{obj.parent.document_self}}">
+				</a>
+			</div>
+		</div>
+		<div style="width:50%; float:right">
+			<div class="card-body pt-0 p-1">
+				<div class="text-center">
+					<h5 class="h4">{{ obj.parent.name }}({{ obj.parent.id }})<span class="font-weight-light"></span></h5>
+					<div class="h5 font-weight-300">
+						<i class="ni location_pin mr-2"></i>{{ obj.parent.contact_mobile }}
+					</div>
+					<div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
+						{% if address_json == address_json  %}
+							{% for key,data in obj.parent.address_json.items %}
+								{{data}},
+							{% endfor %}
+						{% else %}
+							{{ obj.parent.address }}
+						{% endif%}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="p-1">
+		
+		<div class=" p-1 multi_buttons">
+			<div class="row m-0 mb-2" >
+				<div class="col pl-0">
+					<a style="width: 100%;" class="text-white  btn btn-danger" href="{% url 'ujjwala:legal_documents_upload' pk=obj.id %}" target="_blank">
+						<i class="material-icons">cloud_upload</i> Legal Documents
+					</a>
+				</div>
+				<div class="col pr-0">
+					<a id="resend_form_abc" style="width: 100%;" class="text-white  btn btn-danger"
+					onclick="sendPrint('resend_form_abc', '{% url 'ujjwala:whatsapp_form_abc' pk=obj.parent.id %}')">
+						<i class="material-icons">send</i> Send  Link 
+					</a>
+				</div>
+			</div>
+
+			<a style=" width: 100%;" class="text-white btn btn-danger mb-2 float-right" 
+				href="{{ obj.parent.physical_legal_document_link }}" target="_blank">
+				<i class="material-icons">cloud_download</i>
+				Form ABC
+			</a>
+			
+			<a id="print_form_abc" style="width:100% ;"
+			class="{% if not bridge_available %}disabled {% endif %}text-white btn btn-danger mb-2"
+			onclick="sendPrint('print_form_abc', '{{ bridge_link }}/print_pdf?url={{ obj.parent.physical_legal_document_link }}')"> 
+				<span><i class="material-icons">local_printshop</i> Print Form ABC</span>
+			</a>
+			{% if not bridge_available %}																																							
+				<p class="alert alert-primary" role="alert" style="width:100% ;"> <i class="material-icons left">info_outline</i> Bridge Not Available, Unable to print</p>
+			{% endif %}
+
+			<div class="back_next_button p-2 mt-3">
+				<a class="text-white btn btn-primary float-left " href="{% url 'ujjwala:connection_disbursement_list' %}">
+					<i class="material-icons">keyboard_backspace</i> Back To Walk In List
+				</a>
+				{% if obj.status == 'LEGAL_DOCUMENTS_REVIEW' %}
+					<a class="text-white btn btn-primary float-right" href="{% url 'ujjwala:connection_disbursement_review_form_abc_view' pk=obj.id %}">
+						Review Form ABC <i class="material-icons">arrow_forward</i> 
+					</a></div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+</div>
+<style>
+	.back_next_button {
+		float: left;
+		width: 100%;
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		border-top: 1px solid #ccc;
+		background: #fff;
+	}
+	.back_next_button a{ font-size: 12px; }
+</style>
+<script>
+function sendPrint(elementId, url) {
+  $(`#${elementId}`).addClass('disabled');
+  var jqxhr = $.get(url)
+  .done(function() {
+    alert("Print Command Sent");
+  })
+  .fail(function() {
+    alert("Printing Failed");
+  })
+  .always(function() {
+    $(`#${elementId}`).removeClass('disabled');
+  });
+}
+
+function resendFormAbcUploadLink(elementId, url) {
+	sendPrint(elementId, url)
+}
+</script>
+
+
+{% endblock %}
