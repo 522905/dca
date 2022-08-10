@@ -753,9 +753,7 @@ class UjjwalaConnectionDisbursementListView(ListView):
     def get(self, request, *args, **kwargs):
         user = get_current_user()
         if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
-            return HttpResponse(
-                content="You do not have permission to fill this form. <br><b>Contact Mr. Sahil Garg Ph. 7717590072</b>"
-            )
+            return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
             object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
@@ -793,9 +791,7 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
     def dispatch(self, request, *args, **kwargs):
         user = get_current_user()
         if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
-            return HttpResponse(
-                content="You do not have permission to fill this form. <br><b>Contact Mr. Sahil Garg Ph. 7717590072</b>"
-            )
+            return render(request, 'ujjwala/no_permissions.html')
         connection_disbursement = self.get_object()
         if connection_disbursement:
             if connection_disbursement.parent.status in (
@@ -926,9 +922,7 @@ class ConnectionDisbursementReviewFormAbcListView(ListView):
     def get(self, request, *args, **kwargs):
         user = get_current_user()
         if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
-            return HttpResponse(
-                content="You do not have permission to fill this form. <br><b>Contact Mr. Sahil Garg Ph. 7717590072</b>"
-            )
+            return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
             object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
@@ -970,9 +964,7 @@ class ConnectionDisbursementReviewFormAbcView(FormView, ApplicationView):
     def dispatch(self, request, *args, **kwargs):
         user = get_current_user()
         if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
-            return HttpResponse(
-                content="You do not have permission to fill this form. <br><b>Contact Mr. Sahil Garg Ph. 7717590072</b>"
-            )
+            return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
             connection_disbursement = self.get_object()
@@ -1040,9 +1032,7 @@ class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
     def get(self, request, *args, **kwargs):
         user = get_current_user()
         if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
-            return HttpResponse(
-                content="You do not have permission to fill this form. <br><b>Contact Mr. Sahil Garg Ph. 7717590072</b>"
-            )
+            return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
             object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
@@ -1083,9 +1073,7 @@ class ConnectionDisbursementSvLabelPrintView(FormView, ApplicationView):
     def dispatch(self, request, *args, **kwargs):
         user = get_current_user()
         if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
-            return HttpResponse(
-                content="You do not have permission to fill this form. <br><b>Contact Mr. Sahil Garg Ph. 7717590072</b>"
-            )
+            return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
             connection_disbursement = self.get_object()
@@ -1148,9 +1136,7 @@ class UjjwalaConnectionDisbursementSocialMediaUpdatesListView(ListView):
     def get(self, request, *args, **kwargs):
         user = get_current_user()
         if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
-            return HttpResponse(
-                content="You do not have permission to fill this form. <br><b>Contact Mr. Sahil Garg Ph. 7717590072</b>"
-            )
+            return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
             object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
@@ -1190,9 +1176,7 @@ class ConnectionDisbursementSocialMediaUpdatesView(FormView, ApplicationView):
     def dispatch(self, request, *args, **kwargs):
         user = get_current_user()
         if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
-            return HttpResponse(
-                content="You do not have permission to fill this form. <br><b>Contact Mr. Sahil Garg Ph. 7717590072</b>"
-            )
+            return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
             connection_disbursement = self.get_object()
@@ -1250,9 +1234,7 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
     def get(self, request, *args, **kwargs):
         user = get_current_user()
         if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
-            return HttpResponse(
-                content="You do not have permission to fill this form. <br><b>Contact Mr. Sahil Garg Ph. 7717590072</b>"
-            )
+            return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
             object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
@@ -1290,9 +1272,7 @@ class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
     def dispatch(self, request, *args, **kwargs):
         user = get_current_user()
         if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
-            return HttpResponse(
-                content="You do not have permission to fill this form. <br><b>Contact Mr. Sahil Garg Ph. 7717590072</b>"
-            )
+            return render(request, 'ujjwala/no_permissions.html')
         connection_disbursement = self.get_object()
         if connection_disbursement:
             if connection_disbursement.status == \
