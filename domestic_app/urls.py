@@ -30,7 +30,7 @@ urlpatterns = [
 
     # path(r'', RedirectView.as_view(url='https://www.arungas.com/info', permanent=False)),
     # path(r'ujjwala/', include('ujjwala.urls')),
-    path(r'', RedirectView.as_view(url='/connection-app/', permanent=False)),
+    path(r'', RedirectView.as_view(url='/ujjwala/portal/application-status-search/', permanent=False)),
     path(r'', include(frontend_urls)),
 ]
 
