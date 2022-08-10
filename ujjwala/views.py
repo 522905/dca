@@ -752,7 +752,7 @@ class UjjwalaConnectionDisbursementListView(ListView):
 
     def get(self, request, *args, **kwargs):
         user = get_current_user()
-        if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
+        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
             return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
@@ -790,7 +790,7 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
 
     def dispatch(self, request, *args, **kwargs):
         user = get_current_user()
-        if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
+        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
             return render(request, 'ujjwala/no_permissions.html')
         connection_disbursement = self.get_object()
         if connection_disbursement:
@@ -921,7 +921,7 @@ class ConnectionDisbursementReviewFormAbcListView(ListView):
 
     def get(self, request, *args, **kwargs):
         user = get_current_user()
-        if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
+        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
             return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
@@ -963,7 +963,7 @@ class ConnectionDisbursementReviewFormAbcView(FormView, ApplicationView):
 
     def dispatch(self, request, *args, **kwargs):
         user = get_current_user()
-        if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
+        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
             return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
@@ -1031,7 +1031,7 @@ class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
 
     def get(self, request, *args, **kwargs):
         user = get_current_user()
-        if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
+        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
             return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
@@ -1072,7 +1072,7 @@ class ConnectionDisbursementSvLabelPrintView(FormView, ApplicationView):
 
     def dispatch(self, request, *args, **kwargs):
         user = get_current_user()
-        if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
+        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
             return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
@@ -1135,7 +1135,7 @@ class UjjwalaConnectionDisbursementSocialMediaUpdatesListView(ListView):
 
     def get(self, request, *args, **kwargs):
         user = get_current_user()
-        if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
+        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
             return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
@@ -1175,7 +1175,7 @@ class ConnectionDisbursementSocialMediaUpdatesView(FormView, ApplicationView):
 
     def dispatch(self, request, *args, **kwargs):
         user = get_current_user()
-        if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
+        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
             return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
@@ -1233,7 +1233,7 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
 
     def get(self, request, *args, **kwargs):
         user = get_current_user()
-        if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
+        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
             return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
@@ -1271,7 +1271,7 @@ class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
 
     def dispatch(self, request, *args, **kwargs):
         user = get_current_user()
-        if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
+        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
             return render(request, 'ujjwala/no_permissions.html')
         connection_disbursement = self.get_object()
         if connection_disbursement:
