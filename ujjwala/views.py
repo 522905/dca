@@ -748,9 +748,14 @@ class UjjwalaConnectionDisbursementListView(ListView):
         ).order_by('updated_on')
 
     def get_template_names(self):
-        return 'ujjwala/connection_disbursement_listview.html'
+        return 'ujjwala/disbursement/connection_disbursement_listview.html'
 
     def get(self, request, *args, **kwargs):
+        user = get_current_user()
+        if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
+            return HttpResponse(
+                content="You do not have permission to fill this form. <br><b>Contact Mr. Sahil Garg Ph. 7717590072</b>"
+            )
         application_id = request.GET.get('application_id', '')
         if application_id:
             object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
