@@ -776,15 +776,21 @@ class UjjwalaConnectionDisbursementListView(ListView):
 
 @method_decorator(login_required, 'dispatch')
 class ConnectionDisbursementView(TemplateView, ApplicationView):
+
     model = ConnectionDisbursement
-    walk_in_template = 'ujjwala/connection-disbursement/forms/walk_in_confirmation.html'
-    ujjwala_form_a_b_c_template = "ujjwala/connection-disbursement/print_ujjwala_form_a_b_c.html"
+    walk_in_template = 'ujjwala/disbursement/forms/walk_in_confirmation.html'
+    ujjwala_form_a_b_c_template = "ujjwala/disbursement/print_ujjwala_form_a_b_c.html"
     success_url = '.'
 
     stage_1_generate_otp = 'ujjwala/generate_otp_form.html'
     stage_2_validate_otp = 'ujjwala/validate_otp_form.html'
 
     def dispatch(self, request, *args, **kwargs):
+        user = get_current_user()
+        if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
+            return HttpResponse(
+                content="You do not have permission to fill this form. <br><b>Contact Mr. Sahil Garg Ph. 7717590072</b>"
+            )
         connection_disbursement = self.get_object()
         if connection_disbursement:
             if connection_disbursement.parent.status in (
@@ -910,9 +916,14 @@ class ConnectionDisbursementReviewFormAbcListView(ListView):
         ).order_by('updated_on')
 
     def get_template_names(self):
-        return 'ujjwala/connection-disbursement/forms/connection_disbursement_review_form_abc_listview.html'
+        return 'ujjwala/disbursement/forms/connection_disbursement_review_form_abc_listview.html'
 
     def get(self, request, *args, **kwargs):
+        user = get_current_user()
+        if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
+            return HttpResponse(
+                content="You do not have permission to fill this form. <br><b>Contact Mr. Sahil Garg Ph. 7717590072</b>"
+            )
         application_id = request.GET.get('application_id', '')
         if application_id:
             object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
@@ -952,6 +963,11 @@ class ConnectionDisbursementReviewFormAbcView(FormView, ApplicationView):
         return '.'
 
     def dispatch(self, request, *args, **kwargs):
+        user = get_current_user()
+        if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
+            return HttpResponse(
+                content="You do not have permission to fill this form. <br><b>Contact Mr. Sahil Garg Ph. 7717590072</b>"
+            )
         application_id = request.GET.get('application_id', '')
         if application_id:
             connection_disbursement = self.get_object()
@@ -1005,17 +1021,23 @@ class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
     permission = 'has_view_permission'
 
     def get_queryset(self):
-        return ConnectionDisbursement.objects.filter(
+        qs = ConnectionDisbursement.objects.filter(
             status__in=[
                 ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
             ],
             walk_in_date__date=datetime.datetime.today().date()
-        ).order_by('updated_on')
+        ).prefetch_related('invitation').order_by('updated_on')
+        return qs
 
     def get_template_names(self):
-        return 'ujjwala/connection-disbursement/forms/connection_disbursement_sv_label_print_listview.html'
+        return 'ujjwala/disbursement/forms/connection_disbursement_sv_label_print_listview.html'
 
     def get(self, request, *args, **kwargs):
+        user = get_current_user()
+        if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
+            return HttpResponse(
+                content="You do not have permission to fill this form. <br><b>Contact Mr. Sahil Garg Ph. 7717590072</b>"
+            )
         application_id = request.GET.get('application_id', '')
         if application_id:
             object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
@@ -1053,6 +1075,11 @@ class ConnectionDisbursementSvLabelPrintView(FormView, ApplicationView):
         return '.'
 
     def dispatch(self, request, *args, **kwargs):
+        user = get_current_user()
+        if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
+            return HttpResponse(
+                content="You do not have permission to fill this form. <br><b>Contact Mr. Sahil Garg Ph. 7717590072</b>"
+            )
         application_id = request.GET.get('application_id', '')
         if application_id:
             connection_disbursement = self.get_object()
@@ -1110,9 +1137,14 @@ class UjjwalaConnectionDisbursementSocialMediaUpdatesListView(ListView):
         ).order_by('updated_on')
 
     def get_template_names(self):
-        return 'ujjwala/connection-disbursement/forms/connection_disbursement_social_media_updates_listview.html'
+        return 'ujjwala/disbursement/forms/connection_disbursement_social_media_updates_listview.html'
 
     def get(self, request, *args, **kwargs):
+        user = get_current_user()
+        if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
+            return HttpResponse(
+                content="You do not have permission to fill this form. <br><b>Contact Mr. Sahil Garg Ph. 7717590072</b>"
+            )
         application_id = request.GET.get('application_id', '')
         if application_id:
             object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
@@ -1150,6 +1182,11 @@ class ConnectionDisbursementSocialMediaUpdatesView(FormView, ApplicationView):
         return '.'
 
     def dispatch(self, request, *args, **kwargs):
+        user = get_current_user()
+        if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
+            return HttpResponse(
+                content="You do not have permission to fill this form. <br><b>Contact Mr. Sahil Garg Ph. 7717590072</b>"
+            )
         application_id = request.GET.get('application_id', '')
         if application_id:
             connection_disbursement = self.get_object()
@@ -1202,9 +1239,14 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
         ).order_by('updated_on')
 
     def get_template_names(self):
-        return 'ujjwala/connection-disbursement/forms/connection_disbursement_material_delivery_listview.html'
+        return 'ujjwala/disbursement/forms/connection_disbursement_material_delivery_listview.html'
 
     def get(self, request, *args, **kwargs):
+        user = get_current_user()
+        if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
+            return HttpResponse(
+                content="You do not have permission to fill this form. <br><b>Contact Mr. Sahil Garg Ph. 7717590072</b>"
+            )
         application_id = request.GET.get('application_id', '')
         if application_id:
             object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
@@ -1240,6 +1282,11 @@ class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
     stage_2_validate_otp = 'ujjwala/validate_otp_form.html'
 
     def dispatch(self, request, *args, **kwargs):
+        user = get_current_user()
+        if not user.has_perm('can_do_connection_disbursement', 'ujjwala'):
+            return HttpResponse(
+                content="You do not have permission to fill this form. <br><b>Contact Mr. Sahil Garg Ph. 7717590072</b>"
+            )
         connection_disbursement = self.get_object()
         if connection_disbursement:
             if connection_disbursement.status == \

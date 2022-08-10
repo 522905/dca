@@ -93,7 +93,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			("can_release_connection", "Can release connection"),
 			("can_upload_post_installation", "Can upload post installation"),
 			("can_reject_application", "Can reject application"),
-			("can_fill_old_ujjwala_form", "Can fill old ujjwala form")
+			("can_fill_old_ujjwala_form", "Can fill old ujjwala form"),
+			("can_do_connection_disbursement", "Can do connection disbursement")
 		)
 
 	def pre_inspection_accepted(self):
