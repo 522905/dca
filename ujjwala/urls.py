@@ -13,7 +13,7 @@ from connection_app.viewsets import ConnectionApplicationViewSet
 
 from . import views
 from .robos.nic_error_robo import UjjwalaApplicationNicErrorRobotAPIViewSet
-from .views import UjjwalaApplicationWebFormView, WebFormOldView
+from .views import UjjwalaApplicationWebFormView, WebFormOldView, UjjwalaApplicationIframeWebFormView
 from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet, UjjwalaApplicationOtpViewSet
 
 router = routers.DefaultRouter()
@@ -33,32 +33,34 @@ urlpatterns = [
     # path('portal/', generic.TemplateView.as_view(template_name="ujjwala/frontend.html"), name="index"),
 
     path('portal/web-form/', UjjwalaApplicationWebFormView.as_view(), name="web_form"),
+    path('portal/i-web-form/', UjjwalaApplicationIframeWebFormView.as_view(), name="i_web_form"),
     path('portal/pre-inspection/', views.UjjwalaPreInspectionListView.as_view(), name="index"),
+    path('portal/web-form-share/', views.ShareWebFormLink.as_view(), name="share_web_form_link"),
 
     path(
-        'portal/connection-disbursement/sv_label_print/',
+        'portal/disbursement/sv_label_print/',
         views.UjjwalaConnectionDisbursementSvLabelPrintListView.as_view(),
         name="connection_disbursement_sv_label_print_list"
     ),
 
     path(
-        'portal/connection-disbursement/social_media_updates/',
+        'portal/disbursement/social_media_updates/',
         views.UjjwalaConnectionDisbursementSocialMediaUpdatesListView.as_view(),
         name="connection_disbursement_social_media_updates_list"
     ),
     path(
-        'portal/connection-disbursement/material_delivery/',
+        'portal/disbursement/material_delivery/',
         views.UjjwalaConnectionDisbursementMaterialDeliveryListView.as_view(),
         name="connection_disbursement_material_delivery_list"
     ),
 
     path(
-        'portal/connection-disbursement/list/',
+        'portal/disbursement/list/',
         views.UjjwalaConnectionDisbursementListView.as_view(),
         name="connection_disbursement_list"
     ),
 
-    path('portal/connection-disbursement/review_form_abc/',
+    path('portal/disbursement/review_form_abc/',
          views.ConnectionDisbursementReviewFormAbcListView.as_view(),
          name="connection_disbursement_review_form_abc_list"
     ),
@@ -75,11 +77,6 @@ urlpatterns = [
         name="ujjwala_application_display_otp"
     ),
 
-    url(
-        '^portal/whatsapp_ujjwala_application_link/(?P<contact_mobile>[^/.]+)/$',
-        views.UjjwalaApplicationSendWhatsappLinkView.as_view(),
-        name="whatsapp_ujjwala_application_link"
-    ),
     url(
         '^portal/ujjwala_application_link/(?P<data>[^/.]+)/$',
         views.UjjwalaApplicationSharedLinkView.as_view(),
@@ -151,36 +148,36 @@ urlpatterns = [
     # ),
 
     url(
-        '^portal/connection-disbursement/(?P<pk>[^/.]+)/review_form_abc/$',
+        '^portal/disbursement/(?P<pk>[^/.]+)/review_form_abc/$',
         views.ConnectionDisbursementReviewFormAbcView.as_view(),
         name="connection_disbursement_review_form_abc_view"
     ),
 
     url(
-        '^portal/connection-disbursement/(?P<pk>[^/.]+)/barcode_label_print/$',
+        '^portal/disbursement/(?P<pk>[^/.]+)/barcode_label_print/$',
         views.BarCodeLabelPrintView.as_view(),
         name="connection_disbursement_barcode_label_print_view"
     ),
 
     url(
-        '^portal/connection-disbursement/(?P<pk>[^/.]+)/sv_label_print/$',
+        '^portal/disbursement/(?P<pk>[^/.]+)/sv_label_print/$',
         views.ConnectionDisbursementSvLabelPrintView.as_view(),
         name="connection_disbursement_sv_label_print_view"
     ),
 
     url(
-        '^portal/connection-disbursement/(?P<pk>[^/.]+)/social_media_updates/$',
+        '^portal/disbursement/(?P<pk>[^/.]+)/social_media_updates/$',
         views.ConnectionDisbursementSocialMediaUpdatesView.as_view(),
         name="connection_disbursement_social_media_updates_view"
     ),
 
     url(
-        '^portal/connection-disbursement/(?P<pk>[^/.]+)/material_delivery/$',
+        '^portal/disbursement/(?P<pk>[^/.]+)/material_delivery/$',
         views.ConnectionDisbursementMaterialDeliveryView.as_view(),
         name="connection_disbursement_material_delivery_view"
     ),
     url(
-        '^portal/connection-disbursement/(?P<pk>[^/.]+)/$',
+        '^portal/disbursement/(?P<pk>[^/.]+)/$',
         views.ConnectionDisbursementView.as_view(),
         name="connection_disbursement_form_view"
     ),
@@ -212,7 +209,7 @@ urlpatterns = [
 
      path(
          'portal/disbursement_photo_upload/', generic.TemplateView.as_view(
-             template_name="ujjwala/disbursement_photo_upload.html"
+            template_name="ujjwala/disbursement/disbursement_photo_upload.html"
          ), name="disbursement_photo_upload"
      ),
 

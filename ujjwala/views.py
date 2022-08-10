@@ -101,51 +101,63 @@ class WhatsappPreInspectionTypeSelf(View):
             )
 
 
+@method_decorator(login_required, 'dispatch')
+class ShareWebFormLink(TemplateView):
+    template_name = "ujjwala/share_web_form_link.html"
+
+    def post(self, request, *args, **kwargs):
+        contact_mobile = request.POST.get('contact_mobile', '')
+
+        if contact_mobile:
+            application = UjjwalaV2Application.objects.filter(contact_mobile=contact_mobile).first()
+
+            if application:
+                messages.add_message(
+                    request, messages.ERROR, "Application already exist."
+                )
+            else:
+                user = get_current_user()
+                data = {
+                    'contact_mobile': contact_mobile,
+                    'user': user.id,
+                    'creation': datetime.datetime.now()
+                }
+                signer = Signer()
+                data_signed = signer.sign(data)
+                data_signed_base64 = base64.urlsafe_b64encode(data_signed.encode('ascii'))
+                data = data_signed_base64.decode('ascii')
+
+                url = request.build_absolute_uri(
+                    reverse('ujjwala:ujjwala_application_link', kwargs={'data': data})
+                )
+                print(url)
+                res = send_ujjwala_application_whatsapp_link(contact_mobile, data_signed_base64, url)
+                if res:
+                    messages.add_message(
+                        request, messages.INFO, "Ujjwala Application Link Shared To Contact Mobile: {}".format(contact_mobile)
+                    )
+        return super().get(request, *args, **kwargs)
+
+
 class UjjwalaApplicationSharedLinkView(View):
     def get(self, request, *args, **kwargs):
         data = kwargs.get('data', '')
-        if data:
-            signer = Signer()
-            data = base64.urlsafe_b64decode(data)
-            data = eval(signer.unsign(data.decode('ascii')))
-            application = UjjwalaV2Application.objects.filter(contact_mobile=data['contact_mobile'])
-            if application:
-                return HttpResponse(
-                    content="An application already exist with id: {}".format(application.id)
-                )
-            else:
-                return HttpResponse(content=data)
-        else:
-            return HttpResponse(content="Invalid Link")
-
-
-class UjjwalaApplicationSendWhatsappLinkView(View):
-    def get(self, request, *args, **kwargs):
-        contact_mobile = kwargs.get('contact_mobile', '')
-        if contact_mobile:
-            user = get_current_user()
-            data = {
-                'contact_mobile': contact_mobile,
-                'user': user.id,
-                'creation': datetime.datetime.now()
-            }
-            signer = Signer()
-            data_signed = signer.sign(data)
-            data_signed_base64 = base64.urlsafe_b64encode(data_signed.encode('ascii'))
-            data = data_signed_base64.decode('ascii')
-
-            url = request.build_absolute_uri(
-                reverse('ujjwala:ujjwala_application_link', kwargs={'data': data})
+        signer = Signer()
+        data = base64.urlsafe_b64decode(data)
+        data = eval(signer.unsign(data.decode('ascii')))
+        application = UjjwalaV2Application.objects.filter(contact_mobile=data['contact_mobile'])
+        if application:
+            return HttpResponse(
+                content="An application already exist with id: {}".format(application.id)
             )
-            print(url)
-            res = send_ujjwala_application_whatsapp_link(contact_mobile, data_signed_base64, url)
-            if res:
-                return HttpResponse(
-                    content="<h2>Ujjwala Application Link Shared To Contact Mobile: {}<h2>".format(contact_mobile)
-                )
-        return HttpResponse(
-            content="Ujjwala Application Link Could Not Send To Contact Mobile: {}".format(contact_mobile)
-        )
+        user = User.objects.filter(id=data['user']).first()
+        data.update({
+            "source": "link_share",
+            "signed_contact_mobile": signer.sign(data['contact_mobile']),
+            "referral_code": "{} ({} {})".format(user.username, user.first_name, user.last_name)
+        })
+        return render(request, template_name='ujjwala/web_form.html', context=data)
+
 
 
 class WhatsappUploadLegalForms(View):
@@ -704,10 +716,10 @@ class ApplicationView(View):
 class UjjwalaApplicationStatusView(TemplateView):
     template_name = "ujjwala/application_status/application_search_status.html"
 
-    def get(self, request, *args, **kwargs):
-        contact_mobile = request.GET.get('contact_mobile', '')
-        uid = request.GET.get('uid', '')
-        application_id = request.GET.get('application_id', '')
+    def post(self, request, *args, **kwargs):
+        contact_mobile = request.POST.get('contact_mobile', '')
+        uid = request.POST.get('uid', '')
+        application_id = request.POST.get('application_id', '')
         application = {}
 
         if contact_mobile:

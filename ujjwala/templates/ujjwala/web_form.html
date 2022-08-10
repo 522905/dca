@@ -101,7 +101,7 @@
                 </div>
                 
                 <div class="p-2">
-                    <div id="uid_linked_mobile_form_group" class="form-group">
+                    <div id="uid_linked_mobile_form_group" class="form-group whatsapp-form-group">
                         <label style="margin-bottom: 0;">Own or Family Whatsapp Number(अपना या परिवार के किसी सदस्य का
                             व्हाट्सएप नंबर) <i class="fa fa-whatsapp" aria-hidden="true"></i> <strong
                                 style="color:red">*</strong></label>
@@ -521,6 +521,12 @@ function WhatsappMobileVerifiedController() {
 
         $('[name="contact_mobile"]').attr('readonly', false);
     }
+
+    {% if source == 'link_share' %}
+    $('[name="contact_mobile"]').val("{{ signed_contact_mobile }}");
+    setAsVerified();
+    $('.whatsapp-form-group input,.whatsapp-form-group button').attr('disabled', true);
+    {% endif %}
 
     return {
         start_verification: () => {
@@ -1032,6 +1038,11 @@ function FamilyMemberService(html_block_id, aadhaar_ocr_service) {
 
 var family_member_service = new FamilyMemberService('', aadhaar_ocr_service_obj);
 family_member_service.add_fm('SELF');
+
+{% if source == 'link_share' %}
+$('[name="referral_code"]').val('{{ referral_code }}');
+$('[name="referral_code"]').attr('readonly', true);
+{% endif %}
 
 // $(".aadhaar_ocr:not([readonly])").css("border: 1px dashed ; -webkit-animation: blink .5s step-end infinite alternate;");
 // ocr_loader
