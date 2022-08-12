@@ -3,6 +3,7 @@
 
     <li><a href="{% url 'ujjwala:web_form' %}">Fill New Form</a></li>
     <li><a href="{% url 'ujjwala:application_status_search' %}">Status Search</a></li>
+    <li><a href="{% url 'ujjwala:share_web_form_link' %}">Share Form Link</a></li>
     <li id="menu" class="parent-menu"><span>Suraksha-Drill</span>
         <ul>
             <li><a href="{% url 'ujjwala:index' %}">Pre-Suraksha-Drill List</a></li>
@@ -10,15 +11,17 @@
         </ul>
     </li>
 {#  <li><a href="{% url 'ujjwala:review' %}">Review Pre-Suraksha-Drill(s) </a></li>#}
-    <li id="menu" class="parent-menu"><span>Disbursement</span>
-        <ul>
-            <li><a href="{% url 'ujjwala:connection_disbursement_list' %}">1 - Applicant Walk In </a></li>
-            <li><a href="{% url 'ujjwala:connection_disbursement_review_form_abc_list' %}">2 - Accept Legal Documents </a></li>
-            <li><a href="{% url 'ujjwala:connection_disbursement_sv_label_print_list' %}">3 - SV Label Print </a></li>
-            <li><a href="{% url 'ujjwala:connection_disbursement_social_media_updates_list' %}">4 - Social Media Updates </a></li>
-            <li><a href="{% url 'ujjwala:connection_disbursement_material_delivery_list' %}">5 - Material Delivery </a></li>
-        </ul>
-    </li>
+    {% if perms.ujjwala.can_do_connection_disbursement %}
+        <li id="menu" class="parent-menu"><span>Disbursement</span>
+            <ul>
+                <li><a href="{% url 'ujjwala:connection_disbursement_list' %}">1 - Applicant Walk In </a></li>
+                <li><a href="{% url 'ujjwala:connection_disbursement_review_form_abc_list' %}">2 - Accept Legal Documents </a></li>
+                <li><a href="{% url 'ujjwala:connection_disbursement_sv_label_print_list' %}">3 - SV Label Print </a></li>
+                <li><a href="{% url 'ujjwala:connection_disbursement_social_media_updates_list' %}">4 - Social Media Updates </a></li>
+                <li><a href="{% url 'ujjwala:connection_disbursement_material_delivery_list' %}">5 - Material Delivery </a></li>
+            </ul>
+        </li>
+    {% endif %}
     <li id="menu" ><a href="{% url 'ujjwala:installation_list' %}">Installation </a></li>
     {% if user.is_authenticated %}
     <li class="p-0">
