@@ -528,12 +528,13 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         else:
             application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE
             # Create PreInspection Object
-            obj = PreInspection.objects.create(
-                parent_id=application_obj.id,
-                status=PreInspectionStatusEnum.KITCHEN_PHOTO,
-                type=PreInspectionTypeEnum.SELF
-            )
-            application_obj.event_whatsapp_pre_inspection_type_self(obj.id)
+            if not application_obj.pre_inspection:
+                obj = PreInspection.objects.create(
+                    parent_id=application_obj.id,
+                    status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+                    type=PreInspectionTypeEnum.SELF
+                )
+                application_obj.event_whatsapp_pre_inspection_type_self(obj.id)
             # application_obj.event_invite_for_ekyc_channel_whatsapp()
             if application_obj.consumer_id and \
                     application_obj.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
