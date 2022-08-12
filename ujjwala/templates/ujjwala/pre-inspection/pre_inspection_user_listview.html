@@ -1,0 +1,132 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block page_title %}Pre-Suraksha-Drill Allocated List{% endblock %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+
+
+<div class="p-2 pt-0 form_label" style="width: 100%;">
+    <div class="main-header bg-heading" style="background-color: #2957A4;">
+        <span class="text-white">List of Pre-Suraksha-Drill Allocated</span>
+    </div>
+        <div class="card mb-2 app_card list_block">
+            {% for pre_inspection in list_pre_inspection %}
+            <ul class="m-0 p-2">
+                <li>
+                    <p class="float-left">Application Id</p>
+                    <p class="float-right">{{ pre_inspection.parent.id }}</p>
+                </li>
+                <li>
+                    <p class="float-left">Applicant Details</p>
+                    <p class="float-right">{{ pre_inspection.parent.name }}</p>
+                </li>
+                <li>
+                    <p class="float-left">Status</p>
+                    <p class="float-right">{{ pre_inspection.status }}</p>
+                </li>
+                {% for contact in   pre_inspection.parent.all_contacts  %}
+                <li class="contact_link">
+                    <p class="float-left">Phone  {{ forloop.counter }}</p>
+                    <p class="float-right">
+                        <b> <a href="tel:{{ contact}}" onclick="return true;">{{contact}}</a></b>      
+                    </p>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endfor %}
+            <div class="card-footer p-2 ">
+                <div aria-label="Page navigation example">
+                    <ul class="pagination m-0 float-right">
+                        <li class="page-item">
+                            <a style="cursor:none" class="page-link" href="#" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                            <span class="sr-only">Previous</span>
+                            </a>
+                        </li>
+                        {% for page_number in list_pre_inspection.paginator.get_elided_page_range %}
+                            {% if page_number == list_pre_inspection.paginator.ELLIPSIS %}
+                                {{page_number}}
+                            {% else %}
+                                <li class="page-item">
+                                    <a lass=""  href="?page={{page_number}}" class="{% if page_number == list_pre_inspection.number %}current{% endif %} page-link">
+                                        {{page_number}}
+                                    </a>
+                                </li>
+                            {% endif %}
+                        {% endfor %} 
+                        <li class="page-item">
+                            <a style="cursor:none" class="page-link" href="#" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                                <span class="sr-only">Next</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    <!-- <div id="per_inspection">
+        <th>
+            <td>Application Id</td>
+            <td>Applicant Details</td>
+            <td>Status</td>
+        </th>
+        {% for pre_inspection in list_pre_inspection %}
+            <tr>
+                <td>{{ pre_inspection.parent.id }}</td>
+                <td>{{ pre_inspection.parent.name }}<br>
+                    {{ pre_inspection.parent.formatted_address }}<br>
+                    {{ pre_inspection.parent.all_contacts }}
+                </td>
+                <td>{{ pre_inspection.status }}</td>
+            </tr>
+        {% endfor %} -->
+
+
+        
+
+        <!-- {% for page_number in list_pre_inspection.paginator.get_elided_page_range %}
+            {% if page_number == list_pre_inspection.paginator.ELLIPSIS %}
+                {{page_number}}
+            {% else %}
+                <a
+                    href="?page={{page_number}}"
+                    class="{% if page_number == list_pre_inspection.number %}current{% endif %}"
+                >
+                    {{page_number}}
+                </a>
+            {% endif %}
+        {% endfor %} -->
+
+
+
+        <!-- <tr>
+            <nav aria-label="Page navigation example">
+                {% if is_paginated %}
+                <ul class="pagination">
+                {% if list_pre_inspection.has_previous %}
+                    <li class="page-item">
+                        <span><a href="?page={{ list_pre_inspection.previous_page_number }}">Previous</a></span>
+                    </li>
+                {% endif %}
+                    <li class="page-item">
+                        <span>Page {{ list_pre_inspection.number }} of {{ list_pre_inspection.paginator.num_pages }}.</span>
+                    </li>
+                {% if list_pre_inspection.has_next %}
+                    <li class="page-item">
+                        <span><a class="page-link" href="?page={{ list_pre_inspection.next_page_number }}">Next</a></span>
+                    </li>
+                {% endif %}
+                </ul>
+                {% else %}
+                    Not Paginated
+                {% endif %}
+            </nav>
+        </tr> -->
+    <!-- </table> -->
+</div>
+{% endblock %}

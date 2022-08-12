@@ -1,0 +1,91 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+
+<style>
+    .hidden-field{ display: none;}
+    .form_label .card{ width: 100%;  }
+    .address_form label{ margin-bottom: 5px; }
+    #address_form .form_block input{ padding-left:5px; border-radius: 3px; border: 1px solid #ccc; width: 100%; line-height: 40px; }
+    .form_block label{ float: left; width: 100%; }
+</style>
+<div id="address_form" class="row m-0 form_label p-2">
+    <div class="card card-profile pt-0 mt-0 " style="width: 100%;" >
+		<div class="row justify-content-center m-0" style="width: 100%; margin: 0 auto !important; padding: 10px;">
+			<div style="width: 30%; float:left">
+				<div class="card-profile-image">
+					<a href="#">
+						<img style="width:100%; max-height: 150px;" src="{{obj.parent.document_self}}">
+					</a>
+				</div>
+			</div>
+			<div style="width: 70%; float:right">
+				<div class="card-body pt-0">
+					<div class="text-center">
+						<h5 class="h3">{{ obj.parent.name }}({{ obj.parent.id }})<span class="font-weight-light"></span></h5>
+						<div class="h5 font-weight-300">
+							<i class="ni location_pin mr-2"></i>{{ obj.parent.contact_mobile }}
+						</div>
+						<div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
+							{% if address_json == address_json  %}
+								{% for key,data in obj.parent.address_json.items %}
+									{{data}},
+								{% endfor %}
+							{% else %}
+								{{ obj.parent.address }}
+							{% endif%}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+    <form method="post" id="form" style="width: 100%;">
+        {% csrf_token %}
+        <div class="card address_form">
+            {{form.form_type}}
+            {{form.application_id}}
+            {{form.name}}
+            {{form.address}}
+            <div class="main-header bg-heading p-2 border-0" style="background-color: #2957A4;">
+                <span class="text-white" style="font-size: 18px; padding-left: 20PX;">Edit Address</span>
+            </div>
+            <div class="p-4 form_block">
+               
+                {{ form }}
+            </div>
+           
+            <div class="card-footer">
+                <input class="btn btn-secondary rounded-0 float-right" type="button" id="form" onclick="submit()"  value="Submit"/>
+            </div>
+        </div>
+        
+    </form>
+</div>
+<script>
+    function submit() {
+        if(!$('#form')[0].reportValidity()) {
+            alert("Please complete all required fields");
+            return;
+        }
+
+        if (!validate_pincode()) {
+            return;
+        }
+    }
+
+    function validate_pincode() {
+        if(!$('#id_pincode')[0].reportValidity()) {
+            return;
+        }
+        pincode = parseInt($('#id_pincode').val());
+        if(pincode && pincode >= 141001 && pincode <= 141014) {
+            return true;
+        }
+        alert("We don't provide service this Pin code area. हम इस पिन कोड क्षेत्र में सेवा प्रदान नहीं करते हैं");
+        return false;
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<div class="p-2 pt-0 form_label" style="width: 100%;">
+    <div class="main-header bg-heading">
+        <span class="text-white">List of Pre-Suraksha-Drill Records</span>
+    </div>
+    {% for obj in object_list %}
+    <div class="card mb-2 app_card">
+        <a class="text-under-n" href="{% url 'ujjwala:pre_inspection_form_view' type='mech' pk=obj.id %}">
+            <div class="card-header p-2">
+                <div class="row m-0">
+                    <div class="col">
+                    {{ obj.parent_id }}
+                    </div>
+                    <div class="col text-right">
+                        <b class="status">{{ obj.status }}</b>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body pb-0 p-2">
+                <ul class="m-0">
+                    <li>
+                        <p class="float-left">Name</p>
+                        <p class="float-right">{{ obj.parent.name }}</p>
+                    </li>
+                    <li>
+                        <p class="float-left">Contact</p>
+                        <p class="float-right">
+                            <b>{{ obj.parent.uid_linked_mobile }}</b>
+                            {% if obj.parent.contact_mobile %}
+                            / <b>{{ obj.parent.contact_mobile }} </b>
+                            {% endif %}
+                            
+                        </p>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-footer p-2">
+                <p><b>Address:</b>  {{ obj.parent.formatted_address }}</p>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+    
+    <script>
+        window.onload=function(){
+
+        const input = document.getElementById("input");
+        const getName = document.getElementById("getName");
+
+        getName.addEventListener("submit", e =>{
+            // Prevent the form from submission
+            e.preventDefault();
+            // Get city name and store it in local storage
+            var inputVal = getName.value;
+            var api_url = "{apiurl}" + inputVal;
+            // Get the dataset
+            function refreshData() {
+                fetch(api_url).then(response =>{
+                    response.json().then(json => {
+                        let dataset = json;
+                        let output = formatResponse(dataset);
+
+                    })
+                    // Catch error - for example, the user doesn't input a valid name
+                    .catch(error => console.log("not ok")); // TO BE IMPROVED
+                })
+            };
+        });
+     };
+    </script>
+
+{% endblock %}

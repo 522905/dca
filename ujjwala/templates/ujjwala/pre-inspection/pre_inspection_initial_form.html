@@ -1,0 +1,22 @@
+
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block page_title %}Start New Pre-Suraksha-Drill{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap" rel="stylesheet">
+<div class="main p-2 pt-0 form_label">
+    <form method="post" id="">
+        {% csrf_token %}
+        <div class="card">
+            <div class="card-body">
+                {{ form }}
+            </div>
+            <div class="card-footer float-right">
+                <input class="btn btn-success float-right rounded-0" type="submit" value="Submit" />
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
