@@ -133,7 +133,7 @@ def do_primary_omc_dedupe_check(id):
 
     if omc_dedupe_check_passed:
         application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE
-        obj = PreInspection.objects.create(
+        created, obj = PreInspection.objects.get_or_create(
             parent_id=application.id,
             status=PreInspectionStatusEnum.KITCHEN_PHOTO,
             type=PreInspectionTypeEnum.SELF

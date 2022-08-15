@@ -76,7 +76,7 @@ class IoclOmcDedup():
 
 		resp = json.loads(resp)
 		return {
-			'HPLC': self.__process_omc_dedup_result__(resp[0]),
+			'HPCL': self.__process_omc_dedup_result__(resp[0]),
 			'BPLC': self.__process_omc_dedup_result__(resp[1]),
 			'IOCL': self.__process_omc_dedup_result__(resp[2])
 		}
@@ -86,6 +86,14 @@ if __name__ == '__main__':
 	dedup_portal = IoclOmcDedup('305948', 'Arun@305948')
 	# dedup_portal.login()
 
-	resp = dedup_portal.omc_aadhar_dedup('645222996588')
+	resp = dedup_portal.omc_aadhar_dedup('984336989869')
+
+	for omc, status in resp.items():
+		if status == 'Present':
+			{
+				'distributor_name': omc,
+				'consumer_id': 'NotAvail-CheckWithDistributor',
+				'contact_address': ''
+			}
 
 	print(resp)
