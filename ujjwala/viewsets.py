@@ -962,7 +962,8 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESS_MANUAL
             application_obj.save()
             return HttpResponse('PROCESS MANUAL')
-        else:
+
+        if application_obj.status not in ('OMC_REJECTED', 'APPLICATION_REJECTED'):
             form = ApplicationRejected(data={
                 'rejected_reason': 'CONNECTION_ALREADY_EXIST',
                 'description': "{} {} {}".format(
@@ -970,11 +971,13 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                     invalid_result['distributor_name'], invalid_result['consumer_id']
                 )})
             form.is_valid()
-            application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE
             application_obj.application_rejected(**form.cleaned_data)
-            application_obj.event_ioc_dedupe_reject_channel_whatsapp()
-            application_obj.save()
-            return HttpResponse('OK')
+
+        application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE
+        application_obj.event_ioc_dedupe_reject_channel_whatsapp()
+        application_obj.save()
+
+        return HttpResponse('OK')
 
 
     @action(methods=['get'], detail=False, url_path='get_iocl_investigation_records')
