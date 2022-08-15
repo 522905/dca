@@ -133,12 +133,16 @@ def do_primary_omc_dedupe_check(id):
 
     if omc_dedupe_check_passed:
         application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE
-        created, obj = PreInspection.objects.get_or_create(
-            parent_id=application.id,
-            status=PreInspectionStatusEnum.KITCHEN_PHOTO,
-            type=PreInspectionTypeEnum.SELF
-        )
-        application.event_whatsapp_pre_inspection_type_self(obj.id)
+        try:
+            obj, created = PreInspection.objects.get_or_create(
+                parent_id=application.id,
+                status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+                type=PreInspectionTypeEnum.SELF
+            )
+            # application.event_invite_for_ekyc_channel_whatsapp()
+            application.event_whatsapp_pre_inspection_type_self(obj.id)
+        except:
+            pass
         application.save()
     else:
         if iocl_investigation_required:
