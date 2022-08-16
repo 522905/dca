@@ -458,7 +458,13 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             # application_obj.event_invite_for_ekyc_channel_whatsapp()
             if application_obj.consumer_id and \
                     application_obj.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
-                application_obj.ekyc_accepted_or_rejected(description="Bot Processed")
+                sdms_contact = application_obj.family_members.filter(
+                    relation='SELF'
+                ).uid_check_result.get('phone_number', '')
+                application_obj.ekyc_accepted_or_rejected(
+                    description="Bot Processed",
+                    sdms_mobile_number=sdms_contact
+                )
         application_obj.save()
         return HttpResponse('OK')
 
@@ -643,7 +649,13 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             application.consumer_id = result.get('consumer_id', '')
             application.sdms_mobile_number = result.get('phone_number', '')
             if application.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
-                application.ekyc_accepted_or_rejected(description="Bot Processed")
+                sdms_contact = application.family_members.filter(
+                    relation='SELF'
+                ).uid_check_result.get('phone_number', '')
+                application.ekyc_accepted_or_rejected(
+                    description="Bot Processed",
+                    sdms_mobile_number=sdms_contact
+                )
         else:
             application.sync_with_sdms = False
             form = ApplicationRejected(data={
@@ -1046,7 +1058,13 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 application_obj.consumer_id = self_consumer_id
 
                 if application_obj.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
-                    application_obj.ekyc_accepted_or_rejected(description="Bot Processed")
+                    sdms_contact = application_obj.family_members.filter(
+                        relation='SELF'
+                    ).uid_check_result.get('phone_number', '')
+                    application_obj.ekyc_accepted_or_rejected(
+                        application_obj="Bot Processed",
+                        sdms_mobile_number=sdms_contact
+                    )
         else:
             form = ApplicationRejected(data={
                 'rejected_reason': 'CONNECTION_ALREADY_EXIST',
