@@ -673,7 +673,8 @@ def process_family_uid_result(result):
 
 
 def process_omc_dedupe_result(omc_dedup_result):
-	for key, value in omc_dedup_result.items():
+	# Get result set sorted by HPCL, BPCL then IOCL
+	for key, value in sorted(omc_dedup_result.items(), key=lambda x: {'hpcl': 0, 'bpcl': 1, 'iocl': 2}.get(x[0])):
 		if not "not available with" in value.lower():
 			if key == 'bpcl':
 				m = COMPILED_REGEX_PATTERN_BPC_1.match(value)
