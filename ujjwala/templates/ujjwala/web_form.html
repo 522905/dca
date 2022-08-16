@@ -20,7 +20,8 @@
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
     <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
     <script src="https://arungas.com/public/ujwalla/js/signature_pad.umd.js"></script>
-    <script src="{% static '/js/ujjwala_webform_060822.js' %}"></script>
+    <script src="{% static '/js/moment.min.js' %}"></script>
+
     <!--  .uppy-StatusBar.is-complete -->
 </head>
 <style>
@@ -389,6 +390,7 @@
 </html>
 
 <script src="https://arungas.com/public/ujwalla/js/app.js"></script>
+<script src="{% static '/js/ujjwala_webform_160822.js' %}"></script>
 <script>
 
 // customerpictureuppy
@@ -474,7 +476,7 @@ function checkIfscCodeValidity() {
     }
 
     if (!(ifsc && ifsc!='')) {
-        alert("IFSC can't be blank!");
+        alert("IFSC खाली नहीं हो सकता!");
     }
 
     $.getJSON('https://ifsc.razorpay.com/' + ifsc, (data) => {
@@ -484,10 +486,10 @@ function checkIfscCodeValidity() {
             + '</div>';
         $('#ifscmess').html(table);
     }).fail(function () {
-        alert("Invalid IFSC code");
-        var msg = '<div id="errMsg">Invalid IFSC code</div>';
+        alert("अमान्य IFSC कोड");
+        var msg = '<div id="errMsg">अमान्य IFSC कोड</div>';
         $('#ifscmess').html(msg);
-        ifsc_element.setCustomValidity('Invalid IFSC code');
+        ifsc_element.setCustomValidity('अमान्य IFSC कोड');
         ifsc_element.reportValidity()
     });
 }
@@ -628,7 +630,7 @@ function WhatsappMobileVerifiedController() {
 
         is_valid: () => {
             if (state !== 'VERIFIED') {
-                alert(`Whatsapp Number Not Validated`);
+                alert(`व्हाट्सएप नंबर मान्य नहीं है`);
                 setTimeout(() => {
                     $("#verifyWhatsappButton").focus();
                 }, 0);
@@ -650,6 +652,8 @@ whatsapp_verifier = WhatsappMobileVerifiedController();
 
 function AadhaarOcrService() {
     var callback = undefined;
+    var error_callback = undefined;
+
     var uid_front_uppy = new Uppy.Core({
         debug: true,
         autoProceed: true,
@@ -737,9 +741,10 @@ function AadhaarOcrService() {
         }
     }
 
-    this.start_capture = (cb) => {
+    this.start_capture = (cb, errcb) => {
         $('#uid_ocr_modal').modal('show');
         callback = cb;
+        error_callback = errcb;
     };
 
     this.process_files = () => {
@@ -773,27 +778,32 @@ function AadhaarOcrService() {
                         return reject("Error OCRing uid");
                     }
                     var uid_data = JSON.parse(data.data.text);
-                    if (uid_data.name == undefined || uid_data.name.prob==0) {
-                        return reject("Unable to capture uid data, make sure that clear pic aadhaar is uploaded.");
-                    }
                     callback(data);
-                    this_service.stop_capture();
-
+                    // this_service.stop_capture();
                     return resolve(uid_data);
                 },
                 error: (e) => {
                     console.log(e);
                     reject("Something Went Wrong With OCR api, please report");
+                    error_callback(e, {
+                        "uid_front_url": uid_front_link,
+                        "uid_back_url": uid_back_link
+                    });
                 }
             });
-        }).
-        catch(e => {
-            alert(e);
         }).
         finally(() => {
             $('.modal-footer button').attr('disabled', false);
             $(".loader").attr("style", "display:none");
         });
+        // catch(e => {
+        //     alert(e);
+        //     error_callback(e, {
+        //         "uid_front_url": uid_front_link,
+        //         "uid_back_url": uid_back_link
+        //     });
+        // }).
+        
     };
 
     this.reset_service = () => {
@@ -812,15 +822,19 @@ function AadhaarOcrService() {
 
 function MockAadhaarOcrService() {
     var callback = undefined;
+    var error_callback = undefined;
+
     return {
-        start_capture: function(cb) {
+        start_capture: function(cb, errcb) {
             callback = cb;
+            error_callback = errcb;
         },
         process_files: function () {
             callback({
                 "status": "success",
                 "data": {
-                    "text": "{\"pincode\":\"141015\",\"address\":{\"prob\":0.5,\"value\":\"0, Baba Deep udhiana,\"},\"gender\":{\"prob\":0.8,\"value\":\"FEMALE\"},\"dob\":{\"prob\":0.8,\"value\":\"01/01/1966\"},\"name\":{\"prob\":0.5,\"value\":\"Parmjit Kaur\"},\"aadhaar\":{\"prob\":0.8,\"value\":\"331029404185\"}}"
+                    // "text": "{\"pincode\":\"141015\",\"address\":{\"prob\":0.5,\"value\":\"0, Baba Deep udhiana,\"},\"gender\":{\"prob\":0.8,\"value\":\"FEMALE\"},\"dob\":{\"prob\":0.8,\"value\":\"2008/06/06\"},\"name\":{\"prob\":0.5,\"value\":\"Parmjit .\"},\"aadhaar\":{\"prob\":0.8,\"value\":\"331029404185\"}}"
+                    "text": "{\"pincode\":\"141015\",\"address\":{\"prob\":0.5,\"value\":\"0, Baba Deep udhiana,\"},\"gender\":{\"prob\":0.5,\"value\":\"FEMALE\"},\"dob\":{\"prob\":0.8,\"value\":\"2001\"},\"name\":{\"prob\":0.5,\"value\":\"Parmjit .\"},\"aadhaar\":{\"prob\":0.8,\"value\":\"331029404185\"}}"
                 },
                 "uid_front_url": "https://tus.dca.arungas.com/files/f52f8709d935e1cfde053366adfcc125",
                 "uid_back_url": "https://tus.dca.arungas.com/files/322b9dad809daf2eeeaa09808917a3b5"
@@ -835,16 +849,22 @@ function MockAadhaarOcrService() {
     }
 }
 
-{#var aadhaar_ocr_service_obj = MockAadhaarOcrService();#}
+// var aadhaar_ocr_service_obj = MockAadhaarOcrService();
 var aadhaar_ocr_service_obj = new AadhaarOcrService();
 
 function FamilyMemberService(html_block_id, aadhaar_ocr_service) {
+    const MIN_OCR_ATTEMPTS = 1;
     let familyMembers = [];
+    let familyMembersRequests = {};
 
-    function is_fm_dom_data_complete(fm) {
-        if(fm.uid_no == undefined || fm.uid_no == '') return false;
-        if(fm.name == undefined || fm.name == '') return false;
-        return true;
+    function incrementRequestFailureCount(relation) {
+        familyMembersRequests[relation] = (familyMembersRequests[relation] || 0) + 1;
+        return familyMembersRequests[relation];
+    }
+
+    function resetRequestFailureCount(relation) {
+        familyMembersRequests[relation] = 0;
+        return familyMembersRequests[relation];
     }
 
     function add_fm_to_dom(fm) {
@@ -859,7 +879,11 @@ function FamilyMemberService(html_block_id, aadhaar_ocr_service) {
         var data = ocr_api_resp.data.text;
         //update fm
 
-        fm.name = !/[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~\d]/.test(data.name.value)?data.name.value:'';
+        fm.name = data.name.value;
+        if (/[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~\d]/.test(data.name.value)) {
+            fm.name = '';
+            data.name.prob = .5;
+        }
 
         var dob_data = data.dob.value.split('/').reverse();
         if (dob_data.length === 1) {
@@ -883,20 +907,189 @@ function FamilyMemberService(html_block_id, aadhaar_ocr_service) {
         var field_selector = `.${fm.relation}-familyMemberLineItem #${fm.relation}`;
         $(`${field_selector}-name`).val(fm.name);
         $(`${field_selector}-dob`).val(fm.dob);
+
+        $(`${field_selector}-gender option`).attr('disabled', false);
         $(`${field_selector}-gender`).val(fm.gender);
+
         $(`${field_selector}-uid_no`).val(fm.uid_no);
 
         $.each(['name', 'dob', 'gender', 'uid_no'], (i, key) => {
             var prob = fm.src_data[key=='uid_no'?'aadhaar':key].prob;
             if (prob < .8) {
                 $(`${field_selector}-${key}`).removeAttr('readonly');
+                if (key=='gender') {
+                    $(`${field_selector}-gender option`).attr('disabled', false);
+                }
             } else {
                 $(`${field_selector}-${key}`).attr('readonly', '');
+                if (key=='gender') {
+                    $(`${field_selector}-gender option:not(:selected)`).attr("disabled", "disabled");
+                }
             }
         });
 
         $(`#${fm.relation}-uid_front_link`).attr('src',fm.src_data.uid_front_url);
         $(`#${fm.relation}-uid_back_link`).attr('src', fm.src_data.uid_back_url);
+        $(`[name="${fm.relation}-ocr_processed"]`).val('yes');
+    }
+
+    function unlockManualMode(relation, uid_front_url, uid_back_url) {
+        var field_selector = `.${relation}-familyMemberLineItem #${relation}`;
+        $.each(['name', 'dob', 'gender', 'uid_no'], (i, key) => {
+            $(`${field_selector}-${key}`).removeAttr('readonly');
+        });
+        $(`${field_selector}-gender option`).attr('disabled', false);
+        $(`#${relation}-uid_front_link`).attr('src', uid_front_url);
+        $(`#${relation}-uid_back_link`).attr('src', uid_back_url);
+        $(`[name="${relation}-ocr_processed"`).val('no');
+    }
+
+    function check_if_we_got_ocr_data(ocr_data) {
+        return [
+            ocr_data.aadhaar&&ocr_data.aadhaar.prob?ocr_data.aadhaar.prob:0,
+            ocr_data.aadhaar&&ocr_data.aadhaar.prob?ocr_data.aadhaar.prob:0
+        ].map((prob) => prob>0?true:false).reduce((acc, next) => {
+            return acc && next;
+        });
+    }
+
+    function clean_ocr_data(ocr_data) {
+        // UID Check
+        ocr_data.aadhaar.value = ocr_data.aadhaar.value.trim();
+        if(!validateAadhaar(ocr_data.aadhaar.value)) {
+            ocr_data.aadhaar.value = '';
+            ocr_data.aadhaar.prob = .1;
+        }
+
+        // Name Check
+        ocr_data.name.value = ocr_data.name.value.trim();
+        if (/[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~\d]/.test(ocr_data.name.value)) {
+            ocr_data.name.value = '';
+            ocr_data.name.prob = .1;
+        }
+
+        // Gender Check
+        ocr_data.gender.value = ocr_data.gender.value.toLowerCase().trim();
+        if(['male', 'female'].indexOf(ocr_data.gender.value) < 0) {
+            ocr_data.gender.value = '';
+            ocr_data.gender.prob = .1;
+        }
+
+        // DOB Check
+        if (ocr_data.dob.value.split('/').length === 1) {
+            ocr_data.dob.value = ['01/01', ocr_data.dob.value].join('/');
+            ocr_data.dob.prob = .5;
+        }
+        if (!moment(ocr_data.dob.value, "DD/MM/YYYY", true).isValid()) {
+            ocr_data.dob.value = '';
+            ocr_data.dob.prob = .1;
+        }
+
+        return ocr_data;
+    }
+
+    function validate_fm(fm, opts) {
+        let partial = opts.partial?opts.partial:false;
+        let run_remote_validations = opts.run_remote_validations?opts.run_remote_validations:false;
+
+        let errors = {};
+
+        // Gender Validation
+        if (!(fm.gender && fm.gender.length > 0)) {
+            if (!partial) {
+                errors['gender'] = {
+                    required: true,
+                    msg: 'Gender Is Required'
+                };
+            }
+        } else {
+            if((fm.relation == 'SELF' || fm.relation == 'MOTHER') && fm.gender != 'female') {
+                errors['gender'] = {
+                    msg: `${fm.relation} must be Female, Check uploaded Aadhaar`
+                };
+            } else if ((fm.relation == 'FATHER' || fm.relation == 'HUSBAND') && fm.gender != 'male') {
+                errors['gender'] = {
+                    msg: `${fm.relation} must be Male, Check uploaded Aadhaar`
+                };
+            }
+        }
+
+        // UID Validation
+        if (!(fm.uid_no && fm.uid_no.length > 0)) {
+            if (!partial) {
+                errors['uid_no'] = {
+                    required: true,
+                    msg: 'UID No Is Required'
+                };
+            }
+        } else {
+            if(!validateAadhaar(fm.uid_no)) {
+                errors['uid_no'] = {
+                    msg: `Invalid UID No`
+                };
+            }
+        }
+
+        // Name Validation
+        if (!(fm.name && fm.name.length > 0)) {
+            if (!partial) {
+                errors['name'] = {
+                    required: true,
+                    msg: 'Name Is Required'
+                };
+            }
+        } else {
+            if(!/^[a-zA-Z ]+$/.test(fm.name)) {
+                errors['name'] = {
+                    msg: `Name can only contain charecters and spaces.`
+                };
+            }
+        }
+
+        // DOB Validation
+        if (!(fm.dob && fm.dob.length > 0)) {
+            if (!partial) {
+                errors['name'] = {
+                    required: true,
+                    msg: 'DOB Is Required'
+                };
+            }
+        } else {
+            if(moment(new Date()).diff(moment(new Date(fm.dob)), 'years', true) < 18) {
+                errors['dob'] = {
+                    msg: `Only applicants over 18 years are eligible.`
+                };
+            }
+        }
+
+        if (Object.keys(errors).length > 0) return Promise.reject(errors);
+        if (!run_remote_validations) return Promise.resolve({});
+        if (fm.uid_no.length == 0) return Promise.resolve({});
+
+        // Run Dedup Over Api
+        return new Promise((resolve, reject) => {
+            jQuery.ajax({
+                url: '/ujjwala/ujjwala-application/check_uid/',
+                type: "GET",
+                data: {'uid': fm.uid_no}
+            }).then(response => {
+                if (response.status === true) return resolve({});
+
+                var app = response.data.applications[0];
+                return reject([{
+                    uid_no: {
+                        msg: `Application alreay exists DCA ${app.id} ${app.name} ${app.status}`
+                    }
+                }]);
+            }).fail((e) => {
+                return reject([{
+                    uid_no: {
+                        msg: e
+                    }
+                }]);
+            })
+        });
+
     }
 
     this.add_fm = (relation) => {
@@ -933,51 +1126,58 @@ function FamilyMemberService(html_block_id, aadhaar_ocr_service) {
 
     this.update_fm_via_ocr = (relation) => {
         var fm = this.find_fm_by_relation(relation);
-        // check if fm exists
-
+        //TODO check if fm exists
         aadhaar_ocr_service.start_capture(resp => {
             var ocr_data = JSON.parse(resp.data.text);
-            resp.data.text = ocr_data;
 
-            if((relation == 'SELF' || relation == 'MOTHER') && ocr_data.gender.value.toLowerCase() != 'female') {
-                alert(`${relation} must be Female, Check uploaded Aadhaar`);
-                return;
-            } else if ((relation == 'FATHER' || relation == 'HUSBAND') && ocr_data.gender.value.toLowerCase() != 'male') {
-                alert(`${relation} must be Male, Check uploaded Aadhaar`);
-                return;
+            //TODO: If zoho api http error, dont clear images, simply return
+            if(!check_if_we_got_ocr_data(ocr_data)) {
+                if(!(incrementRequestFailureCount(relation) <= MIN_OCR_ATTEMPTS)) {
+                    alert("अधिकतम प्रयास पार हो गया, मैनुअल मोड अनलॉक करें");
+                    aadhaar_ocr_service_obj.stop_capture();
+                    return unlockManualMode(relation, resp.uid_front_url, resp.uid_back_url);
+                } 
+                alert("फ़ोटो से डेटा निकालने में असफल, फिर से फ़ोटो कैप्चर करें।");
+                return aadhaar_ocr_service_obj.reset_service();
             }
 
-            // Run Dedup Over Api
-            jQuery.ajax({
-                url: '/ujjwala/ujjwala-application/check_uid/',
-                type: "GET",
-                data: {'uid': ocr_data.aadhaar.value}
-            }).then(response => {
-                if (response.status === true) {
-                    return ocr_data;
-                }
-                var app = response.data.applications[0];
-                throw new Error(`Application alreay exists DCA ${app.id} ${app.name} ${app.status}`);
-            }).then(ocr_data => {
-                // Run Dedup Over All Family Members Data
-                var fm = this.find_fm_by_uid(ocr_data.aadhaar.value);
-                if (fm !== null) {
-                    throw new Error(`${fm.name} already added as ${fm.relation}`);
-                }
-                return ocr_data
-            }).then(ocr_data => {
+            aadhaar_ocr_service_obj.stop_capture();
+            resetRequestFailureCount(relation);
+            ocr_data = clean_ocr_data(ocr_data);
+
+            resp.data.text = ocr_data;
+
+            let ocr_to_dom_fm_data = {
+                relation: relation,
+                name: ocr_data.name.value,
+                dob: ocr_data.dob.value?new Date(ocr_data.dob.value.split('/').reverse().join('-')):'',
+                gender: ocr_data.gender.value,
+                uid_no: ocr_data.aadhaar.value
+            }
+
+            validate_fm(ocr_to_dom_fm_data, {
+                partial: true,
+                run_remote_validations: true
+            }).then(() => {
                 update_data_from_ocr_response(fm, resp);
-            }).fail(e => {
-                alert(e);
+            }).catch(e => {
+                alert(JSON.stringify(e));
             });
-        })
+
+        }, (error, links) => {
+            if(!(incrementRequestFailureCount(relation) <= MIN_OCR_ATTEMPTS)) {
+                alert("अधिकतम प्रयास पार हो गया, मैनुअल मोड अनलॉक करें। ");
+                aadhaar_ocr_service_obj.stop_capture();
+                unlockManualMode(relation, links.uid_front_url, links.uid_back_url);
+            }
+        });
     }
 
-    this.is_valid = () => {
+    this.is_valid = async () => {
         var marital_status = $('#marital_status').val();
         if (marital_status=='') {
             $('#marital_status').focus();
-            alert("Material Status Is Mandatory");
+            alert("वैवाहिक स्थिति की जानकारी अनिवार्य है");
             return false;
         }
 
@@ -987,46 +1187,55 @@ function FamilyMemberService(html_block_id, aadhaar_ocr_service) {
             (marital_status == 'MARRIED' && family_members.length != 2) ||
             (marital_status == 'UNMARRIED' && family_members.length != 3)
         ) {
-            alert("Reselect marital status");
+            alert("वैवाहिक स्थिति की जानकारी फिर से चुनें");
             return false;
         }
 
-        for (let i = 0; i < family_members.length; i++) {
-            var member = family_members                                                                                                                                                                             [i];
-            if(!is_fm_dom_data_complete(member)) {
+        var validation_promise = $.map(family_members, (member) => {
+            return validate_fm(member, {
+                partial: false,
+                run_remote_validations: false
+            }).catch(errors => {
                 $(`.${member.relation}-familyMemberLineItem .btn`).focus();
-                alert(`Upload Aadhaar of ${member.relation}`);
+                var error_string = Object.entries(errors).reduce((str, [p, val]) => {
+                    return `${str}\n${p} -> ${val.msg}\n`;
+                }, `${member.relation} data has folowing errors\n`);
+
+                alert(error_string);
                 return false;
+            });
+        });
+
+        return Promise.all(validation_promise).then(() => {
+            var self_fm = this.find_fm_by_relation('SELF').dob.split('-')[0];
+            if (marital_status === 'UNMARRIED') {
+                var mother_fm = this.find_fm_by_relation('MOTHER').dob.split('-')[0];
+                var father_fm = this.find_fm_by_relation('FATHER').dob.split('-')[0];
+
+                var self_mother_diff = self_fm - mother_fm;
+                var self_father_diff = self_fm - father_fm;
+                var father_mother_diff = Math.abs(father_fm - mother_fm);
+
+                if (self_mother_diff <= 16 || self_father_diff <= 16) {
+                    alert('स्वयं और माता/पिता के आधार कार्ड की जांच करें, उम्र का अंतर बहुत कम है');
+                    return false;
+                } else if (father_mother_diff > 15) {
+                    alert('माता और पिता के आधार कार्ड की जांच करें, उम्र का बड़ा अंतर है।');
+                    return false;
+                }
+            } else if (marital_status === 'MARRIED') {
+                var husband_fm = this.find_fm_by_relation('HUSBAND').dob.split('-')[0];
+                var self_husband_diff = Math.abs(self_fm - husband_fm);
+
+                if (self_husband_diff > 15) {
+                    alert('स्वयं और पति के आधार कार्ड की जांच करें है।');
+                    return false;
+                }
             }
-        }
 
-        var self_fm = this.find_fm_by_relation('SELF').dob.split('-')[0];
-        if (marital_status === 'UNMARRIED') {
-            var mother_fm = this.find_fm_by_relation('MOTHER').dob.split('-')[0];
-            var father_fm = this.find_fm_by_relation('FATHER').dob.split('-')[0];
+            return true;
+        });
 
-            var self_mother_diff = self_fm - mother_fm;
-            var self_father_diff = self_fm - father_fm;
-            var father_mother_diff = Math.abs(father_fm - mother_fm);
-
-            if (self_mother_diff <= 16 || self_father_diff <= 16) {
-                alert('Check Self and Mother/Father Aadhaar card, age gap too low');
-                return false;
-            } else if (father_mother_diff > 15) {
-                alert('Check Mother and Father Aadhaar card, Huge age gap.');
-                return false;
-            }
-        } else if (marital_status === 'MARRIED') {
-            var husband_fm = this.find_fm_by_relation('HUSBAND').dob.split('-')[0];
-            var self_husband_diff = Math.abs(self_fm - husband_fm);
-
-            if (self_husband_diff > 15) {
-                alert('Check Self and Husband Aadhaar card, Huge age gap.');
-                return false;
-            }
-        }
-
-        return true;
     }
     this.get_validated_data = () => {
         var family_members = gatherFamilyMembersData();
@@ -1068,7 +1277,7 @@ $('[name="referral_code"]').attr('readonly', true);
     @-webkit-keyframes blink { 50% { border-color: #ff0000; }  }
 
 
-    .aadhaar_ocr:not(input[readonly]) {
+    .aadhaar_ocr:not(input[readonly]){
         border: 1px dashed ;
         -webkit-animation: blink .5s step-end infinite alternate;
     }
