@@ -21,7 +21,7 @@
         <span class="text-white">List of Legal Documents Under Review</span>
     </div>
 
-    <!-- {% for obj in object_list %}
+    {% for obj in object_list %}
     <div class="card mb-2 app_card">
         <a class="text-under-n" href="{% url 'ujjwala:connection_disbursement_review_form_abc_view' pk=obj.id %}" data-turbolinks="false">
             <div class="card-header">
@@ -61,8 +61,8 @@
         </div>
 
     </div>
-    {% endfor %} -->
-    {% include 'ujjwala/disbursement/custom-template/disbursement-card-detail.html' %}
+    {% endfor %}
+{#    {% include 'ujjwala/disbursement/custom-template/disbursement-card-detail.html' %}#}
 </div>
  
     <!-- <script>
