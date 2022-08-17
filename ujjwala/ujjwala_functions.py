@@ -904,7 +904,7 @@ def send_ujjwala_application_whatsapp_link(contact_mobile, contact_mobile_base64
 			],
 			"buttonValues": {
 				"0": [
-					"ujjwala/portal/whatsapp_ujjwala_application_link/{}/".format(
+					"ujjwala/portal/ujjwala_application_link/{}/".format(
 						contact_mobile_base64
 					)
 				]

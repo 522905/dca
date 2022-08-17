@@ -77,8 +77,11 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
         ).exclude(marital_status__in=[
             MaritalStatusEnum.DIVORCED, MaritalStatusEnum.WIDOW
         ]).exclude(
-		family_members__dob__gte='2004-07-30'
-	).exclude(version='V1').order_by('-sdms_last_updated_on')
+		family_members__dob__gte='2004-08-14'
+	).exclude(family_members__uid_no__in=[
+		'999999999999','666666666666','0','1'
+	]).exclude(version='V1').order_by('-sdms_last_updated_on')
+
         page = self.paginate_queryset(queryset)
         return self.get_paginated_response([
             {
@@ -984,9 +987,9 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 )})
             form.is_valid()
             application_obj.application_rejected(**form.cleaned_data)
+            application_obj.event_ioc_dedupe_reject_channel_whatsapp()
 
         application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE
-        application_obj.event_ioc_dedupe_reject_channel_whatsapp()
         application_obj.save()
 
         return HttpResponse('OK')
@@ -1030,7 +1033,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         if self_consumer_id:
             for member in request.data['family_members']:
                 if member['relation'] == 'SELF': continue
-                if member['result']['consumer_id'] == self_consumer_id:
+                if member['result'].get('consumer_id', '') == self_consumer_id:
                     member['result'] = {}
 
         for member in request.data['family_members']:
