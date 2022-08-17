@@ -162,17 +162,9 @@ function validate_terms_condtions(){
     return true;
 }
 
-function upload_sign_and_submit() {
+async function upload_sign_and_submit() {
     if(!$('#form')[0].reportValidity()) {
         alert("Please complete all required fields");
-        return;
-    }
-
-    if (!whatsapp_verifier.is_valid()) {
-        return;
-    }
-
-    if (!family_member_service.is_valid()) {
         return;
     }
 
@@ -188,59 +180,70 @@ function upload_sign_and_submit() {
         return;
     }
 
-    if (valid() == null) {
+    if (!whatsapp_verifier.is_valid()) {
         return;
     }
 
-    if (signaturePad.isEmpty()) {
-        alert("Please provide a signature first.");
-    } else {
-        jQuery('#submit').html('Please wait...');
-        jQuery('#submit').attr('disabled', true);
-
-        var dataURL = signaturePad.toDataURL();
-        var blob = dataURLToBlob(dataURL);
-
-
-        let sign_uppy = new Uppy.Core({
-            debug: true,
-            autoProceed: true,
-            restrictions: {
-                maxFileSize: 50000000,
-                maxNumberOfFiles: 1,
-                minNumberOfFiles: 1,
-                allowedFileTypes: ['image/*'],
-            }
-        })
-        .use(Uppy.Tus, {
-            endpoint: 'https://tus.dca.arungas.com/files/',
-        });
-
-        sign_uppy.addFile({
-            name: `signature_${new Date().getTime()}_${(Math.random() + 1).toString(36).substring(7)}.png`,
-            type: 'image/png',
-            data: blob,
-            source: 'Local', // optional, determines the source of the file, for example, Instagram.
-            isRemote: false, // optional, set to true if actual file is not in the browser, but on some remote server, for example,
-        });
-        sign_uppy.upload().then((result) => {
-            if (result.failed.length > 0) {
-                alert("Error Uploading Signature, try again");
-                console.error('Errors:')
-                result.failed.forEach((file) => {
-                    console.error(file.error)
-                });
-
-                jQuery('#submit').html('Submit');
-                jQuery('#submit').attr('disabled', false);
-
-            } else {
-                console.info('Successful uploads:', result.successful);
-                submit_form(result.successful[0].uploadURL)
-            }
-        });
-
-    }
+    family_member_service.is_valid().then(fm_service_valid => {
+        debugger;
+        if (!fm_service_valid) {
+            return;
+        }
+    
+        if (valid() == null) {
+            return;
+        }
+    
+        if (signaturePad.isEmpty()) {
+            alert("Please provide a signature first.");
+        } else {
+            jQuery('#submit').html('Please wait...');
+            jQuery('#submit').attr('disabled', true);
+    
+            var dataURL = signaturePad.toDataURL();
+            var blob = dataURLToBlob(dataURL);
+    
+    
+            let sign_uppy = new Uppy.Core({
+                debug: true,
+                autoProceed: true,
+                restrictions: {
+                    maxFileSize: 50000000,
+                    maxNumberOfFiles: 1,
+                    minNumberOfFiles: 1,
+                    allowedFileTypes: ['image/*'],
+                }
+            })
+            .use(Uppy.Tus, {
+                endpoint: 'https://tus.dca.arungas.com/files/',
+            });
+    
+            sign_uppy.addFile({
+                name: `signature_${new Date().getTime()}_${(Math.random() + 1).toString(36).substring(7)}.png`,
+                type: 'image/png',
+                data: blob,
+                source: 'Local', // optional, determines the source of the file, for example, Instagram.
+                isRemote: false, // optional, set to true if actual file is not in the browser, but on some remote server, for example,
+            });
+            sign_uppy.upload().then((result) => {
+                if (result.failed.length > 0) {
+                    alert("Error Uploading Signature, try again");
+                    console.error('Errors:')
+                    result.failed.forEach((file) => {
+                        console.error(file.error)
+                    });
+    
+                    jQuery('#submit').html('Submit');
+                    jQuery('#submit').attr('disabled', false);
+    
+                } else {
+                    console.info('Successful uploads:', result.successful);
+                    submit_form(result.successful[0].uploadURL)
+                }
+            });
+    
+        }
+    });
 }
 
 function getCookie(name) {
@@ -262,19 +265,16 @@ function getCookie(name) {
 function submit_form(signature_url) {
     event.preventDefault();
     let documentArray = valid();
-    let formdata = $('form').serializeArray()
-        .reduce(function (accum, item) {
 
-                if (-1 === ['ignoreThis', 'andThat'].indexOf(item.name)) {
-
-                    if (item.value !== null) {
-                        accum[item.name] = item.value;
-                    }
-                }
-                return accum;
-            },
-            {}
-        );
+    let formdata = $('form').serializeArray(
+    ).reduce((accum, item) => {
+        if (-1 === ['ignoreThis', 'andThat'].indexOf(item.name)) {
+            if (item.value !== null) {
+                accum[item.name] = item.value;
+            }
+        }
+        return accum;
+    }, {});
 
     formdata.address_json = {
         house_no: formdata.house_no,
@@ -467,6 +467,7 @@ function addFamilyMember(relation_name, relation_label) {
     <div class="form-group mb-0 initialize familyMemberLineItem ${relation_name}-familyMemberLineItem">
         ${relation_block}
         <div class="border-bottom pt-2 pb-2">
+            <input type="hidden" name="${relation_name}-ocr_processed"/>
            
             <div class="row m-0">
                 <div class="col-sm-4">
@@ -483,8 +484,14 @@ function addFamilyMember(relation_name, relation_label) {
                 </div>
                 <div class="col-sm-4">
                     <p>${relation_label} का (Gender) <strong style="color:red">*</strong></p>
-                    <div class="">
-                        <input type="text" class="form-control aadhaar_ocr" id="${relation_name}-gender" name="${relation_name}-gender" value="" required readonly />
+                    <div class="form-group ">
+                        <select required class="selectpicker form-control" id="${relation_name}-gender" name="${relation_name}-gender" readonly>
+                            <option value="" id="status" disabled>
+                                --- Select Gender ---
+                            </option>
+                            <option value="male" disabled>Male</option>
+                            <option value="female" disabled>Female</option>
+                        </select>
                     </div>
                 </div>
             </div>
