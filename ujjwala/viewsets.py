@@ -203,15 +203,18 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         request.PERFORM_SUBMIT = True
         self_family_member = FamilyMembers.objects.filter(uid_no=request.data.get('SELF-uid_no')).first()
         if self_family_member:
-            existing_application = UjjwalaV2Application.objects.filter(id=self_family_member.parent_id).first()
-            if existing_application:
-                if existing_application.status == UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD:
-                    pre_inspection_obj = PreInspection.objects.filter(parent_id=existing_application.id).first()
-                    if pre_inspection_obj:
-                        pre_inspection_obj.delete()
-                    existing_application.family_members.all().delete()
-                    existing_application.documents.all().delete()
-                    existing_application.delete()
+            existing_application = self_family_member.parent
+            if existing_application.status != UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD:
+                return JsonResponse({
+                    "message": "Application Already Exist With Id: {}".format(existing_application.id)
+                })
+            PreInspection.objects.filter(
+                parent_id=existing_application.id
+            ).delete()
+            ConnectionDisbursement.objects.filter(
+                parent_id=existing_application.id
+            ).delete()
+            existing_application.delete()
         return super().create(request, *args, **kwargs)
 
     @action(methods=['post'], detail=False, url_path='legal_documents_upload')
@@ -287,16 +290,11 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         applications = UjjwalaV2Application.objects.filter(
             Q(contact_mobile=contact_mobile) |
             Q(uid_linked_mobile=contact_mobile)
+        ).exlude(
+            status=UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD
         ).order_by('-id')
 
-        if applications:
-            if len(applications) == 1:
-                if applications.first().status == UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD:
-                    return JsonResponse({
-                        "status": True,
-                        "msg": "VALID_APPLICATION",
-                        "data": {}
-                    })
+        if applications.exists():
             result = {
                 "status": False,
             }

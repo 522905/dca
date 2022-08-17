@@ -52,6 +52,7 @@ PDF_COMPRESSION_OPTIONS = {
 	"pageSize": "A4", "imageDpi": 150, "imageQuality": 80, "lowquality": True
 }
 
+
 def valid_file_uploaded(url):
 	res = requests.head(url, headers={"Tus-Resumable": "1.0.0"})
 	header_info = res.headers

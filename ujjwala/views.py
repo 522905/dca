@@ -61,6 +61,20 @@ class WebFormOldView(View):
             return HttpResponse("You do not have permission to fill this form. Contact Admin")
 
 
+# I Frame Web Form View To Display Form In Website
+# With
+@method_decorator(xframe_options_exempt, 'dispatch')
+@method_decorator(login_required, 'dispatch')
+class UjjwalaApplicationIframeWebFormView(TemplateView):
+    template_name = "ujjwala/i_web_form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        response = super().dispatch(request, *args, **kwargs)
+        response['Content-Security-Policy'] = "frame-ancestors 'self'"
+        return response
+
+
+# Whatsapp Nic Error Update Addres View
 class WhatsappNicErrorUpdateAddress(View):
     def get(self, request, *args, **kwargs):
         obj = UjjwalaV2Application.objects.filter(pk=kwargs.get('pk')).first()
@@ -70,6 +84,7 @@ class WhatsappNicErrorUpdateAddress(View):
         return HttpResponse("Application Id {} does not exist".format(kwargs.get('pk')))
 
 
+# Pre Inspection Type Self
 class WhatsappPreInspectionTypeSelf(View):
     def get(self, request, *args, **kwargs):
         application = UjjwalaV2Application.objects.filter(id=kwargs.get('pk')).first()
@@ -98,6 +113,7 @@ class WhatsappPreInspectionTypeSelf(View):
             )
 
 
+# This View Shares Web Form Link To The Given Contact Number
 @method_decorator(login_required, 'dispatch')
 class ShareWebFormLink(TemplateView):
     template_name = "ujjwala/share_web_form_link.html"
@@ -106,7 +122,11 @@ class ShareWebFormLink(TemplateView):
         contact_mobile = request.POST.get('contact_mobile', '')
 
         if contact_mobile:
-            application = UjjwalaV2Application.objects.filter(contact_mobile=contact_mobile).first()
+            application = UjjwalaV2Application.objects.filter(
+                contact_mobile=contact_mobile
+            ).exlude(
+                status=UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD
+            ).first()
 
             if application:
                 messages.add_message(
@@ -131,11 +151,16 @@ class ShareWebFormLink(TemplateView):
                 res = send_ujjwala_application_whatsapp_link(contact_mobile, data, url)
                 if res:
                     messages.add_message(
-                        request, messages.INFO, "Ujjwala Application Link Shared To Contact Mobile: {}".format(contact_mobile)
+                        request, messages.INFO,
+                        "Ujjwala Application Link Shared To Contact Mobile: {}".format(
+                            contact_mobile
+                        )
                     )
         return super().get(request, *args, **kwargs)
 
 
+# This Function Validates Shared Link & Open Web Form
+# With Pre-Validated Contact Number & Referral Code
 class UjjwalaApplicationSharedLinkView(View):
     def get(self, request, *args, **kwargs):
         data = kwargs.get('data', '')
@@ -154,7 +179,6 @@ class UjjwalaApplicationSharedLinkView(View):
             "referral_code": "{} ({} {})".format(user.username, user.first_name, user.last_name)
         })
         return render(request, template_name='ujjwala/web_form.html', context=data)
-
 
 
 class WhatsappUploadLegalForms(View):
@@ -208,6 +232,7 @@ class UjjwalaPreInspectionListView(ListView):
     def get_template_names(self):
         return 'ujjwala/pre-inspection/pre_inspection_listview.html'
 
+
 @method_decorator(login_required, 'dispatch')
 class UjjwalaPreInspectionReviewListView(ListView):
     model = PreInspection
@@ -236,14 +261,6 @@ class UjjwalaApplicationDisplayOtp(View):
             })
         else:
             return HttpResponse(content="Invalid Reference Number")
-
-
-@method_decorator(login_required, 'dispatch')
-class UjjwalaApplicationReuploadView(DetailView):
-    model = UjjwalaV2Application
-
-    def get_template_names(self):
-        return 'ujjwala/ujjwala_documents_reupload.html'
 
 
 @method_decorator(login_required, 'dispatch')
@@ -1114,7 +1131,7 @@ class ConnectionDisbursementSvLabelPrintView(FormView, ApplicationView):
         obj = self.get_object()
         bluebook_label_print_url = reverse(
             'ujjwala:connection_disbursement_barcode_label_print_view',
-            kwargs={'pk':obj.id}
+            kwargs={'pk': obj.id}
         )
         context.update({
             "obj": obj,
@@ -1437,13 +1454,6 @@ class SetPrimaryPhoneNumberView(FormView):
         obj.contact_mobile = data.get('mobile')
         obj.save()
         return HttpResponse(content="Primary Number Changed Successfully")
-
-
-    # def get_success_url(self):
-    #     return reverse('admin:ujjwala_connectiondisbursement_change', kwargs={
-    #         'object_id': self.kwargs.get('pk')
-    #     })
-
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
