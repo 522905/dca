@@ -43,11 +43,8 @@ from ujjwala.ujjwala_functions import send_ujjwala_application_whatsapp_link, fi
 
 
 def index(request):
-    return render(request, 'ujjwala/index.html')
-
-
-# def web_form_old(request):
-#     return render(request, 'ujjwala/web_form_old.html')
+    return redirect('ujjwala:web_form')
+    # return render(request, 'ujjwala/index.html')
 
 
 def legal_documents(request):
@@ -131,7 +128,7 @@ class ShareWebFormLink(TemplateView):
                     reverse('ujjwala:ujjwala_application_link', kwargs={'data': data})
                 )
                 print(url)
-                res = send_ujjwala_application_whatsapp_link(contact_mobile, data_signed_base64, url)
+                res = send_ujjwala_application_whatsapp_link(contact_mobile, data, url)
                 if res:
                     messages.add_message(
                         request, messages.INFO, "Ujjwala Application Link Shared To Contact Mobile: {}".format(contact_mobile)
@@ -209,8 +206,7 @@ class UjjwalaPreInspectionListView(ListView):
         ).order_by('-submitted_on')
 
     def get_template_names(self):
-        return 'ujjwala/pre_inspection_listview.html'
-
+        return 'ujjwala/pre-inspection/pre_inspection_listview.html'
 
 @method_decorator(login_required, 'dispatch')
 class UjjwalaPreInspectionReviewListView(ListView):
@@ -235,7 +231,7 @@ class UjjwalaApplicationDisplayOtp(View):
         obj = Otp.objects.filter(reference_number=kwargs.get('ref_no')).first()
 
         if obj:
-            return render(self.request, "ujjwala/ujjwala_application_display_otp.html", {
+            return render(self.request, "ujjwala/otp/ujjwala_application_display_otp.html", {
                 "obj": obj
             })
         else:
@@ -350,14 +346,14 @@ class InstallationListView(ListView):
 @method_decorator(login_required_if_mech_inspection, 'dispatch')
 class PreInspectionView(FormView):
     model = PreInspection
-    pre_inspection_step0_template = 'ujjwala/pre-Inspection-form/steps/step0.html'
-    pre_inspection_step1_template = 'ujjwala/pre-Inspection-form/steps/step1.html'
-    pre_inspection_step2_template = 'ujjwala/pre-Inspection-form/steps/step2.html'
-    pre_inspection_step3_template = 'ujjwala/pre-Inspection-form/steps/step3.html'
+    pre_inspection_step0_template = 'ujjwala/pre-inspection/steps/step0.html'
+    pre_inspection_step1_template = 'ujjwala/pre-inspection/steps/step1.html'
+    pre_inspection_step2_template = 'ujjwala/pre-inspection/steps/step2.html'
+    pre_inspection_step3_template = 'ujjwala/pre-inspection/steps/step3.html'
     success_url = '.'
 
-    stage_1_generate_otp = 'ujjwala/pre_inspection_generate_otp_form.html'
-    stage_2_validate_otp = 'ujjwala/pre_inspection_validate_otp_form.html'
+    stage_1_generate_otp = 'ujjwala/pre-inspection/pre_inspection_generate_otp_form.html'
+    stage_2_validate_otp = 'ujjwala/pre-inspection/pre_inspection_validate_otp_form.html'
 
     def dispatch(self, request, *args, **kwargs):
         pre_inspection = self.get_object()
@@ -371,7 +367,7 @@ class PreInspectionView(FormView):
                 PreInspectionStatusEnum.SUBMITTED,
                 PreInspectionStatusEnum.ACCEPTED,
         ):
-            return render(self.request, 'ujjwala/pre_inspection_status.html', context={
+            return render(self.request, 'ujjwala/pre-inspection/pre_inspection_status.html', context={
                 'pre_inspection': pre_inspection
             })
         return super().dispatch(request, *args, **kwargs)
@@ -527,9 +523,9 @@ class PreInspectionView(FormView):
 @method_decorator(login_required, 'dispatch')
 class PreInspectionCreateView(View):
     model = PreInspection
-    stage_1_template = 'ujjwala/pre_inspection_initial_form.html'
-    stage_2_template = 'ujjwala/pre_inspection_generate_otp_form.html'
-    stage_3_template = 'ujjwala/pre_inspection_validate_otp_form.html'
+    stage_1_template = 'ujjwala/pre-inspection/pre_inspection_initial_form.html'
+    stage_2_template = 'ujjwala/pre-inspection/pre_inspection_generate_otp_form.html'
+    stage_3_template = 'ujjwala/pre-inspection/pre_inspection_validate_otp_form.html'
 
     def get(self, request, *args, **kwargs):
         return render(self.request, self.stage_1_template, {
@@ -752,6 +748,7 @@ class UjjwalaConnectionDisbursementListView(ListView):
             status__in=[
                 ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
                 ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
+                ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
                 ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
                 ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
                 ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
@@ -797,8 +794,8 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
     ujjwala_form_a_b_c_template = "ujjwala/disbursement/print_ujjwala_form_a_b_c.html"
     success_url = '.'
 
-    stage_1_generate_otp = 'ujjwala/generate_otp_form.html'
-    stage_2_validate_otp = 'ujjwala/validate_otp_form.html'
+    stage_1_generate_otp = 'ujjwala/otp/generate_otp_form.html'
+    stage_2_validate_otp = 'ujjwala/otp/validate_otp_form.html'
 
     def dispatch(self, request, *args, **kwargs):
         user = get_current_user()
@@ -1278,8 +1275,8 @@ class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
     form_class = ConnectionDisbursementMaterialDeliveryForm
     success_url = '.'
 
-    stage_1_generate_otp = 'ujjwala/generate_otp_form.html'
-    stage_2_validate_otp = 'ujjwala/validate_otp_form.html'
+    stage_1_generate_otp = 'ujjwala/otp/generate_otp_form.html'
+    stage_2_validate_otp = 'ujjwala/otp/validate_otp_form.html'
 
     def dispatch(self, request, *args, **kwargs):
         user = get_current_user()
@@ -1551,7 +1548,7 @@ class NicErrorUpdateAddress(FormView):
 class PreInspectionConvertToView(FormView):
     # model = ConnectionDisbursementInvitation
     form_class = PreInspectionConvertForm
-    template_name = "ujjwala/pre-Inspection-form/pre_inspection_conversion.html"
+    template_name = "ujjwala/pre-inspection/pre_inspection_conversion.html"
 
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object()
