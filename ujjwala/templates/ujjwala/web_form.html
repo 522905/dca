@@ -110,7 +110,7 @@
                             चलता रहे ताकि हम आपको संपर्क कर सके</span>
                         <div class="row m-0">
                             <div class="col-8 pl-0">
-                                <input type="tel" autocomplete="contact_mobile" class="form-control" id="contact_mobile"
+                                <input type="tel"  class="form-control" id="contact_mobile"
                                 pattern="[6789][0-9]{9}" name="contact_mobile" maxlength="10" required />
                                 
                             </div>
@@ -135,7 +135,7 @@
                     <div class="form-group">
                         <label>Applicant Mobile Number. (आवेदक का मोबाइल नंबर)<strong style="color:red">*</strong></label>
                         <input type="tel" class="form-control" id="uid_linked_mobile" onblur="checkContactMobileValidity();" pattern="[6789][0-9]{9}" name="uid_linked_mobile"
-                            maxlength="10" required autocomplete="uid_linked_mobile"/>
+                            maxlength="10" required />
                             <div class="row m-0">
                                 <span id="contact_mobile_detail"></span>
                             </div>
@@ -392,6 +392,8 @@
 <script src="https://arungas.com/public/ujwalla/js/app.js"></script>
 <script src="{% static '/js/ujjwala_webform_170822.js' %}"></script>
 <script>
+    $("input").attr('autocomplete', "fill-form");
+    $("select").attr('autocomplete', "fill-form");
 
 // customerpictureuppy
 window.customerpictureuppy = new Uppy.Core({
