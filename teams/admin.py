@@ -27,7 +27,7 @@ class ServiceAreaMechanicLineAdmin(admin.TabularInline):
 
 @admin.register(ServiceArea)
 class ServiceAreaAdmin(TreeNodeModelAdmin):
-
+    search_fields = ('name', 'description',)
     # set the changelist display mode: 'accordion', 'breadcrumbs' or 'indentation' (default)
     # when changelist results are filtered by a querystring,
     # 'breadcrumbs' mode will be used (to preserve data display integrity)

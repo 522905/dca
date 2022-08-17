@@ -19,7 +19,7 @@ from django_fsm_log.decorators import fsm_log_description, fsm_log_by
 from organizations.models import Organization
 
 from communication_log.models import CommunicationLog
-from teams.models import ServiceLocations
+from teams.models import ServiceLocations, ServiceArea
 from ujjwala.communication_models import UjjwalaWhatsappCommunication
 from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMobileStatusEnum, \
 	UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, \
@@ -81,7 +81,10 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		max_length=64, choices=SchemeOnboardingStatusEnum.choices, blank=True, null=True
 	)
 	filled_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
-	
+	service_area = models.ForeignKey(
+		ServiceArea, on_delete=models.PROTECT, null=True, blank=True
+	)
+
 	class Meta:
 		permissions = (
 			("can_edit_record_transition", "Can edit record transition"),

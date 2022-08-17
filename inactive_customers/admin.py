@@ -41,3 +41,4 @@ class InactiveCustomerAdmin(ImportMixin, admin.ModelAdmin):
     list_filter = (
           StatusFilter,
     )
+

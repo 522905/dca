@@ -13,7 +13,7 @@ from connection_app.viewsets import ConnectionApplicationViewSet
 
 from . import views
 from .robos.nic_error_robo import UjjwalaApplicationNicErrorRobotAPIViewSet
-from .views import UjjwalaApplicationWebFormView, WebFormOldView
+from .views import UjjwalaApplicationWebFormView, WebFormOldView, UjjwalaApplicationIframeWebFormView
 from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet, UjjwalaApplicationOtpViewSet
 
 router = routers.DefaultRouter()
@@ -33,6 +33,7 @@ urlpatterns = [
     # path('portal/', generic.TemplateView.as_view(template_name="ujjwala/frontend.html"), name="index"),
 
     path('portal/web-form/', UjjwalaApplicationWebFormView.as_view(), name="web_form"),
+    path('portal/i-web-form/', UjjwalaApplicationIframeWebFormView.as_view(), name="i_web_form"),
     path('portal/pre-inspection/', views.UjjwalaPreInspectionListView.as_view(), name="index"),
     path('portal/web-form-share/', views.ShareWebFormLink.as_view(), name="share_web_form_link"),
 
@@ -185,12 +186,6 @@ urlpatterns = [
         '^portal/pre-inspection/(?P<pk>[^/.]+)/$',
         views.PreInspectionView.as_view(),
         name="pre_inspection_form_view"
-    ),
-
-    url(
-        '^ujjwala-application/(?P<pk>[^/.]+)/reupload/$',
-        views.UjjwalaApplicationReuploadView.as_view(),
-        name="application_reupload"
     ),
 
     url(

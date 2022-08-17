@@ -290,7 +290,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         applications = UjjwalaV2Application.objects.filter(
             Q(contact_mobile=contact_mobile) |
             Q(uid_linked_mobile=contact_mobile)
-        ).exlude(
+        ).exclude(
             status=UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD
         ).order_by('-id')
 

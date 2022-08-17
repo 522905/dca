@@ -16,6 +16,7 @@ from django.template import loader
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views import View
+from django.views.decorators.clickjacking import xframe_options_exempt, xframe_options_sameorigin
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 from django_currentuser.middleware import get_current_user
@@ -124,7 +125,7 @@ class ShareWebFormLink(TemplateView):
         if contact_mobile:
             application = UjjwalaV2Application.objects.filter(
                 contact_mobile=contact_mobile
-            ).exlude(
+            ).exclude(
                 status=UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD
             ).first()
 
@@ -246,7 +247,7 @@ class UjjwalaPreInspectionReviewListView(ListView):
         )
 
     def get_template_names(self):
-        return 'ujjwala/pre_inspection_review_listview.html'
+        return 'ujjwala/pre-inspection/pre_inspection_review_listview.html'
 
 
 class UjjwalaApplicationDisplayOtp(View):

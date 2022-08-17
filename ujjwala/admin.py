@@ -18,7 +18,8 @@ from django.utils.safestring import mark_safe
 from django_admin_listfilter_dropdown.filters import DropdownFilter
 from django_fsm_log.admin import StateLogInline
 from django_fsm_log.models import StateLog
-from import_export.admin import ExportActionMixin
+from import_export import resources
+from import_export.admin import ExportActionMixin, ImportMixin, ImportExportMixin, ImportExportModelAdmin
 from rangefilter.filters import DateRangeFilter
 
 from fsm_admin2_custom.admin import FSMTransitionCustomMixin
@@ -35,7 +36,7 @@ from .forms import ReviewNicErrorUpdatedAddressForm
 
 
 def filter_walk_in_qs(queryset, state):
-    queryset =  queryset.order_by('walk_in_date')
+    queryset = queryset.order_by('walk_in_date')
     today = datetime.today()
     if state == 'WALK_IN_TODAY':
         return queryset.filter(walk_in_date__date=today.date())
@@ -84,8 +85,15 @@ class FamilyMembersInline(admin.TabularInline):
     readonly_fields = ('download_links', 'uid_check_result', 'uid_front_file_size', 'uid_back_file_size',)
 
 
+class UjjwalaV2ApplicationResource(resources.ModelResource):
+
+    class Meta:
+        model = UjjwalaV2Application
+        fields = ('id', 'service_area',)
+
+
 @admin.register(UjjwalaV2Application)
-class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdmin):
+class UjjwalaV2Admin(ImportMixin, ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdmin):
     fsm_transition_form_template = 'ujjwala/transaction_form_template.html'
     list_display = (
         'id',
@@ -128,6 +136,10 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
     ]
     fsm_fields = ['status', ]
 
+    resource_class = UjjwalaV2ApplicationResource
+
+    autocomplete_fields = ('service_area',)
+
     def has_change_permission(self, request, obj=None):
         if not obj:
             return True
@@ -164,7 +176,7 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
                 UjjwalaV2ApplicationStatus.DO_MANUAL_OPERATION,
                 UjjwalaV2ApplicationStatus.MANUAL_LEGAL_DOCUMENTS_UPLOAD
         ):
-            readonly_fields = readonly_fields + ['download_legal_docs', ]
+            readonly_fields = readonly_fields + ['download_legal_docs']
         elif obj and obj.status in (
                 UjjwalaV2ApplicationStatus.NIC_ERROR_INSUFFICIENT_ADDRESS
         ):
@@ -195,12 +207,13 @@ class UjjwalaV2Admin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdm
     def fsm_transition_view_extra_context(self, obj):
         return {'obj': obj}
 
-    def get_form_kwargs(self, form_class, obj):
-        if form_class == ReviewNicErrorUpdatedAddressForm:
+    def get_form_kwargs(self, form, *args, **kwargs):
+        if isinstance(form, ReviewNicErrorUpdatedAddressForm):
+            obj = args[0]
             return {
                 'initial': obj.address_json
             }
-        return {}
+        return super().get_form_kwargs(form, *args, **kwargs)
 
 
 @admin.register(UserDocuments)
