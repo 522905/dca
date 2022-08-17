@@ -48,7 +48,7 @@ def index(request):
 
 
 def legal_documents(request):
-    return render(request, 'ujjwala/legal_documents_upload.html')
+    return render(request, 'ujjwala/legal-document-upload-form.html')
 
 
 @method_decorator(login_required, 'dispatch')
