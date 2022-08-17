@@ -347,6 +347,7 @@ function submit_form(signature_url) {
         error: function (error) {
             console.log(error);
             alert('Please Check input data and try.');
+            alert(JSON.stringify(error));
             jQuery('#submit').html('Submit');
             jQuery('#submit').attr('disabled', false);
         }
