@@ -41,13 +41,12 @@ def filter_walk_in_qs(queryset, state):
         return queryset.filter(walk_in_date__date=today.date())
     elif state == 'WALK_IN_NO_SV':
         return queryset.filter(walk_in_date__date=today.date()).\
-            filter(invitation__sv_link__isnull=True)
+            filter(invitation__sv_link__isnull=True).distinct()
     elif state == 'WALK_IN_SV_DONE':
         return queryset.filter(walk_in_date__date=today.date()).\
             filter(invitation__sv_link__isnull=False)
     elif state == 'WALK_IN_NO_DISBURSEMENT':
         return queryset.filter(walk_in_date__date=today.date()).\
-            exclude(invitation__sv_link__isnull=True).\
             exclude(
                 status=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED
             )
@@ -297,7 +296,7 @@ class ConnectionDisbursementInvitationAdmin(admin.TabularInline):
 
 
 @admin.register(ConnectionDisbursement)
-class ConnectionDisbursementAdmin(FSMTransitionCustomMixin, admin.ModelAdmin):
+class ConnectionDisbursementAdmin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdmin):
     list_display = (
         'id',
         'parent',

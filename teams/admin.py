@@ -1,8 +1,4 @@
 from django.contrib import admin
-
-# Register your models here.
-# -*- coding: utf-8 -*-
-from django.contrib import admin
 from treenode.admin import TreeNodeModelAdmin
 from treenode.forms import TreeNodeForm
 

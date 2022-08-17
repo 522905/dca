@@ -33,11 +33,7 @@ class UjjwalaWhatsappCommunication(object):
 					self.id,
 					"90"
 				],
-				"buttonValues": {
-					"0": [
-						"connection-app/connection-application/{}/".format(self.id)
-					]
-				}
+				"buttonValues": {}
 			}
 		}
 
@@ -359,7 +355,7 @@ class UjjwalaWhatsappCommunication(object):
 				],
 				"buttonValues": {
 					"0": [
-						"ujjwala/portal/ujjwala/portal/pre-inspection/self/{}/".format(pre_inspection_id)
+						"ujjwala/portal/pre-inspection/self/{}/".format(pre_inspection_id)
 					]
 				}
 			}

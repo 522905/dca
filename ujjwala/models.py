@@ -831,12 +831,13 @@ class PreInspection(models.Model):
 			self.mechanic = get_current_user()
 		self.submitted_on = datetime.datetime.now()
 		self.save()
-		create_txn_status_job_function = partial(
-			django_rq.enqueue,
-			"ujjwala.jobs.compress_pre_inspection_documents",
-			parent_id=self.id
-		)
-		transaction.on_commit(create_txn_status_job_function)
+		#Commented For Exif Evaluation
+		#create_txn_status_job_function = partial(
+		#	django_rq.enqueue,
+		#	"ujjwala.jobs.compress_pre_inspection_documents",
+		#	parent_id=self.id
+		#)
+		#transaction.on_commit(create_txn_status_job_function)
 
 	@fsm_log_description
 	@fsm_log_by

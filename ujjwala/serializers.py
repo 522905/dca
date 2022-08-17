@@ -56,7 +56,7 @@ class UjjwalaV2ApplicationSerializer(WritableNestedModelSerializer):
             original_value = signer.unsign(value)
             return original_value
         except:
-            return original_value
+            return value
             # raise serializers.ValidationError(detail="Contact Mobile Value Tampered")
 
 class SubmitPreInspectionSerializer(serializers.ModelSerializer):
