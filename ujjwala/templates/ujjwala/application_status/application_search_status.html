@@ -47,6 +47,7 @@
                         <li><p class="float-left">Address: </p><p class="float-right">{{ obj.formatted_address }}</p></li>
                         <li><p class="float-left">Phone Numbers: </p><p class="float-right">{{ obj.all_contacts }}</p></li>
                         <li><p class="float-left">Status: </p><p class="float-right">{{obj.status}}</p></li>
+                        <li><p class="float-left">Dedup Status: </p><p class="float-right">{{ obj.robo_sdms_dedup }}</p></li>
                         <li><p class="float-left">Pre-Inspection Status: </p>
                             <p class="float-right">
                                 {% if obj.pre_inspection %}
@@ -81,12 +82,18 @@
                                 {% endif %}
                             </p>
                         </li>
-                        {% if obj.status != 'APPLICATION_REJECTED' %}
+                        {% if obj.status == 'APPLICATION_REJECTED' %}
+                            <li><p class="float-left">
+                                 Rejected For: {{ rejected_reason }}
+                                </p>
+                            </li>
+                        {% else %}
                             <li><p class="float-left">
                                     <a href="{% url 'ujjwala:set_primary_phone_number' pk=obj.id %}"><b><i>Set Primary Phone Number<b><i></i></b></a>
                                 </p>
                             </li>
                         {% endif %}
+
                     </ul>
                 </div>
             </div>

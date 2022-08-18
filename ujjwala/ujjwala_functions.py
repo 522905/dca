@@ -944,3 +944,12 @@ def application_needs_to_be_audited(data):
 				)
 			)
 	return '\n'.join(reason)
+
+
+def ujjwala_application_reject_reason_log(application_id):
+	from django_fsm_log.models import StateLog
+
+	description = StateLog.objects.filter(
+		transition='application_rejected', object_id=application_id
+	).first().description
+	return description

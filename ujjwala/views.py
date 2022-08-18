@@ -40,7 +40,8 @@ from ujjwala.global_functions import login_required_if_mech_inspection
 
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
     ConnectionDisbursementInvitation, ConnectionDisbursementDocuments, FamilyMembers
-from ujjwala.ujjwala_functions import send_ujjwala_application_whatsapp_link, find_ujjwala_application_using_contact
+from ujjwala.ujjwala_functions import send_ujjwala_application_whatsapp_link, find_ujjwala_application_using_contact, \
+    ujjwala_application_reject_reason_log
 
 
 def index(request):
@@ -746,7 +747,8 @@ class UjjwalaApplicationStatusView(TemplateView):
             application = UjjwalaV2Application.objects.filter(id=application_id).first()
 
         if application:
-            return render(request, self.template_name, context={'obj': application})
+            reject_reason = ujjwala_application_reject_reason_log(application.id)
+            return render(request, self.template_name, context={'obj': application, 'rejected_reason': reject_reason})
         else:
             messages.add_message(
                     request, messages.ERROR, "Please Enter Contact Mobile Or Aadhaar Or Application Id To Search"
