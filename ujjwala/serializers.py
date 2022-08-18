@@ -47,7 +47,7 @@ class UjjwalaV2ApplicationSerializer(WritableNestedModelSerializer):
         extra_kwargs = {
             'contact_mobile': {
                 "max_length": 200
-            }
+            },
         }
 
     def validate_contact_mobile(self, value):
@@ -58,6 +58,7 @@ class UjjwalaV2ApplicationSerializer(WritableNestedModelSerializer):
         except:
             return value
             # raise serializers.ValidationError(detail="Contact Mobile Value Tampered")
+
 
 class SubmitPreInspectionSerializer(serializers.ModelSerializer):
     documents = UjjwalaApplicationDocumentsSerializer(many=True)

@@ -1,5 +1,6 @@
 import io
 
+import django_rq
 import requests
 from django.conf import settings
 from django_rq import job
@@ -13,6 +14,7 @@ from domestic_app.utils import get_minio_public_url
 from sdms.services import IoclOmcDedup
 from ujjwala.enums import RoboSdmsDedeupStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum
 from ujjwala.management.commands.ujjwala_file_worker import upload_compressed_file_to_tus
+from ujjwala.ujjwala_functions import application_needs_to_be_audited
 
 dedup_portal = IoclOmcDedup('305948', 'Arun@305948')
 
@@ -212,3 +214,23 @@ def compress_application_documents(application_id):
 
         family_member.uid_back_file_size = file_size
         family_member.save()
+
+
+def enqueue_dedupe_and_audit_jobs(application_id, data):
+    dedupe_job = django_rq.enqueue("ujjwala.jobs.do_primary_omc_dedupe_check", args=(application_id,))
+
+    django_rq.enqueue(
+        move_application_for_audit,
+        args=(application_id, data,),
+        depends_on=dedupe_job
+    )
+
+
+def move_application_for_audit(application_id, data):
+    from ujjwala.models import UjjwalaV2Application
+
+    move_to_audit = application_needs_to_be_audited(data)
+    if move_to_audit:
+        application = UjjwalaV2Application.objects.filter(id=application_id).first()
+        application.transition_audit_application(audit_points=move_to_audit)
+        application.save()

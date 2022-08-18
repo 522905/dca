@@ -931,3 +931,16 @@ def send_ujjwala_application_whatsapp_link(contact_mobile, contact_mobile_base64
 
 def find_ujjwala_application_using_contact(contact_mobile):
 	return True
+
+
+def application_needs_to_be_audited(data):
+	family_members = data.get('family_members')
+	reason = []
+	for fm in family_members:
+		if fm.get('ocr_processed') == 'no':
+			reason.append(
+				"Family Member: {} having UID {} ocr could not be processed.".format(
+					fm['name'], fm['uid_no']
+				)
+			)
+	return '\n'.join(reason)

@@ -24,7 +24,7 @@ from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, FamilyM
     ManualOperationCodeEnum, MaritalStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum
 from .forms import ApplicationRejected
 from .global_functions import get_sdms_mismatched_records
-from .jobs import do_primary_omc_dedupe_check, compress_connection_disbursement_documents
+from .jobs import do_primary_omc_dedupe_check, compress_connection_disbursement_documents, enqueue_dedupe_and_audit_jobs
 from .models import UjjwalaV2Application, FamilyMembers, ConnectionDisbursement, ConnectionDisbursementDocuments, \
     PreInspection
 from .serializers import UjjwalaV2ApplicationSerializer
@@ -32,7 +32,7 @@ from .ujjwala_functions import download_ujjwala_documents, get_salutation, \
     download_pre_installation_documents, get_existing_duplicate_applications_detail, \
     download_ujjwala_legal_docs_to_upload, download_ujjwala_physical_legal_docs, \
     process_family_uid_result, process_omc_dedupe_result, send_whatsapp_contact_otp, verify_whatsapp_contact_otp, \
-    send_sms_contact_otp, verify_sms_contact_otp
+    send_sms_contact_otp, verify_sms_contact_otp, application_needs_to_be_audited
 from django.urls import reverse
 
 
@@ -677,14 +677,13 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         application = serializer.save()
+
         application.filled_by = get_current_user()
         application.save()
         if getattr(self.request, "PERFORM_SUBMIT", False):
             try:
                 create_txn_status_job_function = partial(
-                    django_rq.enqueue,
-                    "ujjwala.jobs.do_primary_omc_dedupe_check",
-                    id=application.id
+                    enqueue_dedupe_and_audit_jobs, application.id, self.request.data
                 )
                 transaction.on_commit(create_txn_status_job_function)
 
