@@ -100,12 +100,14 @@ body .form_label .btn{ height: 40px !important; line-height: 25px !important; }
 /* **************************************** */
             /* SideBar */
 /* **************************************** */
+.sidebar .sidenav-fixed .collapsible-body li a {
+    padding-left: 0px !important;
+}
 .sidenav li>a>[class^=mdi-], .sidenav li>a>i, .sidenav li>a>i.material-icons, .sidenav li>a li>a>[class*=mdi-]{ margin: 0 8px 0 0 !important;}
 body .sidenav-fixed .collapsible-body #menu a{ text-decoration: none !important; padding-left: 40px !important;}
 .sidenav .user-view{ margin-bottom: 0 !important;}
-.sidenav .collapsible-body li a, .sidenav.fixed .collapsible-body li a{ padding-left: 30px !important; }
+/* .sidenav .collapsible-body li a, .sidenav.fixed .collapsible-body li a{ padding-left: 30px !important; } */
 .sidenav .collapsible-body>ul:not(.collapsible)>li.active, .sidenav.sidenav-fixed .collapsible-body>ul:not(.collapsible)>li.active{ background-color:#2957A4  !important; }
-.sidenav-fixed .collapsible-body li a,.parent-menu span { padding-left: 30px !important;}
 body .sidenav-fixed .collapsible-body #menu.parent-menu.active{ color: #fff  !important; padding: 0 !important; background-color: white !important; }
 .sidenav-fixed .collapsible-body .parent-menu.active span{   padding-left: 30px !important; background-color:#2957A4  !important;display: block;}
 .sidenav-fixed .collapsible-body .parent-menu.active li{ background-color: #efefef;   }

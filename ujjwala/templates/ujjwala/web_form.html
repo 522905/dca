@@ -392,8 +392,11 @@
 <script src="https://arungas.com/public/ujwalla/js/app.js"></script>
 <script src="{% static '/js/ujjwala_webform_170822.js' %}"></script>
 <script>
-    $("input").attr('autocomplete', "fill-form");
-    $("select").attr('autocomplete', "fill-form");
+
+{% if source != 'link_share' %}
+$("input").attr('autocomplete', "fill-form");
+$("select").attr('autocomplete', "fill-form");
+{% endif %}
 
 // customerpictureuppy
 window.customerpictureuppy = new Uppy.Core({
