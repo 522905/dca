@@ -951,5 +951,7 @@ def ujjwala_application_reject_reason_log(application_id):
 
 	description = StateLog.objects.filter(
 		transition='application_rejected', object_id=application_id
-	).first().description
-	return description
+	).first()
+
+	if description:
+		return description
