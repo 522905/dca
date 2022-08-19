@@ -22,7 +22,7 @@ from django.urls import reverse
 
 from communication_log.models import CommunicationLog
 from ujjwala.enums import UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, ResidentialStatusEnum, \
-	MaritalStatusEnum, UjjwalaV2ApplicationStatus, PreInspectionStatusEnum
+	MaritalStatusEnum, UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, RoboSdmsDedeupStatusEnum
 from datetime import datetime
 
 
@@ -703,16 +703,16 @@ def process_omc_dedupe_result(omc_dedup_result):
 	return {}
 
 
-def is_application_ready_for_disbursement(application_id):
-	from ujjwala.models import UjjwalaV2Application
+def is_application_ready_for_disbursement(application):
+	# from ujjwala.models import UjjwalaV2Application
 
-	application = UjjwalaV2Application.objects.filter(id=application_id).first()
+	# application = UjjwalaV2Application.objects.filter(id=application_id).first()
 
-	if application:
-		if application.status == UjjwalaV2ApplicationStatus.NIC_CLEARED and \
-				application.pre_inspection.status == PreInspectionStatusEnum.ACCEPTED:
-			application.transition_ready_for_disbursement()
-			application.save()
+	# if application:
+	if application.status == UjjwalaV2ApplicationStatus.NIC_CLEARED and \
+			application.pre_inspection.status == PreInspectionStatusEnum.ACCEPTED:
+		application.transition_ready_for_disbursement()
+		application.save()
 
 
 def send_whatsapp_contact_otp(request, contact_mobile):
@@ -955,3 +955,20 @@ def ujjwala_application_reject_reason_log(application_id):
 
 	if description:
 		return description
+
+
+def is_pre_inspection_applicable(application_id):
+	from ujjwala.models import UjjwalaV2Application
+
+	application = UjjwalaV2Application.objects.filter(pk=application_id).first()
+
+	if application.status == UjjwalaV2ApplicationStatus.APPLICATION_REJECTED:
+		return False
+
+	if application.status == UjjwalaV2ApplicationStatus.OMC_REJECTED:
+		return False
+
+	if application.robo_sdms_dedup == RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE:
+		return True
+
+	return False

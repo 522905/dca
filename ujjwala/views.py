@@ -41,7 +41,7 @@ from ujjwala.global_functions import login_required_if_mech_inspection
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
     ConnectionDisbursementInvitation, ConnectionDisbursementDocuments, FamilyMembers
 from ujjwala.ujjwala_functions import send_ujjwala_application_whatsapp_link, find_ujjwala_application_using_contact, \
-    ujjwala_application_reject_reason_log
+    ujjwala_application_reject_reason_log, is_pre_inspection_applicable
 
 
 def index(request):
@@ -90,11 +90,14 @@ class WhatsappNicErrorUpdateAddress(View):
 class WhatsappPreInspectionTypeSelf(View):
     def get(self, request, *args, **kwargs):
         application = UjjwalaV2Application.objects.filter(id=kwargs.get('pk')).first()
+
         if not application:
             return HttpResponse("Application Id {} does not exist".format(kwargs.get('pk')))
 
+        if not is_pre_inspection_applicable(application.id):
+            return HttpResponse("Application Id {} not valid for Pre-Inspection".format(kwargs.get('pk')))
+
         pi_obj = PreInspection.objects.filter(parent_id=kwargs.get('pk')).first()
-        # obj = UjjwalaV2Application.objects.filter(pk=kwargs.get('pk')).first()
         if not pi_obj:
             pi_obj = PreInspection.objects.create(
                 parent_id=application.id,
