@@ -954,7 +954,7 @@ def ujjwala_application_reject_reason_log(application_id):
 	).first()
 
 	if description:
-		return description
+		return description.description
 
 
 def is_pre_inspection_applicable(application_id):
