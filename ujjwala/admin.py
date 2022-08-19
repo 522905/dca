@@ -207,7 +207,7 @@ class UjjwalaV2Admin(ImportMixin, ExportActionMixin, FSMTransitionCustomMixin, a
         return {'obj': obj}
 
     def get_form_kwargs(self, form, *args, **kwargs):
-        if isinstance(form, ReviewNicErrorUpdatedAddressForm):
+        if form.__name__ == 'ReviewNicErrorUpdatedAddressForm':
             obj = args[0]
             return {
                 'initial': obj.address_json
