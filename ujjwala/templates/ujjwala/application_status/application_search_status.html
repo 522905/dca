@@ -5,51 +5,78 @@
 <link rel="stylesheet" href="{% static '/css/style.css' %}" >
 <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
-<div class="p-2 pt-0 form_label" style="width: 100%;">
-        <form method="post">
-	    {% csrf_token %}
-            <div class="card p-0">
-                <div class="card-body">
-                    <div class="form-group mb-0">
-                        <label>Enter Contact Mobile: </label>
-                        <input autocomplete="off" type="tel" name="contact_mobile" />
-                    </div>
-                    <p class="text-center"><b style="font-size: 15px;">OR</b></p>
-                    <div class="form-group mb-0">
-                        <label>Enter Aadhar Number: </label>
-                        <input autocomplete="off" type="tel" name="uid" />
-                    </div>
-                    <p class="text-center"><b style="font-size: 15px;">OR</b></p>
-                    <div class="form-group mb-0">
-                        <label>Application Id:</label>
-                        <input autocomplete="off" type="tel" name="application_id" />
-                    </div>
+<div class="p-2 pt-0 form_label application_form" style="width: 100%;">
+    <form method="post">
+    {% csrf_token %}
+        <div class="card p-0">
+            <div class="card-body p-2 search_form">
+                <div class="form-group mb-0">
+                    <label>Enter Contact Mobile: </label>
+                    <input autocomplete="off" type="tel" name="contact_mobile" />
                 </div>
-                <div class="card-footer">
-                    <button style="width: 100%;" class="btn btn-primary bg-heading">Get Application Status</button>
+                <p class="text-center"><b style="font-size: 15px;">OR</b></p>
+                <div class="form-group mb-0">
+                    <label>Enter Aadhar Number: </label>
+                    <input autocomplete="off" type="tel" name="uid" />
+                </div>
+                <p class="text-center"><b style="font-size: 15px;">OR</b></p>
+                <div class="form-group mb-0">
+                    <label>Application Id:</label>
+                    <input autocomplete="off" type="tel" name="application_id" />
                 </div>
             </div>
-        </form>
+            <div class="card-footer">
+                <button style="width: 100%;" class="btn btn-primary bg-heading">Get Application Status</button>
+            </div>
+        </div>
+    </form>
         {% if obj %}
             <div class="card">
-                <div class="card-body pb-0 p-2 list_block">
-                    <ul class="m-0">
-                        <li><p class="float-left">Application Id: </p>
-                            <p class="float-right">
-                                <a href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">{{ obj.id }}</a></p>
-                            </p>
-                        </li>
-                        <li><p class="float-left">Name: </p>
-                            <p class="float-right">
-                                <img src="{{ obj.document_self }}" width="125 px"><br>{{ obj.name }}
-                            </p>
-                        </li>
-                        <li><p class="float-left">Address: </p><p class="float-right">{{ obj.formatted_address }}</p></li>
-                        <li><p class="float-left">Phone Numbers: </p><p class="float-right">{{ obj.all_contacts }}</p></li>
-                        <li><p class="float-left">Status: </p><p class="float-right">{{obj.status}}</p></li>
-                        <li><p class="float-left">Dedup Status: </p><p class="float-right">{{ obj.robo_sdms_dedup }}</p></li>
-                        <li><p class="float-left">Pre-Inspection Status: </p>
-                            <p class="float-right">
+                <div class="status_block">
+                    <div class="main-header">
+                        <span class="text-black">Application Id: </span>
+                        <span class="float-right"><b><a href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">{{ obj.id }}</a></b></span>
+                    </div>
+                </div>
+                <div class="card-body pb-0 p-0 list_block">
+                    <div class="row m-0">
+                        <div class="col-8 p-0">
+                            <table>
+                                <tr>
+                                    <td>Name: <b>{{ obj.name }}</b></td>
+                                </tr>
+                                <tr>
+                                    <td>Address: <b>{{ obj.formatted_address }}</b></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        {% for contact in obj.all_contacts %}
+                                            <p>Phone {{ forloop.counter }}: <b><a href="tel:{{ contact}}" onclick="return true;">{{contact}}</a></b></p>
+                                           
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                               
+                            </table>
+                        </div>
+                        <div class="col-4 p-0">
+                            <img class="p-1" src="{{ obj.document_self }}" style="height: 150px; object-fit:contain; width: 100%;">
+                        </div>
+                    </div>
+                </div>
+                <div class="status_block">
+                    <div class="main-header">
+                        <span class="text-black">Status</span>
+                        <span class="float-right"><b>{{obj.status}}</b></span>
+                    </div>
+                    <table class="table table-bordred" style="margin-bottom: 0;">
+                        <tr>
+                            <th>Dedup Status:</th>
+                            <td>{{ obj.robo_sdms_dedup }}</td>
+                        </tr>
+                        <tr>
+                            <th>Pre-Inspection Status: </th>
+                            <td>
                                 {% if obj.pre_inspection %}
                                     <a href="{% url 'admin:ujjwala_preinspection_change' object_id=obj.pre_inspection.id %}">
                                         {{obj.pre_inspection.status}}
@@ -60,18 +87,18 @@
                                                 <b> (Whatsapp Pre-Inspection Type Self)</b>
                                             </a>
                                         {% endif %}
-                                     {% endif %}
-                                {% else %}
-                                    {{obj.pre_inspection.status}}
+                                    {% endif %}
+                                    {% else %}
+                                        {{obj.pre_inspection.status}}
                                 {% endif %}
-                            </p>
-                        </li>
-                        <li><p class="float-left">Connection Disbursement Status: </p>
-                            <p class="float-right">
-                                {% if obj.connection_disbursement %}
-                                    <a href="{% url 'admin:ujjwala_connectiondisbursement_change' object_id=obj.connection_disbursement.id %}">
-                                        {{obj.connection_disbursement.status}}
-                                    </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Connection Disbursement Status: </th>
+                            <td> {% if obj.connection_disbursement %}
+                                <a href="{% url 'admin:ujjwala_connectiondisbursement_change' object_id=obj.connection_disbursement.id %}">
+                                    {{obj.connection_disbursement.status}}
+                                </a>
                                     {% if obj.connection_disbursement.status == 'LEGAL_DOCUMENTS_PENDING' %}
                                         <a href="{% url 'ujjwala:whatsapp_form_abc' pk=obj.id %}">
                                             <b> (Whatsapp Form A B C)</b>
@@ -80,23 +107,38 @@
                                 {% else %}
                                     {{obj.connection_disbursement.status}}
                                 {% endif %}
-                            </p>
-                        </li>
+                            </td>
+                        </tr>
                         {% if obj.status == 'APPLICATION_REJECTED' %}
-                            <li><p class="float-left">
-                                 Rejected For: {{ rejected_reason }}
-                                </p>
-                            </li>
+                        <tr>
+                            <th colspan="2"><b>Rejected For: </b> {{ rejected_reason }}</th>
+                        </tr>
                         {% else %}
-                            <li><p class="float-left">
-                                    <a href="{% url 'ujjwala:set_primary_phone_number' pk=obj.id %}"><b><i>Set Primary Phone Number<b><i></i></b></a>
-                                </p>
-                            </li>
-                        {% endif %}
-
-                    </ul>
+                        <tr>
+                            <th></th>
+                            <th>
+                                <a class="text_link" href="{% url 'ujjwala:set_primary_phone_number' pk=obj.id %}">
+                                    <b style="color:cornflowerblue"><i>Set Primary Phone Number</i></b></a>
+                            </th>
+                        </tr>
+                        {% endif %} 
+                    </table>
                 </div>
             </div>
         {% endif %}
 </div>
+<style>
+    .status_block .main-header{     
+        border-top: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+        border-radius: 0;
+        background-color: #efefef;
+        font-weight: bold;
+        font-size: 14px;
+    }
+    .text_link{ text-decoration: underline; font-weight: bold !important;}
+    .application_form .list_block th, .application_form .list_block td, .status_block th,.application_form .list_block td { font-size: 0.9rem;}
+    .table.table-bordred:last-child tr{ border-bottom: transparent;}
+    .search_form input{ padding: 0 10px !important;  }
+</style>
 {% endblock %}

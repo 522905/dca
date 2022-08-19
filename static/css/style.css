@@ -3,7 +3,7 @@
 
 .height-100{height:100vh}
 p{ margin-bottom: 0 !important; font-weight: 500;}
-body, a, p{font-family: 'muli', sans-serif !important; font-size: 0.8rem !important; }
+body, a, p{font-family: 'muli', sans-serif !important; font-size: 0.9rem; }
 .fw-500 { font-weight:500;}
 .fw-600 { font-weight:600;}
 .fw-700 { font-weight:700;}
@@ -282,3 +282,9 @@ main .content{     display: block;
         display: block;
     }
 } 
+
+.sidebar .nav-links li.active{ background-color: #1d1b31;}
+.sidebar .nav-links li.active .sub-menu { display: block }
+.sidebar .nav-links li.active .sub-menu li.active a { opacity: 1 }
+.user-view .background{ background-image: url(../img/sidenav.png);}
+.user-view .background img{ background-image: url(../img/sidenav.png);}
