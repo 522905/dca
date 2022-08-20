@@ -52,5 +52,9 @@ services:
     container_name: thumbor
     image: minimalcompact/thumbor
     ports:
-      - 58888:80/tcp
+      - 6988:80/tcp
     restart: unless-stopped
+    environment:
+      - DETECTORS=['thumbor.detectors.face_detector','thumbor.detectors.feature_detector']
+      - RESULT_STORAGE=thumbor.result_storages.no_storage
+      - STORAGE=thumbor.storages.no_storage
