@@ -21,7 +21,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 from django_currentuser.middleware import get_current_user
 from django.forms import formset_factory
-
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 import ujjwala.forms
 from otp.models import Otp

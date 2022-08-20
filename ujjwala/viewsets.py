@@ -1058,7 +1058,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 application_obj.consumer_id = self_consumer_id
 
                 if application_obj.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
-                    sdms_contact = application_obj.family_members.filter(
+                    sdms_contact = application_obj.family_members.get(
                         relation='SELF'
                     ).uid_check_result.get('phone_number', '')
                     application_obj.ekyc_accepted_or_rejected(

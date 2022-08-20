@@ -364,14 +364,16 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		permission='ujjwala.can_approve_connection',
 	)
 	def transition_nic_cleared(self, *args, **kwargs):
-		if self.pre_inspection:
+		try:
 			is_application_ready_for_disbursement(self)
-		else:
-			PreInspection.objects.create(
+		except self.RelatedObjectDoesNotExist:
+			obj = PreInspection.objects.create(
 				parent_id=self.pk,
 				status=PreInspectionStatusEnum.KITCHEN_PHOTO,
 				type=PreInspectionTypeEnum.SELF
 			)
+			obj.parent.event_whatsapp_pre_inspection_type_self(obj.pk)
+
 
 	@fsm_log_description
 	@fsm_log_by

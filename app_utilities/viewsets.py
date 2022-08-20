@@ -38,6 +38,8 @@ class ApplicationUtilitiesAPIViewSet(viewsets.ViewSet):
 			"uid_front_url": uid_front_url,
 			"uid_back_url": uid_back_url,
 		})
+		user = get_current_user()
+
 		UjjwalaApplicationOcrErrorLogs.objects.create(
 			generated_on=generated_on,
 			wait_time=time_difference,
@@ -46,7 +48,7 @@ class ApplicationUtilitiesAPIViewSet(viewsets.ViewSet):
 			uid_front_url=uid_front_url,
 			uid_back_url=uid_back_url,
 			data=response,
-			user=get_current_user()
+			user=None if user.is_anonymous else user
 		)
 		print(response)
 		return JsonResponse(response, safe=False)
