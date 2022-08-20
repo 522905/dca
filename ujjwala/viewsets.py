@@ -677,8 +677,8 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         application = serializer.save()
-
-        application.filled_by = get_current_user()
+        user = get_current_user()
+        application.filled_by = None if user.is_anonymous else user
         application.save()
         if getattr(self.request, "PERFORM_SUBMIT", False):
             try:
