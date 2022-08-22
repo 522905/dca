@@ -59,7 +59,8 @@ def infobip_webhook_job_processing(data):
     #         }
     #     ]
     # }
-    messages = data['messages']
+    # messages = data['messages']
+    messages = data['results']
 
     for msg in messages:
         mid = msg['messageId']

@@ -1,35 +1,259 @@
 {% if user.is_authenticated %}
-<ul>
-
-    <li><a href="{% url 'ujjwala:web_form' %}">Fill New Form</a></li>
-    <li><a href="{% url 'ujjwala:application_status_search' %}">Status Search</a></li>
-    <li><a href="{% url 'ujjwala:share_web_form_link' %}">Share Form Link</a></li>
-    <li id="menu" class="parent-menu"><span>Suraksha-Drill</span>
-        <ul>
-            <li><a href="{% url 'ujjwala:index' %}">Pre-Suraksha-Drill List</a></li>
-            <li><a href="{% url 'ujjwala:pre_inspection_create' %}">Start a New Pre-Suraksha-Drill </a></li>
-        </ul>
-    </li>
-{#  <li><a href="{% url 'ujjwala:review' %}">Review Pre-Suraksha-Drill(s) </a></li>#}
-    {% if perms.ujjwala.can_do_connection_disbursement %}
-        <li id="menu" class="parent-menu"><span>Disbursement</span>
-            <ul>
-                <li><a href="{% url 'ujjwala:connection_disbursement_list' %}">1 - Applicant Walk In </a></li>
-                <li><a href="{% url 'ujjwala:connection_disbursement_review_form_abc_list' %}">2 - Accept Legal Documents </a></li>
-                <li><a href="{% url 'ujjwala:connection_disbursement_sv_label_print_list' %}">3 - SV Label Print </a></li>
-                <li><a href="{% url 'ujjwala:connection_disbursement_social_media_updates_list' %}">4 - Social Media Updates </a></li>
-                <li><a href="{% url 'ujjwala:connection_disbursement_material_delivery_list' %}">5 - Material Delivery </a></li>
+<div class="sidebar">
+    <ul class="nav-links">
+        <li>
+            <a href="{% url 'ujjwala:i_web_form' %}" data-turbolinks="false">
+            <i class='bx bx-grid-alt' ></i>
+            <span class="link_name">Fill New Form</span>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'ujjwala:application_status_search' %}" data-turbolinks="false">
+            <i class='bx bx-grid-alt' ></i>
+            <span class="link_name">Status Search</span>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'ujjwala:share_web_form_link' %}" data-turbolinks="false">
+            <i class='bx bx-grid-alt' ></i>
+            <span class="link_name">Share Form Link</span>
+            </a>
+        </li>
+        <li>
+            <div class="iocn-link">
+            <a href="#" data-turbolinks="false">
+                <i class='bx bx-collection' ></i>
+                <span class="link_name">Suraksha-Drill</span>
+            </a>
+            <i class='bx bxs-chevron-down arrow' ></i>
+            </div>
+            <ul class="sub-menu">
+                <li><a href="{% url 'ujjwala:index' %}" data-turbolinks="false">Pre-Suraksha-Drill List</a></li>
+                <li><a href="{% url 'ujjwala:pre_inspection_create' %}" data-turbolinks="false">Start a New Pre-Suraksha-Drill </a></li>
+            </ul>
+        </li>              
+        {% if perms.ujjwala.can_do_connection_disbursement %}
+        <li>
+            <div class="iocn-link">
+            <a href="#" data-turbolinks="false">
+                <i class='bx bx-collection' ></i>
+                <span class="link_name">Disbursement</span>
+            </a>
+            <i class='bx bxs-chevron-down arrow' ></i>
+            </div>
+            <ul class="sub-menu">
+                <li><a href="{% url 'ujjwala:connection_disbursement_list' %}" data-turbolinks="false">1 - Applicant Walk In </a></li>
+                <li><a href="{% url 'ujjwala:connection_disbursement_review_form_abc_list' %}" data-turbolinks="false">2 - Accept Legal Documents </a></li>
+                <li><a href="{% url 'ujjwala:connection_disbursement_sv_label_print_list' %}" data-turbolinks="false">3 - SV Label Print </a></li>
+                <li><a href="{% url 'ujjwala:connection_disbursement_social_media_updates_list' %}" data-turbolinks="false">4 - Social Media Updates </a></li>
+                <li><a href="{% url 'ujjwala:connection_disbursement_material_delivery_list' %}" >5 - Material Delivery </a></li>
             </ul>
         </li>
-    {% endif %}
-    <li id="menu" ><a href="{% url 'ujjwala:installation_list' %}">Installation </a></li>
-    {% if user.is_authenticated %}
-    <li class="p-0">
-        <a class="collapsible-header" href="{% url 'logout' %}" data-turbolinks="false">
-            <i class="material-icons left">exit_to_app</i>
-            <span>Log out</span>
-        </a>
-    </li>
-    {% endif %}
-</ul>
+        {% endif %}
+        <li>
+            <a href="{% url 'ujjwala:installation_list' %}" data-turbolinks="false">
+            <i class='bx bx-grid-alt' ></i>
+            <span class="link_name">Installation</span>
+            </a>
+        </li>
+        {% if user.is_authenticated %}
+        <li>
+            <a href="{% url 'ujjwala:share_web_form_link' %}" data-turbolinks="false">
+                <i class='material-icons left text-white' >exit_to_app</i>
+                <span class="link_name">Log out</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</div>
+
+<link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
+<script>
+  let arrow = document.querySelectorAll(".arrow");
+    for (var i = 0; i < arrow.length; i++) {
+        arrow[i].addEventListener("click", (e)=>{
+        let arrowParent = e.target.parentElement.parentElement;//selecting main parent of arrow
+        arrowParent.classList.toggle("showMenu");
+    });
+  }
+  
+  let sidebar = document.querySelector(".sidebar");
+  let sidebarBtn = document.querySelector(".bx-menu");
+  console.log(sidebarBtn);
+//   sidebarBtn.addEventListener("click", ()=>{
+//     sidebar.classList.toggle("close");
+//   });
+  var selector = '.sub-menu li a';
+
+  $(selector).on('click', function(){
+      $(selector).removeClass('active-submenu');
+      $(this).addClass('active-submenu');
+  });
+  
+</script>
 {% endif %}
+
+<style>
+   .sidenav-fixed .collapsible-body li a {
+        padding-left: 0px !important;
+    }
+    .collapsible.collapsible-accordion{
+        background: #11101d;
+        
+     }
+     .collapsible.collapsible-accordion li a{
+        color: #fff;
+        font-size: 15px !important;
+     }
+    .collapsible-header.active .material-icons{ padding:0 10px; color: #fff; width: 55px;}
+    .sidebar{
+      height: calc(100vh - 200px);
+      background: #11101d;
+      z-index: 100;
+      transition: all 0.5s ease;
+      position: fixed;
+      width: 100%;
+    }
+    .sidebar .nav-links{
+      height: 100%;
+      overflow: auto;
+    }
+    .sidebar.close .nav-links{
+      overflow: visible;
+    }
+    .sidebar .nav-links::-webkit-scrollbar{
+      display: none;
+    }
+    .sidebar .nav-links li{
+      position: relative;
+      list-style: none;
+      transition: all 0.4s ease;
+    }
+    .sidebar .nav-links li:hover{
+      background: #1d1b31;
+    } 
+    .sidebar .nav-links li .iocn-link{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sidebar.close .nav-links li .iocn-link{
+      display: block
+    }
+    .sidebar .nav-links li i{
+      height: 50px;
+      min-width: 78px;
+      text-align: center;
+      line-height: 50px;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .sidebar .nav-links li.showMenu i.arrow{
+      transform: rotate(-180deg);
+    }
+    .sidebar.close .nav-links i.arrow{
+      display: none;
+    }
+    .sidebar .nav-links li a{
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+    .sidebar .nav-links li a .link_name{
+      font-size: 14px;
+      font-weight: 400;
+      color: #fff;
+      transition: all 0.4s ease;
+    }
+    .sidebar.close .nav-links li a .link_name{
+      opacity: 1;
+      pointer-events: none;
+    }
+    .sidebar .nav-links li .sub-menu{
+      padding: 6px 6px 14px 80px;
+      margin-top: -10px;
+      background: #1d1b31;
+      display: none;
+    }
+    .sidebar .nav-links li.showMenu .sub-menu{
+      display: block;
+    }
+    .sidebar .nav-links li .sub-menu a{
+      color: #fff;
+      font-size: 12px !important;
+      padding: 5px 0;
+      white-space: nowrap;
+      opacity: 0.6;
+      transition: all 0.3s ease;
+    }
+    .sidebar .nav-links li .sub-menu a:hover{
+      opacity: 1;
+    }
+    .sidebar.close .nav-links li .sub-menu{
+      position: absolute;
+      left: 100%;
+      top: -10px;
+      margin-top: 0;
+      padding: 10px 20px;
+      border-radius: 0 6px 6px 0;
+      opacity: 0;
+      display: block;
+      pointer-events: none;
+      transition: 0s;
+    }
+    
+    .sidebar.close .nav-links li .sub-menu .link_name{
+      font-size: 18px;
+      opacity: 1;
+      display: block;
+    }
+    .sidebar .nav-links li .sub-menu.blank{
+      opacity: 1;
+      pointer-events: auto;
+      padding: 3px 20px 6px 16px;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .home-section{
+      position: relative;
+      background: #E4E9F7;
+      height: 100vh;
+      left: 260px;
+      width: calc(100% - 260px);
+      transition: all 0.5s ease;
+    }
+    
+    .home-section .home-content{
+      height: 60px;
+      display: flex;
+      align-items: center;
+    }
+    .home-section .home-content .bx-menu,
+    .home-section .home-content .text{
+      color: #11101d;
+      font-size: 35px;
+    }
+    .home-section .home-content .bx-menu{
+      margin: 0 15px;
+      cursor: pointer;
+    }
+    .home-section .home-content .text{
+      font-size: 26px;
+      font-weight: 600;
+    }
+    .active-submenu{ background-color: yellow;}
+    @media (max-width: 400px) {
+      .sidebar.close .nav-links li .sub-menu{
+        display: none;
+      }
+      .sidebar.close{
+        width: 0;
+      }
+      .sidebar.close ~ .home-section{
+        width: 100%;
+        left: 0;
+      }
+    }
+    </style>

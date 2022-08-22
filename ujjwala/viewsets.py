@@ -1,9 +1,11 @@
 import datetime
 import io
+import random
 from functools import partial
 
 import django_filters
 import django_rq
+import pytz
 import requests
 from django.core.exceptions import ValidationError
 from django.db import connection, transaction
@@ -15,6 +17,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from django.core.signing import Signer
+from scheduler.models import ScheduledJob
 
 from domestic_app import settings
 from sdms.models import SdmsCustomerRecord
@@ -24,7 +27,7 @@ from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, FamilyM
     ManualOperationCodeEnum, MaritalStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum
 from .forms import ApplicationRejected
 from .global_functions import get_sdms_mismatched_records
-from .jobs import do_primary_omc_dedupe_check, compress_connection_disbursement_documents
+from .jobs import do_primary_omc_dedupe_check, compress_connection_disbursement_documents, enqueue_dedupe_and_audit_jobs
 from .models import UjjwalaV2Application, FamilyMembers, ConnectionDisbursement, ConnectionDisbursementDocuments, \
     PreInspection
 from .serializers import UjjwalaV2ApplicationSerializer
@@ -32,7 +35,9 @@ from .ujjwala_functions import download_ujjwala_documents, get_salutation, \
     download_pre_installation_documents, get_existing_duplicate_applications_detail, \
     download_ujjwala_legal_docs_to_upload, download_ujjwala_physical_legal_docs, \
     process_family_uid_result, process_omc_dedupe_result, send_whatsapp_contact_otp, verify_whatsapp_contact_otp, \
-    send_sms_contact_otp, verify_sms_contact_otp
+    send_sms_contact_otp, verify_sms_contact_otp, application_needs_to_be_audited, send_ujjwala_welcome_whatsapp_link, \
+    time_in_range, get_signed_share_data,  \
+    send_ujjwala_application_whatsapp_link_v1
 from django.urls import reverse
 
 
@@ -77,8 +82,11 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
         ).exclude(marital_status__in=[
             MaritalStatusEnum.DIVORCED, MaritalStatusEnum.WIDOW
         ]).exclude(
-		family_members__dob__gte='2004-07-30'
-	).exclude(version='V1').order_by('-sdms_last_updated_on')
+		family_members__dob__gte='2004-08-14'
+	).exclude(family_members__uid_no__in=[
+		'999999999999','666666666666','0','1'
+	]).exclude(version='V1').order_by('-sdms_last_updated_on')
+
         page = self.paginate_queryset(queryset)
         return self.get_paginated_response([
             {
@@ -200,15 +208,18 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         request.PERFORM_SUBMIT = True
         self_family_member = FamilyMembers.objects.filter(uid_no=request.data.get('SELF-uid_no')).first()
         if self_family_member:
-            existing_application = UjjwalaV2Application.objects.filter(id=self_family_member.parent_id).first()
-            if existing_application:
-                if existing_application.status == UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD:
-                    pre_inspection_obj = PreInspection.objects.filter(parent_id=existing_application.id).first()
-                    if pre_inspection_obj:
-                        pre_inspection_obj.delete()
-                    existing_application.family_members.all().delete()
-                    existing_application.documents.all().delete()
-                    existing_application.delete()
+            existing_application = self_family_member.parent
+            if existing_application.status != UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD:
+                return JsonResponse({
+                    "message": "Application Already Exist With Id: {}".format(existing_application.id)
+                })
+            PreInspection.objects.filter(
+                parent_id=existing_application.id
+            ).delete()
+            ConnectionDisbursement.objects.filter(
+                parent_id=existing_application.id
+            ).delete()
+            existing_application.delete()
         return super().create(request, *args, **kwargs)
 
     @action(methods=['post'], detail=False, url_path='legal_documents_upload')
@@ -284,16 +295,11 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         applications = UjjwalaV2Application.objects.filter(
             Q(contact_mobile=contact_mobile) |
             Q(uid_linked_mobile=contact_mobile)
+        ).exclude(
+            status=UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD
         ).order_by('-id')
 
-        if applications:
-            if len(applications) == 1:
-                if applications.first().status == UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD:
-                    return JsonResponse({
-                        "status": True,
-                        "msg": "VALID_APPLICATION",
-                        "data": {}
-                    })
+        if applications.exists():
             result = {
                 "status": False,
             }
@@ -458,7 +464,13 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             # application_obj.event_invite_for_ekyc_channel_whatsapp()
             if application_obj.consumer_id and \
                     application_obj.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
-                application_obj.ekyc_accepted_or_rejected(description="Bot Processed")
+                sdms_contact = application_obj.family_members.filter(
+                    relation='SELF'
+                ).uid_check_result.get('phone_number', '')
+                application_obj.ekyc_accepted_or_rejected(
+                    description="Bot Processed",
+                    sdms_mobile_number=sdms_contact
+                )
         application_obj.save()
         return HttpResponse('OK')
 
@@ -643,7 +655,13 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             application.consumer_id = result.get('consumer_id', '')
             application.sdms_mobile_number = result.get('phone_number', '')
             if application.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
-                application.ekyc_accepted_or_rejected(description="Bot Processed")
+                sdms_contact = application.family_members.filter(
+                    relation='SELF'
+                ).uid_check_result.get('phone_number', '')
+                application.ekyc_accepted_or_rejected(
+                    description="Bot Processed",
+                    sdms_mobile_number=sdms_contact
+                )
         else:
             application.sync_with_sdms = False
             form = ApplicationRejected(data={
@@ -664,14 +682,13 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         application = serializer.save()
-        application.filled_by = get_current_user()
+        user = get_current_user()
+        application.filled_by = None if user.is_anonymous else user
         application.save()
         if getattr(self.request, "PERFORM_SUBMIT", False):
             try:
                 create_txn_status_job_function = partial(
-                    django_rq.enqueue,
-                    "ujjwala.jobs.do_primary_omc_dedupe_check",
-                    id=application.id
+                    enqueue_dedupe_and_audit_jobs, application.id, self.request.data
                 )
                 transaction.on_commit(create_txn_status_job_function)
 
@@ -972,9 +989,9 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 )})
             form.is_valid()
             application_obj.application_rejected(**form.cleaned_data)
+            application_obj.event_ioc_dedupe_reject_channel_whatsapp()
 
         application_obj.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE
-        application_obj.event_ioc_dedupe_reject_channel_whatsapp()
         application_obj.save()
 
         return HttpResponse('OK')
@@ -1046,7 +1063,13 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 application_obj.consumer_id = self_consumer_id
 
                 if application_obj.status == UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED:
-                    application_obj.ekyc_accepted_or_rejected(description="Bot Processed")
+                    sdms_contact = application_obj.family_members.get(
+                        relation='SELF'
+                    ).uid_check_result.get('phone_number', '')
+                    application_obj.ekyc_accepted_or_rejected(
+                        application_obj="Bot Processed",
+                        sdms_mobile_number=sdms_contact
+                    )
         else:
             form = ApplicationRejected(data={
                 'rejected_reason': 'CONNECTION_ALREADY_EXIST',
@@ -1083,6 +1106,45 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     def update_scheme_onboarding_status(self, request, *args, **kwargs):
         application_obj = UjjwalaV2Application.objects.get(pk=request.data.get('id'))
         application_obj.scheme_onboarding_status = request.data.get('scheme_onboarding_status', '')
+        return HttpResponse('OK')
+
+    @action(methods=['post'], detail=False, url_path='schedule_whatsapp_message')
+    def schedule_whatsapp_message(self, request, *args, **kwargs):
+        scheduler = django_rq.get_scheduler('default')
+
+        start_time = datetime.time(8, 0, 0)
+        end_time = datetime.time(19, 30, 0)
+
+        contact_mobile = self.request.data['mobile']
+        # data = get_signed_share_data(contact_mobile)
+        current_time = datetime.datetime.now(pytz.timezone('Asia/Kolkata')).time()
+        # url = reverse('ujjwala:ujjwala_application_link', kwargs={'data': data})
+        # url = url[1:]
+
+        if time_in_range(
+            start_time, end_time, current_time
+        ):
+            date = datetime.date(1, 1, 1)
+            datetime1 = datetime.datetime.combine(date, end_time)
+            datetime2 = datetime.datetime.combine(date, current_time)
+
+            time_difference = datetime1 - datetime2
+
+            time_difference = time_difference + datetime.timedelta(seconds=random.randint(0, 60*60))
+            scheduler.enqueue_in(
+                time_difference,
+                send_ujjwala_application_whatsapp_link_v1,
+                contact_mobile=contact_mobile
+            )
+            # scheduler.enqueue_at(
+            #     datetime.datetime(2022, 8, 20, 10, 48),
+            #     send_ujjwala_application_whatsapp_link,
+            #     contact_mobile=contact_mobile
+            # )
+            # send_ujjwala_application_whatsapp_link(contact_mobile)
+        else:
+            send_ujjwala_application_whatsapp_link_v1(contact_mobile)
+
         return HttpResponse('OK')
 
 

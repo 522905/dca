@@ -8,7 +8,7 @@ import django_rq
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django.core.signing import Signer
 from django.http import HttpResponse, Http404, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
@@ -16,11 +16,12 @@ from django.template import loader
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views import View
+from django.views.decorators.clickjacking import xframe_options_exempt, xframe_options_sameorigin
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 from django_currentuser.middleware import get_current_user
 from django.forms import formset_factory
-
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 import ujjwala.forms
 from otp.models import Otp
@@ -34,24 +35,24 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
     UjjwalaApplicationOtpInitialForm, UjjwalaApplicationGenerateOtpForm, UjjwalaApplicationValidateOtpForm, \
     ConnectionDisbursementMaterialDeliveryForm, ConnectionDisbursementInvitationForm, \
     ConnectionDisbursementSocialMediaUpdatesForm, ConnectionDisbursementSearchForm, NicUpdateAddressForm, \
-    PreInspectionConvertForm, LegalDocumentsReviewAdminForm, SetPrimaryPhoneNumberForm
+    PreInspectionConvertForm, LegalDocumentsReviewAdminForm, SetPrimaryPhoneNumberForm, \
+    NicClearedCustomerRemarksForm
+
 from ujjwala.global_functions import login_required_if_mech_inspection
 
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
     ConnectionDisbursementInvitation, ConnectionDisbursementDocuments, FamilyMembers
-from ujjwala.ujjwala_functions import send_ujjwala_application_whatsapp_link, find_ujjwala_application_using_contact
+from ujjwala.ujjwala_functions import send_ujjwala_application_whatsapp_link_v1, find_ujjwala_application_using_contact, \
+    ujjwala_application_reject_reason_log, is_pre_inspection_applicable, get_signed_share_data
 
 
 def index(request):
-    return render(request, 'ujjwala/index.html')
-
-
-# def web_form_old(request):
-#     return render(request, 'ujjwala/web_form_old.html')
+    return redirect('ujjwala:web_form')
+    # return render(request, 'ujjwala/index.html')
 
 
 def legal_documents(request):
-    return render(request, 'ujjwala/legal_documents_upload.html')
+    return render(request, 'ujjwala/legal-document-upload-form.html')
 
 
 @method_decorator(login_required, 'dispatch')
@@ -64,6 +65,20 @@ class WebFormOldView(View):
             return HttpResponse("You do not have permission to fill this form. Contact Admin")
 
 
+# I Frame Web Form View To Display Form In Website
+# With
+@method_decorator(xframe_options_exempt, 'dispatch')
+@method_decorator(login_required, 'dispatch')
+class UjjwalaApplicationIframeWebFormView(TemplateView):
+    template_name = "ujjwala/i_web_form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        response = super().dispatch(request, *args, **kwargs)
+        response['Content-Security-Policy'] = "frame-ancestors 'self'"
+        return response
+
+
+# Whatsapp Nic Error Update Addres View
 class WhatsappNicErrorUpdateAddress(View):
     def get(self, request, *args, **kwargs):
         obj = UjjwalaV2Application.objects.filter(pk=kwargs.get('pk')).first()
@@ -73,14 +88,18 @@ class WhatsappNicErrorUpdateAddress(View):
         return HttpResponse("Application Id {} does not exist".format(kwargs.get('pk')))
 
 
+# Pre Inspection Type Self
 class WhatsappPreInspectionTypeSelf(View):
     def get(self, request, *args, **kwargs):
         application = UjjwalaV2Application.objects.filter(id=kwargs.get('pk')).first()
+
         if not application:
             return HttpResponse("Application Id {} does not exist".format(kwargs.get('pk')))
 
+        if not is_pre_inspection_applicable(application.id):
+            return HttpResponse("Application Id {} not valid for Pre-Inspection".format(kwargs.get('pk')))
+
         pi_obj = PreInspection.objects.filter(parent_id=kwargs.get('pk')).first()
-        # obj = UjjwalaV2Application.objects.filter(pk=kwargs.get('pk')).first()
         if not pi_obj:
             pi_obj = PreInspection.objects.create(
                 parent_id=application.id,
@@ -101,6 +120,7 @@ class WhatsappPreInspectionTypeSelf(View):
             )
 
 
+# This View Shares Web Form Link To The Given Contact Number
 @method_decorator(login_required, 'dispatch')
 class ShareWebFormLink(TemplateView):
     template_name = "ujjwala/share_web_form_link.html"
@@ -109,36 +129,45 @@ class ShareWebFormLink(TemplateView):
         contact_mobile = request.POST.get('contact_mobile', '')
 
         if contact_mobile:
-            application = UjjwalaV2Application.objects.filter(contact_mobile=contact_mobile).first()
+            application = UjjwalaV2Application.objects.filter(
+                contact_mobile=contact_mobile
+            ).exclude(
+                status=UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD
+            ).first()
 
             if application:
                 messages.add_message(
                     request, messages.ERROR, "Application already exist."
                 )
             else:
-                user = get_current_user()
-                data = {
-                    'contact_mobile': contact_mobile,
-                    'user': user.id,
-                    'creation': datetime.datetime.now()
-                }
-                signer = Signer()
-                data_signed = signer.sign(data)
-                data_signed_base64 = base64.urlsafe_b64encode(data_signed.encode('ascii'))
-                data = data_signed_base64.decode('ascii')
+                # user = get_current_user()
+                # data = {
+                #     'contact_mobile': contact_mobile,
+                #     'user': user.id,
+                #     'creation': datetime.datetime.now()
+                # }
+                # signer = Signer()
+                # data_signed = signer.sign(data)
+                # data_signed_base64 = base64.urlsafe_b64encode(data_signed.encode('ascii'))
+                # data = data_signed_base64.decode('ascii')
 
-                url = request.build_absolute_uri(
-                    reverse('ujjwala:ujjwala_application_link', kwargs={'data': data})
-                )
-                print(url)
-                res = send_ujjwala_application_whatsapp_link(contact_mobile, data_signed_base64, url)
+
+
+                # url = reverse('ujjwala:ujjwala_application_link', kwargs={'data': data})
+                # url = url[1:]
+                res = send_ujjwala_application_whatsapp_link_v1(contact_mobile)
                 if res:
                     messages.add_message(
-                        request, messages.INFO, "Ujjwala Application Link Shared To Contact Mobile: {}".format(contact_mobile)
+                        request, messages.INFO,
+                        "Ujjwala Application Link Shared To Contact Mobile: {}".format(
+                            contact_mobile
+                        )
                     )
         return super().get(request, *args, **kwargs)
 
 
+# This Function Validates Shared Link & Open Web Form
+# With Pre-Validated Contact Number & Referral Code
 class UjjwalaApplicationSharedLinkView(View):
     def get(self, request, *args, **kwargs):
         data = kwargs.get('data', '')
@@ -157,7 +186,6 @@ class UjjwalaApplicationSharedLinkView(View):
             "referral_code": "{} ({} {})".format(user.username, user.first_name, user.last_name)
         })
         return render(request, template_name='ujjwala/web_form.html', context=data)
-
 
 
 class WhatsappUploadLegalForms(View):
@@ -209,7 +237,7 @@ class UjjwalaPreInspectionListView(ListView):
         ).order_by('-submitted_on')
 
     def get_template_names(self):
-        return 'ujjwala/pre_inspection_listview.html'
+        return 'ujjwala/pre-inspection/pre_inspection_listview.html'
 
 
 @method_decorator(login_required, 'dispatch')
@@ -225,7 +253,7 @@ class UjjwalaPreInspectionReviewListView(ListView):
         )
 
     def get_template_names(self):
-        return 'ujjwala/pre_inspection_review_listview.html'
+        return 'ujjwala/pre-inspection/pre_inspection_review_listview.html'
 
 
 class UjjwalaApplicationDisplayOtp(View):
@@ -235,19 +263,11 @@ class UjjwalaApplicationDisplayOtp(View):
         obj = Otp.objects.filter(reference_number=kwargs.get('ref_no')).first()
 
         if obj:
-            return render(self.request, "ujjwala/ujjwala_application_display_otp.html", {
+            return render(self.request, "ujjwala/otp/ujjwala_application_display_otp.html", {
                 "obj": obj
             })
         else:
             return HttpResponse(content="Invalid Reference Number")
-
-
-@method_decorator(login_required, 'dispatch')
-class UjjwalaApplicationReuploadView(DetailView):
-    model = UjjwalaV2Application
-
-    def get_template_names(self):
-        return 'ujjwala/ujjwala_documents_reupload.html'
 
 
 @method_decorator(login_required, 'dispatch')
@@ -350,14 +370,14 @@ class InstallationListView(ListView):
 @method_decorator(login_required_if_mech_inspection, 'dispatch')
 class PreInspectionView(FormView):
     model = PreInspection
-    pre_inspection_step0_template = 'ujjwala/pre-Inspection-form/steps/step0.html'
-    pre_inspection_step1_template = 'ujjwala/pre-Inspection-form/steps/step1.html'
-    pre_inspection_step2_template = 'ujjwala/pre-Inspection-form/steps/step2.html'
-    pre_inspection_step3_template = 'ujjwala/pre-Inspection-form/steps/step3.html'
+    pre_inspection_step0_template = 'ujjwala/pre-inspection/steps/step0.html'
+    pre_inspection_step1_template = 'ujjwala/pre-inspection/steps/step1.html'
+    pre_inspection_step2_template = 'ujjwala/pre-inspection/steps/step2.html'
+    pre_inspection_step3_template = 'ujjwala/pre-inspection/steps/step3.html'
     success_url = '.'
 
-    stage_1_generate_otp = 'ujjwala/pre_inspection_generate_otp_form.html'
-    stage_2_validate_otp = 'ujjwala/pre_inspection_validate_otp_form.html'
+    stage_1_generate_otp = 'ujjwala/pre-inspection/pre_inspection_generate_otp_form.html'
+    stage_2_validate_otp = 'ujjwala/pre-inspection/pre_inspection_validate_otp_form.html'
 
     def dispatch(self, request, *args, **kwargs):
         pre_inspection = self.get_object()
@@ -371,7 +391,7 @@ class PreInspectionView(FormView):
                 PreInspectionStatusEnum.SUBMITTED,
                 PreInspectionStatusEnum.ACCEPTED,
         ):
-            return render(self.request, 'ujjwala/pre_inspection_status.html', context={
+            return render(self.request, 'ujjwala/pre-inspection/pre_inspection_status.html', context={
                 'pre_inspection': pre_inspection
             })
         return super().dispatch(request, *args, **kwargs)
@@ -527,9 +547,9 @@ class PreInspectionView(FormView):
 @method_decorator(login_required, 'dispatch')
 class PreInspectionCreateView(View):
     model = PreInspection
-    stage_1_template = 'ujjwala/pre_inspection_initial_form.html'
-    stage_2_template = 'ujjwala/pre_inspection_generate_otp_form.html'
-    stage_3_template = 'ujjwala/pre_inspection_validate_otp_form.html'
+    stage_1_template = 'ujjwala/pre-inspection/pre_inspection_initial_form.html'
+    stage_2_template = 'ujjwala/pre-inspection/pre_inspection_generate_otp_form.html'
+    stage_3_template = 'ujjwala/pre-inspection/pre_inspection_validate_otp_form.html'
 
     def get(self, request, *args, **kwargs):
         return render(self.request, self.stage_1_template, {
@@ -732,7 +752,8 @@ class UjjwalaApplicationStatusView(TemplateView):
             application = UjjwalaV2Application.objects.filter(id=application_id).first()
 
         if application:
-            return render(request, self.template_name, context={'obj': application})
+            reject_reason = ujjwala_application_reject_reason_log(application.id)
+            return render(request, self.template_name, context={'obj': application, 'rejected_reason': reject_reason})
         else:
             messages.add_message(
                     request, messages.ERROR, "Please Enter Contact Mobile Or Aadhaar Or Application Id To Search"
@@ -752,6 +773,7 @@ class UjjwalaConnectionDisbursementListView(ListView):
             status__in=[
                 ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
                 ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
+                ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
                 ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
                 ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
                 ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
@@ -797,8 +819,8 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
     ujjwala_form_a_b_c_template = "ujjwala/disbursement/print_ujjwala_form_a_b_c.html"
     success_url = '.'
 
-    stage_1_generate_otp = 'ujjwala/generate_otp_form.html'
-    stage_2_validate_otp = 'ujjwala/validate_otp_form.html'
+    stage_1_generate_otp = 'ujjwala/otp/generate_otp_form.html'
+    stage_2_validate_otp = 'ujjwala/otp/validate_otp_form.html'
 
     def dispatch(self, request, *args, **kwargs):
         user = get_current_user()
@@ -1117,7 +1139,7 @@ class ConnectionDisbursementSvLabelPrintView(FormView, ApplicationView):
         obj = self.get_object()
         bluebook_label_print_url = reverse(
             'ujjwala:connection_disbursement_barcode_label_print_view',
-            kwargs={'pk':obj.id}
+            kwargs={'pk': obj.id}
         )
         context.update({
             "obj": obj,
@@ -1278,8 +1300,8 @@ class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
     form_class = ConnectionDisbursementMaterialDeliveryForm
     success_url = '.'
 
-    stage_1_generate_otp = 'ujjwala/generate_otp_form.html'
-    stage_2_validate_otp = 'ujjwala/validate_otp_form.html'
+    stage_1_generate_otp = 'ujjwala/otp/generate_otp_form.html'
+    stage_2_validate_otp = 'ujjwala/otp/validate_otp_form.html'
 
     def dispatch(self, request, *args, **kwargs):
         user = get_current_user()
@@ -1441,13 +1463,6 @@ class SetPrimaryPhoneNumberView(FormView):
         obj.save()
         return HttpResponse(content="Primary Number Changed Successfully")
 
-
-    # def get_success_url(self):
-    #     return reverse('admin:ujjwala_connectiondisbursement_change', kwargs={
-    #         'object_id': self.kwargs.get('pk')
-    #     })
-
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
         obj = self.get_object()
@@ -1551,7 +1566,7 @@ class NicErrorUpdateAddress(FormView):
 class PreInspectionConvertToView(FormView):
     # model = ConnectionDisbursementInvitation
     form_class = PreInspectionConvertForm
-    template_name = "ujjwala/pre-Inspection-form/pre_inspection_conversion.html"
+    template_name = "ujjwala/pre-inspection/pre_inspection_conversion.html"
 
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object()

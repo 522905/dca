@@ -19,12 +19,12 @@ from django_fsm_log.decorators import fsm_log_description, fsm_log_by
 from organizations.models import Organization
 
 from communication_log.models import CommunicationLog
-from teams.models import ServiceLocations
+from teams.models import ServiceLocations, ServiceArea
 from ujjwala.communication_models import UjjwalaWhatsappCommunication
 from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMobileStatusEnum, \
 	UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, \
 	RejectionTypeEnum, RoboSdmsDedeupStatusEnum, UserDocumentsEnum, OtpStatusEnum, PreInspectionStatusEnum, \
-	ConnectionDisbursementStatusEnum, PreInspectionTypeEnum
+	ConnectionDisbursementStatusEnum, PreInspectionTypeEnum, SchemeOnboardingStatusEnum
 from ujjwala.forms import UjjwalaLegalDocumentsUpload, \
 	ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewForm, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
@@ -81,7 +81,10 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		max_length=64, choices=SchemeOnboardingStatusEnum.choices, blank=True, null=True
 	)
 	filled_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
-	
+	service_area = models.ForeignKey(
+		ServiceArea, on_delete=models.PROTECT, null=True, blank=True
+	)
+
 	class Meta:
 		permissions = (
 			("can_edit_record_transition", "Can edit record transition"),
@@ -361,28 +364,16 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		permission='ujjwala.can_approve_connection',
 	)
 	def transition_nic_cleared(self, *args, **kwargs):
-		is_application_ready_for_disbursement(self.pk)
-		pass
+		try:
+			is_application_ready_for_disbursement(self)
+		except self.RelatedObjectDoesNotExist:
+			obj = PreInspection.objects.create(
+				parent_id=self.pk,
+				status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+				type=PreInspectionTypeEnum.SELF
+			)
+			obj.parent.event_whatsapp_pre_inspection_type_self(obj.pk)
 
-	# @fsm_log_description
-	# @fsm_log_by
-	# @transition(
-	# 	field=status,
-	# 	source=UjjwalaV2ApplicationStatus.NIC_CLEARED,
-	# 	target=UjjwalaV2ApplicationStatus.PRE_INSPECTION_ACCEPTED,
-	# 	custom=dict(
-	# 		short_description='Pre Inspection Accepted', admin=True
-	# 	),
-	# )
-	# def transition_pre_inspection_accepted(self, *args, **kwargs):
-	# 	pre_inspection_id = kwargs.get('pre_inspection_id')
-	# 	pre_inspection = PreInspection.objects.get(pk=pre_inspection_id)
-	# 	self.latitude = pre_inspection.latitude
-	# 	self.longitude = pre_inspection.longitude
-	# 	self.accuracy = pre_inspection.accuracy
-	# 	self.pre_inspection_accepted = pre_inspection
-	# 	self.save()
-	# 	self.event_legal_documents_upload_channel_whatsapp()
 
 	@fsm_log_description
 	@fsm_log_by
@@ -831,12 +822,13 @@ class PreInspection(models.Model):
 			self.mechanic = get_current_user()
 		self.submitted_on = datetime.datetime.now()
 		self.save()
-		create_txn_status_job_function = partial(
-			django_rq.enqueue,
-			"ujjwala.jobs.compress_pre_inspection_documents",
-			parent_id=self.id
-		)
-		transaction.on_commit(create_txn_status_job_function)
+		#Commented For Exif Evaluation
+		#create_txn_status_job_function = partial(
+		#	django_rq.enqueue,
+		#	"ujjwala.jobs.compress_pre_inspection_documents",
+		#	parent_id=self.id
+		#)
+		#transaction.on_commit(create_txn_status_job_function)
 
 	@fsm_log_description
 	@fsm_log_by
@@ -875,17 +867,13 @@ class PreInspection(models.Model):
 				link=upload_url,
 				parent=self
 			)
-			# self.parent.transition_pre_inspection_accepted(
-			# 	pre_inspection_id=self.pk, by=get_current_user()
-			# )
-			# self.parent.save()
+
 			self.parent.latitude = self.latitude
 			self.parent.longitude = self.longitude
 			self.parent.accuracy = self.accuracy
-			# self.parent.pre_inspection_accepted = self
 			self.parent.save()
 			self.parent.event_legal_documents_upload_channel_whatsapp()
-			is_application_ready_for_disbursement(self.parent_id)
+			is_application_ready_for_disbursement(self.parent)
 		else:
 			self.parent.event_whatsapp_pre_inspection_reject(self.id, kwargs.get('rejected_reason'))
 

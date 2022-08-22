@@ -22,7 +22,7 @@
                 <ul class="m-0">
                     <li>
                         <p class="float-left">Application Id ({{ obj.parent_id }})</p>
-                        <p class="float-right">Pre Inspection Id({{obj.id}})</p>
+                        <p class="float-right">Pre Inspection Id({{ obj.id }})</p>
                     </li>
                     <li>
                         <p class="float-left">Name</p>
@@ -32,7 +32,7 @@
                     <li class="contact_link">
                         <p class="float-left">Phone  {{ forloop.counter }}</p>
                         <p class="float-right">
-                            <b> <a href="tel:{{ contact}}" onclick="return true;">{{contact}}</a></b>      
+                            <b> <a href="tel:{{ contact }}" onclick="return true;">{{ contact }}</a></b>
                         </p>
                     </li>
                     {% endfor %}

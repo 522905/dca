@@ -20,7 +20,7 @@
     <div class="main-header bg-heading" style="background-color: #2957A4;">
         <span class="text-white">Social Media Updates</span>
     </div>
-    <!-- {% for obj in object_list %}
+    {% for obj in object_list %}
     <div class="card mb-2 app_card">
         <a href="{% url 'ujjwala:connection_disbursement_social_media_updates_view' pk=obj.id %}" data-turbolinks="false">
             <div class="card-header">
@@ -54,8 +54,8 @@
 
     </div>
     
-    {% endfor %} -->
-    {% include 'ujjwala/disbursement/custom-template/disbursement-card-detail.html' %}
+    {% endfor %}
+{#    {% include 'ujjwala/disbursement/custom-template/disbursement-card-detail.html' %}#}
 </div>
     <!-- <table>
 

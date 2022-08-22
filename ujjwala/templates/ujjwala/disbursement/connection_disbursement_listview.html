@@ -19,10 +19,8 @@
     <div class="main-header bg-heading" style="background-color: #2957A4;">
         <span class="text-white">List of Walk Ins</span>
     </div>
-    {% include 'ujjwala/disbursement/custom-template/disbursement-card-detail.html' %}
-    
-
-    <!-- {% for obj in object_list %}
+{#    {% include 'ujjwala/disbursement/custom-template/disbursement-card-detail.html' %}#}
+    {% for obj in object_list %}
     <div class="card mb-2 app_card">
         <a class="text-under-n" href="{% url 'ujjwala:connection_disbursement_form_view' pk=obj.id %}" data-turbolinks="false">
             <div class="card-header">
@@ -49,7 +47,7 @@
                     <li class="contact_link">
                         <p class="float-left">Phone  {{ forloop.counter }}</p>
                         <p class="float-right">
-                            <b> <a href="tel:{{ contact}}" onclick="return true;">{{contact}}</a></b>      
+                            <b> <a href="tel:{{ contact}}" onclick="return true;">{{contact}}</a></b>
                         </p>
                     </li>
                     {% endfor %}
@@ -60,7 +58,7 @@
             <p><b>Address: </b>{{ obj.parent.formatted_address }}</p>
         </div>
     </div>
-    {% endfor %} -->
+    {% endfor %}
 </div>
 <script type="text/javascript" src="{% static '/js/setup.js' %}"></script>
 <script type="text/javascript" src="{% static '/js/xzoom.min.js' %}"></script>

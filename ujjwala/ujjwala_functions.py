@@ -19,10 +19,12 @@ from django.db.models import Q, QuerySet
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 from django.urls import reverse
+from django_currentuser.middleware import get_current_user
+from django_rq import job
 
 from communication_log.models import CommunicationLog
 from ujjwala.enums import UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, ResidentialStatusEnum, \
-	MaritalStatusEnum, UjjwalaV2ApplicationStatus, PreInspectionStatusEnum
+	MaritalStatusEnum, UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, RoboSdmsDedeupStatusEnum
 from datetime import datetime
 
 
@@ -51,6 +53,7 @@ Your Verification code for {{for}} is {{code}}
 PDF_COMPRESSION_OPTIONS = {
 	"pageSize": "A4", "imageDpi": 150, "imageQuality": 80, "lowquality": True
 }
+
 
 def valid_file_uploaded(url):
 	res = requests.head(url, headers={"Tus-Resumable": "1.0.0"})
@@ -702,16 +705,11 @@ def process_omc_dedupe_result(omc_dedup_result):
 	return {}
 
 
-def is_application_ready_for_disbursement(application_id):
-	from ujjwala.models import UjjwalaV2Application
-
-	application = UjjwalaV2Application.objects.filter(id=application_id).first()
-
-	if application:
-		if application.status == UjjwalaV2ApplicationStatus.NIC_CLEARED and \
-				application.pre_inspection.status == PreInspectionStatusEnum.ACCEPTED:
-			application.transition_ready_for_disbursement()
-			application.save()
+def is_application_ready_for_disbursement(application):
+	if application.status == UjjwalaV2ApplicationStatus.NIC_CLEARED and \
+			application.pre_inspection.status == PreInspectionStatusEnum.ACCEPTED:
+		application.transition_ready_for_disbursement()
+		application.save()
 
 
 def send_whatsapp_contact_otp(request, contact_mobile):
@@ -884,7 +882,69 @@ def verify_sms_contact_otp(reference_number, otp):
 	}
 
 
-def send_ujjwala_application_whatsapp_link(contact_mobile, contact_mobile_base64, url):
+def get_signed_share_data(contact_mobile):
+	user = get_current_user()
+	data = {
+		'contact_mobile': contact_mobile,
+		'user': user.id,
+		'creation': datetime.now()
+	}
+	signer = Signer()
+	data_signed = signer.sign(data)
+	data_signed_base64 = base64.urlsafe_b64encode(data_signed.encode('ascii'))
+	data = data_signed_base64.decode('ascii')
+	return data
+
+
+def send_ujjwala_application_whatsapp_link_v1(contact_mobile):
+	data = get_signed_share_data(contact_mobile)
+	url = reverse('ujjwala:ujjwala_application_link', kwargs={'data': data})
+	url = url[1:]
+	body_text = {
+		"countryCode": "+91",
+		"phoneNumber": contact_mobile,
+		"type": "Template",
+		"traits": {
+			"name": contact_mobile,
+		},
+		# "callbackData": "some_callback_data",
+		"template": {
+			"name": "ujjwala_application_shared_link",
+			"languageCode": "hi",
+			"headerValues": [
+			],
+			"bodyValues": [
+				"https://dca.arungas.com/{}".format(url)
+			],
+			"buttonValues": {
+				"0": [
+					url
+				]
+			}
+		}
+	}
+
+	data = track.client.post(
+		api_key=settings.INTERAKT_API_KEY,
+		path="/v1/public/message/",
+		body=body_text
+	).json()
+
+	if data.get('result', ''):
+		CommunicationLog.objects.create(
+			channel_subscriber=contact_mobile,
+			event="ujjwala_application_shared_link", channel="whatsapp",
+			message_id=data.get('id')
+		)
+		return True
+	return False
+
+
+def send_ujjwala_application_whatsapp_link_v2(contact_mobile):
+	data = get_signed_share_data(contact_mobile)
+	url = reverse('ujjwala:ujjwala_application_link', kwargs={'data': data})
+	url = url[1:]
+
 	body_text = {
 		"countryCode": "+91",
 		"phoneNumber": contact_mobile,
@@ -895,18 +955,15 @@ def send_ujjwala_application_whatsapp_link(contact_mobile, contact_mobile_base64
 		# "callbackData": "some_callback_data",
 		"template": {
 			# "name": "ujjwala_application_whatsapp_otp_02082022",
-			"name": "ujjwala_application_shared_link",
+			# "name": "ujjwala_application_shared_link",
+			"name": "ujjwala_application_shared_link_20082022",
 			"languageCode": "hi",
 			"headerValues": [
 			],
-			"bodyValues": [
-				url
-			],
+			"bodyValues": [],
 			"buttonValues": {
 				"0": [
-					"ujjwala/portal/whatsapp_ujjwala_application_link/{}/".format(
-						contact_mobile_base64
-					)
+					url
 				]
 			}
 		}
@@ -930,3 +987,83 @@ def send_ujjwala_application_whatsapp_link(contact_mobile, contact_mobile_base64
 
 def find_ujjwala_application_using_contact(contact_mobile):
 	return True
+
+
+def application_needs_to_be_audited(data):
+	family_members = data.get('family_members')
+	reason = []
+	for fm in family_members:
+		if fm.get('ocr_processed') == 'no':
+			reason.append(
+				"Family Member: {} having UID {} ocr could not be processed.".format(
+					fm['name'], fm['uid_no']
+				)
+			)
+	return '\n'.join(reason)
+
+
+def ujjwala_application_reject_reason_log(application_id):
+	from django_fsm_log.models import StateLog
+
+	description = StateLog.objects.filter(
+		transition='application_rejected', object_id=application_id
+	).first()
+
+	if description:
+		return description.description
+
+
+def is_pre_inspection_applicable(application_id):
+	from ujjwala.models import UjjwalaV2Application
+
+	application = UjjwalaV2Application.objects.filter(pk=application_id).first()
+
+	if application.status == UjjwalaV2ApplicationStatus.APPLICATION_REJECTED:
+		return False
+
+	if application.status == UjjwalaV2ApplicationStatus.OMC_REJECTED:
+		return False
+
+	if application.robo_sdms_dedup == RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE:
+		return True
+
+	return False
+
+
+def time_in_range(start, end, x):
+	"""Return true if x is in the range [start, end]"""
+	if start <= end:
+		return start <= x <= end
+	else:
+		return start <= x or x <= end
+
+
+@job
+def send_ujjwala_welcome_whatsapp_link(contact_mobile):
+	body_text = {
+		"countryCode": "+91",
+		"phoneNumber": contact_mobile,
+		"type": "Template",
+		"traits": {
+			"name": contact_mobile,
+		},
+		"template": {
+            "name": "ujjwala_welcome_link_check_self_eligibility_v3",
+            "languageCode": "hi",
+        }
+	}
+
+	data = track.client.post(
+		api_key=settings.INTERAKT_API_KEY,
+		path="/v1/public/message/",
+		body=body_text
+	).json()
+
+	if data.get('result', ''):
+		CommunicationLog.objects.create(
+			channel_subscriber=contact_mobile,
+			event="ujjwala_application_welcome_link", channel="whatsapp",
+			message_id=data.get('id')
+		)
+		return True
+	return False

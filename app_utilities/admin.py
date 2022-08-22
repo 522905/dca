@@ -14,6 +14,7 @@ class UjjwalaApplicationOcrErrorLogsAdmin(admin.ModelAdmin):
         'user',
         'generated_on',
         'wait_time',
+        'api_result',
         'status',
         'uid_front_url',
         'uid_back_url',
