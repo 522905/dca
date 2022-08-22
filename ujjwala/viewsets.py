@@ -1018,7 +1018,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         if self_consumer_id:
             for member in request.data['family_members']:
                 if member['relation'] == 'SELF': continue
-                if member['result']['consumer_id'] == self_consumer_id:
+                if member['result'].get('consumer_id', '') == self_consumer_id:
                     member['result'] = {}
 
         for member in request.data['family_members']:
