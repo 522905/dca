@@ -58,7 +58,7 @@
         </li>
         {% if user.is_authenticated %}
         <li>
-            <a href="{% url 'ujjwala:share_web_form_link' %}" data-turbolinks="false">
+            <a href="{% url 'logout' %}" >
                 <i class='material-icons left text-white' >exit_to_app</i>
                 <span class="link_name">Log out</span>
             </a>
@@ -140,7 +140,7 @@
     .sidebar.close .nav-links li .iocn-link{
       display: block
     }
-    .sidebar .nav-links li i{
+    body .sidebar .nav-links li i{
       height: 50px;
       min-width: 78px;
       text-align: center;
