@@ -284,16 +284,17 @@ class ConnectionApplication(models.Model):
 		}, headers={
 			'Authorization': 'App 140a3abf6dd9134f5defb703a54dfcf0-e3df520b-f144-4282-a174-aa3765c7b438'
 		})
-		messages = x['messages']
-		message_id = messages[0].get('messageId')
-		connection_application_content_type = ContentType.objects.get_for_model(ConnectionApplication)
-		CommunicationLog.objects.create(
-			content_type=connection_application_content_type,
-			object_id=self.pk,
-			event="submit", channel="sms",
-			channel_subscriber=self.mobile,
-			message_id=message_id
-		)
+		if x.status_code == 200:
+			messages = x['messages']
+			message_id = messages[0].get('messageId')
+			connection_application_content_type = ContentType.objects.get_for_model(ConnectionApplication)
+			CommunicationLog.objects.create(
+				content_type=connection_application_content_type,
+				object_id=self.pk,
+				event="submit", channel="sms",
+				channel_subscriber=self.mobile,
+				message_id=message_id
+			)
 
 	def event_completed_channel_whatsapp(self):
 		sv_doc = self.documents.filter(type=ConnectionApplicationDocumentsEnum.SV).first()

@@ -63,18 +63,22 @@ def infobip_webhook_job_processing(data):
     messages = data['results']
 
     for msg in messages:
-        mid = msg['messageId']
-        comm_obj = CommunicationLog.objects.get(message_id=mid)
-        msg_status = msg['status']['groupName']
-        if msg_status in ('ACCEPTED', 'PENDING'):
-            comm_obj.status = "SENT"
-        elif msg_status in ('UNDELIVERABLE', 'EXPIRED', 'REJECTED'):
-            comm_obj.status = "FAILED"
-            # Push to vicidial
-            # In Next Update
-        elif msg_status == 'DELIVERED':
-            comm_obj.status = "DELIVERED"
-        comm_obj.save()
+        try:
+            mid = msg['messageId']
+            comm_obj = CommunicationLog.objects.get(message_id=mid)
+            msg_status = msg['status']['groupName']
+            if msg_status in ('ACCEPTED', 'PENDING'):
+                comm_obj.status = "SENT"
+            elif msg_status in ('UNDELIVERABLE', 'EXPIRED', 'REJECTED'):
+                comm_obj.status = "FAILED"
+                # Push to vicidial
+                # In Next Update
+            elif msg_status == 'DELIVERED':
+                comm_obj.status = "DELIVERED"
+            comm_obj.save()
+        except CommunicationLog.DoesNotExist:
+            continue
+
 
 
 def move_files_to_minio_processing(id):
