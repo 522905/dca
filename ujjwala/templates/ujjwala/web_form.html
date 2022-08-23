@@ -532,7 +532,7 @@ function WhatsappMobileVerifiedController() {
     {% if source == 'link_share' %}
     $('[name="contact_mobile"]').val("{{ signed_contact_mobile }}");
     setAsVerified();
-    $('.whatsapp-form-group input,.whatsapp-form-group button').attr('disabled', true);
+    $('.whatsapp-form-group button').attr('disabled', true);
     {% endif %}
     
     return {
@@ -1317,5 +1317,4 @@ $('[name="referral_code"]').attr('readonly', true);
         background-color: #000;
     }
     /* #verifyMobileOtp{ z-index: 99;} */
- 
 </style>
