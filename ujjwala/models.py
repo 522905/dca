@@ -183,10 +183,14 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		return sd.link if sd else ''
 
 	def document_kitchen_photo(self):
-		return self.documents.filter(type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO).first().link
+		return self.documents.filter(
+			type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO
+		).order_by('-id').first().link
 
 	def document_customer_in_kitchen(self):
-		return self.documents.filter(type=UjjwalaApplicationDocumentsEnum.CUSTOMER_IN_KITCHEN).first().link
+		return self.documents.filter(
+			type=UjjwalaApplicationDocumentsEnum.CUSTOMER_IN_KITCHEN
+		).order_by('-id').first().link
 
 	def document_mechanic_photo(self):
 		return self.documents.filter(type=UjjwalaApplicationDocumentsEnum.MECHANIC_PHOTO).first().link
@@ -209,13 +213,13 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		return {
 			"form_a_link": self.connection_disbursement.documents.filter(
 				type=UjjwalaApplicationDocumentsEnum.LEGAL_DOC_PRE_INSPECTION
-			).first().link,
+			).order_by('-id').first().link,
 			"form_b_link": self.connection_disbursement.documents.filter(
 				type=UjjwalaApplicationDocumentsEnum.LEGAL_DOC_FAMILY_OCCUPANCY
-			).first().link,
+			).order_by('-id').first().link,
 			"form_c_link": self.connection_disbursement.documents.filter(
 				type=UjjwalaApplicationDocumentsEnum.LEGAL_DOC_ANNEXURE_14_POINTS
-			).first().link
+			).order_by('-id').first().link
 		}
 
 	def is_sv_uploaded(self):
