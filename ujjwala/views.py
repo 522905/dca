@@ -43,7 +43,8 @@ from ujjwala.global_functions import login_required_if_mech_inspection
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
     ConnectionDisbursementInvitation, ConnectionDisbursementDocuments, FamilyMembers
 from ujjwala.ujjwala_functions import send_ujjwala_application_whatsapp_link_v1, find_ujjwala_application_using_contact, \
-    ujjwala_application_reject_reason_log, is_pre_inspection_applicable, get_signed_share_data
+    ujjwala_application_reject_reason_log, is_pre_inspection_applicable, get_signed_share_data, \
+    send_ujjwala_application_whatsapp_link_v2
 
 
 def index(request):
@@ -140,22 +141,8 @@ class ShareWebFormLink(TemplateView):
                     request, messages.ERROR, "Application already exist."
                 )
             else:
-                # user = get_current_user()
-                # data = {
-                #     'contact_mobile': contact_mobile,
-                #     'user': user.id,
-                #     'creation': datetime.datetime.now()
-                # }
-                # signer = Signer()
-                # data_signed = signer.sign(data)
-                # data_signed_base64 = base64.urlsafe_b64encode(data_signed.encode('ascii'))
-                # data = data_signed_base64.decode('ascii')
-
-
-
-                # url = reverse('ujjwala:ujjwala_application_link', kwargs={'data': data})
-                # url = url[1:]
-                res = send_ujjwala_application_whatsapp_link_v1(contact_mobile)
+                user = get_current_user()
+                res = send_ujjwala_application_whatsapp_link_v2(contact_mobile, user.id)
                 if res:
                     messages.add_message(
                         request, messages.INFO,
