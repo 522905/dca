@@ -1121,7 +1121,7 @@ class CancelWalkInForm(forms.Form):
 	def clean(self):
 		data = self.cleaned_data
 		data.update({
-			'description': 'Walk In Canceled {}'.format(datetime.datetime.now())
+			'description': '{} Walk In Canceled {}'.format(data['description'], datetime.datetime.now())
 			}
 		)
 		return data
