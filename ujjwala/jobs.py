@@ -1,8 +1,10 @@
 import io
+from functools import wraps
 
 import django_rq
 import requests
 from django.conf import settings
+from django.db import close_old_connections
 from django_rq import job
 from communication_log.models import CommunicationLog
 from connection_app.enums import ConnectionApplicationDocumentsEnum
@@ -104,10 +106,20 @@ def move_ujjwala_files_to_minio_processing(obj):
 #     obj.event_completed_channel_whatsapp()
 
 
+def ensure_db_connection(func):
+    @wraps(func)
+    def run(*args, **kwargs):
+        close_old_connections()
+        return func(*args, **kwargs)
+
+    return run
+
+
+@ensure_db_connection
 def do_primary_omc_dedupe_check(id):
     from ujjwala.models import UjjwalaV2Application, PreInspection
 
-    application = UjjwalaV2Application.objects.filter(pk=id).first()
+    application = UjjwalaV2Application.objects.get(pk=id)
     omc_dedupe_check_passed = True
     iocl_investigation_required = False
     for fm in application.family_members.all():
