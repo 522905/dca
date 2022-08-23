@@ -996,6 +996,8 @@ class ConnectionDisbursement(models.Model):
 			# self.parent.save()
 		else:
 			self.documents.all().delete()
+			self.parent.event_legal_documents_reupload_channel_whatsapp(kwargs.get('description'))
+
 
 	@fsm_log_description
 	@fsm_log_by

@@ -234,7 +234,15 @@ class UjjwalaWhatsappCommunication(object):
 		# 	)
 		# )
 
-	def event_legal_documents_reupload_channel_whatsapp(self):
+	def event_legal_documents_reupload_channel_whatsapp(self, reason):
+		from ujjwala.models import ConnectionDisbursement, PreInspection
+
+		connection_disbursement = ConnectionDisbursement.objects.get(parent_id=self.pk)
+
+		physical_legal_doc_link = self.pre_inspection.documents.filter(
+			type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT
+		).first().link
+
 		body_text = {
 			"countryCode": "+91",
 			"phoneNumber": self.contact_mobile,
@@ -247,15 +255,16 @@ class UjjwalaWhatsappCommunication(object):
 				"name": "ujjwala_legal_documents_reupload",
 				"languageCode": "hi",
 				"headerValues": [
-					# "Alert",  #
+					physical_legal_doc_link,  #
 				],
 				"bodyValues": [
-					self.name
+					self.name,
+					reason
 				],
 				"buttonValues": {
 					"0": [
-						"ujjwala/ujjwala-application/legal_documents_upload/{}/".format(
-							self.id
+						"ujjwala/portal/legal_documents_upload/{}/".format(
+							connection_disbursement.pk
 						)
 					]
 				}
@@ -276,9 +285,23 @@ class UjjwalaWhatsappCommunication(object):
 				content_type=ujjwala_v2_application_content_type,
 				object_id=self.pk,
 				channel_subscriber=self.contact_mobile,
-				event="legal_documents_upload", channel="whatsapp",
+				event="physcial_legal_document_reupload", channel="whatsapp",
 				message_id=data.get('id')
 			)
+
+		res = requests.post(
+			"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+			"&function=add_lead&phone_number={}&list_id=1009&first_name={}&last_name={}".format(
+				self.contact_mobile, self.name, self.pk
+			)
+		)
+
+	# res = requests.post(
+	# 	"http://vici.hawabadlo.in/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+	# 	"&function=add_lead&phone_number={}&list_id=1006&first_name={}&last_name={}".format(
+	# 		self.contact_mobile, self.name, self.pk
+	# 	)
+	# )
 
 	def event_whatsapp_nic_error_update_address(self):
 		body_text = {
