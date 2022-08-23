@@ -882,11 +882,10 @@ def verify_sms_contact_otp(reference_number, otp):
 	}
 
 
-def get_signed_share_data(contact_mobile):
-	user = get_current_user()
+def get_signed_share_data(contact_mobile, user_id):
 	data = {
 		'contact_mobile': contact_mobile,
-		'user': user.id,
+		'user': user_id,
 		'creation': datetime.now()
 	}
 	signer = Signer()
@@ -896,8 +895,8 @@ def get_signed_share_data(contact_mobile):
 	return data
 
 
-def send_ujjwala_application_whatsapp_link_v1(contact_mobile):
-	data = get_signed_share_data(contact_mobile)
+def send_ujjwala_application_whatsapp_link_v1(contact_mobile, user_id):
+	data = get_signed_share_data(contact_mobile, user_id)
 	url = reverse('ujjwala:ujjwala_application_link', kwargs={'data': data})
 	url = url[1:]
 	body_text = {
@@ -940,8 +939,8 @@ def send_ujjwala_application_whatsapp_link_v1(contact_mobile):
 	return False
 
 
-def send_ujjwala_application_whatsapp_link_v2(contact_mobile):
-	data = get_signed_share_data(contact_mobile)
+def send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id):
+	data = get_signed_share_data(contact_mobile, user_id)
 	url = reverse('ujjwala:ujjwala_application_link', kwargs={'data': data})
 	url = url[1:]
 
@@ -954,8 +953,6 @@ def send_ujjwala_application_whatsapp_link_v2(contact_mobile):
 		},
 		# "callbackData": "some_callback_data",
 		"template": {
-			# "name": "ujjwala_application_whatsapp_otp_02082022",
-			# "name": "ujjwala_application_shared_link",
 			"name": "ujjwala_application_shared_link_20082022",
 			"languageCode": "hi",
 			"headerValues": [

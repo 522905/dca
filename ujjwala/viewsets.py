@@ -36,8 +36,8 @@ from .ujjwala_functions import download_ujjwala_documents, get_salutation, \
     download_ujjwala_legal_docs_to_upload, download_ujjwala_physical_legal_docs, \
     process_family_uid_result, process_omc_dedupe_result, send_whatsapp_contact_otp, verify_whatsapp_contact_otp, \
     send_sms_contact_otp, verify_sms_contact_otp, application_needs_to_be_audited, send_ujjwala_welcome_whatsapp_link, \
-    time_in_range, get_signed_share_data,  \
-    send_ujjwala_application_whatsapp_link_v1
+    time_in_range, get_signed_share_data, \
+    send_ujjwala_application_whatsapp_link_v1, send_ujjwala_application_whatsapp_link_v2
 from django.urls import reverse
 
 
@@ -916,7 +916,6 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         })
         return JsonResponse(contacts_list)
 
-
     @action(methods=['post'], detail=True, url_path='robo_got_error_alert')
     def robo_got_error_alert(self, request: HttpRequest, *args, **kwargs):
         application: UjjwalaV2Application = self.get_object()
@@ -996,7 +995,6 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
         return HttpResponse('OK')
 
-
     @action(methods=['get'], detail=False, url_path='get_iocl_investigation_records')
     def get_iocl_investigation_records(self, request, *args, **kwargs):
         record_list = UjjwalaV2Application.objects.filter(
@@ -1018,7 +1016,6 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 )]
             } for record in record_list
         ], safe=False)
-
 
     @action(methods=['post'], detail=False, url_path='update_iocl_investigation_record')
     def update_iocl_investigation_record(self, request, *args, **kwargs):
@@ -1101,7 +1098,6 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             } for record in record_list
         ], safe=False)
 
-
     @action(methods=['post'], detail=False, url_path='update_scheme_onboarding_status')
     def update_scheme_onboarding_status(self, request, *args, **kwargs):
         application_obj = UjjwalaV2Application.objects.get(pk=request.data.get('id'))
@@ -1111,15 +1107,12 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     @action(methods=['post'], detail=False, url_path='schedule_whatsapp_message')
     def schedule_whatsapp_message(self, request, *args, **kwargs):
         scheduler = django_rq.get_scheduler('default')
-
+        inbound_call_user_id = 87
         start_time = datetime.time(8, 0, 0)
         end_time = datetime.time(19, 30, 0)
 
         contact_mobile = self.request.data['mobile']
-        # data = get_signed_share_data(contact_mobile)
         current_time = datetime.datetime.now(pytz.timezone('Asia/Kolkata')).time()
-        # url = reverse('ujjwala:ujjwala_application_link', kwargs={'data': data})
-        # url = url[1:]
 
         if time_in_range(
             start_time, end_time, current_time
@@ -1133,17 +1126,16 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             time_difference = time_difference + datetime.timedelta(seconds=random.randint(0, 60*60))
             scheduler.enqueue_in(
                 time_difference,
-                send_ujjwala_application_whatsapp_link_v1,
-                contact_mobile=contact_mobile
+                send_ujjwala_application_whatsapp_link_v2,
+                contact_mobile=contact_mobile, user_id=inbound_call_user_id
             )
             # scheduler.enqueue_at(
             #     datetime.datetime(2022, 8, 20, 10, 48),
             #     send_ujjwala_application_whatsapp_link,
             #     contact_mobile=contact_mobile
             # )
-            # send_ujjwala_application_whatsapp_link(contact_mobile)
         else:
-            send_ujjwala_application_whatsapp_link_v1(contact_mobile)
+            send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id=inbound_call_user_id)
 
         return HttpResponse('OK')
 
