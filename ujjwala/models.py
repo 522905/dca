@@ -28,9 +28,11 @@ from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMo
 from ujjwala.forms import UjjwalaLegalDocumentsUpload, \
 	ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewForm, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
-	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm, NewRelationCreated
+	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm, NewRelationCreated, \
+	CancelWalkInForm
 from ujjwala.ujjwala_functions import download_ujjwala_physical_legal_docs, is_application_ready_for_disbursement
-from utils.global_functions import move_file_to_minio_bucket, upload_file_to_minio_bucket, old_address_to_description
+from utils.global_functions import move_file_to_minio_bucket, upload_file_to_minio_bucket, old_address_to_description, \
+	old_walk_in_to_description
 
 
 class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
@@ -506,7 +508,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		source=UjjwalaV2ApplicationStatus.NIC_CLEARED,
 		target=UjjwalaV2ApplicationStatus.READY_FOR_DISBURSEMENT,
 		custom=dict(
-			short_description='Ready For Disbursement', admin=True,
+			short_description='Ready For Disbursement', admin=False,
 		),
 		permission='ujjwala.can_approve_connection',
 	)
@@ -1069,6 +1071,41 @@ class ConnectionDisbursement(models.Model):
 		self.parent.transition_installed(by=get_current_user())
 		self.parent.save()
 		pass
+
+	@old_walk_in_to_description
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=[
+			ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
+			ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
+			ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
+			ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
+			ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
+			ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
+		],
+		target=GET_STATE(
+					lambda self, **kwargs: \
+							ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING \
+									if self.status == ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING \
+									else ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
+					states=[
+						ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
+						ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING
+					]
+				),
+		custom=dict(
+			short_description='Cancel Walk-In', admin=True, form=CancelWalkInForm
+		),
+		conditions=[
+			lambda self: self.walk_in_date is not None
+		]
+	)
+	def transition_cancel_walk_in(self, *args, **kwargs):
+		self.walk_in_date = None
+		self.invitation.all().delete()
+		self.save()
 
 
 class ConnectionDisbursementDocuments(models.Model):

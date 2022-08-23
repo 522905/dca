@@ -62,3 +62,14 @@ def old_address_to_description(function):
     wrapper.__name__ = function.__name__
     wrapper.__doc__ = function.__doc__
     return wrapper
+
+
+def old_walk_in_to_description(function):
+    @wraps(function)
+    def wrapper(*args, **kwargs):
+        kwargs['description'] = "{} Walked In: {}".format(kwargs['description'], args[0].walk_in_date)
+        return function(*args, **kwargs)
+
+    wrapper.__name__ = function.__name__
+    wrapper.__doc__ = function.__doc__
+    return wrapper

@@ -243,6 +243,6 @@ def move_application_for_audit(application_id, data):
 
     move_to_audit = application_needs_to_be_audited(data)
     if move_to_audit:
-        application = UjjwalaV2Application.objects.filter(id=application_id).first()
+        application = UjjwalaV2Application.objects.get(pk=application_id)
         application.transition_audit_application(audit_points=move_to_audit)
         application.save()
