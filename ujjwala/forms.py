@@ -1089,3 +1089,39 @@ class SetPrimaryPhoneNumberForm(forms.Form):
 		if mobile_nos:
 			self.fields['mobile'].choices = [(i, i) for i in mobile_nos]
 
+
+class NicClearedCustomerRemarksForm(forms.Form):
+	customer_remarks = forms.ChoiceField(
+		label="Customer Remarks",
+		required=True,
+		help_text="Please select remarks",
+		choices=NicClearedCustomerRemarksEnum.choices
+	)
+	scheduled_date = forms.DateTimeField(widget=forms.DateInput, required=False)
+	description = forms.CharField(
+		widget=forms.Textarea, label='Remarks', required=True
+	)
+
+	# def clean(self):
+	# 	data = self.cleaned_data
+	# 	if data:
+	# 		if data['customer_remarks'] == NicClearedCustomerRemarksEnum.SCHEDULED_DELIVERY:
+	#
+	# 		data = {'description': '{}: {}'.format(
+	# 			data.get('rejected_reason'), data.get('description', '')
+	# 		)}
+	# 	return data
+
+
+class CancelWalkInForm(forms.Form):
+	description = forms.CharField(
+		widget=forms.Textarea, label='Reason To Cancel Walk-In', required=True
+	)
+
+	def clean(self):
+		data = self.cleaned_data
+		data.update({
+			'description': 'Walk In Canceled {}'.format(datetime.datetime.now())
+			}
+		)
+		return data
