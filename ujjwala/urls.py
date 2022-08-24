@@ -13,6 +13,7 @@ from connection_app.viewsets import ConnectionApplicationViewSet
 
 from . import views
 from .robos.nic_error_robo import UjjwalaApplicationNicErrorRobotAPIViewSet
+from .robos.sdms_relationship_robo import UjjwalaApplicationSdmsRelationshipViewSet
 from .views import UjjwalaApplicationWebFormView, WebFormOldView, UjjwalaApplicationIframeWebFormView
 from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet, UjjwalaApplicationOtpViewSet
 
@@ -20,6 +21,9 @@ router = routers.DefaultRouter()
 router.register(r'ujjwala-application', UjjwalaApplicationViewSet)
 router.register(r'ujjwala-bot', UjjwalaApplicationAPIViewSet)
 router.register(r'ujjwala-bot-nic-error', UjjwalaApplicationNicErrorRobotAPIViewSet)
+router.register(
+    r'ujjwala-bot-sdms-relationship', UjjwalaApplicationSdmsRelationshipViewSet, basename='ujjwala_sdms_relationship'
+)
 router.register(r'ujjwala-otp', UjjwalaApplicationOtpViewSet, basename='ujjwala_otp')
 
 urlpatterns = [
