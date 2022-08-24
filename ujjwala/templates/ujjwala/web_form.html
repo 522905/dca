@@ -1236,7 +1236,7 @@ function FamilyMemberService(html_block_id, aadhaar_ocr_service) {
                 var self_husband_diff = Math.abs(self_fm - husband_fm);
 
                 if (self_husband_diff > 15) {
-                    alert('स्वयं और पति के आधार कार्ड की जांच करें है।');
+                    alert('स्वयं और पति के आधार कार्ड की जांच करें। पति-पत्नी की उम्र में बड़ा फासला है। \n पति का जन्म वर्ष: '+husband_fm+' \n स्वयं का जन्म वर्ष: '+self_fm+' \n उम्र में अंतर: '+self_husband_diff+' वर्ष');
                     return false;
                 }
             }
