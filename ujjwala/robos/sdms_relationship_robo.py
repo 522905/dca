@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from ujjwala.enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, PreInspectionStatusEnum, \
 	FamilyMemberRelationEnum
 from ujjwala.models import UjjwalaV2Application
+from ujjwala.ujjwala_functions import get_salutation
 
 
 class UjjwalaApplicationSdmsRelationshipViewSet(viewsets.ViewSet):
@@ -29,7 +30,8 @@ class UjjwalaApplicationSdmsRelationshipViewSet(viewsets.ViewSet):
             self_name_split = record.name.split(" ")
             data.append({
                 "id": record.id,
-                "Salutation": "Mrs.",
+                # "Salutation": "Mrs.",
+                "Salutation": get_salutation(self_fm),
                 "First Name": self_name_split[0],
                 "Last Name": ' '.join(self_name_split[1:]) if len(self_name_split) > 1 else '.',
                 "Gender": "Female",
