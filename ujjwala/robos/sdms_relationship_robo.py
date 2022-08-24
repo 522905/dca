@@ -30,8 +30,8 @@ class UjjwalaApplicationSdmsRelationshipViewSet(viewsets.ViewSet):
             data.append({
                 "id": record.id,
                 "Salutation": "Mrs.",
-                "First Name": self_name_split[0],
-                "Last Name": ' '.join(self_name_split[1:]) if len(self_name_split) > 1 else '.',
+                "First Name": self_name_split[0].title(),
+                "Last Name": ' '.join(self_name_split[1:]).title() if len(self_name_split) > 1 else '.',
                 "Gender": "Female",
                 "DOB": self_fm.dob,
                 "Migrated": "Y",
