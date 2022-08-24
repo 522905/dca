@@ -20,13 +20,18 @@ class UjjwalaApplicationSdmsRelationshipViewSet(viewsets.ViewSet):
         data = []
 
         for record in record_list:
+            try:
+                address = record.get_address_for_sdms_upload()
+            except:
+                continue
+
             self_fm = record.family_members.get(relation=FamilyMemberRelationEnum.SELF)
-            address = record.get_address_for_sdms_upload()
+            self_name_split = record.name.split(" ")
             data.append({
                 "id": record.id,
                 "Salutation": "Mrs.",
-                "First Name": record.name.split(" ")[0],
-                "Last Name": record.name.split(" ")[1],
+                "First Name": self_name_split[0],
+                "Last Name": ' '.join(self_name_split[1:]) if len(self_name_split) > 1 else '.',
                 "Gender": "Female",
                 "DOB": self_fm.dob,
                 "Migrated": "Y",
