@@ -160,14 +160,14 @@ class PreInspectionTypeEnum(models.TextChoices):
 
 
 class ConnectionDisbursementStatusEnum(models.TextChoices):
-	LEGAL_DOCUMENTS_PENDING = 'LEGAL_DOCUMENTS_PENDING', 'Legal Documents Pending'
-	LEGAL_DOCUMENTS_REVIEW = 'LEGAL_DOCUMENTS_REVIEW', 'Legal Documents Review'
+	LEGAL_DOCUMENTS_PENDING = 'LEGAL_DOCUMENTS_PENDING', 'Legal Documents Not Uploaded (Upload Pending)'
+	LEGAL_DOCUMENTS_REVIEW = 'LEGAL_DOCUMENTS_REVIEW', 'Legal Documents In Review (Review Pending)'
 	LEGAL_DOCUMENTS_ACCEPTED = 'LEGAL_DOCUMENTS_ACCEPTED', 'Legal Documents Accepted'
 	OTP_VERIFIED = 'OTP_VERIFIED', 'Otp Verified'
 	SV_LABEL_PRINT = 'SV_LABEL_PRINT', 'SV Label Print'
-	SOCIAL_MEDIA_UPDATES = 'SOCIAL_MEDIA_UPDATES', 'Social Media Updates'
+	SOCIAL_MEDIA_UPDATES = 'SOCIAL_MEDIA_UPDATES', 'Social Media Photo Pending'
 	# DISBURSEMENT_PHOTO_UPLOAD = 'DISBURSEMENT_PHOTO_UPLOAD', 'Disbursement Photo Upload'
-	MATERIAL_DELIVERY_OTP_VERIFIED = 'MATERIAL_DELIVERY_OTP_VERIFIED', 'Material Delivery Otp Verified'
+	MATERIAL_DELIVERY_OTP_VERIFIED = 'MATERIAL_DELIVERY_OTP_VERIFIED', 'Material Delivery (Photo Pending)'
 	MATERIAL_DELIVERED = 'MATERIAL_DELIVERED', 'Material Delivered'
 	INSTALLATION_MAIN_GATE = 'INSTALLATION_MAIN_GATE', 'Installation Main Gate'
 	INSTALLATION_UPLOADED = 'INSTALLATION_UPLOADED', 'Installation Uploaded'
@@ -176,3 +176,9 @@ class ConnectionDisbursementStatusEnum(models.TextChoices):
 class SchemeOnboardingStatusEnum(models.TextChoices):
 	ONBOARD_WITH_BTC = 'ONBOARD_WITH_BTC', 'Onboard With BTC'
 	ONBOARD_WITH_NCTC = 'ONBOARD_WITH_NCTC', 'Onboard With NCTC'
+
+
+class NicClearedCustomerRemarksEnum(models.TextChoices):
+	NOT_INTERESTED = 'NOT_INTERESTED', 'Not Interested'
+	NOT_APPROACHABLE = 'NOT_APPROACHABLE', 'Not Approachable'
+	SCHEDULED_DELIVERY = 'SCHEDULED_DELIVERY', 'Scheduled Delivery'

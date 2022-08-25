@@ -52,7 +52,6 @@
                                     <td>
                                         {% for contact in obj.all_contacts %}
                                             <p>Phone {{ forloop.counter }}: <b><a href="tel:{{ contact}}" onclick="return true;">{{contact}}</a></b></p>
-                                           
                                         {% endfor %}
                                     </td>
                                 </tr>
@@ -67,7 +66,7 @@
                 <div class="status_block">
                     <div class="main-header">
                         <span class="text-black">Status</span>
-                        <span class="float-right"><b>{{obj.status}}</b></span>
+                        <span class="float-right"><b>{{obj.get_status_display}}</b></span>
                     </div>
                     <table class="table table-bordred" style="margin-bottom: 0;">
                         <tr>
@@ -79,7 +78,7 @@
                             <td>
                                 {% if obj.pre_inspection %}
                                     <a href="{% url 'admin:ujjwala_preinspection_change' object_id=obj.pre_inspection.id %}">
-                                        {{obj.pre_inspection.status}}
+                                        {{obj.pre_inspection.get_status_display}}
                                     </a>
                                     {% if obj.pre_inspection.status != 'ACCEPTED' %}
                                         {% if obj.pre_inspection.status != 'SUBMITTED' %}
@@ -89,7 +88,7 @@
                                         {% endif %}
                                     {% endif %}
                                     {% else %}
-                                        {{obj.pre_inspection.status}}
+                                        {{obj.pre_inspection.get_status_display}}
                                 {% endif %}
                             </td>
                         </tr>
@@ -97,7 +96,7 @@
                             <th>Connection Disbursement Status: </th>
                             <td> {% if obj.connection_disbursement %}
                                 <a href="{% url 'admin:ujjwala_connectiondisbursement_change' object_id=obj.connection_disbursement.id %}">
-                                    {{obj.connection_disbursement.status}}
+                                    {{obj.connection_disbursement.get_status_display}}
                                 </a>
                                     {% if obj.connection_disbursement.status == 'LEGAL_DOCUMENTS_PENDING' %}
                                         <a href="{% url 'ujjwala:whatsapp_form_abc' pk=obj.id %}">
@@ -105,7 +104,7 @@
                                         </a>
                                     {% endif %}
                                 {% else %}
-                                    {{obj.connection_disbursement.status}}
+                                    {{obj.connection_disbursement.get_status_display}}
                                 {% endif %}
                             </td>
                         </tr>
@@ -119,6 +118,13 @@
                             <th>
                                 <a class="text_link" href="{% url 'ujjwala:set_primary_phone_number' pk=obj.id %}">
                                     <b style="color:cornflowerblue"><i>Set Primary Phone Number</i></b></a>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th></th>
+                            <th>
+                                <a class="text_link" href="{% url 'ujjwala:nic_cleared_customer_remarks' pk=obj.id %}">
+                                    <b style="color:cornflowerblue"><i>Update Nic Cleared Status</i></b></a>
                             </th>
                         </tr>
                         {% endif %} 
