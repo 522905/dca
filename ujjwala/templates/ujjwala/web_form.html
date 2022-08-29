@@ -1215,10 +1215,10 @@ function FamilyMemberService(html_block_id, aadhaar_ocr_service) {
             var combined_validation = resp.reduce((prev, nowbool) => {return prev && nowbool});
             if (!combined_validation) return false;
 
-            var self_fm = this.find_fm_by_relation('SELF').dob.split('-')[0];
+            var self_fm = family_members.filter(e => e.relation === 'SELF')[0].dob.split('-')[0];
             if (marital_status === 'UNMARRIED') {
-                var mother_fm = this.find_fm_by_relation('MOTHER').dob.split('-')[0];
-                var father_fm = this.find_fm_by_relation('FATHER').dob.split('-')[0];
+                var mother_fm = family_members.filter(e => e.relation === 'MOTHER')[0].dob.split('-')[0];
+                var father_fm = family_members.filter(e => e.relation === 'FATHER')[0].dob.split('-')[0];
 
                 var self_mother_diff = self_fm - mother_fm;
                 var self_father_diff = self_fm - father_fm;
@@ -1232,7 +1232,7 @@ function FamilyMemberService(html_block_id, aadhaar_ocr_service) {
                     return false;
                 }
             } else if (marital_status === 'MARRIED') {
-                var husband_fm = this.find_fm_by_relation('HUSBAND').dob.split('-')[0];
+                var husband_fm = family_members.filter(e => e.relation === 'HUSBAND')[0].dob.split('-')[0];
                 var self_husband_diff = Math.abs(self_fm - husband_fm);
 
                 if (self_husband_diff > 15) {
