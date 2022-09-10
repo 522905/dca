@@ -24,7 +24,7 @@ from ujjwala.communication_models import UjjwalaWhatsappCommunication
 from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMobileStatusEnum, \
 	UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, \
 	RejectionTypeEnum, RoboSdmsDedeupStatusEnum, UserDocumentsEnum, OtpStatusEnum, PreInspectionStatusEnum, \
-	ConnectionDisbursementStatusEnum, PreInspectionTypeEnum, SchemeOnboardingStatusEnum
+	ConnectionDisbursementStatusEnum, PreInspectionTypeEnum, SchemeOnboardingStatusEnum, NicClearedCustomerRemarksEnum
 from ujjwala.forms import UjjwalaLegalDocumentsUpload, \
 	ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewForm, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
@@ -86,6 +86,12 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	service_area = models.ForeignKey(
 		ServiceArea, on_delete=models.PROTECT, null=True, blank=True
 	)
+	customer_remarks = models.CharField(
+		max_length=64, choices=NicClearedCustomerRemarksEnum.choices,
+		null=True, blank=True
+	)
+	scheduled_date = models.DateTimeField(null=True, blank=True)
+	ekyc_cleared = models.BooleanField(default=False)
 
 	class Meta:
 		permissions = (
@@ -888,7 +894,6 @@ class PreInspection(models.Model):
 class PreInspectionDocuments(models.Model):
 	parent = models.ForeignKey(PreInspection, on_delete=models.CASCADE, related_name='documents', null=True)
 	type = models.CharField(max_length=32, choices=UjjwalaApplicationDocumentsEnum.choices)
-	link = models.URLField()
 	compressed = models.BooleanField(default=False)
 	file_size = models.CharField(max_length=16, default='0')
 
@@ -918,6 +923,7 @@ class ConnectionDisbursement(models.Model):
 	walk_in_date = models.DateTimeField(null=True, blank=True)
 	sequence = models.CharField(max_length=16, null=True, blank=True)
 	mechanic = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
+	material_delivered_on = models.DateTimeField(null=True, blank=True)
 
 	status = FSMField(
 		default=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
@@ -1043,6 +1049,7 @@ class ConnectionDisbursement(models.Model):
 	)
 	def transition_material_delivered(self, *args, **kwargs):
 		self.parent.transition_material_delivered(by=get_current_user())
+		self.material_delivered_on = datetime.datetime.now()
 		self.parent.save()
 		create_txn_status_job_function = partial(
 			django_rq.enqueue,

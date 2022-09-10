@@ -9,6 +9,7 @@ from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group, User
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.signing import Signer
 from django.http import HttpResponse, Http404, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
@@ -815,7 +816,8 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
             return render(request, 'ujjwala/no_permissions.html')
         connection_disbursement = self.get_object()
         if connection_disbursement:
-            if connection_disbursement.parent.status in (
+            if connection_disbursement.parent.ekyc_cleared and \
+                    connection_disbursement.parent.status in (
                 UjjwalaV2ApplicationStatus.NIC_CLEARED,
                 UjjwalaV2ApplicationStatus.READY_FOR_DISBURSEMENT
             ):
@@ -1601,3 +1603,72 @@ class PreInspectionConvertToView(FormView):
         obj.convert_inspection_type(convert_to_type=data['convert_to'])
         obj.save()
         return redirect('ujjwala:pre_inspection_form_view', type=data['convert_to'], pk=obj.pk)
+
+
+@method_decorator(login_required, 'dispatch')
+class UjjwalaPreInspectionUserListView(ListView):
+    model = PreInspection
+    template_name = 'ujjwala/pre-inspection/pre_inspection_user_listview.html'
+    paginate_by = 20
+    permission = 'has_view_permission'
+
+    def get_queryset(self):
+        return PreInspection.objects.filter(
+            mechanic=get_current_user()
+        ).order_by('-submitted_on')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        list_pre_inspection = PreInspection.objects.filter(mechanic=get_current_user())
+        paginator = Paginator(list_pre_inspection, self.paginate_by)
+
+        page = self.request.GET.get('page')
+
+        try:
+            list_pre_inspection = paginator.page(page)
+        except PageNotAnInteger:
+            list_pre_inspection = paginator.page(1)
+        except EmptyPage:
+            list_pre_inspection = paginator.page(paginator.num_pages)
+
+        context['list_pre_inspection'] = list_pre_inspection
+        return context
+
+
+@method_decorator(login_required, 'dispatch')
+class NicClearedCustomerRemarks(FormView):
+    form_class = NicClearedCustomerRemarksForm
+    template_name = "ujjwala/extra/nic_cleared_customer_remarks.html"
+
+    def get_object(self, queryset=None):
+        try:
+            obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
+        except:
+            raise Http404(
+                "No application found with Application Id: {}".format(self.kwargs.get('pk'))
+            )
+        return obj
+
+    def form_valid(self, form):
+        data = form.cleaned_data
+        obj = self.get_object()
+        obj.customer_remarks = data['customer_remarks']
+        obj.scheduled_date = data['scheduled_date']
+        obj.save()
+        return HttpResponse(content="Customer Remarks Updated Successfully.")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        obj = self.get_object()
+        context.update({
+            "obj": obj,
+        })
+        return context
+    #
+    # def get_form_kwargs(self):
+    #     kwargs = super().get_form_kwargs()
+    #     # obj = self.get_object()
+    #     # kwargs.update({
+    #     #     'mobile_nos': obj.all_contacts
+    #     # })
+    #     return kwargs
