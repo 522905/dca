@@ -17,7 +17,7 @@ from django_currentuser.middleware import get_current_user
 
 from otp.models import Otp
 from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
-	RejectionTypeEnum, PreInspectionTypeEnum, RoboSdmsDedeupStatusEnum
+	RejectionTypeEnum, PreInspectionTypeEnum, RoboSdmsDedeupStatusEnum, NicClearedCustomerRemarksEnum
 from ujjwala.models import UjjwalaApplicationDocumentsEnum
 from formtools.wizard.views import SessionWizardView
 
@@ -1097,20 +1097,22 @@ class NicClearedCustomerRemarksForm(forms.Form):
 		help_text="Please select remarks",
 		choices=NicClearedCustomerRemarksEnum.choices
 	)
-	scheduled_date = forms.DateTimeField(widget=forms.DateInput, required=False)
+	scheduled_date = forms.DateField(widget=forms.DateInput, required=False)
 	description = forms.CharField(
-		widget=forms.Textarea, label='Remarks', required=True
+		widget=forms.Textarea, label='Remarks', required=False
 	)
 
-	# def clean(self):
-	# 	data = self.cleaned_data
-	# 	if data:
-	# 		if data['customer_remarks'] == NicClearedCustomerRemarksEnum.SCHEDULED_DELIVERY:
-	#
-	# 		data = {'description': '{}: {}'.format(
-	# 			data.get('rejected_reason'), data.get('description', '')
-	# 		)}
-	# 	return data
+	def clean(self):
+		data = self.cleaned_data
+		if data.get('customer_remarks', '') == NicClearedCustomerRemarksEnum.SCHEDULED_DELIVERY and \
+				not data['scheduled_date']:
+			raise forms.ValidationError("Please enter a scheduled date for material delivery")
+		data.update({
+			'description': '{} - {}: {}'.format(
+				data.get('customer_remarks'), data.get('scheduled_date'), data.get('description', '')
+			)
+		})
+		return data
 
 
 class CancelWalkInForm(forms.Form):
