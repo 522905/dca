@@ -276,6 +276,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		self.save()
 		pass
 
+
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
@@ -736,6 +737,7 @@ class PreInspection(models.Model):
 			PreInspectionStatusEnum.PREVIEW_INSPECTION,
 			PreInspectionStatusEnum.REUPLOAD,
 			PreInspectionStatusEnum.REJECTED,
+			PreInspectionStatusEnum.SAFETY_AUDIO,
 		],
 		target=GET_STATE(
 			lambda self, **kwargs: \
