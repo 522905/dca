@@ -816,8 +816,16 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
             return render(request, 'ujjwala/no_permissions.html')
         connection_disbursement = self.get_object()
         if connection_disbursement:
-            if connection_disbursement.parent.ekyc_cleared and \
-                    connection_disbursement.parent.status in (
+            if not connection_disbursement.parent.ekyc_cleared:
+                messages.add_message(
+                    request, messages.ERROR,
+                    "Application Id : {} Status: {} Pre-Inspection Status: {} Ekyc Cleared: {}".format(
+                        connection_disbursement.parent_id, connection_disbursement.parent.status,
+                        connection_disbursement.parent.pre_inspection.status,
+                        connection_disbursement.parent.ekyc_cleared
+                    )
+                )
+            elif connection_disbursement.parent.status in (
                 UjjwalaV2ApplicationStatus.NIC_CLEARED,
                 UjjwalaV2ApplicationStatus.READY_FOR_DISBURSEMENT
             ):
