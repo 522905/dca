@@ -250,12 +250,11 @@ class UjjwalaWhatsappCommunication(object):
 			"traits": {
 				"name": self.name,
 			},
-			# "callbackData": "some_callback_data",
 			"template": {
 				"name": "ujjwala_legal_documents_reupload",
 				"languageCode": "hi",
 				"headerValues": [
-					physical_legal_doc_link,  #
+					physical_legal_doc_link,
 				],
 				"bodyValues": [
 					self.name,
@@ -355,6 +354,7 @@ class UjjwalaWhatsappCommunication(object):
 		# 	)
 		# )
 		return data.get('result', '')
+
 
 	def event_whatsapp_pre_inspection_type_self(self, pre_inspection_id):
 		body_text = {
@@ -508,5 +508,51 @@ class UjjwalaWhatsappCommunication(object):
 				object_id=self.pk,
 				channel_subscriber=self.contact_mobile,
 				event="pre_inspection_reject", channel="whatsapp",
+				message_id=data.get('id')
+			)
+
+
+	def event_whatsapp_update_bank_details_reject(self, pre_inspection_id, reject_reason=''):
+		body_text = {
+			"countryCode": "+91",
+			"phoneNumber": self.contact_mobile,
+			"type": "Template",
+			"traits": {
+				"name": self.name,
+			},
+			"template": {
+				"name": "update_bank_details",
+				"languageCode": "hi",
+				"headerValues": [
+					# "Alert",  #
+				],
+				"bodyValues": [
+					self.name,
+					self.name,
+					"https://dca.arungas.com/ujjwala/portal/update_bank_details/{}/".format(str(self.id))
+				],
+				"buttonValues": {
+					"0": [
+						"ujjwala/portal/update_bank_details/{}/".format(str(self.id))
+					]
+				}
+			}
+		}
+
+		ujjwala_v2_application_content_type = ContentType.objects.get(
+			app_label='ujjwala', model='ujjwalav2application'
+		)
+		data = track.client.post(
+			api_key=settings.INTERAKT_API_KEY,
+			path="/v1/public/message/",
+			body=body_text
+		).json()
+
+		if data.get('result', ''):
+			CommunicationLog.objects.create(
+				content_type=ujjwala_v2_application_content_type,
+				object_id=self.pk,
+				channel_subscriber=self.contact_mobile,
+				event="update_bank_details", channel="whatsapp",
 				message_id=data.get('id')
 			)

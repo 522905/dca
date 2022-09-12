@@ -30,7 +30,8 @@ from ujjwala.forms import UjjwalaLegalDocumentsUpload, \
 	EkycAccepted, PreInspectionReviewForm, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
 	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm, NewRelationCreated, \
 	CancelWalkInForm
-from ujjwala.ujjwala_functions import download_ujjwala_physical_legal_docs, is_application_ready_for_disbursement
+from ujjwala.ujjwala_functions import download_ujjwala_physical_legal_docs, is_application_ready_for_disbursement, \
+	fsm_custom_audit_points_description
 from utils.global_functions import move_file_to_minio_bucket, upload_file_to_minio_bucket, old_address_to_description, \
 	old_walk_in_to_description
 
@@ -569,6 +570,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		self.last_execution_state = self.status
 		self.audit_points = audit_points
 
+	@fsm_custom_audit_points_description
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
@@ -581,9 +583,9 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			short_description='Audit Accepted', admin=True,
 		),
 	)
-	def transition_audit_accepted(self, audit_points, *args, **kwargs):
-		self.last_execution_state = self.status
-		self.audit_points = audit_points
+	def transition_audit_accepted(self, *args, **kwargs):
+		pass
+
 
 	@fsm_log_description
 	@fsm_log_by

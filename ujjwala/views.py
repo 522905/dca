@@ -37,7 +37,7 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
     ConnectionDisbursementMaterialDeliveryForm, ConnectionDisbursementInvitationForm, \
     ConnectionDisbursementSocialMediaUpdatesForm, ConnectionDisbursementSearchForm, NicUpdateAddressForm, \
     PreInspectionConvertForm, LegalDocumentsReviewAdminForm, SetPrimaryPhoneNumberForm, \
-    NicClearedCustomerRemarksForm
+    NicClearedCustomerRemarksForm, UpdateBankDetailsForm
 
 from ujjwala.global_functions import login_required_if_mech_inspection
 
@@ -1600,8 +1600,15 @@ class PreInspectionConvertToView(FormView):
     def form_valid(self, form):
         obj = self.get_object()
         data = form.clean()
-        obj.convert_inspection_type(convert_to_type=data['convert_to'])
-        obj.save()
+
+        if data['convert_to'] == 'mech':
+            convert_to = PreInspectionTypeEnum.MECHANIC
+        else:
+            convert_to = PreInspectionTypeEnum.SELF
+
+        if not obj.type == convert_to:
+            obj.convert_inspection_type(convert_to_type=data['convert_to'])
+            obj.save()
         return redirect('ujjwala:pre_inspection_form_view', type=data['convert_to'], pk=obj.pk)
 
 
@@ -1672,3 +1679,43 @@ class NicClearedCustomerRemarks(FormView):
     #     #     'mobile_nos': obj.all_contacts
     #     # })
     #     return kwargs
+
+
+@method_decorator(login_required, 'dispatch')
+class UpdateBankDetailsFormView(FormView):
+    form_class = UpdateBankDetailsForm
+
+    def get_template_names(self):
+        obj = self.get_object()
+        if obj.bank_account_number:
+            return "ujjwala/extra/show_bank_details.html"
+        else:
+            return "ujjwala/extra/update_bank_details.html"
+
+    def get_object(self, queryset=None):
+        try:
+            obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
+        except:
+            raise Http404(
+                "No application found with Application Id: {}".format(self.kwargs.get('pk'))
+            )
+        return obj
+
+    def form_valid(self, form):
+        return HttpResponse(content="Bank Details Updated Successfully.")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        obj = self.get_object()
+        context.update({
+            "obj": obj,
+        })
+        return context
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        obj = self.get_object()
+        kwargs.update({
+            'application': obj
+        })
+        return kwargs

@@ -213,12 +213,24 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 return JsonResponse({
                     "message": "Application Already Exist With Id: {}".format(existing_application.id)
                 })
-            PreInspection.objects.filter(
-                parent_id=existing_application.id
-            ).delete()
+
             ConnectionDisbursement.objects.filter(
                 parent_id=existing_application.id
             ).delete()
+
+            pre_inspection = PreInspection.objects.filter(
+                parent_id=existing_application.id
+            ).first()
+
+            if pre_inspection:
+                if pre_inspection.status == 'ACCEPTED':
+                    response = super().create(request, *args, **kwargs)
+                    pre_inspection.parent_id = response.data.get('id')
+                    pre_inspection.save()
+                    existing_application.delete()
+                    return response
+                else:
+                    pre_inspection.delete()
             existing_application.delete()
         return super().create(request, *args, **kwargs)
 

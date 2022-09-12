@@ -143,13 +143,17 @@ class UjjwalaV2Admin(ImportMixin, ExportActionMixin, FSMTransitionCustomMixin, a
     def has_change_permission(self, request, obj=None):
         if not obj:
             return True
-        return obj.status == UjjwalaV2ApplicationStatus.EDIT_APPLICATION
+        return obj.status in (
+            UjjwalaV2ApplicationStatus.EDIT_APPLICATION,
+            UjjwalaV2ApplicationStatus.AUDIT_APPLICATION
+        )
 
     def get_fields(self, request, obj=None):
         # fields = super().get_fields(request, obj)
         # return fields
         if obj and obj.status in (
-                UjjwalaV2ApplicationStatus.EDIT_APPLICATION
+                UjjwalaV2ApplicationStatus.EDIT_APPLICATION,
+                UjjwalaV2ApplicationStatus.AUDIT_APPLICATION
         ):
             return [
                 'marital_status',
@@ -161,28 +165,34 @@ class UjjwalaV2Admin(ImportMixin, ExportActionMixin, FSMTransitionCustomMixin, a
                 'uid_mobile_status',
                 'fsm_display_status',
                 'referral_code',
+                'audit_points',
             ]
         else:
             fields = super().get_fields(request, obj)
-            fields = fields + ['connection_disbursement', 'pre_inspection',]
+            fields = fields + ['connection_disbursement', 'pre_inspection', ]
             return fields
 
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = super().get_readonly_fields(request, obj)
 
         if obj and obj.status in (
-                UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
-                UjjwalaV2ApplicationStatus.DO_MANUAL_OPERATION,
-                UjjwalaV2ApplicationStatus.MANUAL_LEGAL_DOCUMENTS_UPLOAD
+            UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
+            UjjwalaV2ApplicationStatus.DO_MANUAL_OPERATION,
+            UjjwalaV2ApplicationStatus.MANUAL_LEGAL_DOCUMENTS_UPLOAD
         ):
             readonly_fields = readonly_fields + ['download_legal_docs']
         elif obj and obj.status in (
-                UjjwalaV2ApplicationStatus.NIC_ERROR_INSUFFICIENT_ADDRESS
+            UjjwalaV2ApplicationStatus.NIC_ERROR_INSUFFICIENT_ADDRESS
         ):
             readonly_fields = readonly_fields + [
                 'whatsapp_nic_error_update_address'
             ]
-
+        elif obj and obj.status in (
+            UjjwalaV2ApplicationStatus.AUDIT_APPLICATION
+        ):
+            readonly_fields = readonly_fields + [
+                'audit_points'
+            ]
         readonly_fields = readonly_fields + [
             'set_primary_phone_number', 'whatsapp_pre_inspection_type_self', 'whatsapp_form_a_b_c'
         ]

@@ -1127,3 +1127,33 @@ class CancelWalkInForm(forms.Form):
 			}
 		)
 		return data
+
+
+class UpdateBankDetailsForm(forms.Form):
+	bank_account_number = forms.CharField(
+		widget=forms.TextInput, label='Bank Account Number', required=True
+	)
+	ifsc_code = forms.CharField(
+		widget=forms.TextInput, label='IFSC Code', required=True
+	)
+	passbook_photo_url = forms.URLField(
+		widget=forms.HiddenInput, required=True
+	)
+
+	def __init__(self, application=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.application = application
+
+	def save(self):
+		data = self.cleaned_data
+
+		obj = self.application
+		obj.bank_account_number = data['bank_account_number']
+		obj.ifsc_code = data['ifsc_code']
+
+		obj.documents.create(
+			parent=obj,
+			type=UjjwalaApplicationDocumentsEnum.BANK_DETAIL,
+			link=data['passbook_photo_url']
+		)
+		obj.save()

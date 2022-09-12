@@ -144,6 +144,11 @@ urlpatterns = [
         views.NicErrorUpdateAddress.as_view(),
         name="nic_error_update_address"
     ),
+    url(
+        '^portal/update_bank_details/(?P<pk>[^/.]+)/$',
+        views.UpdateBankDetailsFormView.as_view(),
+        name="update_bank_details"
+    ),
 
     # url(
     #     '^portal/connection-disbursement/(?P<pk>[^/.]+)/send_invitation/$',
