@@ -512,7 +512,7 @@ class UjjwalaWhatsappCommunication(object):
 			)
 
 
-	def event_whatsapp_update_bank_details_reject(self, pre_inspection_id, reject_reason=''):
+	def event_whatsapp_update_bank_details(self):
 		body_text = {
 			"countryCode": "+91",
 			"phoneNumber": self.contact_mobile,
