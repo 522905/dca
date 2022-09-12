@@ -1,0 +1,107 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% load material_form %}
+{% include 'material/includes/material_css.html' %}
+{% include 'material/includes/material_js.html' %}
+{% block content %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap" rel="stylesheet">
+<script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
+<div class="p-2 pt-0 form_label" style="width: 100%;">
+    <form method="POST" id="form">
+        {% csrf_token %}
+        <div class="card">
+            <!-- <div class="card-body"> -->
+                <!-- {% form form=form %}{% endform %} -->
+            <!-- </div> -->
+            <div class="card-body p-3">
+                <div class="form-group">
+                    <span id="ifscmess"></span>
+                    <label class="col-md-12 p-0">Enter IFSC Code</label>
+                    <input class="searchfield pl-2" id="id_fsc_code" name="ifsc_code" required onblur="checkIfscCodeValidity();" type="text" placeholder="Enter IFSC code" />
+                    
+                </div>
+                <div class="form-group mb-1">
+                    <label class="col-md-12 p-0">Enter Bank Account number</label>
+                    <input class="banktext pl-2" id="id_bank_account_number" type="password" name="bank_account_number" placeholder="Enter Bank Account Detail" onselectstart="return false" onpaste="return false;" onCopy="return false" onCut="return false" onDrag="return false" onDrop="return false" 
+                   >
+                </div>
+                <div class="form-group mb-1">
+                    <label class="col-md-12 p-0">Re-Enter Bank Account number</label>
+                    <input class="banktext pl-2" id="id_re_bank_account_number" name="bank_account_number" type="tel" placeholder="Re-Enter Bank Account Detail" onselectstart="return false" onpaste="return false;" onCopy="return false" onCut="return false" onDrag="return false" onDrop="return false">
+                </div>
+                
+            </div>
+            <div class="card-footer ">
+                <button type="button" name="_submit" class="btn float-right" onclick="submitForm()">Submit</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+function submitForm() {
+    $('#id_bank_account_number').focus();
+    
+    if ($('form')[0].reportValidity()) {
+        var bankAccount = $('#id_bank_account_number').val();
+        var reBankAccount = $('#id_re_bank_account_number').val();
+        if (bankAccount == reBankAccount)
+        {
+            $('form').submit();
+        }
+        else
+        {
+            alert('Your Bank Account Number Not Same, Please check your bank account number');
+            return false;
+        }
+    }
+}
+$(document).ready(function() {
+   
+    $('.banktext').bind("cut copy paste", function(e) {
+        e.preventDefault();
+         alert("You cannot paste into this text field.");
+        $('.banktext').bind("contextmenu", function(e) {
+            e.preventDefault();
+        });
+    });
+    
+   
+});
+function checkIfscCodeValidity() {
+    // if(!$('#ifsc_code')[0].reportValidity()) {
+    //     return;
+    // }
+    var ifsc = $('#id_fsc_code').val();
+    if (!ifsc) {
+        alert("IFSC can't be blank!");
+    }
+    
+    var existingIfsc = $('#id_fsc_code').attr('validated-val');
+
+    if (ifsc!=existingIfsc) {
+        $.getJSON('https://ifsc.razorpay.com/' + ifsc, function (data) {
+            var table = '<div class="striped">'
+                + '<p><b>Bank Name:</b> ' + data.BANK + ', ' + data.CITY + ', ' + data.STATE + ' </p>'
+                + '<p><b>Branch:</b> ' + data.BRANCH + ' </p>'
+                + '</div>';
+            $('#ifscmess').html(table);
+            $('#id_fsc_code')[0].setCustomValidity('');
+            $('#id_fsc_code').attr('validated-val', ifsc);
+        }).fail(function () {
+            alert("अमान्य IFSC कोड");
+            var msg = '<div id="errMsg">अमान्य IFSC कोड</div>';
+            $('#ifscmess').html(msg);
+            $('#id_fsc_code')[0].setCustomValidity('अमान्य IFSC कोड');
+            $('#id_fsc_code')[0].reportValidity();
+            $('#id_fsc_code').attr('validated-val', ifsc);
+        });
+    }
+    
+}
+
+</script>
+{% endblock %}

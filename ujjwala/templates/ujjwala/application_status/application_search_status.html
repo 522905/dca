@@ -123,9 +123,12 @@
                         <tr>
                             <th></th>
                             <th>
-                                <a class="text_link" href="{% url 'ujjwala:nic_cleared_customer_remarks' pk=obj.id %}">
-                                    <b style="color:cornflowerblue"><i>Update Nic Cleared Status</i></b></a>
+                                <a class="text_link" href="{% url 'ujjwala:update_bank_details' pk=obj.id %}">
+                                    <b style="color:cornflowerblue"><i>Update Bank Details</i></b></a>
                             </th>
+                        </tr>
+                        <tr>
+                            <th></th>
                         </tr>
                         {% endif %} 
                     </table>
