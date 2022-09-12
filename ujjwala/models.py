@@ -154,6 +154,15 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		'''.format(url)
 		return mark_safe(html)
 
+	def whatsapp_update_bank_details(self):
+		if not self.bank_account_number:
+			url = reverse('ujjwala:whatsapp_update_bank_details', kwargs={'pk': self.pk})
+			html = '''
+			<a href="{}">Whatsapp Update Bank Details</a>
+			'''.format(url)
+			return mark_safe(html)
+		else:
+			return mark_safe("Bank Details Updated")
 
 	@property
 	def formatted_address(self):
@@ -955,6 +964,7 @@ class ConnectionDisbursement(models.Model):
 		<a href="{}">Whatsapp Form A B C</a>
 		'''.format(url)
 		return mark_safe(html)
+
 
 	def valid_sv_link(self):
 		valid_invitation = self.invitation.filter(parent=self).first()

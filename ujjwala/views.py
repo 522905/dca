@@ -200,6 +200,23 @@ class WhatsappUploadLegalForms(View):
             )
 
 
+class WhatsappUpdateBankDetailsView(View):
+    def get(self, request, *args, **kwargs):
+        application = UjjwalaV2Application.objects.filter(id=kwargs.get('pk')).first()
+        if not application:
+            return HttpResponse("Application Id {} does not exist".format(kwargs.get('pk')))
+
+        if not application.bank_account_number:
+            application.event_whatsapp_update_bank_details()
+            return HttpResponse(
+                "Update Bank Details Message Sent For Application Id: {}".format(kwargs.get('pk'))
+            )
+        else:
+            return HttpResponse(
+                "Bank Details Already Uploaded For Application Id: {}".format(kwargs.get('pk'))
+            )
+
+
 class ApplicationStatusView(DetailView):
     model = UjjwalaV2Application
 
@@ -1689,7 +1706,6 @@ class NicClearedCustomerRemarks(FormView):
     #     return kwargs
 
 
-@method_decorator(login_required, 'dispatch')
 class UpdateBankDetailsFormView(FormView):
     form_class = UpdateBankDetailsForm
 
