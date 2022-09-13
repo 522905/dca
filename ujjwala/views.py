@@ -1778,6 +1778,7 @@ class UpdateBankDetailsFormView(FormView):
         return obj
 
     def form_valid(self, form):
+        form.save()
         return HttpResponse(content="Bank Details Updated Successfully.")
 
     def get_context_data(self, **kwargs):
