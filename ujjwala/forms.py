@@ -1136,9 +1136,9 @@ class UpdateBankDetailsForm(forms.Form):
 	ifsc_code = forms.CharField(
 		widget=forms.TextInput, label='IFSC Code', required=True
 	)
-	passbook_photo_url = forms.URLField(
-		widget=forms.HiddenInput, required=True
-	)
+	# passbook_photo_url = forms.URLField(
+	# 	widget=forms.HiddenInput, required=True
+	# )
 
 	def __init__(self, application=None, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -1151,9 +1151,9 @@ class UpdateBankDetailsForm(forms.Form):
 		obj.bank_account_number = data['bank_account_number']
 		obj.ifsc_code = data['ifsc_code']
 
-		obj.documents.create(
-			parent=obj,
-			type=UjjwalaApplicationDocumentsEnum.BANK_DETAIL,
-			link=data['passbook_photo_url']
-		)
+		# obj.documents.create(
+		# 	parent=obj,
+		# 	type=UjjwalaApplicationDocumentsEnum.BANK_DETAIL,
+		# 	link=data['passbook_photo_url']
+		# )
 		obj.save()
