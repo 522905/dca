@@ -162,7 +162,7 @@ class UjjwalaApplicationSharedLinkView(View):
         signer = Signer()
         data = base64.urlsafe_b64decode(data)
         data = eval(signer.unsign(data.decode('ascii')))
-        application = UjjwalaV2Application.objects.filter(contact_mobile=data['contact_mobile'])
+        application = UjjwalaV2Application.objects.filter(contact_mobile=data['contact_mobile']).first()
         if application:
             return HttpResponse(
                 content="An application already exist with id: {}".format(application.id)
