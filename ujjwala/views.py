@@ -1125,6 +1125,13 @@ class ConnectionDisbursementSvLabelPrintView(FormView, ApplicationView):
         application_id = request.GET.get('application_id', '')
         if application_id:
             connection_disbursement = self.get_object()
+            if not connection_disbursement.walk_in_date:
+                messages.add_message(
+                    request, messages.ERROR, "Applicant Not Walked In".format(
+                        connection_disbursement.parent_id, connection_disbursement.status
+                    )
+                )
+                return redirect('ujjwala:connection_disbursement_sv_label_print_list')
             if connection_disbursement.status != ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED:
                 messages.add_message(
                     request, messages.ERROR, "Application Id: {} - {}".format(
@@ -1228,6 +1235,13 @@ class ConnectionDisbursementSocialMediaUpdatesView(FormView, ApplicationView):
         application_id = request.GET.get('application_id', '')
         if application_id:
             connection_disbursement = self.get_object()
+            if not connection_disbursement.walk_in_date:
+                messages.add_message(
+                    request, messages.ERROR, "Applicant Not Walked In".format(
+                        connection_disbursement.parent_id, connection_disbursement.status
+                    )
+                )
+                return redirect('ujjwala:connection_disbursement_social_media_updates_list')
             if connection_disbursement.status != ConnectionDisbursementStatusEnum.SV_LABEL_PRINT:
                 messages.add_message(
                     request, messages.ERROR, "Application Id: {} - {}".format(
@@ -1323,6 +1337,13 @@ class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
             return render(request, 'ujjwala/no_permissions.html')
         connection_disbursement = self.get_object()
         if connection_disbursement:
+            if not connection_disbursement.walk_in_date:
+                messages.add_message(
+                    request, messages.ERROR, "Applicant Not Walked In".format(
+                        connection_disbursement.parent_id, connection_disbursement.status
+                    )
+                )
+                return redirect('ujjwala:connection_disbursement_material_delivery_list')
             if connection_disbursement.status == \
                     ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES:
                 return self.otp_verification(connection_disbursement)
