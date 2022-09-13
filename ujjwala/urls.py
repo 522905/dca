@@ -104,6 +104,11 @@ urlpatterns = [
         views.WhatsappUploadLegalForms.as_view(),
         name="whatsapp_form_abc"
     ),
+    url(
+        '^portal/whatsapp_update_bank_details/(?P<pk>[^/.]+)/$',
+        views.WhatsappUpdateBankDetailsView.as_view(),
+        name="whatsapp_update_bank_details"
+    ),
 
     path(
         'portal/application-status-search/',
@@ -203,14 +208,7 @@ urlpatterns = [
         name="application_status"
     ),
 
-    # Deprecated Create URL
-    # path(
-    #     'portal/pre-inspection/deprecated-create/', generic.TemplateView.as_view(
-    #         template_name="ujjwala/pre_inspection_search.html"
-    #     ), name="pre_inspection_search"
-    # ),
-
-     path(
+    path(
          'portal/disbursement_photo_upload/', generic.TemplateView.as_view(
             template_name="ujjwala/disbursement/disbursement_photo_upload.html"
          ), name="disbursement_photo_upload"
