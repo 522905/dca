@@ -803,7 +803,9 @@ class UjjwalaConnectionDisbursementListView(ListView):
                     ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED
                 ):
                     messages.add_message(
-                        request, messages.ERROR, "Application Id: {} - {}".format(application_id, object.status)
+                        request, messages.ERROR, "Application Id: {} - {}".format(
+                            application_id, object.get_status_display()
+                        )
                     )
                 else:
                     return redirect('ujjwala:connection_disbursement_form_view',
@@ -837,8 +839,8 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
                 messages.add_message(
                     request, messages.ERROR,
                     "Application Id : {} Status: {} Pre-Inspection Status: {} Ekyc Cleared: {}".format(
-                        connection_disbursement.parent_id, connection_disbursement.parent.status,
-                        connection_disbursement.parent.pre_inspection.status,
+                        connection_disbursement.parent_id, connection_disbursement.parent.get_status_display(),
+                        connection_disbursement.parent.pre_inspection.get_status_display(),
                         connection_disbursement.parent.ekyc_cleared
                     )
                 )
@@ -852,7 +854,7 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
             else:
                 messages.add_message(
                     request, messages.ERROR, "Application Id : {} Status: {}".format(
-                        connection_disbursement.parent_id, connection_disbursement.parent.status
+                        connection_disbursement.parent_id, connection_disbursement.parent.get_status_display()
                     )
                 )
         else:
@@ -862,7 +864,7 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
             if pi_obj:
                 messages.add_message(
                     request, messages.ERROR, "Application Id : {} Pre Inspection Status: {}".format(
-                        pi_obj.parent_id, pi_obj.status
+                        pi_obj.parent_id, pi_obj.get_status_display()
                     )
                 )
         return super().dispatch(request, *args, **kwargs)
@@ -979,7 +981,9 @@ class ConnectionDisbursementReviewFormAbcListView(ListView):
                     ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
                 ):
                     messages.add_message(
-                        request, messages.ERROR, "Application Id: {} - {}".format(application_id, object.status)
+                        request, messages.ERROR, "Application Id: {} - {}".format(
+                            application_id, object.get_status_display()
+                        )
                     )
                 else:
                     return redirect('ujjwala:connection_disbursement_review_form_abc_view',
@@ -1019,7 +1023,7 @@ class ConnectionDisbursementReviewFormAbcView(FormView, ApplicationView):
             if connection_disbursement.status != ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW:
                 messages.add_message(
                     request, messages.ERROR, "Application Id: {} - {}".format(
-                        connection_disbursement.parent_id, connection_disbursement.status
+                        connection_disbursement.parent_id, connection_disbursement.get_status_display()
                     )
                 )
                 return redirect('ujjwala:connection_disbursement_review_form_abc_list')
@@ -1085,9 +1089,18 @@ class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
         if application_id:
             object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
             if object:
+                if not object.walk_in_date:
+                    messages.add_message(
+                        request, messages.ERROR, "Application Id {} Not Walked In. Application Status: {}".format(
+                            object.parent_id, object.get_status_display()
+                        )
+                    )
+                    return redirect('ujjwala:connection_disbursement_sv_label_print_list')
                 if object.status != ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED:
                     messages.add_message(
-                        request, messages.ERROR, "Application Id: {} - {}".format(application_id, object.status)
+                        request, messages.ERROR, "Application Id: {} - {}".format(
+                            application_id, object.get_status_display()
+                        )
                     )
                 else:
                     return redirect(
@@ -1127,15 +1140,15 @@ class ConnectionDisbursementSvLabelPrintView(FormView, ApplicationView):
             connection_disbursement = self.get_object()
             if not connection_disbursement.walk_in_date:
                 messages.add_message(
-                    request, messages.ERROR, "Applicant Not Walked In".format(
-                        connection_disbursement.parent_id, connection_disbursement.status
+                    request, messages.ERROR, "Application Id {} Not Walked In. Application Status: {}".format(
+                        connection_disbursement.parent_id, connection_disbursement.get_status_display()
                     )
                 )
                 return redirect('ujjwala:connection_disbursement_sv_label_print_list')
             if connection_disbursement.status != ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED:
                 messages.add_message(
                     request, messages.ERROR, "Application Id: {} - {}".format(
-                        connection_disbursement.parent_id, connection_disbursement.status
+                        connection_disbursement.parent_id, connection_disbursement.get_status_display()
                     )
                 )
                 return redirect('ujjwala:connection_disbursement_sv_label_print_list')
@@ -1196,9 +1209,18 @@ class UjjwalaConnectionDisbursementSocialMediaUpdatesListView(ListView):
         if application_id:
             object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
             if object:
+                if not object.walk_in_date:
+                    messages.add_message(
+                        request, messages.ERROR, "Application Id {} Not Walked In. Application Status: {}".format(
+                            object.parent_id, object.get_status_display()
+                        )
+                    )
+                    return redirect('ujjwala:connection_disbursement_social_media_updates_list')
                 if object.status != ConnectionDisbursementStatusEnum.SV_LABEL_PRINT:
                     messages.add_message(
-                        request, messages.ERROR, "Application Id: {} - {}".format(application_id, object.status)
+                        request, messages.ERROR, "Application Id: {} - {}".format(
+                            application_id, object.get_status_display()
+                        )
                     )
                 else:
                     return redirect('ujjwala:connection_disbursement_social_media_updates_view',
@@ -1237,15 +1259,15 @@ class ConnectionDisbursementSocialMediaUpdatesView(FormView, ApplicationView):
             connection_disbursement = self.get_object()
             if not connection_disbursement.walk_in_date:
                 messages.add_message(
-                    request, messages.ERROR, "Applicant Not Walked In".format(
-                        connection_disbursement.parent_id, connection_disbursement.status
+                    request, messages.ERROR, "Application Id {} Not Walked In. Application Status: {}".format(
+                        connection_disbursement.parent_id, connection_disbursement.get_status_display()
                     )
                 )
                 return redirect('ujjwala:connection_disbursement_social_media_updates_list')
             if connection_disbursement.status != ConnectionDisbursementStatusEnum.SV_LABEL_PRINT:
                 messages.add_message(
                     request, messages.ERROR, "Application Id: {} - {}".format(
-                        connection_disbursement.parent_id, connection_disbursement.status
+                        connection_disbursement.parent_id, connection_disbursement.get_status_display()
                     )
                 )
                 return redirect('ujjwala:connection_disbursement_social_media_updates_list')
@@ -1301,13 +1323,22 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
         if application_id:
             object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
             if object:
+                if not object.walk_in_date:
+                    messages.add_message(
+                        request, messages.ERROR, "Application Id {} Not Walked In. Application Status: {}".format(
+                            object.parent_id, object.get_status_display()
+                        )
+                    )
+                    return redirect('ujjwala:connection_disbursement_material_delivery_list')
                 if object.status not in (
                         ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
                         ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
                         ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED
                 ):
                     messages.add_message(
-                        request, messages.ERROR, "Application Id: {} - {}".format(application_id, object.status)
+                        request, messages.ERROR, "Application Id: {} - {}".format(
+                            application_id, object.get_status_display()
+                        )
                     )
                 else:
                     return redirect('ujjwala:connection_disbursement_material_delivery_view',
@@ -1339,8 +1370,8 @@ class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
         if connection_disbursement:
             if not connection_disbursement.walk_in_date:
                 messages.add_message(
-                    request, messages.ERROR, "Applicant Not Walked In".format(
-                        connection_disbursement.parent_id, connection_disbursement.status
+                    request, messages.ERROR, "Application Id {} Not Walked In. Application Status: {}".format(
+                        connection_disbursement.parent_id, connection_disbursement.get_status_display()
                     )
                 )
                 return redirect('ujjwala:connection_disbursement_material_delivery_list')
