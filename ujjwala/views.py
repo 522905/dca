@@ -1091,7 +1091,7 @@ class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
             if object:
                 if not object.walk_in_date:
                     messages.add_message(
-                        request, messages.ERROR, "Application Id {} Not Walked In. Application Status: {}".format(
+                        request, messages.ERROR, "Application Id {} Not Walked In.\n Application Status: {}".format(
                             object.parent_id, object.get_status_display()
                         )
                     )
@@ -1140,7 +1140,7 @@ class ConnectionDisbursementSvLabelPrintView(FormView, ApplicationView):
             connection_disbursement = self.get_object()
             if not connection_disbursement.walk_in_date:
                 messages.add_message(
-                    request, messages.ERROR, "Application Id {} Not Walked In. Application Status: {}".format(
+                    request, messages.ERROR, "Application Id {} Not Walked In.\n Application Status: {}".format(
                         connection_disbursement.parent_id, connection_disbursement.get_status_display()
                     )
                 )
@@ -1211,7 +1211,7 @@ class UjjwalaConnectionDisbursementSocialMediaUpdatesListView(ListView):
             if object:
                 if not object.walk_in_date:
                     messages.add_message(
-                        request, messages.ERROR, "Application Id {} Not Walked In. Application Status: {}".format(
+                        request, messages.ERROR, "Application Id {} Not Walked In.\n Application Status: {}".format(
                             object.parent_id, object.get_status_display()
                         )
                     )
@@ -1259,7 +1259,7 @@ class ConnectionDisbursementSocialMediaUpdatesView(FormView, ApplicationView):
             connection_disbursement = self.get_object()
             if not connection_disbursement.walk_in_date:
                 messages.add_message(
-                    request, messages.ERROR, "Application Id {} Not Walked In. Application Status: {}".format(
+                    request, messages.ERROR, "Application Id {} Not Walked In.\n Application Status: {}".format(
                         connection_disbursement.parent_id, connection_disbursement.get_status_display()
                     )
                 )
@@ -1325,7 +1325,7 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
             if object:
                 if not object.walk_in_date:
                     messages.add_message(
-                        request, messages.ERROR, "Application Id {} Not Walked In. Application Status: {}".format(
+                        request, messages.ERROR, "Application Id {} Not Walked In.\n Application Status: {}".format(
                             object.parent_id, object.get_status_display()
                         )
                     )
@@ -1370,7 +1370,7 @@ class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
         if connection_disbursement:
             if not connection_disbursement.walk_in_date:
                 messages.add_message(
-                    request, messages.ERROR, "Application Id {} Not Walked In. Application Status: {}".format(
+                    request, messages.ERROR, "Application Id {} Not Walked In.\n Application Status: {}".format(
                         connection_disbursement.parent_id, connection_disbursement.get_status_display()
                     )
                 )
