@@ -130,7 +130,13 @@
                         <tr>
                             <th></th>
                         </tr>
-                        {% endif %} 
+                        {% endif %}
+                        {% if obj.status == 'NIC_CLEARED' %}
+                        <tr>
+                            <th colspan="2"><a class="text_link" href="{% url 'ujjwala:nic_cleared_customer_remarks' pk=obj.id %}">
+                                <b style="color:cornflowerblue"><i>Customer Remarks Update</i></b></a></th>
+                        </tr>
+                        {% endif %}
                     </table>
                 </div>
             </div>
