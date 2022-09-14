@@ -24,7 +24,8 @@ from sdms.models import SdmsCustomerRecord
 from utils.global_functions import upload_file_to_minio_bucket, upload_file_type_obj_to_minio_bucket
 from . import models
 from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, FamilyMemberRelationEnum, \
-    ManualOperationCodeEnum, MaritalStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum
+    ManualOperationCodeEnum, MaritalStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum, \
+    UjjwalaApplicationDocumentsEnum
 from .forms import ApplicationRejected
 from .global_functions import get_sdms_mismatched_records
 from .jobs import do_primary_omc_dedupe_check, compress_connection_disbursement_documents, enqueue_dedupe_and_audit_jobs
@@ -1150,6 +1151,18 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id=inbound_call_user_id)
 
         return HttpResponse('OK')
+
+    @action(methods=['post'], detail=False, url_path='get_social_media_details')
+    def get_social_media_details(self, request, *args, **kwargs):
+        application = UjjwalaV2Application.objects.get(pk=request.data.get('id'))
+        response = {
+            "id": application.id,
+            "name": application.name,
+            "social_media_photo_url": application.connection_disbursement.documents.filter(
+                type=UjjwalaApplicationDocumentsEnum.SOCIAL_MEDIA_PHOTO
+            ).first().link
+        }
+        return JsonResponse(response, safe=False)
 
 
 class UjjwalaApplicationOtpViewSet(viewsets.ViewSet):
