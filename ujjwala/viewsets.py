@@ -1152,9 +1152,9 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
         return HttpResponse('OK')
 
-    @action(methods=['post'], detail=False, url_path='get_social_media_details')
+    @action(methods=['get'], detail=True, url_path='get_social_media_details')
     def get_social_media_details(self, request, *args, **kwargs):
-        application = UjjwalaV2Application.objects.get(pk=request.data.get('id'))
+        application = UjjwalaV2Application.objects.get(pk=kwargs['pk'])
         response = {
             "id": application.id,
             "name": application.name,
