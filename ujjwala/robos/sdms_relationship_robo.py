@@ -13,10 +13,19 @@ class UjjwalaApplicationSdmsRelationshipViewSet(viewsets.ViewSet):
     @action(methods=['get'], detail=False, url_path='get_records_for_new_relationship')
     def get_records_for_new_relationship(self, request, *args, **kwargs):
         record_list = UjjwalaV2Application.objects.filter(
-            Q(status=UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED) &
-            Q(robo_sdms_dedup=RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE) &
-            Q(pre_inspection__status=PreInspectionStatusEnum.ACCEPTED)
-        ).exclude(address_json__isnull=True).order_by("id")
+            Q(status=UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED)
+            & Q(robo_sdms_dedup=RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE)
+            #& Q(pre_inspection__status=PreInspectionStatusEnum.SUBMITTED)
+            & Q(pre_inspection__status=PreInspectionStatusEnum.ACCEPTED)
+        ).exclude(
+            address_json__isnull=True
+        ).exclude(
+            ifsc_code__isnull=True
+        ).exclude(
+            family_members__uid_no__in=['999999999999', '666666666666', '0', '1']
+        ).exclude(
+            family_members__dob__gte='2004-09-01'
+        ).order_by("id")
 
         data = []
 
@@ -46,9 +55,13 @@ class UjjwalaApplicationSdmsRelationshipViewSet(viewsets.ViewSet):
                 }],
                 'consumer_id': record.consumer_id,
                 "address": {
-                    "address": address['addr_str'],
+                    "address": "DcaId-{} {}".format(record.id, address['addr_str'].strip().replace('\\', '/')),
                     "landmark": record.address_json.get('landmark', 'NA'),
                     "pincode": address['pincode']
+                },
+                "bank": {
+                    "account": record.bank_account_number,
+                    "ifsc": record.ifsc_code
                 }
             })
         return JsonResponse(data, safe=False)
@@ -73,5 +86,3 @@ class UjjwalaApplicationSdmsRelationshipViewSet(viewsets.ViewSet):
         application.save()
 
         return HttpResponse("Ok")
-
-
