@@ -156,7 +156,9 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
             application.save()
         else:
             application.save(
-                update_fields=['manual_operation_code', 'ekyc_cleared', 'legal_documents_upload_status']
+                update_fields=[
+                    'sdms_last_updated_on', 'product',
+                    'manual_operation_code', 'ekyc_cleared', 'legal_documents_upload_status']
             )
         return HttpResponse('OK')
 
