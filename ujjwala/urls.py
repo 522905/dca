@@ -195,7 +195,11 @@ urlpatterns = [
         views.ConnectionDisbursementView.as_view(),
         name="connection_disbursement_form_view"
     ),
-
+    url(
+        '^portal/nic-customer-remarks/(?P<pk>[^/.]+)/$',
+        views.NicClearedCustomerRemarks.as_view(),
+        name="nic_cleared_customer_remarks"
+    ),
     url(
         '^portal/pre-inspection/(?P<pk>[^/.]+)/$',
         views.PreInspectionView.as_view(),
