@@ -112,21 +112,18 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
     def update_omc_and_nic_status(self, request: HttpRequest, *args, **kwargs):
         if not request.data.get('omc_status'): return HttpResponse('No Data, Skip Update')
         application: UjjwalaV2Application = self.get_object()
-        application.sdms_last_updated_on = timezone.now()
-        application.product = request.data.get('product')
-        nic_status = request.data.get('nic_status')
-        legal_docs_uploaded = request.data.get('legal_docs_uploaded')
 
-        # if legal_docs_uploaded and application.status == UjjwalaV2ApplicationStatus.EKYC_ACCEPTED:
-        #     application.legal_documents_upload(description='Status Updated By Bot, Uploaded by unknown person')
-        # elif not legal_docs_uploaded and application.status == UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD:
-        #     application.status == UjjwalaV2ApplicationStatus.EKYC_ACCEPTED
+        nic_status = request.data.get('nic_status')
+
+        transition_executed = False
 
         if application.status == UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD:
             if request.data.get('omc_status') == 'OMC Clear':
                 application.transition_omc_clear(description="Bot Processed: OMC Clear")
+                transition_executed = True
             elif request.data.get('omc_status') == 'OMC Reject':
                 application.transition_omc_reject(description="Bot Processed: OMC Reject")
+                transition_executed = True
         if application.status in (
             UjjwalaV2ApplicationStatus.OMC_CLEARED,
             UjjwalaV2ApplicationStatus.NIC_ERROR_APPROVED
@@ -134,18 +131,33 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
             if nic_status == 'Cleared' or 'approved' in nic_status.lower():
                 if application.status == UjjwalaV2ApplicationStatus.OMC_CLEARED:
                     application.transition_nic_cleared(description="Bot Processed: NIC Cleared {}".format(nic_status))
+                    transition_executed = True
                 else:
                     application.transition_nic_error_approved_to_nic_clear(
                         description="Bot Processed: NIC Cleared {}".format(nic_status)
                     )
+                    transition_executed = True
             elif nic_status == 'Address Insufficient':
                 application.transition_nic_error_insufficient_address(
                     error_code='', description="Bot Processed: {}".format(nic_status)
                 )
+                transition_executed = True
             else:
                 code = 'DIST' if 'dist' in nic_status.lower() else 'FO'
                 application.transition_nic_error(error_code=code, description=nic_status)
-        application.save()
+                transition_executed = True
+
+        application.sdms_last_updated_on = timezone.now()
+        application.product = request.data.get('product')
+        application.manual_operation_code = nic_status
+        application.ekyc_cleared = request.data.get('ekyc_flag')
+        application.legal_documents_upload_status = request.data.get('legal_docs_uploaded')
+        if transition_executed:
+            application.save()
+        else:
+            application.save(
+                update_fields=['manual_operation_code', 'ekyc_cleared', 'legal_documents_upload_status']
+            )
         return HttpResponse('OK')
 
     @action(methods=['get'], detail=False, url_path='get_list_to_fetch_omc_nic_status')
