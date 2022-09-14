@@ -24,13 +24,13 @@
                 </div>
             </div>
             <div class="card-footer float-right">
-                <input class="btn btn-success float-right rounded-0" type="submit" value="Submit" />
+                <input class="btn btn-success float-right rounded-0"   id="submit" type="submit" value="Submit" />
             </div>
         </div>
     </form>
 </div>
 <script>
-     window.kitchenPhotoUppy = new Uppy.Core({
+     window.disbursementPhoto = new Uppy.Core({
 		debug: true,
 		autoProceed: true,
 		restrictions: {
@@ -54,9 +54,19 @@
     .use(Uppy.Tus, {
         endpoint: 'https://tus.dca.arungas.com/files/',
     })
-    kitchenPhotoUppy.on('complete', result => {
+    disbursementPhoto.on('complete', result => {
 		$('#id_disbursement_photo').val(result.successful[0].uploadURL);
 	})
+
+    function disbursementUppy(uppyObj, key, label, fileMandatory) {
+        if(uppyObj.state.totalProgress < 100) {
+            window.alert("upload in Progress(अपलोड प्रगति पर है)");
+            return {valid: false, key: key, msg: `${label} upload in Progress(अपलोड प्रगति पर है)`};
+        } else {
+            $('body').find('form').submit;
+        }
+    }
+
 
 </script>
 {% endblock %}

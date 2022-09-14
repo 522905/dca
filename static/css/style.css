@@ -21,6 +21,7 @@ body, a, p{font-family: 'muli', sans-serif !important; font-size: 0.9rem; }
 .hidden_field{ display:none;}
 body .list_block li{clear: both !important; }
 .input_form input{ padding-left: 5px !important; }
+
 .uppy-Dashboard-innerWrap
 {
     width:200px;
@@ -105,7 +106,7 @@ body .form_label .btn{ height: 40px !important; line-height: 25px !important; }
 }
 .sidenav li>a>[class^=mdi-], .sidenav li>a>i, .sidenav li>a>i.material-icons, .sidenav li>a li>a>[class*=mdi-]{ margin: 0 8px 0 0 !important;}
 body .sidenav-fixed .collapsible-body #menu a{ text-decoration: none !important; padding-left: 40px !important;}
-.sidenav .user-view{ margin-bottom: 0 !important;}
+.sidenav .user-view,body .sidenav .user-view{ margin-bottom: 0 !important; background-color: rgba(0,0,0,.87) !important; border-bottom: 1px solid #222 !important;}
 /* .sidenav .collapsible-body li a, .sidenav.fixed .collapsible-body li a{ padding-left: 30px !important; } */
 .sidenav .collapsible-body>ul:not(.collapsible)>li.active, .sidenav.sidenav-fixed .collapsible-body>ul:not(.collapsible)>li.active{ background-color:#2957A4  !important; }
 body .sidenav-fixed .collapsible-body #menu.parent-menu.active{ color: #fff  !important; padding: 0 !important; background-color: white !important; }
@@ -124,11 +125,11 @@ nav.topbar .brand-logo{ font-size: 1.2rem;}
 nav.topbar .brand-logo{ top: 0;}
 nav.topbar, nav.topbar a.button-collapse, nav.topbar a.button-collapse i, nav.topbar i{ line-height: 50px !important; height: 50px!important;}
 .breadcrumbs{ display: none;}
-main .content{     display: block;
+main .content{ display: block;
     float: left;
     width: 100%;
     position: relative;
-    top: -5px; }
+    top: -20px; }
 /* **************************************** */
             /* Ujjwala Index Page */
 /* **************************************** */
@@ -286,5 +287,3 @@ main .content{     display: block;
 .sidebar .nav-links li.active{ background-color: #1d1b31;}
 .sidebar .nav-links li.active .sub-menu { display: block }
 .sidebar .nav-links li.active .sub-menu li.active a { opacity: 1 }
-.user-view .background{ background-image: url(../img/sidenav.png);}
-.user-view .background img{ background-image: url(../img/sidenav.png);}

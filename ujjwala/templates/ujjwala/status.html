@@ -18,7 +18,7 @@
                 <div class="d-flex">
                     <h5>Application Id: <span class="text-info font-weight-bold">{{ object.pk }}</span></h5>
                     <h5>Name: <span class="text-info font-weight-bold">{{ object.name }}</span></h5>
-                    <h5>Status: <span class="text-info font-weight-bold">{{ object.status }}</span></h5>
+                    <h5>Status: <span class="text-info font-weight-bold">{{ object.get_status_display }}</span></h5>
                 </div>
             </div> <!-- Add class 'active' to progress -->
             <div class="row d-flex justify-content-center">
@@ -39,7 +39,6 @@
                                 <div class="d-flex flex-column">
                                     <p class="font-weight-bold " style="margin-left: 90px;">
                                         <h5>अनिवार्य पूर्व निरीक्षण की प्रकिया</h5>
-
                                     </p>
                                 </div>
                             </div></li>

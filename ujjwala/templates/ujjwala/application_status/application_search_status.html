@@ -9,7 +9,7 @@
     <form method="post">
     {% csrf_token %}
         <div class="card p-0">
-            <div class="card-body p-2 search_form">
+            <div class="card-body search_form">
                 <div class="form-group mb-0">
                     <label>Enter Contact Mobile: </label>
                     <input autocomplete="off" type="tel" name="contact_mobile" />
@@ -148,6 +148,7 @@
     .text_link{ text-decoration: underline; font-weight: bold !important;}
     .application_form .list_block th, .application_form .list_block td, .status_block th,.application_form .list_block td { font-size: 0.9rem;}
     .table.table-bordred:last-child tr{ border-bottom: transparent;}
-    .search_form input{ padding: 0 10px !important;  }
+    .search_form input{ padding: 0 10px !important; width: 96% !important;  }
+    
 </style>
 {% endblock %}
