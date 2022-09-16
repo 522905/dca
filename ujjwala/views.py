@@ -206,7 +206,7 @@ class WhatsappUpdateBankDetailsView(View):
         if not application:
             return HttpResponse("Application Id {} does not exist".format(kwargs.get('pk')))
 
-        if not application.bank_account_number:
+        if not application.ifsc_code:
             application.event_whatsapp_update_bank_details()
             return HttpResponse(
                 "Update Bank Details Message Sent For Application Id: {}".format(kwargs.get('pk'))

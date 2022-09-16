@@ -84,7 +84,9 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
             MaritalStatusEnum.DIVORCED, MaritalStatusEnum.WIDOW
         ]).exclude(
 		family_members__dob__gte='2004-08-14'
-	).exclude(family_members__uid_no__in=[
+	    ).exclude(
+            robo_execution_failed_count__lt=3
+        ).exclude(family_members__uid_no__in=[
 		'999999999999','666666666666','0','1'
 	]).exclude(version='V1').order_by('-sdms_last_updated_on')
 
