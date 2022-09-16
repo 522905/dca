@@ -2,6 +2,7 @@
 {% load static %}
 {% block page_title %}Application Status Search {% endblock %}
 {% block content %}
+{% load comments %}
 <link rel="stylesheet" href="{% static '/css/style.css' %}" >
 <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
@@ -99,8 +100,8 @@
                                     {{obj.connection_disbursement.get_status_display}}
                                 </a>
                                     {% if obj.connection_disbursement.status == 'LEGAL_DOCUMENTS_PENDING' %}
-                                        <a href="{% url 'ujjwala:whatsapp_form_abc' pk=obj.id %}">
-                                            <b> (Whatsapp Form A B C)</b>
+                                        <a class="link_wh" style="color:#007bff !important" href="{% url 'ujjwala:whatsapp_form_abc' pk=obj.id %}">
+                                            <b class="link"> (Whatsapp Form A B C)</b>
                                         </a>
                                     {% endif %}
                                 {% else %}
@@ -155,6 +156,6 @@
     .application_form .list_block th, .application_form .list_block td, .status_block th,.application_form .list_block td { font-size: 0.9rem;}
     .table.table-bordred:last-child tr{ border-bottom: transparent;}
     .search_form input{ padding: 0 10px !important; width: 96% !important;  }
-    
+    .link_wh:hover{ text-decoration: underline !important;}
 </style>
 {% endblock %}
