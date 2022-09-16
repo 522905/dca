@@ -60,7 +60,7 @@
                 <div class="col-12">
                     <h3 class="" style="font-size: 20px; margin-top: 0px; text-align: center;">प्रधानमंत्री उज्ज्वला
                         योजना 2.0<br><span style="font-size: 12px;">(फ्री गैस कनेक्शन पात्रता योग्य प्रवासी ज़रूरतमंद
-                            महिलाओं के लिए) <br>आवेदन करने की अंतिम तिथि <b style="color: #f37022">31 अगस्त
+                            महिलाओं के लिए) <br>आवेदन करने की अंतिम तिथि <b style="color: #f37022">30 सितंबर
                                 2022</b></span>
                     </h3>
                     <p style="font-size: 12px; text-align: center; color: #2d5593; font-weight: bold;"> प्रधानमंत्री
@@ -133,12 +133,12 @@
                     <span id="self-details"></span>
                     
                     <div class="form-group">
-                        <label>Applicant Mobile Number. (आवेदक का मोबाइल नंबर)<strong style="color:red">*</strong></label>
+                        <label>Applicant Mobile Number.(आवेदक का मोबाइल नंबर) <strong style="color:red">*</strong></label>
                         <input type="tel" class="form-control" id="uid_linked_mobile" onblur="checkContactMobileValidity();" pattern="[6789][0-9]{9}" name="uid_linked_mobile"
                             maxlength="10" required />
-                            <div class="row m-0">
-                                <span id="contact_mobile_detail"></span>
-                            </div>
+                        <div class="row m-0">
+                            <span id="contact_mobile_detail"></span>
+                        </div>
                     </div>
 
                     <div class="form-group ">
@@ -167,7 +167,6 @@
                 </div>
             </div>
             <input type="hidden" id="occupancy_status" name="residential_status" value="LIVING_WITH_FAMILY">
-
             <div class="card mb-2 family_heading">
                 <div class="main-header bg-heading rounded-0" style="background-color: #2957A4;">
                     <span class="text-white">(Family Detail) परिवार का डेटा </span>
@@ -177,22 +176,25 @@
             </div>
 
             <div class="card mb-2">
-                <div class="main-header bg-heading rounded-0 mb-2" style="background-color: #2957A4;">
+                <div class="main-header bg-heading rounded-0" style="background-color: #2957A4;">
                     <span class="text-white">Current Address (वर्तमान पता)</span>
                 </div>
                 <div class="p-2">
+                    <div class="mb-2 m-0 " role="alert" style="border-radius: 0;">
+                        <div class="blink-bg" style="font-size: 14px;">कृपया मान्य पता दर्ज करें। केवल अक्षर, संख्या, स्पेस और #' । , - /_ की अनुमति है|</div>
+                    </div>
+                    <p><span style="color:red"></span></p>
                     <div class="row">
                         <div class="col pr-0">
                             <div class="form-group">
-                                <label for="house_no">House No. <br> (घर का नंबर)<strong style="color:red">*</strong></label>
-                                <input required type="text" class="form-control" id="house_no" name="house_no"
-                                    placeholder="House No.">
+                                <label for="house_no">House No. <br>(घर का नंबर)<strong style="color:red">*</strong></label>
+                                <input required type="text" class="form-control" id="house_no" name="house_no" onblur="this.reportValidity();" pattern="^[A-Za-z0-9 #'.,\\-\\_]+$" placeholder="House No.">
                             </div>
                         </div>
                         <div class="col">
                             <div class="form-group">
-                                <label for="room_no">Room No.<br> (कमरा सं.)<strong style="color:red">*</strong></label>
-                                <input type="text" class="form-control" id="room_no" name="room_no" required />
+                                <label for="room_no">Room No.(कमरा सं.) <br><span style="color:red">केवल [0-9] दर्ज करें</span> <strong style="color:red">*</strong></label><br>
+                                <input type="text" class="form-control" id="room_no" name="room_no" maxlength="3" onblur="this.reportValidity();" pattern="^(0|[1-9][0-9]*)$" required />
                             </div>
                         </div>
                     </div>
@@ -200,14 +202,14 @@
                     <div class="row">
                         <div class="col pr-0">
                             <div class="form-group">
-                                <label for="floor">Floor(तल सं.)<strong style="color:red">*</strong></label>
-                                <input type="text" class="form-control" id="floor" name="floor" required />
+                                <label for="floor">Floor(तल सं.) <span style="color:red">केवल [0-9] दर्ज करें</span> <strong style="color:red">*</strong></label>
+                                <input type="text" class="form-control" id="floor" name="floor" maxlength="2" onblur="this.reportValidity();" pattern="^(0|[1-9][0-9]*)$"  required />
                             </div>
                         </div>
                         <div class="col">
                             <div class="form-group">
-                                <label for="street_no">Street No. (गली नंबर)<strong style="color:red">*</strong></label>
-                                <input type="text" class="form-control" id="street_no" name="street_no" required />
+                                <label for="street_no">Street No.(गली नंबर)<span style="color:red">केवल [0-9] दर्ज करें</span>  <strong style="color:red">*</strong></label>
+                                <input type="text" class="form-control" id="street_no" name="street_no" maxlength="2" onblur="this.reportValidity();" pattern="^[A-Za-z0-9 #'.,\\-\\_]+$" required />
                             </div>
                         </div>
                     </div>
@@ -216,7 +218,7 @@
                         <div class="col">
                             <div class="form-group">
                                 <label for="landmark">Land Mark (नजदीकी स्थान)<strong style="color:red">*</strong></label>
-                                <input type="text" class="form-control" id="landmark" name="landmark" required />
+                                <input type="text" class="form-control" id="landmark" name="landmark" minlength="7" onblur="this.reportValidity();" pattern="^[A-Za-z0-9 #'.,\\-\\_]+$"  required />
                             </div>
                         </div>
                     </div>
@@ -225,7 +227,7 @@
                             <div class="form-group">
                                 <label for="village">Locality Village (रोड/गांव/मोहल्ला/इलाका)<strong
                                         style="color:red">*</strong></label>
-                                <input type="text" class="form-control" id="village" name="village" required />
+                                <input type="text" class="form-control" id="village" name="village" minlength="4" required onblur="this.reportValidity();" pattern="^[A-Za-z0-9 #'.,\\-\\_]+$" />
                             </div>
                         </div>
                     </div>
@@ -233,15 +235,15 @@
                     <div class="row">
                         <div class="col pr-0">
                             <div class="form-group">
-                                <label for="ward_no">Ward No.<br> (वर्ड नंबर)<strong style="color:red">*</strong></label>
-                                <input type="text" class="form-control" id="ward_no" name="ward_no" required />
+                                <label for="ward_no">Ward No. (वर्ड नंबर) <br> <span style="color:red">केवल [0-9] दर्ज करें</span> <strong style="color:red">*</strong></label>
+                                <input type="text" class="form-control" id="ward_no" name="ward_no" maxlength="3" required onblur="this.reportValidity();" pattern="^(0|[1-9][0-9]*)$" />
                             </div>
                         </div>
                         <div class="col">
                             <div class="form-group">
                                 <label for="post_office">Post Office <br>(पोस्ट ऑफीस)<strong
                                         style="color:red">*</strong></label>
-                                <input type="text" class="form-control" id="post_office" name="post_office" required />
+                                <input type="text" class="form-control" id="post_office" name="post_office" minlength="5" required  onblur="this.reportValidity();" pattern="[a-zA-Z]+([\s][a-zA-Z]+)*" />
                             </div>
                         </div>
                     </div>
@@ -249,7 +251,7 @@
                         <div class="col pr-0">
                             <div class="form-group">
                                 <label for="city">City (शहर)<strong style="color:red">*</strong></label>
-                                <input type="text" class="form-control" value="Ludhiana" id="ludhiana" name="" required />
+                                <input type="text" class="form-control" value="Ludhiana" id="ludhiana" name="" required onblur="this.reportValidity();" />
                             </div>
                         </div>
                         <div class="col">
@@ -1316,5 +1318,20 @@ $('[name="referral_code"]').attr('readonly', true);
         vertical-align: middle;
         background-color: #000;
     }
+    .blink-bg{
+		color: #fff;
+		padding: 5px;
+		display: inline-block;
+		/* animation: blinkingBackground 2s infinite; */
+        width:100%;
+        background-color: #ff0000;
+	}
+	/* @keyframes blinkingBackground{
+		0%		{ background-color: #10c018;}
+		25%		{ background-color: #1056c0;}
+		50%		{ background-color: #ef0a1a;}
+		75%		{ background-color: #254878;}
+		100%	        { background-color: #04a1d5;}
+	} */
     /* #verifyMobileOtp{ z-index: 99;} */
 </style>
