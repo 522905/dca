@@ -94,6 +94,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	scheduled_date = models.DateTimeField(null=True, blank=True)
 	additional_remarks = models.TextField(null=True, blank=True)
 	ekyc_cleared = models.BooleanField(default=False)
+	robo_execution_failed_count = models.IntegerField(default=0, blank=True, null=True)
 
 	class Meta:
 		permissions = (
