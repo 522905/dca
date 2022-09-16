@@ -12,6 +12,7 @@ from rest_framework import routers
 from connection_app.viewsets import ConnectionApplicationViewSet
 
 from . import views
+from .extra_viewsets import UjjwalaApplicationExtraViewSet
 from .robos.nic_error_robo import UjjwalaApplicationNicErrorRobotAPIViewSet
 from .robos.sdms_relationship_robo import UjjwalaApplicationSdmsRelationshipViewSet
 from .views import UjjwalaApplicationWebFormView, WebFormOldView, UjjwalaApplicationIframeWebFormView
@@ -25,6 +26,7 @@ router.register(
     r'ujjwala-bot-sdms-relationship', UjjwalaApplicationSdmsRelationshipViewSet, basename='ujjwala_sdms_relationship'
 )
 router.register(r'ujjwala-otp', UjjwalaApplicationOtpViewSet, basename='ujjwala_otp')
+router.register(r'ujjwala-extra', UjjwalaApplicationExtraViewSet, basename='ujjwala_extra')
 
 urlpatterns = [
     path('', views.index),
