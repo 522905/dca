@@ -571,13 +571,24 @@ class EkycAcceptedOrRejected(forms.Form):
 
 
 class EkycAccepted(forms.Form):
+	sdms_consumer_id = forms.CharField(
+		widget=forms.TextInput, label='SDMS Consumer Id', required=True
+	)
 	description = forms.CharField(
 		widget=forms.Textarea, label='Remarks', required=True
 	)
 
 	def clean(self):
 		data = self.cleaned_data
+
+		data['sdms_consumer_id'] = data['sdms_consumer_id'].strip()
 		return data
+
+
+class MaterialDeliveryOtpOverrideForm(forms.Form):
+	description = forms.CharField(
+		widget=forms.Textarea, label='Reason To Override', required=True
+	)
 
 
 class LegalDocumentsUpload(forms.Form):
@@ -1072,6 +1083,12 @@ class ConnectionDisbursementSearchForm(forms.Form):
 
 class NewRelationCreated(forms.Form):
 	consumer_id = forms.CharField(widget=forms.TextInput(), required=True)
+
+
+class MoveForManualOperationForm(forms.Form):
+	description = forms.CharField(
+		widget=forms.Textarea, label='Remarks', required=False
+	)
 
 
 class PreInspectionConvertForm(forms.Form):

@@ -29,7 +29,7 @@ from ujjwala.forms import UjjwalaLegalDocumentsUpload, \
 	ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewForm, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
 	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm, NewRelationCreated, \
-	CancelWalkInForm
+	CancelWalkInForm, MoveForManualOperationForm, MaterialDeliveryOtpOverrideForm
 from ujjwala.ujjwala_functions import download_ujjwala_physical_legal_docs, is_application_ready_for_disbursement, \
 	fsm_custom_audit_points_description
 from utils.global_functions import move_file_to_minio_bucket, upload_file_to_minio_bucket, old_address_to_description, \
@@ -109,7 +109,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			("can_reject_application", "Can reject application"),
 			("can_fill_old_ujjwala_form", "Can fill old ujjwala form"),
 			("can_do_connection_disbursement", "Can do connection disbursement"),
-			("can_cancel_walk_in", "Can cancel walk in")
+			("can_cancel_walk_in", "Can cancel walk in"),
+			("robo_manager_permission", "Robo Manager Permission"),
 		)
 
 	def pre_inspection_accepted(self):
@@ -281,13 +282,13 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		source=UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
 		target=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
 		custom=dict(short_description='E-KYC Accepted', admin=True, form=EkycAccepted),
-		permission='ujjwala.can_do_ekyc'
+		permission='ujjwala.robo_manager_permission'
 	)
 	def ekyc_accepted_or_rejected(self, *args, **kwargs):
 		self.robo_execution_failed_count = 0
+		if kwargs.get('sdms_consumer_id', ''):
+			self.consumer_id = kwargs.get('sdms_consumer_id')
 		self.sdms_mobile_number = kwargs.get('sdms_mobile_number')
-		self.save()
-		pass
 
 
 	@fsm_log_description
@@ -308,6 +309,18 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		permission='ujjwala.can_reject_application'
 	)
 	def application_rejected(self, *args, **kwargs):
+		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD,
+		target=UjjwalaV2ApplicationStatus.DO_MANUAL_OPERATION,
+		custom=dict(short_description='Move For Manual Operation', admin=True, form=MoveForManualOperationForm),
+		permission='ujjwala.robo_manager_permission'
+	)
+	def transition_move_for_manual_operation(self, *args, **kwargs):
 		pass
 
 	@fsm_log_description
@@ -1057,6 +1070,21 @@ class ConnectionDisbursement(models.Model):
 	)
 	def transition_material_delivery_otp_verified(self, *args, **kwargs):
 		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
+		target=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
+		custom=dict(
+			short_description='Material Delivery OTP Override',
+		    admin=True, form=MaterialDeliveryOtpOverrideForm
+		),
+	)
+	def transition_material_delivery_otp_override(self, *args, **kwargs):
+		pass
+
 
 	@fsm_log_description
 	@fsm_log_by
