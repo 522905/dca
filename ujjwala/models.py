@@ -336,7 +336,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		custom=dict(
 			short_description='Legal Documents Upload', admin=True, form=LegalDocumentsUpload
 		),
-		permission='ujjwala.can_upload_legal_docs',
+		# permission='ujjwala.can_upload_legal_docs',
+		permission='ujjwala.robo_manager_permission',
 	)
 	def legal_documents_upload(self, *args, **kwargs):
 		self.robo_execution_failed_count = 0
@@ -349,6 +350,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		source=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
 		target=UjjwalaV2ApplicationStatus.MANUAL_LEGAL_DOCUMENTS_UPLOAD,
 		custom=dict(short_description='Update Legal Documents', admin=False),
+		permission='ujjwala.robo_manager_permission',
 	)
 	def robo_manual_legal_documents_upload(self, *args, **kwargs):
 		self.manual_operation_code = kwargs.get('manual_operation_code')
@@ -360,6 +362,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		source=UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
 		target=UjjwalaV2ApplicationStatus.DO_MANUAL_OPERATION,
 		custom=dict(short_description='Do Manual Operation', admin=False),
+		permission='ujjwala.robo_manager_permission',
 	)
 	def do_manual_operations(self, *args, **kwargs):
 		self.manual_operation_code = kwargs.get('manual_operation_code')
@@ -374,7 +377,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		custom=dict(
 			short_description='Set As OMC Cleared', admin=True, form=ConnectionStatusApproved
 		),
-		permission='ujjwala.can_approve_connection',
+		# permission='ujjwala.can_approve_connection',
+		permission='ujjwala.robo_manager_permission',
 	)
 	def transition_omc_clear(self, *args, **kwargs):
 		pass
@@ -388,7 +392,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		custom=dict(
 			short_description='Set As OMC Rejected', admin=True
 		),
-		permission='ujjwala.can_approve_connection',
+		# permission='ujjwala.can_approve_connection',
+		permission='ujjwala.robo_manager_permission',
 	)
 	def transition_omc_reject(self, *args, **kwargs):
 		pass
@@ -402,7 +407,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		custom=dict(
 			short_description='Set As NIC Cleared', admin=True, form=ConnectionStatusApproved
 		),
-		permission='ujjwala.can_approve_connection',
+		# permission='ujjwala.can_approve_connection',
+		permission='ujjwala.robo_manager_permission',
 	)
 	def transition_nic_cleared(self, *args, **kwargs):
 		try:
@@ -425,7 +431,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		custom=dict(
 			short_description='Set As NIC Error', admin=True, form=ConnectionStatusApproved
 		),
-		permission='ujjwala.can_approve_connection',
+		# permission='ujjwala.can_approve_connection',
+		permission='ujjwala.robo_manager_permission',
 	)
 	def transition_nic_error(self, *args, **kwargs):
 		self.manual_operation_code = kwargs.get('error_code')
