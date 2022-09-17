@@ -284,6 +284,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		permission='ujjwala.can_do_ekyc'
 	)
 	def ekyc_accepted_or_rejected(self, *args, **kwargs):
+		self.robo_execution_failed_count = 0
 		self.sdms_mobile_number = kwargs.get('sdms_mobile_number')
 		self.save()
 		pass
@@ -325,6 +326,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		permission='ujjwala.can_upload_legal_docs',
 	)
 	def legal_documents_upload(self, *args, **kwargs):
+		self.robo_execution_failed_count = 0
 		pass
 
 	@fsm_log_description
