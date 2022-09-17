@@ -142,7 +142,7 @@ class UjjwalaV2Admin(ImportMixin, ExportActionMixin, FSMTransitionCustomMixin, a
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if request.user.pk not in ('',):
+        if request.user.pk not in ('97',):
             return qs
         return qs.filter(status='GIFT')
 
