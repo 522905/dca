@@ -989,8 +989,14 @@ def find_ujjwala_application_using_contact(contact_mobile):
 
 
 def application_needs_to_be_audited(data):
-    family_members = data.get('family_members')
     reason = []
+
+    name = data.get('name')
+    if name.lower() in ('mother', 'father', 'husband'):
+        reason.append("Invalid Applicant Name")
+
+    family_members = data.get('family_members')
+
     for fm in family_members:
         if fm.get('ocr_processed') == 'no':
             reason.append(
