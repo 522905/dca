@@ -140,6 +140,12 @@ class UjjwalaV2Admin(ImportMixin, ExportActionMixin, FSMTransitionCustomMixin, a
 
     autocomplete_fields = ('service_area',)
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.pk not in ('',):
+            return qs
+        return qs.filter(status='GIFT')
+
     def has_change_permission(self, request, obj=None):
         if not obj:
             return True
