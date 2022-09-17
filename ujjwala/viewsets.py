@@ -59,6 +59,26 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
     ordering_fields = '__all__'
     pagination_class = CustomPagePagination
 
+    @action(methods=['get'], detail=False, url_path='get_walk_in_no_sv_list')
+    def get_walk_in_no_sv_list(self, request, *args, **kwargs):
+        #datetime.datetime.today().date()
+        connection_disbursement_list = ConnectionDisbursement.objects.filter(
+            walk_in_date__date=datetime.datetime.now().date()
+        ).filter(invitation__sv_link__isnull=True).order_by('walk_in_date')
+
+        page = self.paginate_queryset(connection_disbursement_list)
+        return self.get_paginated_response([
+            {
+                "payload": {
+                    'connection_disbursement_id': record.id,
+                    'application_id': record.parent_id,
+                    'consumer_id': record.parent.consumer_id,
+                    'name': record.parent.name,
+                    'product': record.parent.product
+                }
+            } for record in page
+        ])
+
     @action(methods=['get'], detail=True, url_path='get_printing_urls')
     def get_printing_urls(self, request: HttpRequest, *args, **kwargs):
         obj = self.get_object()
@@ -83,12 +103,12 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
         ).exclude(marital_status__in=[
             MaritalStatusEnum.DIVORCED, MaritalStatusEnum.WIDOW
         ]).exclude(
-		family_members__dob__gte='2004-08-14'
-	    ).exclude(
-            robo_execution_failed_count__lt=3
-        ).exclude(family_members__uid_no__in=[
+            robo_execution_failed_count__gte=2
+        ).exclude(
+		family_members__dob__gte='2004-10-01'
+	).exclude(family_members__uid_no__in=[
 		'999999999999','666666666666','0','1'
-	]).exclude(version='V1').order_by('-sdms_last_updated_on')
+	]).exclude(version='V1').order_by('id')
 
         page = self.paginate_queryset(queryset)
         return self.get_paginated_response([
@@ -588,29 +608,6 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         application_obj.save()
         return HttpResponse('OK')
 
-    @action(methods=['get'], detail=False, url_path='get_walk_in_no_sv_list')
-    def get_walk_in_no_sv_list(self, request, *args, **kwargs):
-        connection_disbursement_list = ConnectionDisbursement.objects.filter(
-            walk_in_date__date=datetime.datetime.today().date()
-        ).filter(invitation__sv_link__isnull=True).order_by('walk_in_date')
-
-        #connection_disbursement_list = ConnectionDisbursement.objects.filter(
-        #    parent__id__in=[337, 338]
-        #).filter(invitation__sv_link__isnull=True)
-
-        #connection_disbursement_list = ConnectionDisbursement.objects.filter(
-        #    parent__id__in=[337, 338]
-        #).filter(invitation__sv_link__isnull=True)
-        return JsonResponse([
-            {
-                'connection_disbursement_id': record.id,
-                'application_id': record.parent_id,
-                'consumer_id': record.parent.consumer_id,
-                'name': record.parent.name,
-                'product': record.parent.product
-            } for record in connection_disbursement_list
-        ], safe=False)
-
     @action(methods=['get'], detail=False, url_path='get_ekyc_accepted_list')
     def get_list_to_fetch_consumer_id(self, request, *args, **kwargs):
         # .filter(robo_sdms_dedup=RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE) \
@@ -827,7 +824,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         # robot is expanded to handle other user case
         uid_record = uid_record[0]
 
-        identity_num = uid_record["Identity Num"].replace('x', '')
+        identity_num = uid_record["Identity Num"].lower().replace('x', '')
         uid_last_4_digits = identity_num.strip()
         applicant = application.family_members.filter(uid_no__endswith=uid_last_4_digits)
         if not applicant:
@@ -1135,36 +1132,37 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
     @action(methods=['post'], detail=False, url_path='schedule_whatsapp_message')
     def schedule_whatsapp_message(self, request, *args, **kwargs):
-        scheduler = django_rq.get_scheduler('default')
+        #scheduler = django_rq.get_scheduler('default')
         inbound_call_user_id = 87
-        start_time = datetime.time(8, 0, 0)
-        end_time = datetime.time(19, 30, 0)
+        #start_time = datetime.time(8, 0, 0)
+        #end_time = datetime.time(19, 30, 0)
 
         contact_mobile = self.request.data['mobile']
-        current_time = datetime.datetime.now(pytz.timezone('Asia/Kolkata')).time()
+        #current_time = datetime.datetime.now(pytz.timezone('Asia/Kolkata')).time()
+        send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id=inbound_call_user_id)
 
-        if time_in_range(
-            start_time, end_time, current_time
-        ):
-            date = datetime.date(1, 1, 1)
-            datetime1 = datetime.datetime.combine(date, end_time)
-            datetime2 = datetime.datetime.combine(date, current_time)
+        #if time_in_range(
+        #    start_time, end_time, current_time
+        #):
+        #    date = datetime.date(1, 1, 1)
+        #    datetime1 = datetime.datetime.combine(date, end_time)
+        #    datetime2 = datetime.datetime.combine(date, current_time)
 
-            time_difference = datetime1 - datetime2
+        #    time_difference = datetime1 - datetime2
 
-            time_difference = time_difference + datetime.timedelta(seconds=random.randint(0, 60*60))
-            scheduler.enqueue_in(
-                time_difference,
-                send_ujjwala_application_whatsapp_link_v2,
-                contact_mobile=contact_mobile, user_id=inbound_call_user_id
-            )
+        #    time_difference = time_difference + datetime.timedelta(seconds=random.randint(0, 60*60))
+        #    scheduler.enqueue_in(
+        #        time_difference,
+        #        send_ujjwala_application_whatsapp_link_v2,
+        #        contact_mobile=contact_mobile, user_id=inbound_call_user_id
+        #    )
             # scheduler.enqueue_at(
             #     datetime.datetime(2022, 8, 20, 10, 48),
             #     send_ujjwala_application_whatsapp_link,
             #     contact_mobile=contact_mobile
             # )
-        else:
-            send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id=inbound_call_user_id)
+        #else:
+        #    send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id=inbound_call_user_id)
 
         return HttpResponse('OK')
 

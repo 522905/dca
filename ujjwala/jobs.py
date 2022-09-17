@@ -18,7 +18,7 @@ from ujjwala.enums import RoboSdmsDedeupStatusEnum, PreInspectionStatusEnum, Pre
 from ujjwala.management.commands.ujjwala_file_worker import upload_compressed_file_to_tus
 from ujjwala.ujjwala_functions import application_needs_to_be_audited
 
-dedup_portal = IoclOmcDedup('305948', 'Arun@305948')
+dedup_portal = IoclOmcDedup('305948', 'Indane@123')
 
 # def interakt_webhook_job_processing(data):
 #     mid = data['data']['message']['id']

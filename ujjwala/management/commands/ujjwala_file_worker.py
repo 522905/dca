@@ -68,13 +68,14 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         #self.handle_application(*args, **options)
-        self.handle_disb(*args, **options)
+        #self.handle_disb(*args, **options)
         self.handle_pi(*args, **options)
 
     def handle_pi(self, *args, **options):
         for customer_doc in PreInspectionDocuments.objects.filter(
             file_size='0', compressed=False
         ).exclude(type__in=['SAFETY_AUDIO','PHYSICAL_LEGAL_DOCUMENT']).order_by('-parent_id'):
+            if not customer_doc.link: continue
             print("PreInspection Doc {} {} {}".format(customer_doc.parent_id, customer_doc.type, customer_doc.link))
             success, upload_url, file_size = upload_compressed_file_to_tus(customer_doc.link)
             customer_doc.file_size = file_size

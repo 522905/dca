@@ -68,8 +68,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		default=UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
 		choices=UjjwalaV2ApplicationStatus.choices
 	)
-	manual_operation_code = models.CharField(max_length=25, null=True, blank=True)
-	legal_documents_upload_status = models.CharField(max_length=25, null=True, blank=True)
+	manual_operation_code = models.CharField(max_length=256, null=True, blank=True)
+	legal_documents_upload_status = models.CharField(max_length=256, null=True, blank=True)
 	sv = models.CharField(max_length=25, null=True, blank=True)
 	documents_required_for_reupload = models.JSONField(null=True, blank=True)
 	last_execution_state = models.CharField(max_length=50, null=True, blank=True)
@@ -853,12 +853,12 @@ class PreInspection(models.Model):
 		self.submitted_on = datetime.datetime.now()
 		self.save()
 		#Commented For Exif Evaluation
-		#create_txn_status_job_function = partial(
-		#	django_rq.enqueue,
-		#	"ujjwala.jobs.compress_pre_inspection_documents",
-		#	parent_id=self.id
-		#)
-		#transaction.on_commit(create_txn_status_job_function)
+		create_txn_status_job_function = partial(
+			django_rq.enqueue,
+			"ujjwala.jobs.compress_pre_inspection_documents",
+			parent_id=self.id
+		)
+		transaction.on_commit(create_txn_status_job_function)
 
 	@fsm_log_description
 	@fsm_log_by
@@ -913,6 +913,7 @@ class PreInspectionDocuments(models.Model):
 	type = models.CharField(max_length=32, choices=UjjwalaApplicationDocumentsEnum.choices)
 	compressed = models.BooleanField(default=False)
 	file_size = models.CharField(max_length=16, default='0')
+	link = models.URLField(null=True, blank=True)
 
 	def download_links(self):
 		html = '''

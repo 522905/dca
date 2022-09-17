@@ -37,7 +37,7 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
     ConnectionDisbursementMaterialDeliveryForm, ConnectionDisbursementInvitationForm, \
     ConnectionDisbursementSocialMediaUpdatesForm, ConnectionDisbursementSearchForm, NicUpdateAddressForm, \
     PreInspectionConvertForm, LegalDocumentsReviewAdminForm, SetPrimaryPhoneNumberForm, \
-    NicClearedCustomerRemarksForm, UpdateBankDetailsForm
+    UpdateBankDetailsForm, NicClearedCustomerRemarksForm
 
 from ujjwala.global_functions import login_required_if_mech_inspection
 
@@ -1719,51 +1719,13 @@ class UjjwalaPreInspectionUserListView(ListView):
         return context
 
 
-@method_decorator(login_required, 'dispatch')
-class NicClearedCustomerRemarks(FormView):
-    form_class = NicClearedCustomerRemarksForm
-    template_name = "ujjwala/extra/nic_cleared_customer_remarks.html"
-
-    def get_object(self, queryset=None):
-        try:
-            obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
-        except:
-            raise Http404(
-                "No application found with Application Id: {}".format(self.kwargs.get('pk'))
-            )
-        return obj
-
-    def form_valid(self, form):
-        data = form.cleaned_data
-        obj = self.get_object()
-        obj.customer_remarks = data['customer_remarks']
-        obj.scheduled_date = data['scheduled_date']
-        obj.save()
-        return HttpResponse(content="Customer Remarks Updated Successfully.")
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data()
-        obj = self.get_object()
-        context.update({
-            "obj": obj,
-        })
-        return context
-    #
-    # def get_form_kwargs(self):
-    #     kwargs = super().get_form_kwargs()
-    #     # obj = self.get_object()
-    #     # kwargs.update({
-    #     #     'mobile_nos': obj.all_contacts
-    #     # })
-    #     return kwargs
-
 
 class UpdateBankDetailsFormView(FormView):
     form_class = UpdateBankDetailsForm
 
     def get_template_names(self):
         obj = self.get_object()
-        if obj.bank_account_number:
+        if obj.ifsc_code:
             return "ujjwala/extra/show_bank_details.html"
         else:
             return "ujjwala/extra/update_bank_details.html"
@@ -1796,3 +1758,34 @@ class UpdateBankDetailsFormView(FormView):
             'application': obj
         })
         return kwargs
+
+@method_decorator(login_required, 'dispatch')
+class NicClearedCustomerRemarks(FormView):
+    form_class = NicClearedCustomerRemarksForm
+    template_name = "ujjwala/extra/nic_cleared_customer_remarks.html"
+
+    def get_object(self, queryset=None):
+        try:
+            obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
+        except:
+            raise Http404(
+                "No application found with Application Id: {}".format(self.kwargs.get('pk'))
+            )
+        return obj
+
+    def form_valid(self, form):
+        data = form.cleaned_data
+        obj = self.get_object()
+        obj.customer_remarks = data['customer_remarks']
+        obj.scheduled_date = data['scheduled_date']
+        obj.additional_remarks = data['description']
+        obj.save()
+        return HttpResponse(content="Customer Remarks Updated Successfully.")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        obj = self.get_object()
+        context.update({
+            "obj": obj,
+        })
+        return context

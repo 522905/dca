@@ -61,7 +61,8 @@ def infobip_webhook_job_processing(data):
     # }
     # messages = data['messages']
     messages = data['results']
-
+    # Needs To Be Fixed Temporary Skipped
+    messages = []
     for msg in messages:
         try:
             mid = msg['messageId']

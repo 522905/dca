@@ -28,7 +28,7 @@ class UjjwalaApplicationSdmsRelationshipViewSet(viewsets.ViewSet):
 		).exclude(
 			family_members__dob__gte='2004-09-01'
 		).exclude(
-			robo_execution_failed_count__lt=3
+			robo_execution_failed_count__gt=2
 		).annotate(
 			custom_order=Case(
 				When(pre_inspection__status=PreInspectionStatusEnum.ACCEPTED, then=Value(1)),
@@ -45,6 +45,13 @@ class UjjwalaApplicationSdmsRelationshipViewSet(viewsets.ViewSet):
 				address = record.get_address_for_sdms_upload()
 			except:
 				continue
+
+
+			pi_status = 'NA'
+			try:
+				pi_status = record.pre_inspection.status
+			except:
+				pass
 
 			self_fm = record.family_members.get(relation=FamilyMemberRelationEnum.SELF)
 			self_name_split = record.name.split(" ")
@@ -74,7 +81,7 @@ class UjjwalaApplicationSdmsRelationshipViewSet(viewsets.ViewSet):
 					"ifsc": record.ifsc_code
 				},
 				"extras": {
-					"pi_status": record.pre_inspection.status
+					"pi_status": pi_status
 				}
 			})
 		return JsonResponse(data, safe=False)
@@ -84,11 +91,11 @@ class UjjwalaApplicationSdmsRelationshipViewSet(viewsets.ViewSet):
 		application = UjjwalaV2Application.objects.get(id=request.data.get('id'))
 		uid_check_result = request.data.get('uid_check_result')
 		p = re.compile("DcaId-([^\s]+)")
-		result = p.search(uid_check_result['address'])
+		result = p.search(uid_check_result['contact_address'])
 
 		if result:
 			dca_id = result.group(1)
-			if not request.data.get('id') == dca_id:
+			if not request.data.get('id') == int(dca_id):
 				return HttpResponse("Application Id Mis-match")
 		else:
 			print("Skipping Id Comparison")

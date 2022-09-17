@@ -330,7 +330,8 @@ def download_ujjwala_legal_docs_to_upload(obj, signature=True):
     #     file_extension = descriptor.mime_type.split('/')[-1]
     #     attachments.append(('{}.{}'.format(customer_doc.type, file_extension), doc_file))
 
-    family_members_doc = obj.family_members.exclude(relation=FamilyMemberRelationEnum.SELF)
+    family_members_doc = obj.family_members.all()
+    #.exclude(relation=FamilyMemberRelationEnum.SELF)
 
     for family_member in family_members_doc:
         uid_front_doc_file = get_compressed_file_link_jpeg(family_member.uid_front_link)
@@ -953,8 +954,8 @@ def send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id):
         },
         # "callbackData": "some_callback_data",
         "template": {
-            # "name": "ujjwala_application_shared_link_20082022",
-            "name": "ujjwala_application_shared_link",
+            "name": "ujjwala_application_shared_link_20082022",
+            #"name": "ujjwala_application_shared_link_27082022",
             "languageCode": "hi",
             "headerValues": [
             ],
