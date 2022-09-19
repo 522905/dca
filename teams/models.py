@@ -11,7 +11,9 @@ class LocationTypeEnum(models.TextChoices):
 
 
 class ServiceLocations(models.Model):
-	parent = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='service_locations')
+	parent = models.ForeignKey(
+		Organization, on_delete=models.CASCADE, related_name='service_locations', null=True, blank=True
+	)
 	type = models.CharField(max_length=25, choices=LocationTypeEnum.choices)
 	start_working_hours = models.TimeField()
 	end_working_hours = models.TimeField()
