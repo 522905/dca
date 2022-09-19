@@ -1,4 +1,5 @@
 from django.contrib import admin
+from leaflet.admin import LeafletGeoAdminMixin
 from treenode.admin import TreeNodeModelAdmin
 from treenode.forms import TreeNodeForm
 
@@ -6,7 +7,7 @@ from .models import ServiceLocations, ServiceArea, ServiceAreaMechanic
 
 
 @admin.register(ServiceLocations)
-class ServiceLocationsAdmin(admin.ModelAdmin):
+class ServiceLocationsAdmin(LeafletGeoAdminMixin, admin.ModelAdmin):
     list_display = (
         'id',
         'parent',
@@ -14,7 +15,6 @@ class ServiceLocationsAdmin(admin.ModelAdmin):
         'start_working_hours',
         'end_working_hours',
         'address',
-        'lat_long',
         'enabled',
     )
     list_filter = ('parent', 'enabled')

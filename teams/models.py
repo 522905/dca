@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from djgeojson.fields import PointField, PolygonField
 from organizations.models import Organization
 from treenode.models import TreeNodeModel
 
@@ -15,8 +16,9 @@ class ServiceLocations(models.Model):
 	start_working_hours = models.TimeField()
 	end_working_hours = models.TimeField()
 	address = models.TextField()
-	lat_long = models.CharField(max_length=256)
 	enabled = models.BooleanField(default=True)
+	entry_point = PointField()
+	location_polygon = PolygonField()
 
 	def __str__(self):
 		return "{} {} {}".format(self.start_working_hours, self.end_working_hours, self.address[:200])
