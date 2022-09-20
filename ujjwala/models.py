@@ -672,6 +672,9 @@ class FamilyMembers(models.Model):
 	uid_no = models.CharField(max_length=12, null=True, blank=True)
 	uid_front_link = models.URLField()
 	uid_back_link = models.URLField()
+	# Fields To Store Original Tus Link
+	uid_original_front_link = models.URLField(null=True, blank=True)
+	uid_original_back_link = models.URLField(null=True, blank=True)
 	uid_check_result = models.JSONField(blank=True, null=True)
 	uid_front_compressed = models.BooleanField(default=False)
 	uid_back_compressed = models.BooleanField(default=False)
@@ -705,6 +708,8 @@ class UjjwalaApplicationDocuments(models.Model):
 	parent = models.ForeignKey(UjjwalaV2Application, on_delete=models.CASCADE, related_name='documents', null=True)
 	type = models.CharField(max_length=32, choices=UjjwalaApplicationDocumentsEnum.choices)
 	link = models.URLField()
+	# Fields To Store Original Tus Link
+	original_link = models.URLField(null=True, blank=True)
 	compressed = models.BooleanField(default=False)
 	file_size = models.CharField(max_length=16, default='0')
 
@@ -719,6 +724,8 @@ class UserDocuments(models.Model):
 	parent = models.ForeignKey(User, on_delete=models.CASCADE, related_name='documents', null=True)
 	type = models.CharField(max_length=32, choices=UserDocumentsEnum.choices)
 	link = models.URLField()
+	# Fields To Store Original Tus Link
+	original_link = models.URLField(null=True, blank=True)
 
 	def download_links(self):
 		html = '''
@@ -934,6 +941,8 @@ class PreInspectionDocuments(models.Model):
 	compressed = models.BooleanField(default=False)
 	file_size = models.CharField(max_length=16, default='0')
 	link = models.URLField(null=True, blank=True)
+	# Fields To Store Original Tus Link
+	original_link = models.URLField(null=True, blank=True)
 
 	def download_links(self):
 		html = '''
@@ -1177,6 +1186,8 @@ class ConnectionDisbursementDocuments(models.Model):
 	parent = models.ForeignKey(ConnectionDisbursement, on_delete=models.CASCADE, related_name='documents', null=True)
 	type = models.CharField(max_length=32, choices=UjjwalaApplicationDocumentsEnum.choices)
 	link = models.URLField()
+	# Fields To Store Original Tus Link
+	original_link = models.URLField(null=True, blank=True)
 	compressed = models.BooleanField(default=False)
 	file_size = models.CharField(max_length=16, default='0')
 
@@ -1188,7 +1199,9 @@ class ConnectionDisbursementDocuments(models.Model):
 
 
 class ConnectionDisbursementInvitation(models.Model):
-	parent = models.ForeignKey(ConnectionDisbursement, on_delete=models.CASCADE, related_name='invitation', null=True)
+	parent = models.ForeignKey(
+		ConnectionDisbursement, on_delete=models.CASCADE, related_name='invitation', null=True
+	)
 	invited_for = models.DateTimeField(null=True, blank=True)
 	invite_accepted = models.BooleanField(default=False)
 	sv_link = models.URLField(null=True, blank=True)

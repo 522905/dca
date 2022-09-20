@@ -2,16 +2,13 @@ import io
 from functools import wraps
 
 import django_rq
+import magic
 import requests
 from django.conf import settings
 from django.db import close_old_connections
-from django_rq import job
-from communication_log.models import CommunicationLog
-from connection_app.enums import ConnectionApplicationDocumentsEnum
-from connection_app.models import minio_client
-import magic
+from minio import Minio
+from rq import get_current_job
 
-# @job
 from domestic_app.utils import get_minio_public_url
 from sdms.services import IoclOmcDedup
 from ujjwala.enums import RoboSdmsDedeupStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum
@@ -19,6 +16,13 @@ from ujjwala.management.commands.ujjwala_file_worker import upload_compressed_fi
 from ujjwala.ujjwala_functions import application_needs_to_be_audited
 
 dedup_portal = IoclOmcDedup('305948', 'Indane@123')
+
+minio_api_client = Minio(
+    settings.MINIO_API_ENDPOINT,
+    access_key=settings.MINIO_CREDENTIAL.get("access_key"),
+    secret_key=settings.MINIO_CREDENTIAL.get("secret_key"),
+    secure=False
+)
 
 # def interakt_webhook_job_processing(data):
 #     mid = data['data']['message']['id']
@@ -77,42 +81,92 @@ dedup_portal = IoclOmcDedup('305948', 'Indane@123')
 #         comm_obj.save()
 
 
-def move_ujjwala_files_to_minio_processing(obj):
-    # obj = ConnectionApplication.objects.get(id=id)
-    for doc in obj.documents.all():
-        if doc.link.find("tus"):
-            doc_file = requests.get(doc.link)
-            # Converting PDF file to Bytes IO Stream and Uploading To minio
-            doc_file_bytes = io.BytesIO(doc_file.content)
-            descriptor = magic.detect_from_content(doc_file_bytes.read(2048))
-            file_extension = descriptor.mime_type.split('/')[-1]
-
-            doc_file_name = "{}_{}.{}".format(obj.consumer_id, doc.type.lower(), file_extension)
-
-            doc_file_bytes.seek(0)
-
-            minio_client.put_object(
-                settings.MINIO_BUCKET_NAME,
-                doc_file_name,
-                doc_file_bytes, doc_file_bytes.getbuffer().nbytes,
-                content_type=descriptor.mime_type
-            )
-            doc.link = get_minio_public_url(settings.MINIO_BUCKET_NAME, doc_file_name)
-            doc.save()
-
-#
-# def send_message_on_whatsapp(id):
-#     obj = ConnectionApplication.objects.get(id=id)
-#     obj.event_completed_channel_whatsapp()
-
-
 def ensure_db_connection(func):
     @wraps(func)
     def run(*args, **kwargs):
         close_old_connections()
         return func(*args, **kwargs)
-
     return run
+
+
+def move_file_to_minio(file_url_to_move, new_file_name, bucket_name, delete_src=False):
+    """
+    Move given file to minio
+    params:
+        file_url_to_move: url of file to move
+        new_file_name: new name for the file to move
+        bucket_name: bucket name where file needs to move
+        delete_src: file source file
+    Returns New File Url
+    """
+    print("Moving File Name: {}".format(file_url_to_move))
+    doc_file = requests.get(file_url_to_move)
+
+    doc_file_bytes = io.BytesIO(doc_file.content)
+    descriptor = magic.detect_from_content(doc_file_bytes.read(2048))
+    file_extension = descriptor.mime_type.split('/')[-1]
+
+    doc_file_name = "{}.{}".format(new_file_name, file_extension)
+    doc_file_bytes.seek(0)
+
+    minio_output_result = minio_api_client.put_object(
+        bucket_name,
+        doc_file_name,
+        doc_file_bytes, doc_file_bytes.getbuffer().nbytes,
+        content_type=descriptor.mime_type
+    )
+    # print(minio_output_result.location)
+
+    # Deleting existing file to clear space
+    if delete_src:
+        del_req = requests.delete(file_url_to_move, headers={"Tus-Resumable": "1.0.0"})
+
+    new_file_url = get_minio_public_url(bucket_name, doc_file_name)
+    print("New File Url: {}".format(new_file_url))
+    return new_file_url
+
+
+def move_ujjwala_application_files_to_minio(application_id):
+    """
+    Moves Ujjwala Application Files To Minio
+    Params:
+        application_id: Ujjwala Application Id
+    """
+    from ujjwala.models import UjjwalaV2Application
+
+    obj = UjjwalaV2Application.objects.get(id=application_id)
+
+    for doc in obj.documents.all():
+        if doc.link.find("tus"):
+            new_file_url = move_file_to_minio(
+                doc.link,
+                "ujjwala_app_{}_{}".format(obj.id, doc.type.lower()),
+                settings.MINIO_UJJWALA_BUCKET_NAME
+            )
+            # Saving Link of Original File
+            doc.original_link = doc.link
+            doc.link = new_file_url
+            doc.save()
+
+    for fm in obj.family_members.all():
+        new_file_url = move_file_to_minio(
+            fm.uid_front_link,
+            "ujjwala_app_{}_{}_uid_front".format(obj.id, fm.relation),
+            settings.MINIO_UJJWALA_BUCKET_NAME
+        )
+        # Saving Link of Original File
+        fm.uid_original_front_link = fm.uid_front_link
+        fm.uid_front_link = new_file_url
+
+        new_file_url = move_file_to_minio(
+            fm.uid_back_link,
+            "ujjwala_app_{}_{}_uid_back".format(obj.id, fm.relation),
+            settings.MINIO_UJJWALA_BUCKET_NAME
+        )
+        # Saving Link of Original File
+        fm.uid_original_back_link = fm.uid_back_link
+        fm.uid_back_link = new_file_url
+        fm.save()
 
 
 @ensure_db_connection
@@ -180,6 +234,24 @@ def compress_connection_disbursement_documents(parent_id):
         customer_doc.save()
 
 
+def move_connection_disbursement_files_to_minio(parent_id):
+    from ujjwala.models import ConnectionDisbursement
+
+    cd_obj = ConnectionDisbursement.objects.get(parent_id=parent_id)
+
+    for doc in cd_obj.documents.all():
+        if doc.link.find("tus"):
+            new_file_url = move_file_to_minio(
+                doc.link,
+                "ujjwala_app_{}_cd_{}_{}".format(
+                    cd_obj.parent_id, cd_obj.parent_id, doc.type.lower()
+                ),
+                settings.MINIO_UJJWALA_BUCKET_NAME
+            )
+            doc.link = new_file_url
+            doc.save()
+
+
 def compress_pre_inspection_documents(parent_id):
     from ujjwala.models import PreInspectionDocuments
 
@@ -192,6 +264,24 @@ def compress_pre_inspection_documents(parent_id):
             customer_doc.link = upload_url
             customer_doc.compressed = True
         customer_doc.save()
+
+
+def move_pre_inspection_files_to_minio(parent_id):
+    from ujjwala.models import PreInspection
+
+    pi_obj = PreInspection.objects.get(parent_id=parent_id)
+    for doc in pi_obj.documents.all():
+        if doc.link.find("tus"):
+            print(doc.link)
+            new_file_url = move_file_to_minio(
+                doc.link,
+                "ujjwala_app_{}_pi_{}_{}".format(
+                    pi_obj.parent_id, pi_obj.id, doc.type.lower()
+                ),
+                settings.MINIO_UJJWALA_BUCKET_NAME
+            )
+            doc.link = new_file_url
+            doc.save()
 
 
 def compress_application_documents(application_id):
@@ -246,3 +336,56 @@ def move_application_for_audit(application_id, data):
         application = UjjwalaV2Application.objects.get(pk=application_id)
         application.transition_audit_application(audit_points=move_to_audit)
         application.save()
+
+
+@ensure_db_connection
+def compress_and_move_ujjwala_application_docs_to_minio(application_id):
+    result = django_rq.enqueue(compress_application_documents, args=(application_id,))
+    move_result = django_rq.enqueue(
+    	move_ujjwala_application_files_to_minio,
+    	args=(application_id,),
+    	depends_on=result
+    )
+    # django_rq.enqueue(
+    #     delete_files,
+    #     args=(application_id,),
+    #     depends_on=move_result
+    # )
+
+
+@ensure_db_connection
+def compress_and_move_cd_docs_to_minio(application_id):
+    result = django_rq.enqueue(compress_connection_disbursement_documents, args=(application_id,))
+    django_rq.enqueue(
+    	move_connection_disbursement_files_to_minio,
+    	args=(application_id,),
+    	depends_on=result
+    )
+
+
+@ensure_db_connection
+def compress_and_move_pi_docs_to_minio(application_id):
+    result = django_rq.enqueue(compress_pre_inspection_documents, args=(application_id,))
+    move_result = django_rq.enqueue(
+    	move_connection_disbursement_files_to_minio,
+    	args=(application_id,),
+    	depends_on=result
+    )
+
+
+@ensure_db_connection
+def compress_and_move_all_docs_to_minio(application_id):
+    django_rq.enqueue(
+        "ujjwala.jobs.compress_and_move_ujjwala_application_docs_to_minio",
+        args=(application_id,)
+    )
+
+    django_rq.enqueue(
+        "ujjwala.jobs.move_pre_inspection_files_to_minio",
+        args=(application_id,)
+    )
+
+    django_rq.enqueue(
+        "ujjwala.jobs.move_connection_disbursement_files_to_minio",
+        args=(application_id,)
+    )

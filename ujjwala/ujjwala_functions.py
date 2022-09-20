@@ -23,6 +23,7 @@ from django_currentuser.middleware import get_current_user
 from django_rq import job
 
 from communication_log.models import CommunicationLog
+from reference_data.models import TokensExcluded
 from ujjwala.enums import UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, ResidentialStatusEnum, \
     MaritalStatusEnum, UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, RoboSdmsDedeupStatusEnum
 from datetime import datetime
@@ -53,6 +54,9 @@ Your Verification code for {{for}} is {{code}}
 PDF_COMPRESSION_OPTIONS = {
     "pageSize": "A4", "imageDpi": 150, "imageQuality": 80, "lowquality": True
 }
+
+VALID_CHARS_IN_NAME_PATTERN = r'^[A-Za-z. ]+$'
+RELATION_VALIDATION_PATTERN = r'.(fathe|moth|husba).'
 
 
 def valid_file_uploaded(url):
@@ -952,11 +956,9 @@ def send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id):
         "traits": {
             "name": contact_mobile,
         },
-        # "callbackData": "some_callback_data",
         "template": {
             "name": "ujjwala_application_shared_link_20082022",
-            #"name": "ujjwala_application_shared_link_27082022",
-            "languageCode": "hi",
+             "languageCode": "hi",
             "headerValues": [
             ],
             "bodyValues": [],
@@ -988,16 +990,66 @@ def find_ujjwala_application_using_contact(contact_mobile):
     return True
 
 
+def match_name(name):
+    """
+    Matches given name against pattern
+    params:
+        name
+    """
+    return re.match(VALID_CHARS_IN_NAME_PATTERN, name)
+
+
+def get_valid_tokens(tokens):
+    valid_tokens = []
+    for token in tokens:
+        if not TokensExcluded.objects.filter(name=token.lower()).exists():
+            valid_tokens.append(token)
+    return valid_tokens
+
+
+def is_valid_name(name):
+    """
+    Validates given name
+    """
+    if len(name) <= 3:
+        return False, "Name Length"
+
+    tokens = name.strip().split(" ")
+
+    tokens = get_valid_tokens(tokens)
+
+    if len(tokens) > 2:
+        return False, "Name Tokens Count Exceeds"
+
+    for token in tokens:
+        if len(token) <= 3:
+            return False, "Token: {} Length less than equal to 3".format(token)
+
+        if re.match(RELATION_VALIDATION_PATTERN, token):
+            return False, "Wrong Name: {}".format(token)
+
+        if not re.match(VALID_CHARS_IN_NAME_PATTERN, token):
+            return False, "Wrong Character In Name: {}".format(token)
+
+    return True, "No Error In Name"
+
+
 def application_needs_to_be_audited(data):
     reason = []
 
-    name = data.get('name')
-    if name.lower() in ('mother', 'father', 'husband'):
-        reason.append("Invalid Applicant Name")
+    result, message = is_valid_name(data.get('name'))
+
+    if not result:
+        reason.append("Self Member {}".format(message))
 
     family_members = data.get('family_members')
 
     for fm in family_members:
+        result, message = is_valid_name(fm['name'])
+
+        if not result:
+            reason.append("{} Member {}".format(fm['relation'], message))
+
         if fm.get('ocr_processed') == 'no':
             reason.append(
                 "Family Member: {} having UID {} ocr could not be processed.".format(
