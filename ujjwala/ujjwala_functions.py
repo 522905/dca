@@ -1002,7 +1002,7 @@ def match_name(name):
 def get_valid_tokens(tokens, gender):
     valid_tokens = []
     for token in tokens:
-        if not TokensExcluded.objects.filter(name=token.lower(),gender=gender).exists():
+        if not TokensExcluded.objects.filter(name=token.lower(), gender=gender).exists():
             valid_tokens.append(token)
     return valid_tokens
 
@@ -1045,7 +1045,7 @@ def application_needs_to_be_audited(data):
     family_members = data.get('family_members')
 
     for fm in family_members:
-        result, message = is_valid_name(fm['name'], fm.get('gender').upper())
+        result, message = is_valid_name(fm['name'], fm.get_gender().upper())
 
         if not result:
             reason.append("{} Member {}".format(fm['relation'], message))
@@ -1056,6 +1056,25 @@ def application_needs_to_be_audited(data):
                     fm['name'], fm['uid_no']
                 )
             )
+    return '\n'.join(reason)
+
+
+def application_needs_to_be_audited_by_id(obj):
+    reason = []
+
+    result, message = is_valid_name(obj.name, 'FEMALE')
+
+    if not result:
+        reason.append("Self Member {}".format(message))
+
+    family_members = obj.family_members
+
+    for fm in family_members:
+        result, message = is_valid_name(fm.name, fm.get_gender().upper())
+
+        if not result:
+            reason.append("{} Member {}".format(fm.relation, message))
+
     return '\n'.join(reason)
 
 

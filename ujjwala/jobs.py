@@ -13,7 +13,7 @@ from domestic_app.utils import get_minio_public_url
 from sdms.services import IoclOmcDedup
 from ujjwala.enums import RoboSdmsDedeupStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum
 from ujjwala.management.commands.ujjwala_file_worker import upload_compressed_file_to_tus
-from ujjwala.ujjwala_functions import application_needs_to_be_audited
+from ujjwala.ujjwala_functions import application_needs_to_be_audited, application_needs_to_be_audited_by_id
 
 dedup_portal = IoclOmcDedup('305948', 'Indane@123')
 
@@ -332,6 +332,17 @@ def move_application_for_audit(application_id, data):
     from ujjwala.models import UjjwalaV2Application
 
     move_to_audit = application_needs_to_be_audited(data)
+    if move_to_audit:
+        application = UjjwalaV2Application.objects.get(pk=application_id)
+        application.transition_audit_application(audit_points=move_to_audit)
+        application.save()
+
+
+def move_application_for_audit_by_id(application_id):
+    from ujjwala.models import UjjwalaV2Application
+
+    obj = UjjwalaV2Application.objects.get(id=application_id)
+    move_to_audit = application_needs_to_be_audited_by_id(obj)
     if move_to_audit:
         application = UjjwalaV2Application.objects.get(pk=application_id)
         application.transition_audit_application(audit_points=move_to_audit)
