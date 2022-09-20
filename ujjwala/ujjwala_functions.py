@@ -999,15 +999,15 @@ def match_name(name):
     return re.match(VALID_CHARS_IN_NAME_PATTERN, name)
 
 
-def get_valid_tokens(tokens):
+def get_valid_tokens(tokens, gender):
     valid_tokens = []
     for token in tokens:
-        if not TokensExcluded.objects.filter(name=token.lower()).exists():
+        if not TokensExcluded.objects.filter(name=token.lower(),gender=gender).exists():
             valid_tokens.append(token)
     return valid_tokens
 
 
-def is_valid_name(name):
+def is_valid_name(name, gender):
     """
     Validates given name
     """
@@ -1016,7 +1016,7 @@ def is_valid_name(name):
 
     tokens = name.strip().split(" ")
 
-    tokens = get_valid_tokens(tokens)
+    tokens = get_valid_tokens(tokens, gender)
 
     if len(tokens) > 2:
         return False, "Name Tokens Count Exceeds"
@@ -1037,7 +1037,7 @@ def is_valid_name(name):
 def application_needs_to_be_audited(data):
     reason = []
 
-    result, message = is_valid_name(data.get('name'))
+    result, message = is_valid_name(data.get('name'), 'FEMALE')
 
     if not result:
         reason.append("Self Member {}".format(message))
@@ -1045,7 +1045,7 @@ def application_needs_to_be_audited(data):
     family_members = data.get('family_members')
 
     for fm in family_members:
-        result, message = is_valid_name(fm['name'])
+        result, message = is_valid_name(fm['name'], fm.get('gender').upper())
 
         if not result:
             reason.append("{} Member {}".format(fm['relation'], message))
