@@ -23,16 +23,16 @@ from teams.models import ServiceLocations, ServiceArea
 from ujjwala.communication_models import UjjwalaWhatsappCommunication
 from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMobileStatusEnum, \
 	UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, \
-	RejectionTypeEnum, RoboSdmsDedeupStatusEnum, UserDocumentsEnum, OtpStatusEnum, PreInspectionStatusEnum, \
-	ConnectionDisbursementStatusEnum, PreInspectionTypeEnum, SchemeOnboardingStatusEnum, NicClearedCustomerRemarksEnum
-from ujjwala.forms import UjjwalaLegalDocumentsUpload, \
-	ConnectionStatusApproved, ApplicationRejected, \
-	EkycAccepted, PreInspectionReviewForm, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
+	RejectionTypeEnum, RoboSdmsDedeupStatusEnum, UserDocumentsEnum, PreInspectionStatusEnum, \
+	ConnectionDisbursementStatusEnum, PreInspectionTypeEnum, SchemeOnboardingStatusEnum, NicClearedCustomerRemarksEnum, \
+	DisbursementDriveStatusEnum
+from ujjwala.forms import ConnectionStatusApproved, ApplicationRejected, \
+	EkycAccepted, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
 	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm, NewRelationCreated, \
 	CancelWalkInForm, MoveForManualOperationForm, MaterialDeliveryOtpOverrideForm
 from ujjwala.ujjwala_functions import download_ujjwala_physical_legal_docs, is_application_ready_for_disbursement, \
 	fsm_custom_audit_points_description
-from utils.global_functions import move_file_to_minio_bucket, upload_file_to_minio_bucket, old_address_to_description, \
+from utils.global_functions import upload_file_to_minio_bucket, old_address_to_description, \
 	old_walk_in_to_description
 
 
@@ -617,7 +617,14 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		),
 	)
 	def transition_audit_accepted(self, *args, **kwargs):
-		pass
+		self_fm = self.family_members.get(relation=FamilyMemberRelationEnum.SELF)
+
+		for fm in self.family_members.all():
+			fm.validated = True
+			fm.save()
+
+		self.name = self_fm.name
+
 
 
 	@fsm_log_description
@@ -682,6 +689,7 @@ class FamilyMembers(models.Model):
 	uid_back_file_size = models.CharField(max_length=16, default='0')
 	additional_details = models.JSONField(null=True, blank=True)
 	is_valid_uid = models.BooleanField(null=True, blank=True)
+	validated = models.BooleanField(default=False)
 
 	def get_gender(self):
 		if self.relation in (
