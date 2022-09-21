@@ -1,6 +1,12 @@
 from django.db import models
 
 
+class DisbursementDriveStatusEnum(models.TextChoices):
+	OPENED = 'OPENED', 'Opened'
+	CLOSED = 'CLOSED', 'Closed'
+	CANCELED = 'CANCELED', 'Canceled'
+
+
 class UjjwalaApplicationDocumentsEnum(models.TextChoices):
 	CUSTOMER_PHOTO = 'CUSTOMER_PHOTO', 'Customer Photo'
 	BANK_DETAIL = 'BANK_DETAIL', 'Bank Detail'
@@ -111,6 +117,7 @@ class UjjwalaV2ApplicationStatus(models.TextChoices):
 	NIC_ERROR_UPDATE_ADDRESS = 'NIC_ERROR_UPDATE_ADDRESS', 'Nic Error Update Address'
 	NIC_ERROR_ADDRESS_ACCEPTED = 'NIC_ERROR_ADDRESS_ACCEPTED', 'Nic Error Address Accepted'
 	NIC_ERROR_APPROVED = 'NIC_ERROR_APPROVED', 'Nic Error Approved'
+	ON_HOLD = 'ON_HOLD', 'On Hold'
 
 
 class RejectionTypeEnum(models.TextChoices):
