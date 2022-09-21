@@ -82,6 +82,12 @@ class NicUpdateAddressForm(forms.Form):
 		return data
 
 
+class OnHoldForm(forms.Form):
+	description = forms.CharField(
+		widget=forms.TextInput, label='Remarks', required=True
+	)
+
+
 ##################################################
 ##################################################
 # Will be renamed to Address Change Form

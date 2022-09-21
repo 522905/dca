@@ -274,6 +274,18 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		else:
 			return "Connection Disbursement not initiated. Make sure Pre Inspection is done and accepted"
 
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source='*',
+		target=UjjwalaV2ApplicationStatus.ON_HOLD,
+		custom=dict(short_description='Hold Application', admin=True, form=OnHoldForm),
+		permission='ujjwala.robo_manager_permission'
+	)
+	def transition_on_hold(self, *args, **kwargs):
+		self.last_execution_state = self.status
+
 
 	@fsm_log_description
 	@fsm_log_by
