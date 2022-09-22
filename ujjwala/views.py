@@ -1808,6 +1808,7 @@ class PrintDocumentsView(FormView):
         data = form.cleaned_data
         django_rq.enqueue(
             download_audit_documents_for_ids,
-            args=(data['ids'], data['documents'],)
+            args=(data['ids'], data['documents'],),
+            result_ttl=86400*2
         )
         return HttpResponse(content='Request For Audit Documents Generated')
