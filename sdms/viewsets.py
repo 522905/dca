@@ -1,3 +1,5 @@
+from rest_framework import viewsets
+
 from .models import SdmsFamilyMemberRecord
 from .serializers import SdmsFamilyMemberRecordSerializer
 from ujjwala.models import UjjwalaV2Application
