@@ -15,6 +15,14 @@ class SdmsCustomerRecord(models.Model):
 	contact_number = models.CharField(max_length=10, null=True)
 
 
+class SdmsFamilyMemberRecord(models.Model):
+	consumer_id = models.CharField(max_length=64)
+	relation = models.CharField(max_length=64)
+
+	first_name = models.CharField(max_length=128)
+	last_name = models.CharField(max_length=128)
+
+
 class BookResource(resources.ModelResource):
 	consumer_id = Field(attribute='consumer_id', column_name='Consumer ID')
 	kyc_date = Field(attribute='kyc_date', column_name='KYC Date')
