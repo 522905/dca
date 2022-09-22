@@ -1399,6 +1399,112 @@ class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
 
 
 @method_decorator(login_required, 'dispatch')
+class InstallationListView(ListView):
+    model = ConnectionDisbursement
+
+    paginate_by = 20
+    permission = 'has_view_permission'
+
+    def get_queryset(self):
+        return ConnectionDisbursement.objects.filter(
+            status__in=[
+                ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
+                ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE
+            ]
+        )
+        # .filter(
+        #     status=PreInspectionStatusEnum.SUBMITTED
+        # )
+
+    def get_template_names(self):
+        return 'ujjwala/Installation-form/installation_listview.html'
+
+    def get(self, request, *args, **kwargs):
+        user = get_current_user()
+        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
+            return render(request, 'ujjwala/no_permissions.html')
+        application_id = request.GET.get('application_id', '')
+        if application_id:
+            obj = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
+            if obj:
+                if not obj.status == ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED:
+                    messages.add_message(
+                        request, messages.ERROR, "Application Id {} Application Status: {}".format(
+                            obj.parent_id, obj.get_status_display()
+                        )
+                    )
+                    return redirect('ujjwala:installation_list')
+                else:
+                    return redirect(
+                        'ujjwala:installation_form_view',
+                        pk=obj.pk
+                    )
+            else:
+                messages.add_message(
+                    request, messages.ERROR, "Application Id: {} not found".format(application_id)
+                )
+        return super().get(request, *args, **kwargs)
+
+
+@method_decorator(login_required, 'dispatch')
+class InstallationView(FormView, ApplicationView):
+    model = ConnectionDisbursement
+    installation_step1_template = 'ujjwala/Installation-form/steps/step1.html'
+    installation_step2_template = 'ujjwala/Installation-form/steps/step2.html'
+    success_url = '.'
+
+    def dispatch(self, request, *args, **kwargs):
+        user = get_current_user()
+        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
+            return render(request, 'ujjwala/no_permissions.html')
+
+        installation = self.get_object()
+
+        if installation.status in (
+                ConnectionDisbursementStatusEnum.INSTALLATION_UPLOADED,
+        ):
+            return render(self.request, 'ujjwala/Installation-form/installation_status.html', context={
+                'installation': installation
+            })
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset=queryset)
+        return obj
+
+    def get_form_class(self):
+        installation_obj = self.get_object()
+        if installation_obj.status == ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED:
+            return InstallationKitchenUploadForm
+        elif installation_obj.status == ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE:
+            return InstallationMainGateUploadForm
+
+    def form_valid(self, form):
+        form.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_template_names(self):
+        installation_obj = self.get_object()
+        if installation_obj.status == ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED:
+            return self.installation_step1_template
+        elif installation_obj.status == ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE:
+            return self.installation_step2_template
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        installation = self.get_object()
+        kwargs['installation'] = installation
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            "obj": self.get_object()
+        })
+        return context
+
+
+@method_decorator(login_required, 'dispatch')
 class SendInvitationView(FormView):
     # model = ConnectionDisbursementInvitation
     form_class = ConnectionDisbursementInvitationForm
@@ -1635,87 +1741,6 @@ class UjjwalaPreInspectionUserListView(ListView):
 
         context['list_pre_inspection'] = list_pre_inspection
         return context
-
-
-@method_decorator(login_required, 'dispatch')
-class InstallationView(FormView, ApplicationView):
-    model = ConnectionDisbursement
-    installation_step1_template = 'ujjwala/Installation-form/steps/step1.html'
-    installation_step2_template = 'ujjwala/Installation-form/steps/step2.html'
-    success_url = '.'
-
-    def dispatch(self, request, *args, **kwargs):
-        installation = self.get_object()
-        if installation.status in (
-                ConnectionDisbursementStatusEnum.INSTALLATION_UPLOADED,
-        ):
-            return render(self.request, 'ujjwala/Installation-form/installation_status.html', context={
-                'installation': installation
-            })
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_object(self, queryset=None):
-        try:
-            obj = ConnectionDisbursement.objects.get(pk=self.kwargs.get('pk'))
-        except:
-            raise Http404(
-                "No %(verbose_name)s found matching the query" %
-                  {'verbose_name': queryset.model._meta.verbose_name}
-            )
-        return obj
-
-    def get_form_class(self):
-        installation_obj = self.get_object()
-        if installation_obj.status == ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED:
-            return InstallationKitchenUploadForm
-        elif installation_obj.status == ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE:
-            return InstallationMainGateUploadForm
-
-    def form_valid(self, form):
-        form.save()
-        return HttpResponseRedirect(self.get_success_url())
-
-    def get_template_names(self):
-        installation_obj = self.get_object()
-        if installation_obj.status == ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED:
-            return self.installation_step1_template
-        elif installation_obj.status == ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE:
-            return self.installation_step2_template
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        installation = self.get_object()
-        kwargs['installation'] = installation
-        return kwargs
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            "obj": self.get_object()
-        })
-        return context
-
-
-@method_decorator(login_required, 'dispatch')
-class InstallationListView(ListView):
-    model = ConnectionDisbursement
-
-    paginate_by = 20
-    permission = 'has_view_permission'
-
-    def get_queryset(self):
-        return ConnectionDisbursement.objects.filter(
-            status__in=[
-                ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
-                ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE
-            ]
-        )
-        # .filter(
-        #     status=PreInspectionStatusEnum.SUBMITTED
-        # )
-
-    def get_template_names(self):
-        return 'ujjwala/Installation-form/installation_listview.html'
 
 
 class UpdateBankDetailsFormView(FormView):
