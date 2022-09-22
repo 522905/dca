@@ -340,12 +340,23 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			UjjwalaV2ApplicationStatus.NIC_CLEARED,
 			UjjwalaV2ApplicationStatus.READY_FOR_DISBURSEMENT
 		],
-		target=UjjwalaV2ApplicationStatus.APPLICATION_REJECTED,
+		# target=UjjwalaV2ApplicationStatus.APPLICATION_REJECTED,
+		target=GET_STATE(
+			lambda self, **kwargs: \
+					UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD \
+						if kwargs.get('rejected_reason') == RejectionTypeEnum.INSUFFICIENT_DATA \
+						else UjjwalaV2ApplicationStatus.APPLICATION_REJECTED,
+			states=[
+				UjjwalaV2ApplicationStatus.APPLICATION_REJECTED,
+				UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD
+			]
+		),
 		custom=dict(short_description='Reject Application', admin=True, form=ApplicationRejected),
 		permission='ujjwala.can_reject_application'
 	)
 	def application_rejected(self, *args, **kwargs):
 		pass
+
 
 	@fsm_log_description
 	@fsm_log_by

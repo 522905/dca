@@ -711,9 +711,9 @@ class ApplicationRejected(forms.Form):
 	def clean(self):
 		data = self.cleaned_data
 		if data:
-			data = {'description': '{}: {}'.format(
+			data.update({'description': '{}: {}'.format(
 				data.get('rejected_reason'), data.get('description', '')
-			)}
+			)})
 		return data
 
 
