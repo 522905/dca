@@ -17,6 +17,7 @@ class SdmsCustomerRecord(models.Model):
 
 class SdmsFamilyMemberRecord(models.Model):
 	consumer_id = models.CharField(max_length=64)
+	dca_id = models.CharField(max_length=64)
 	relation = models.CharField(max_length=64)
 
 	first_name = models.CharField(max_length=128)
