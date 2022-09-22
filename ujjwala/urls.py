@@ -75,6 +75,11 @@ urlpatterns = [
          name="connection_disbursement_review_form_abc_list"
     ),
 
+    path('portal/print_documents/',
+         views.PrintDocumentsView.as_view(),
+         name="print_documents"
+    ),
+
     path(
         'portal/pre-inspection/create/',
         views.PreInspectionCreateView.as_view(),

@@ -17,7 +17,8 @@ from django_currentuser.middleware import get_current_user
 
 from otp.models import Otp
 from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
-	RejectionTypeEnum, PreInspectionTypeEnum, RoboSdmsDedeupStatusEnum, NicClearedCustomerRemarksEnum
+	RejectionTypeEnum, PreInspectionTypeEnum, RoboSdmsDedeupStatusEnum, NicClearedCustomerRemarksEnum, \
+	PrintDocumentsTypeEnum
 from ujjwala.models import UjjwalaApplicationDocumentsEnum
 from formtools.wizard.views import SessionWizardView
 
@@ -88,6 +89,21 @@ class OnHoldForm(forms.Form):
 	)
 
 
+class ReleaseApplicationForm(forms.Form):
+	description = forms.CharField(
+		widget=forms.TextInput, label='Remarks', required=True
+	)
+
+
+class PrintDocumentsForm(forms.Form):
+	ids = forms.CharField(
+		widget=forms.TextInput, label='Application Ids', required=True
+	)
+	documents = forms.MultipleChoiceField(
+		choices=PrintDocumentsTypeEnum.choices,
+		label='Documents To Print',
+		required=True
+	)
 ##################################################
 ##################################################
 # Will be renamed to Address Change Form

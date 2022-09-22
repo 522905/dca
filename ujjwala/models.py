@@ -29,7 +29,8 @@ from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMo
 from ujjwala.forms import ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
 	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm, NewRelationCreated, \
-	CancelWalkInForm, MoveForManualOperationForm, MaterialDeliveryOtpOverrideForm
+	CancelWalkInForm, MoveForManualOperationForm, MaterialDeliveryOtpOverrideForm, OnHoldForm, \
+	ReleaseApplicationForm
 from ujjwala.ujjwala_functions import download_ujjwala_physical_legal_docs, is_application_ready_for_disbursement, \
 	fsm_custom_audit_points_description
 from utils.global_functions import upload_file_to_minio_bucket, old_address_to_description, \
@@ -278,13 +279,36 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	@fsm_log_by
 	@transition(
 		field=status,
-		source='*',
+		source=[
+			UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED,
+			UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD,
+			UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD,
+			UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
+			UjjwalaV2ApplicationStatus.AUDIT_APPLICATION,
+			UjjwalaV2ApplicationStatus.NIC_CLEARED,
+			UjjwalaV2ApplicationStatus.READY_FOR_DISBURSEMENT,
+		],
 		target=UjjwalaV2ApplicationStatus.ON_HOLD,
 		custom=dict(short_description='Hold Application', admin=True, form=OnHoldForm),
 		permission='ujjwala.robo_manager_permission'
 	)
 	def transition_on_hold(self, *args, **kwargs):
 		self.last_execution_state = self.status
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=UjjwalaV2ApplicationStatus.ON_HOLD,
+		target=GET_STATE(
+			lambda self, **kwargs: self.last_execution_state,
+		),
+		custom=dict(
+			short_description='Release Application', admin=True, form=ReleaseApplicationForm
+		),
+	)
+	def transition_release_application(self, *args, **kwargs):
+		pass
 
 
 	@fsm_log_description

@@ -11,7 +11,8 @@ from rq import get_current_job
 
 from domestic_app.utils import get_minio_public_url
 from sdms.services import IoclOmcDedup
-from ujjwala.enums import RoboSdmsDedeupStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum
+from ujjwala.enums import RoboSdmsDedeupStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum, \
+    FamilyMemberRelationEnum
 from ujjwala.management.commands.ujjwala_file_worker import upload_compressed_file_to_tus
 from ujjwala.ujjwala_functions import application_needs_to_be_audited, application_needs_to_be_audited_by_id
 

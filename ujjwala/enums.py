@@ -23,9 +23,9 @@ class UjjwalaApplicationDocumentsEnum(models.TextChoices):
 	DEATH_CERTIFICATE = 'DEATH_CERTIFICATE', 'Death Certificate'
 	DIVORCE_DOCUMENT = 'DIVORCE_DOCUMENT', 'Divorce Document'
 	SAFETY_AUDIO = 'SAFETY_AUDIO', 'Safety Audio'
-	LEGAL_DOC_ANNEXURE_14_POINTS = 'LEGAL_DOC_ANNEXURE_14_POINTS', 'Legal Doc Annexure 14 Points'
-	LEGAL_DOC_FAMILY_OCCUPANCY = 'LEGAL_DOC_FAMILY_OCCUPANCY', 'Legal Doc Family Occupancy'
-	LEGAL_DOC_PRE_INSPECTION = 'LEGAL_DOC_PRE_INSPECTION', 'Legal Doc Pre Inspection'
+	LEGAL_DOC_ANNEXURE_14_POINTS = 'LEGAL_DOC_ANNEXURE_14_POINTS', 'Legal Doc Annexure 14 Points' # Form C
+	LEGAL_DOC_FAMILY_OCCUPANCY = 'LEGAL_DOC_FAMILY_OCCUPANCY', 'Legal Doc Family Occupancy' # Form B
+	LEGAL_DOC_PRE_INSPECTION = 'LEGAL_DOC_PRE_INSPECTION', 'Legal Doc Pre Inspection' # Form A
 	PHYSICAL_LEGAL_DOCUMENT = 'PHYSICAL_LEGAL_DOCUMENT', 'Physical Legal Document'
 	DISBURSEMENT_PHOTO = 'DISBURSEMENT_PHOTO', 'Disbursement Photo'
 	SOCIAL_MEDIA_PHOTO = 'SOCIAL_MEDIA_PHOTO', 'Social Media Photo'
@@ -189,3 +189,9 @@ class NicClearedCustomerRemarksEnum(models.TextChoices):
 	NOT_INTERESTED = 'NOT_INTERESTED', 'Not Interested'
 	NOT_APPROACHABLE = 'NOT_APPROACHABLE', 'Not Approachable'
 	SCHEDULED_DELIVERY = 'SCHEDULED_DELIVERY', 'Scheduled Delivery'
+
+
+class PrintDocumentsTypeEnum(models.TextChoices):
+	BANK_DETAILS = 'BANK_DETAILS', 'Bank Details'
+	FORM_ABC = 'FORM_ABC', 'Form A B C'
+	AADHAR = 'AADHAR', 'Aadhar'

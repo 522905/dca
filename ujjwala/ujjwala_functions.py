@@ -25,7 +25,8 @@ from django_rq import job
 from communication_log.models import CommunicationLog
 from reference_data.models import TokensExcluded
 from ujjwala.enums import UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, ResidentialStatusEnum, \
-    MaritalStatusEnum, UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, RoboSdmsDedeupStatusEnum
+    MaritalStatusEnum, UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, RoboSdmsDedeupStatusEnum, \
+    PrintDocumentsTypeEnum
 from datetime import datetime
 
 
@@ -1007,6 +1008,17 @@ def get_valid_tokens(tokens, gender):
     return valid_tokens
 
 
+def get_gender(relation):
+    if relation in (
+            FamilyMemberRelationEnum.SELF,
+            FamilyMemberRelationEnum.MOTHER,
+            FamilyMemberRelationEnum.DAUGHTER
+    ):
+        return "Female"
+    else:
+        return "Male"
+
+
 def is_valid_name(name, gender):
     """
     Validates given name
@@ -1045,7 +1057,7 @@ def application_needs_to_be_audited(data):
     family_members = data.get('family_members')
 
     for fm in family_members:
-        result, message = is_valid_name(fm['name'], fm.get_gender().upper())
+        result, message = is_valid_name(fm['name'], get_gender(fm['relation']).upper())
 
         if not result:
             reason.append("{} Member {}".format(fm['relation'], message))
@@ -1069,7 +1081,7 @@ def application_needs_to_be_audited_by_id(obj):
 
     family_members = obj.family_members
 
-    for fm in family_members:
+    for fm in family_members.all():
         result, message = is_valid_name(fm.name, fm.get_gender().upper())
 
         if not result:
@@ -1151,3 +1163,111 @@ def fsm_custom_audit_points_description(func=None):
         kwargs['description'] = instance.audit_points
         return func(instance, *args, **kwargs)
     return wrapped
+
+
+def download_audit_document(application, documents_type):
+    attachments = []
+    documents_list = []
+    form_template = loader.get_template("ujjwala/extra/audit_document_template.html")
+    for document_type in documents_type:
+        if document_type == PrintDocumentsTypeEnum.FORM_ABC:
+            documents_list.append({
+                'img_url': application.connection_disbursement.documents.filter(
+                    type="LEGAL_DOC_PRE_INSPECTION"
+                ).first().link,
+                'alt_text': "Form A",
+                'file_name': 'form_a'
+            })
+
+            documents_list.append({
+                'img_url': application.connection_disbursement.documents.filter(
+                    type="LEGAL_DOC_FAMILY_OCCUPANCY"
+                ).first().link,
+                'alt_text': "Form B",
+                'file_name': 'form_b'
+            })
+
+            documents_list.append({
+                'img_url': application.connection_disbursement.documents.filter(
+                    type="LEGAL_DOC_ANNEXURE_14_POINTS"
+                ).first().link,
+                'alt_text': "Form C",
+                'file_name': 'form_c'
+            })
+
+        if document_type == PrintDocumentsTypeEnum.AADHAR:
+            for fm in application.family_members.all():
+                documents_list.append({
+                    'info': "{} {}".format(fm.name, fm.relation),
+                    'img_url': fm.uid_front_link,
+                    'alt_text': "Uid Front",
+                    'file_name': 'uid_front_{}'.format(fm.uid_no)
+                })
+
+        if document_type == PrintDocumentsTypeEnum.BANK_DETAILS:
+            documents_list.append({
+                'info': "{} {}".format(application.bank_account_number, application.ifsc_code),
+                'img_url': application.documents.filter(
+                    type=UjjwalaApplicationDocumentsEnum.BANK_DETAIL
+                ).first().link,
+                'alt_text': "Bank Details",
+                'file_name': 'bank_{}'.format(application.bank_account_number)
+            })
+
+    for document in documents_list:
+        form_template_html = form_template.render(document)
+        form_pdf = requests.post(
+            settings.HTML_TO_PDF_SERVER_URL,
+            json={
+                "content": form_template_html,
+                "options": PDF_COMPRESSION_OPTIONS
+            }
+        )
+        attachments.append(('{}.pdf'.format(document.get('file_name')), form_pdf))
+
+    merger = PdfFileMerger()
+    temp_files = []
+    for key, value in attachments:
+        file = io.BytesIO()
+        file.write(value.content)
+        temp_files.append(file)
+        merger.append(file, import_bookmarks=False)
+
+    myio = io.BytesIO()
+    merger.write(myio)
+    merger.close()
+
+    [f.close() for f in temp_files]
+
+    myio.seek(0)
+    return {
+        'filename': 'ujjwala_id_{}_audit_docs.pdf'.format(application.id),
+        'content': myio.getvalue()
+    }
+    # resp = HttpResponse(myio.getvalue(), content_type="application/pdf")
+    # resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_id_{}_audit_docs.pdf'.format(application.id)
+    # return resp
+
+
+def download_audit_documents_for_ids(application_ids, documents_type):
+    from ujjwala.models import UjjwalaV2Application
+
+    application_id_list = application_ids.split(",")
+    application_list = UjjwalaV2Application.objects.filter(id__in=application_id_list)
+
+    documents_to_zip = []
+
+    for application in application_list:
+        document = download_audit_document(application, documents_type)
+        documents_to_zip.append(document)
+
+    documents_zip = io.BytesIO()
+
+    with zipfile.ZipFile(documents_zip, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
+        for document in documents_to_zip:
+            zf.writestr(document.get('filename'), data=document.get('content'))
+
+    # Grab ZIP file from in-memory, make response with correct MIME-type
+    resp = HttpResponse(documents_zip.getvalue(), content_type="application/x-zip-compressed")
+    resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_audit_docs.zip'
+    return resp

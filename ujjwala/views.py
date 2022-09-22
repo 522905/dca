@@ -37,7 +37,7 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
     ConnectionDisbursementMaterialDeliveryForm, ConnectionDisbursementInvitationForm, \
     ConnectionDisbursementSocialMediaUpdatesForm, ConnectionDisbursementSearchForm, NicUpdateAddressForm, \
     PreInspectionConvertForm, LegalDocumentsReviewAdminForm, SetPrimaryPhoneNumberForm, \
-    UpdateBankDetailsForm, NicClearedCustomerRemarksForm
+    UpdateBankDetailsForm, NicClearedCustomerRemarksForm, PrintDocumentsForm
 
 from ujjwala.global_functions import login_required_if_mech_inspection
 
@@ -45,7 +45,7 @@ from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbur
     ConnectionDisbursementInvitation, ConnectionDisbursementDocuments, FamilyMembers
 from ujjwala.ujjwala_functions import send_ujjwala_application_whatsapp_link_v1, find_ujjwala_application_using_contact, \
     ujjwala_application_reject_reason_log, is_pre_inspection_applicable, get_signed_share_data, \
-    send_ujjwala_application_whatsapp_link_v2
+    send_ujjwala_application_whatsapp_link_v2, download_audit_documents_for_ids
 
 
 def index(request):
@@ -1759,7 +1759,7 @@ class UpdateBankDetailsFormView(FormView):
         })
         return kwargs
 
-@method_decorator(login_required, 'dispatch')
+
 class NicClearedCustomerRemarks(FormView):
     form_class = NicClearedCustomerRemarksForm
     template_name = "ujjwala/extra/nic_cleared_customer_remarks.html"
@@ -1789,3 +1789,25 @@ class NicClearedCustomerRemarks(FormView):
             "obj": obj,
         })
         return context
+
+
+class PrintDocumentsView(FormView):
+    form_class = PrintDocumentsForm
+    template_name = "ujjwala/extra/print_documents.html"
+
+    # def get_object(self, queryset=None):
+    #     try:
+    #         obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
+    #     except:
+    #         raise Http404(
+    #             "No application found with Application Id: {}".format(self.kwargs.get('pk'))
+    #         )
+    #     return obj
+
+    def form_valid(self, form):
+        data = form.cleaned_data
+        django_rq.enqueue(
+            download_audit_documents_for_ids,
+            args=(data['ids'], data['documents'],)
+        )
+        return HttpResponse(content='Request For Audit Documents Generated')
