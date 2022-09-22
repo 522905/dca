@@ -8,6 +8,15 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
 
 <div class="p-2 pt-0 form_label" style="width: 100%;">
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="alert alert-info alert-dismissable">
+          <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+          {{msg.message}}
+        </div>
+      {% endfor %}
+    {% endif %}
+    {% include 'ujjwala/disbursement/forms/application_search.html' %}
     <div class="main-header bg-heading" style="background-color: #2957A4;">
         <span class="text-white">List of Installation</span>
     </div>
