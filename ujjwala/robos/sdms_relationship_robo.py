@@ -72,8 +72,8 @@ class UjjwalaApplicationSdmsRelationshipViewSet(viewsets.ViewSet):
 				}],
 				'consumer_id': record.consumer_id,
 				"address": {
-					"address": "DcaId-{} {}".format(record.id, address['addr_str'].strip().replace('\\', '/')),
-					"landmark": record.address_json.get('landmark', 'NA'),
+					"address": address['addr_str'].strip().replace('\\', '/'),
+					"landmark": f'DcaId-{record.id} ' + record.address_json.get('landmark', 'NA'),
 					"pincode": address['pincode']
 				},
 				"bank": {
