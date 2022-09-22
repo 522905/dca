@@ -150,6 +150,15 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		return mark_safe(html)
 
 
+	def reset_robo_execution_failed_count(self):
+		# WhatsappUploadLegalForms
+		url = reverse('ujjwala:reset_robo_failed_count', kwargs={'pk': self.pk})
+		html = '''
+		<a href="{}">Reset Robo Failed Count</a>
+		'''.format(url)
+		return mark_safe(html)
+
+
 	def set_primary_phone_number(self):
 		# WhatsappUploadLegalForms
 		url = reverse('ujjwala:set_primary_phone_number', kwargs={'pk': self.pk})

@@ -200,6 +200,18 @@ class WhatsappUploadLegalForms(View):
             )
 
 
+class ResetRoboFailedCount(View):
+    def get(self, request, *args, **kwargs):
+        application = UjjwalaV2Application.objects.filter(id=kwargs.get('pk')).first()
+        if not application:
+            return HttpResponse("Application Id {} does not exist".format(kwargs.get('pk')))
+        application.robo_execution_failed_count = 0
+        application.save()
+        return HttpResponse(
+            "Application Id {} Robo Execution Failed Count Set To Zero".format(kwargs.get('pk'))
+        )
+
+
 class WhatsappUpdateBankDetailsView(View):
     def get(self, request, *args, **kwargs):
         application = UjjwalaV2Application.objects.filter(id=kwargs.get('pk')).first()

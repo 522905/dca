@@ -116,6 +116,11 @@ urlpatterns = [
         name="whatsapp_form_abc"
     ),
     url(
+        '^portal/reset_robo_failed_count/(?P<pk>[^/.]+)/$',
+        views.ResetRoboFailedCount.as_view(),
+        name="reset_robo_failed_count"
+    ),
+    url(
         '^portal/whatsapp_update_bank_details/(?P<pk>[^/.]+)/$',
         views.WhatsappUpdateBankDetailsView.as_view(),
         name="whatsapp_update_bank_details"
