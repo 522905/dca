@@ -1433,7 +1433,7 @@ class InstallationListView(ListView):
 
     def get(self, request, *args, **kwargs):
         user = get_current_user()
-        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
+        if not user.has_perm('ujjwala.can_upload_post_installation'):
             return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
@@ -1467,7 +1467,7 @@ class InstallationView(FormView, ApplicationView):
 
     def dispatch(self, request, *args, **kwargs):
         user = get_current_user()
-        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
+        if not user.has_perm('ujjwala.can_upload_post_installation'):
             return render(request, 'ujjwala/no_permissions.html')
 
         installation = self.get_object()
