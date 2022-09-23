@@ -186,6 +186,9 @@ def do_primary_omc_dedupe_check(id):
         print(resp)
 
         for omc, status in resp.items():
+            if status not in ('Present', 'Not Present'):
+                raise Exception(status)
+
             if status != 'Present':
                 continue
             omc_dedupe_check_passed = False
@@ -332,9 +335,13 @@ def enqueue_dedupe_and_audit_jobs(application_id, data):
 def move_application_for_audit(application_id, data):
     from ujjwala.models import UjjwalaV2Application
 
+    application = UjjwalaV2Application.objects.get(pk=application_id)
+
+    if not application.robo_sdms_dedup == RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE:
+        return False
+
     move_to_audit = application_needs_to_be_audited(data)
     if move_to_audit:
-        application = UjjwalaV2Application.objects.get(pk=application_id)
         application.transition_audit_application(audit_points=move_to_audit)
         application.save()
 
