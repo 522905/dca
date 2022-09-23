@@ -1023,6 +1023,7 @@ def is_valid_name(name, gender):
     """
     Validates given name
     """
+    name = name.lower()
     if len(name) <= 3:
         return False, "Name Length"
 
