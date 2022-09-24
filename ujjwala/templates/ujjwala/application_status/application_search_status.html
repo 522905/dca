@@ -108,6 +108,10 @@
                                 {% endif %}
                             </td>
                         </tr>
+                        <tr>
+                            <th>E-Kyc Cleared Status: </th>
+                            <td> {{ obj.ekyc_cleared }}</td>
+                        </tr>
                         {% if obj.status == 'APPLICATION_REJECTED' %}
                         <tr>
                             <th colspan="2"><b>Rejected For: </b> {{ rejected_reason }}</th>
