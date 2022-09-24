@@ -57,7 +57,7 @@ PDF_COMPRESSION_OPTIONS = {
 }
 
 VALID_CHARS_IN_NAME_PATTERN = r'^[A-Za-z. ]+$'
-RELATION_VALIDATION_PATTERN = r'.(fathe|moth|husba|goverment|india).'
+RELATION_VALIDATION_PATTERN = r'.(fathe|moth|husba|government|india).'
 
 
 def valid_file_uploaded(url):
