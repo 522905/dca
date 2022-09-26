@@ -190,12 +190,27 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		if not self.address_json:
 			return self.address
 
-		addr_str = 'hNo {house_no} '\
-		'StNo {street_no} {village}'.format(
-			**self.address_json
+		# addr_str = 'hNo {house_no} '\
+		# 'StNo {street_no} {village}'.format(
+		# 	**self.address_json
+		# )
+		addr_str = 'hNo {} '\
+		'StNo {} {} '.format(
+			self.address_json.get('house_no', ''),
+			self.address_json.get('street_no', ''),
+			self.address_json.get('village', ''),
 		)
 
-		addr_tokens = [i for i in addr_str.replace(',', ' ').split(' ').split(',') if i]
+		# addr_tokens = [i for i in addr_str.replace(',', ' ').split(' ').split(',') if i]
+
+		addr_tokens = []
+		tokens = addr_str.replace(',', ' ').split(' ')
+
+		for token in tokens:
+			sub_tokens = token.split(',')
+			for sub_token in sub_tokens:
+				addr_tokens.append(sub_token.strip(' '))
+
 		seen = []
 		rs = []
 
