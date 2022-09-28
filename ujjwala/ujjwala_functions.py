@@ -409,7 +409,7 @@ def download_ujjwala_physical_legal_docs(obj):
         # 'customer_signature_file': customer_signature_file,
         'customer_signature_file': '',
         'date': datetime.now().strftime("%d-%m-%Y"),
-        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "FORM_C"))
+        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "14_POINT_ANNEXURE"))
     })
 
     ujjwala_declaration_pdf = requests.post(
@@ -436,7 +436,7 @@ def download_ujjwala_physical_legal_docs(obj):
         'obj': obj,
         # 'customer_signature_file': customer_signature_file
         'customer_signature_file': '',
-        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "FORM_B"))
+        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "OCCUPANCY_FORM"))
     })
 
     occupancy_form_pdf = requests.post(
@@ -451,7 +451,7 @@ def download_ujjwala_physical_legal_docs(obj):
     ujjwala_pre_inspection_html_template = loader.get_template("ujjwala/forms/pre_inspection_form.html")
     ujjwala_pre_inspection_html = ujjwala_pre_inspection_html_template.render({
         'obj': pre_inspection,
-        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "FORM_A"))
+        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "PRE_INSPECTION_FORM"))
     })
 
     ujjwala_pre_inspection_pdf = requests.post(
@@ -481,6 +481,47 @@ def download_ujjwala_physical_legal_docs(obj):
 
     resp = HttpResponse(myio.getvalue(), content_type="application/pdf")
     resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_physical_{}_legal_docs.pdf'.format(obj.id)
+    return resp
+
+
+def download_installation_form(obj):
+
+    self_doc = obj.family_members.filter(relation=FamilyMemberRelationEnum.SELF).first()
+
+    installation_form_html_template = loader.get_template("ujjwala/forms/installation_form.html")
+    installation_html = installation_form_html_template.render({
+        'app_id': obj.id,
+        'name': obj.name,
+        'uid': list(self_doc.uid_no),
+        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "INSTALLATION_FORM"))
+    })
+
+    installation_form_pdf = requests.post(
+        settings.HTML_TO_PDF_SERVER_URL,
+        json={
+            "content": installation_html,
+            "options": PDF_COMPRESSION_OPTIONS
+        }
+    )
+
+    # merger = PdfFileMerger()
+    # temp_files = []
+    # for key, value in attachments:
+    #     file = io.BytesIO()
+    #     file.write(value.content)
+    #     temp_files.append(file)
+    #     merger.append(file, import_bookmarks=False)
+    #
+    # myio = io.BytesIO()
+    # merger.write(myio)
+    # merger.close()
+    #
+    # [f.close() for f in temp_files]
+    #
+    # myio.seek(0)
+
+    resp = HttpResponse(installation_form_pdf.content, content_type="application/pdf")
+    resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_installation_{}_doc.pdf'.format(obj.id)
     return resp
 
 
