@@ -100,7 +100,7 @@ class UjjwalaApplicationSdmsRelationshipViewSet(viewsets.ViewSet):
 		else:
 			print("Skipping Id Comparison")
 
-		sdms_mobile_number = uid_check_result.get('sdms_mobile_number', '')
+		sdms_mobile_number = uid_check_result.get('phone_number', '')
 		self_fm = application.family_members.get(relation=FamilyMemberRelationEnum.SELF)
 		self_fm.uid_check_result = uid_check_result
 		self_fm.save()
