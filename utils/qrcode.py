@@ -53,4 +53,5 @@ def append_qr_code_to_sv(content, pdf_bytes):
 	image_rectangle = fitz.Rect(x, y, x+75, y+50)
 	first_page.insertImage(image_rectangle, "utils/arun_indane_stamp_sign.png")
 
+	file_handle.deletePage(1)
 	return file_handle.write()
