@@ -22,6 +22,7 @@ from scheduler.models import ScheduledJob
 from domestic_app import settings
 from sdms.models import SdmsCustomerRecord
 from utils.global_functions import upload_file_to_minio_bucket, upload_file_type_obj_to_minio_bucket
+from utils.qrcode import append_qr_code_to_sv
 from . import models
 from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, FamilyMemberRelationEnum, \
     ManualOperationCodeEnum, MaritalStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum, \
@@ -648,11 +649,14 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         if not obj:
              return HttpResponse('Connection Disbursement Not Found')
         file = request.FILES.get('file')
+        pdf_file_bytes = io.BytesIO(file.read())
+        bytes_stream = append_qr_code_to_sv("{},SV".format(obj.parent_id), pdf_file_bytes)
         # Bucket Name: ujjwaladocuments
-        doc_file_bytes = io.BytesIO(file.read())
+
+        doc_file_bytes = io.BytesIO(bytes_stream)
 
         sv_upload_link = upload_file_type_obj_to_minio_bucket(
-            doc_file_bytes, 'ujjwaladocuments', "sv_{}".format(obj.parent_id)
+            doc_file_bytes, 'ujjwaladocuments', "sv_{}".format(obj.parent_id), "application/pdf"
         )
 
         obj.invitation.create(

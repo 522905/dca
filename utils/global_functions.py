@@ -36,9 +36,12 @@ def upload_file_to_minio_bucket(file, bucket_name, file_name):
     return upload_file_type_obj_to_minio_bucket(doc_file_bytes, bucket_name, file_name)
 
 
-def upload_file_type_obj_to_minio_bucket(file, bucket_name, file_name):
-    descriptor = magic.detect_from_content(file.read(2048))
-    file_extension = descriptor.mime_type.split('/')[-1]
+def upload_file_type_obj_to_minio_bucket(file, bucket_name, file_name, content_type=None):
+    if content_type:
+        file_extension = content_type.split('/')[-1]
+    else:
+        descriptor = magic.detect_from_content(file.read(2048))
+        file_extension = descriptor.mime_type.split('/')[-1]
 
     doc_file_name = "{}.{}".format(file_name, file_extension)
 
@@ -48,7 +51,7 @@ def upload_file_type_obj_to_minio_bucket(file, bucket_name, file_name):
         bucket_name,
         doc_file_name,
         file, file.getbuffer().nbytes,
-        content_type=descriptor.mime_type
+        content_type=content_type
     )
     return get_minio_public_url(bucket_name, doc_file_name)
 
