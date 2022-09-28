@@ -58,6 +58,13 @@
         <div class="card">
             <div class="card-body">
                 {{form.application_id}}
+                {% if obj.parent.sdms_mobile_number %}
+                    <div class="col-sm-12 photo_block pt-2">
+                    <label>DAC Code: </label>
+                    <input placeholder="DAC Code" id="id_dac_code" name="dac_code" minlength="4" maxlength="4" pattern="[0-9]{4}" type="tel" value="" required/>
+                    {{ form.dac_code.errors }}
+                    </div>
+                {% endif %}
                 <div class="row mb-2 M-0">
                     <div class="col-sm-12 photo_block">
                         <span class="hidden-field">{{ form.disbursement_photo }}</span>
@@ -117,7 +124,9 @@
     }
 
 	function onSubmit(){
-		disbursementUppy(kitchenPhotoUppy);
+        if($('form')[0].reportValidity()) {
+            disbursementUppy(kitchenPhotoUppy);
+        }
 	}
 
 </script>

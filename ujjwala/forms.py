@@ -835,6 +835,7 @@ class ConnectionDisbursementLabelPrintForm(forms.Form):
 class ConnectionDisbursementMaterialDeliveredForm(forms.Form):
 	application_id = forms.IntegerField(widget=forms.HiddenInput)
 	reference_number = forms.CharField()
+
 	material_delivered_photo = forms.CharField(
 		widget=forms.TextInput, label='Pre Inspection', required=True
 	)
@@ -884,6 +885,9 @@ class ConnectionDisbursementSocialMediaUpdatesForm(forms.Form):
 
 
 class ConnectionDisbursementMaterialDeliveryForm(forms.Form):
+	dac_code = forms.CharField(
+		widget=forms.TextInput, label='DAC Code', required=True
+	)
 	disbursement_photo = forms.CharField(
 		widget=forms.HiddenInput, label='Connection Disbursement', required=True
 	)
@@ -891,11 +895,15 @@ class ConnectionDisbursementMaterialDeliveryForm(forms.Form):
 	def __init__(self, connection_disbursement=None, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.connection_disbursement = connection_disbursement
+		if not self.connection_disbursement.parent.sdms_mobile_number:
+			self.fields['dac_code'] = forms.CharField(
+				widget=forms.HiddenInput, label='DAC Code', required=False
+			)
 
 	def save(self):
 		data = self.cleaned_data
 		obj = self.connection_disbursement
-
+		obj.dac_code = data['dac_code']
 		obj.documents.create(
 			type=UjjwalaApplicationDocumentsEnum.DISBURSEMENT_PHOTO,
 			link=data['disbursement_photo']

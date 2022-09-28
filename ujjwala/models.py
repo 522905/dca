@@ -1058,6 +1058,7 @@ class ConnectionDisbursement(models.Model):
 	sequence = models.CharField(max_length=16, null=True, blank=True)
 	mechanic = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
 	material_delivered_on = models.DateTimeField(null=True, blank=True)
+	dac_code = models.CharField(max_length=4, null=True, blank=True)
 
 	status = FSMField(
 		default=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
