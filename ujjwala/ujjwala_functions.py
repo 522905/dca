@@ -29,6 +29,7 @@ from ujjwala.enums import UjjwalaApplicationDocumentsEnum, FamilyMemberRelationE
     PrintDocumentsTypeEnum
 from datetime import datetime
 
+from utils.qrcode import generate_base64_qr_code
 
 COMPILED_REGEX_PATTERN_AADHAR_EXISTS = re.compile(
     """Aadhaar already exists for customer (?P<contact_name>.*?) of (?P<distributor_name>.*)\(SBL-EXL-00151\)"""
@@ -166,7 +167,8 @@ def download_ujjwala_documents(obj):
             'age': '{}'.format(str(datetime.now().year - self_doc.dob.year)),
             'relation_name': relationship_name,
             'customer_signature_file': customer_signature_file,
-            'date': datetime.now().strftime("%d-%m-%Y")
+            'date': datetime.now().strftime("%d-%m-%Y"),
+            'qr_code': generate_base64_qr_code("{},{}".format(obj.parent.parent_id, "FORM_C"))
         })
 
         ujjwala_declaration_pdf = requests.post(
@@ -176,6 +178,7 @@ def download_ujjwala_documents(obj):
                 "options": PDF_COMPRESSION_OPTIONS
             }
         )
+
         attachments.append(('annexure_14_points.pdf', ujjwala_declaration_pdf))
 
         if obj.residential_status == ResidentialStatusEnum.LIVING_ALONE:
@@ -191,7 +194,8 @@ def download_ujjwala_documents(obj):
         occupancy_form_html_template = loader.get_template(occupancy_template_html)
         occupancy_form_html = occupancy_form_html_template.render({
             'obj': obj,
-            'customer_signature_file': customer_signature_file
+            'customer_signature_file': customer_signature_file,
+            'qr_code': generate_base64_qr_code("{},{}".format(obj.parent.parent_id, "FORM_B"))
         })
 
         occupancy_form_pdf = requests.post(
@@ -404,7 +408,8 @@ def download_ujjwala_physical_legal_docs(obj):
         'relation_name': relationship_name,
         # 'customer_signature_file': customer_signature_file,
         'customer_signature_file': '',
-        'date': datetime.now().strftime("%d-%m-%Y")
+        'date': datetime.now().strftime("%d-%m-%Y"),
+        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "FORM_C"))
     })
 
     ujjwala_declaration_pdf = requests.post(
@@ -430,7 +435,8 @@ def download_ujjwala_physical_legal_docs(obj):
     occupancy_form_html = occupancy_form_html_template.render({
         'obj': obj,
         # 'customer_signature_file': customer_signature_file
-        'customer_signature_file': ''
+        'customer_signature_file': '',
+        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "FORM_B"))
     })
 
     occupancy_form_pdf = requests.post(
@@ -444,7 +450,8 @@ def download_ujjwala_physical_legal_docs(obj):
     attachments.append(('{}.pdf'.format(occupancy_file_name), occupancy_form_pdf))
     ujjwala_pre_inspection_html_template = loader.get_template("ujjwala/forms/pre_inspection_form.html")
     ujjwala_pre_inspection_html = ujjwala_pre_inspection_html_template.render({
-        'obj': pre_inspection
+        'obj': pre_inspection,
+        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "FORM_A"))
     })
 
     ujjwala_pre_inspection_pdf = requests.post(

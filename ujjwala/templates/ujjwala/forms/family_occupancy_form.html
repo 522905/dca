@@ -49,7 +49,7 @@
                       <td style="width: 550px; display: inline-block;">
                         <div class="row">
                           <div class="label">3. पता:</div>
-                          <div class="text border-dotted">{{obj.address}}</div>
+                          <div class="text border-dotted">{{obj.parent.get_address_for_sdms_upload.addr_str}}</div>
                         </div>
                       </td>
                     </tr>
@@ -66,7 +66,7 @@
                 <td style="float:right; width:200px; margin-left: 20px;">
                   <ul class="img_block">
                     <li class="float-right">
-                      <img style="object-fit: contain; height: 140px;" src="{{obj.document_self|resize:"1000x140"}}">
+                      <img style="object-fit: cover; height: 140px; object-position: top" src="{{obj.document_self|resize:"1000x140"}}">
                     </li>
                   </ul>
                 </td>
@@ -96,23 +96,55 @@
         </table>
       </div>
       <div>
-        <p class="pt-5 " style="text-align: left;">मैं घोषणा करता हूँ कि उपर वर्णित परिवार के सदस्य मेरे साथ उपरोक्त पते पर रह रहे है और
+        <p class="pt-5 " style="text-align: left;">मैं घोषणा करती हूँ कि उपर वर्णित परिवार के सदस्य मेरे साथ उपरोक्त पते पर रह रहे है और
           हमारे पास यहां उल्लेखित पते पर कोई एलपीजी कनेक्शन नही है।</p>
         <p class="pt-2 text-left"> मैं घोषणा करता हूँ कि मेरा मूल निवास स्थान  और वर्तमान पता अलग है।</p>
       </div>
-      <div class="row">
-        <div class="col-6 col text-left pt-5" style="float:left;">
-            <img src="{{ customer_signature_file }}" style="max-width: 200px; object-fit: contain;"/>
-            <p><b>आवेदक के हस्ताक्षर/एलटीआई</b></p>
-        </div>
-        <div class="col-6 col text-right pt-5" style="float:right;" >
-            <p class="pt-2">
-              <b>Arun Indane</b><br>
-              <img style="object-fit: contain; width:100px" src="https://www.arungas.com/public/arun_indane_sign.png"/>
+    <div class="row">
+        <div class="col">
+            <p>
+                <img style="width: 200px" src="data:image/png;base64,{{ qr_code }}">
             </p>
-            <p><b>Auth.</b></p>
         </div>
-      </div>
+        <div class="col">
+            <div style="width: 400px;">
+                <table>
+                    <tr>
+                        <td class="float-left">
+                            <div class="label">
+                                <p style="text-align: left; margin-top: 10px;">
+                                    <b>आवेदक का हस्ताक्षर</b>
+                                </p>
+                            </div>
+                        </td>
+                        <td class="float-right" style="width: 200px;">
+                            <div class="label"><p style="text-align: left;"></p></div>
+                        </td>
+                    </tr>
+                    <tr style="padding-top: 60px">
+                        <td class="float-left">
+                            <div class="label">हस्ताक्षर:</div>
+                        </td>
+                        <td class="float-right" style="width: 200px;">
+                            <div class="text border-dotted">
+                                <img src="{{ customer_signature_file }}"
+                                     style="max-width: 200px; width: 60px; object-fit: contain; "/>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <p style="text-align: right; align-content: flex-end; margin-right: 30px; margin-top: 30px">
+                <b>For Arun Indane</b></br>
+                <img style="width: 120px; object-fit: contain;"
+                     src="https://www.arungas.com/public/arun_indane_sign.png"/></br>
+                <b>Auth. Signatory</b>
+            </p>
+        </div>
+    </div>
+
+
+
     </div>
 </body>
 </html>
