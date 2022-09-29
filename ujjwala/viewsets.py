@@ -39,7 +39,7 @@ from .ujjwala_functions import download_ujjwala_documents, get_salutation, \
     process_family_uid_result, process_omc_dedupe_result, send_whatsapp_contact_otp, verify_whatsapp_contact_otp, \
     send_sms_contact_otp, verify_sms_contact_otp, application_needs_to_be_audited, send_ujjwala_welcome_whatsapp_link, \
     time_in_range, get_signed_share_data, \
-    send_ujjwala_application_whatsapp_link_v1, send_ujjwala_application_whatsapp_link_v2
+    send_ujjwala_application_whatsapp_link_v1, send_ujjwala_application_whatsapp_link_v2, download_installation_form
 from django.urls import reverse
 
 
@@ -249,7 +249,9 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             existing_application = self_family_member.parent
             if existing_application.status != UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD:
                 return JsonResponse({
-                    "message": "Application Already Exist With Id: {}".format(existing_application.id)
+                    "message": "Application Already Exist With Id: {} In Status: {}".format(
+                        existing_application.id, existing_application.status
+                    )
                 })
 
             ConnectionDisbursement.objects.filter(
@@ -652,11 +654,21 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         pdf_file_bytes = io.BytesIO(file.read())
         bytes_stream = append_qr_code_to_sv("{},SV".format(obj.parent_id), pdf_file_bytes)
         # Bucket Name: ujjwaladocuments
-
         doc_file_bytes = io.BytesIO(bytes_stream)
-
         sv_upload_link = upload_file_type_obj_to_minio_bucket(
             doc_file_bytes, 'ujjwaladocuments', "sv_{}".format(obj.parent_id), "application/pdf"
+        )
+
+        # Installation Form Upload
+        installation_document = download_installation_form(obj.parent)
+        upload_url = upload_file_to_minio_bucket(
+            installation_document,
+            "ujjwaladocuments",
+            "ujjwala_{}_installation_document".format(obj.parent_id)
+        )
+        obj.documents.create(
+            type=UjjwalaApplicationDocumentsEnum.INSTALLATION_DOCUMENT,
+            link=upload_url
         )
 
         obj.invitation.create(
