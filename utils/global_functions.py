@@ -31,9 +31,9 @@ def move_file_to_minio_bucket(file_url, bucket_name, file_name):
     return get_minio_public_url(settings.MINIO_BUCKET_NAME, file_name)
 
 
-def upload_file_to_minio_bucket(file, bucket_name, file_name):
+def upload_file_to_minio_bucket(file, bucket_name, file_name, content_type=None):
     doc_file_bytes = io.BytesIO(file.content)
-    return upload_file_type_obj_to_minio_bucket(doc_file_bytes, bucket_name, file_name)
+    return upload_file_type_obj_to_minio_bucket(doc_file_bytes, bucket_name, file_name, content_type)
 
 
 def upload_file_type_obj_to_minio_bucket(file, bucket_name, file_name, content_type=None):
@@ -42,6 +42,7 @@ def upload_file_type_obj_to_minio_bucket(file, bucket_name, file_name, content_t
     else:
         descriptor = magic.detect_from_content(file.read(2048))
         file_extension = descriptor.mime_type.split('/')[-1]
+        content_type = descriptor.mime_type
 
     doc_file_name = "{}.{}".format(file_name, file_extension)
 
