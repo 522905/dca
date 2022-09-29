@@ -11,33 +11,7 @@
     <div class="main-header bg-heading mb-2" style="background-color: #2957A4;">
         <span class="text-white">Social Media Photo</span>
     </div>
-    <div class="card card-profile pt-0 mt-0" style="width:100%; margin: 0;">
-		<div class="row justify-content-center m-0" style="max-width: 400px; margin: 0 auto !important; padding: 10px;">
-			<div style="width: 30%; float:left">
-				<div class="card-profile-image">
-					<img style="max-height:150px; width: 100%;" src="{{obj.parent.document_self}}">
-				</div>
-			</div>
-			<div style="width: 70%; float:right">
-				<div class="card-body pt-0 pb-0">
-					<div class="text-center">
-						<div class="h5 font-weight-300">
-							<i class="location_pin mr-2"></i>{{ obj.parent.contact_mobile }}
-						</div>
-						<div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
-							{% if address_json == address_json  %}
-								{% for key,data in obj.parent.address_json.items %}
-									{{data}},
-								{% endfor %}
-							{% else %}
-								{{ obj.parent.address }}
-							{% endif%}
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+    {% include 'ujjwala/disbursement/custom-template/application_detail_template.html' %}
 </div>
 <div class="main p-2 pt-0 form_label">
     <form method="post" id="">

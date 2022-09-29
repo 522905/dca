@@ -45,6 +45,15 @@
                         </p>
                         {% endfor %}
                     </li>
+                    <li class="float-right">
+                        <p class="float-right">
+                        {% if obj.sv_valid_link %}
+                            <b style="background-color: darkgreen; color: white">SV Generated</b>
+                        {% else %}
+                            <b style="background-color: darkred; color: white">SV Not Generated</b>
+                        {% endif %}
+                        </p>
+                    </li>
                 </ul>
             </div>
         </a>

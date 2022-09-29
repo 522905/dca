@@ -11,34 +11,7 @@
 	<div class="bg-heading" style="padding: 10px;">
 		<span class="text-white text">{{ obj.parent.get_physical_legal_documents_status }}</span>
 	</div>
-    <div class="row justify-content-center m-0" style="margin: 0 auto !important; padding: 10px; border-bottom: 1px solid #ccc; margin-bottom: 5px !important;">
-		<div style="width:50%; float:left">
-			<div class="card-profile-image">
-				<a href="#">
-					<img style="width:100%" src="{{obj.parent.document_self}}">
-				</a>
-			</div>
-		</div>
-		<div style="width:50%; float:right">
-			<div class="card-body pt-0 p-1">
-				<div class="text-center">
-					<h5 class="h4">{{ obj.parent.name }}({{ obj.parent.id }})<span class="font-weight-light"></span></h5>
-					<div class="h5 font-weight-300">
-						<i class="ni location_pin mr-2"></i>{{ obj.parent.contact_mobile }}
-					</div>
-					<div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
-						{% if address_json == address_json  %}
-							{% for key,data in obj.parent.address_json.items %}
-								{{data}},
-							{% endfor %}
-						{% else %}
-							{{ obj.parent.address }}
-						{% endif%}
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+    {% include 'ujjwala/disbursement/custom-template/application_detail_template.html' %}
 	<div class="p-1">
 		
 		<div class=" p-1 multi_buttons">
