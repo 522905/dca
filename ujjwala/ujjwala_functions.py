@@ -29,6 +29,7 @@ from ujjwala.enums import UjjwalaApplicationDocumentsEnum, FamilyMemberRelationE
     PrintDocumentsTypeEnum
 from datetime import datetime
 
+from utils.global_functions import upload_file_to_minio_bucket
 from utils.qrcode import generate_base64_qr_code
 
 COMPILED_REGEX_PATTERN_AADHAR_EXISTS = re.compile(
@@ -409,7 +410,7 @@ def download_ujjwala_physical_legal_docs(obj):
         # 'customer_signature_file': customer_signature_file,
         'customer_signature_file': '',
         'date': datetime.now().strftime("%d-%m-%Y"),
-        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "14_POINT_ANNEXURE"))
+        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "LEGAL_DOC_ANNEXURE_14_POINTS"))
     })
 
     ujjwala_declaration_pdf = requests.post(
@@ -436,7 +437,7 @@ def download_ujjwala_physical_legal_docs(obj):
         'obj': obj,
         # 'customer_signature_file': customer_signature_file
         'customer_signature_file': '',
-        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "OCCUPANCY_FORM"))
+        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "LEGAL_DOC_FAMILY_OCCUPANCY"))
     })
 
     occupancy_form_pdf = requests.post(
@@ -451,7 +452,7 @@ def download_ujjwala_physical_legal_docs(obj):
     ujjwala_pre_inspection_html_template = loader.get_template("ujjwala/forms/pre_inspection_form.html")
     ujjwala_pre_inspection_html = ujjwala_pre_inspection_html_template.render({
         'obj': pre_inspection,
-        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "PRE_INSPECTION_FORM"))
+        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "LEGAL_DOC_PRE_INSPECTION"))
     })
 
     ujjwala_pre_inspection_pdf = requests.post(
@@ -484,6 +485,27 @@ def download_ujjwala_physical_legal_docs(obj):
     return resp
 
 
+
+
+
+def re_create_legal_docs(application):
+    physical_legal_document = download_ujjwala_physical_legal_docs(application)
+    upload_url = upload_file_to_minio_bucket(
+        physical_legal_document,
+        "ujjwaladocuments",
+        "ujjwala_{}_physical_legal_document".format(application.id)
+    )
+    return physical_legal_document
+
+
+def re_create_legal_docs_pdf(application):
+    document = re_create_legal_docs(application)
+    resp = HttpResponse(document, content_type="application/pdf")
+    resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_physical_{}_legal_docs.pdf'.format(
+        application.id)
+    return resp
+
+
 def download_installation_form(obj):
 
     self_doc = obj.family_members.filter(relation=FamilyMemberRelationEnum.SELF).first()
@@ -492,8 +514,8 @@ def download_installation_form(obj):
     installation_html = installation_form_html_template.render({
         'app_id': obj.id,
         'name': obj.name,
-        'uid': list(self_doc.uid_no),
-        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "INSTALLATION_FORM"))
+        'uid_no': self_doc.uid_no,
+        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "INSTALLATION_DOCUMENT"))
     })
 
     installation_form_pdf = requests.post(

@@ -31,6 +31,7 @@ class UjjwalaApplicationDocumentsEnum(models.TextChoices):
 	SOCIAL_MEDIA_PHOTO = 'SOCIAL_MEDIA_PHOTO', 'Social Media Photo'
 	INSTALLATION_KITCHEN_PHOTO = 'INSTALLATION_KITCHEN_PHOTO', 'Installation Kitchen Photo'
 	INSTALLATION_STOVE_WITH_STICKER = 'INSTALLATION_STOVE_WITH_STICKER', 'Installation Stove With Sticker'
+	INSTALLATION_DOCUMENT = 'INSTALLATION_DOCUMENT', 'Installation Document'
 
 	@classmethod
 	def get_skipped_additional_choices(cls):

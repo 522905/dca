@@ -28,8 +28,8 @@ from .enums import ResidentialStatusEnum, UjjwalaApplicationDocumentsEnum, Famil
 from .models import UjjwalaV2Application, FamilyMembers, UjjwalaApplicationDocuments, UjjwalaV2ApplicationStatus, \
     UserDocuments, PreInspectionDocuments, PreInspection, ConnectionDisbursementDocuments, ConnectionDisbursement, \
     ConnectionDisbursementInvitation
-from .ujjwala_functions import download_ujjwala_documents, download_ujjwala_physical_legal_docs
-
+from .ujjwala_functions import download_ujjwala_documents, download_ujjwala_physical_legal_docs, re_create_legal_docs, \
+    re_create_legal_docs_pdf
 
 from .views import SendInvitationView, NicErrorUpdateAddress
 from .forms import ReviewNicErrorUpdatedAddressForm
@@ -271,7 +271,7 @@ class PreInspectionAdmin(ExportActionMixin, FSMTransitionCustomMixin, admin.Mode
         readonly_fields = super().get_readonly_fields(request, obj=obj)
         if obj:
             if obj.status == PreInspectionStatusEnum.ACCEPTED:
-                readonly_fields = readonly_fields + ['download_physical_legal_docs']
+                readonly_fields = readonly_fields + ['download_physical_legal_docs', 'recreate_physical_legal_docs', ]
 
         return readonly_fields
 
@@ -284,6 +284,14 @@ class PreInspectionAdmin(ExportActionMixin, FSMTransitionCustomMixin, admin.Mode
             <input type="submit" value="Download Physical Legal Docs" name="_download-physical-legal-doc-pdf">
         """)
 
+    def recreate_physical_legal_docs(self, obj=None):
+        return mark_safe("""
+            <input type="submit" value="Recreate Physical Legal Docs" name="_recreate-physical-legal-doc-pdf">
+        """)
+
+    def recreate_legal_docs_pdf(self, obj):
+        return re_create_legal_docs_pdf(obj)
+
     def download_physical_legal_documents_pdf(self, obj):
         return download_ujjwala_physical_legal_docs(obj)
 
@@ -291,6 +299,9 @@ class PreInspectionAdmin(ExportActionMixin, FSMTransitionCustomMixin, admin.Mode
         if "_download-physical-legal-doc-pdf" in request.POST:
             pre_inspection_obj = PreInspection.objects.get(pk=object_id)
             return self.download_physical_legal_documents_pdf(pre_inspection_obj.parent)
+        elif "_recreate-physical-legal-doc-pdf" in request.POST:
+            pre_inspection_obj = PreInspection.objects.get(pk=object_id)
+            return self.recreate_legal_docs_pdf(pre_inspection_obj.parent)
         return super().change_view(request, object_id, form_url=form_url, extra_context=extra_context)
 
     def fsm_transition_view_extra_context(self, obj):
