@@ -11,9 +11,14 @@ class DisbursementDriveAdminForm(forms.ModelForm):
 	def clean(self):
 		data = self.cleaned_data
 
+		if self.instance:
+			instance_id = self.instance.id
+		else:
+			instance_id = None
+
 		disbursement_drive_exist = DisbursementDrive.objects.filter(
 			manager=data['manager'], status='ACTIVE'
-		).exclude(id=data.get('id', None)).first()
+		).exclude(id=instance_id).first()
 
 		if disbursement_drive_exist:
 			raise ValidationError(
@@ -22,7 +27,7 @@ class DisbursementDriveAdminForm(forms.ModelForm):
 
 		disbursement_drive_exist = DisbursementDrive.objects.filter(
 			team_members__in=data['team_members'], status='ACTIVE'
-		).exclude(id=data.get('id', None)).first()
+		).exclude(id=instance_id).first()
 
 		if disbursement_drive_exist:
 			raise ValidationError(
