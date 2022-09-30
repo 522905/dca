@@ -26,8 +26,9 @@ from communication_log.models import CommunicationLog
 from reference_data.models import TokensExcluded
 from ujjwala.enums import UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, ResidentialStatusEnum, \
     MaritalStatusEnum, UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, RoboSdmsDedeupStatusEnum, \
-    PrintDocumentsTypeEnum
+    PrintDocumentsTypeEnum, DisbursementDriveStatusEnum
 from datetime import datetime
+
 
 from utils.global_functions import upload_file_to_minio_bucket
 from utils.qrcode import generate_base64_qr_code
@@ -483,9 +484,6 @@ def download_ujjwala_physical_legal_docs(obj):
     resp = HttpResponse(myio.getvalue(), content_type="application/pdf")
     resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_physical_{}_legal_docs.pdf'.format(obj.id)
     return resp
-
-
-
 
 
 def re_create_legal_docs(application):
@@ -1342,3 +1340,16 @@ def download_audit_documents_for_ids(application_ids, documents_type):
     resp = HttpResponse(documents_zip.getvalue(), content_type="application/x-zip-compressed")
     resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_audit_docs.zip'
     return resp
+
+
+def is_member_of_disbursement_drive(user):
+    from ujjwala.models import DisbursementDrive
+
+    disbursement_drive = DisbursementDrive.objects.filter(
+        status=DisbursementDriveStatusEnum.ACTIVE, team_members=user
+    ).first()
+
+    if disbursement_drive:
+        return True
+    else:
+        return False
