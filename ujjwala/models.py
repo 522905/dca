@@ -3,14 +3,11 @@ import re
 from functools import partial
 
 import django_rq
-import requests
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.core import signals
+from django.core.exceptions import ValidationError
 from django.db import models, transaction
-from django.dispatch import receiver
-from django.template import loader
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django_currentuser.middleware import get_current_user
@@ -19,7 +16,7 @@ from django_fsm_log.decorators import fsm_log_description, fsm_log_by
 from organizations.models import Organization
 
 from communication_log.models import CommunicationLog
-from teams.models import ServiceLocations, ServiceArea
+from teams.models import ServiceLocations, ServiceArea, FormFillArea
 from ujjwala.communication_models import UjjwalaWhatsappCommunication
 from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMobileStatusEnum, \
 	UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, \
@@ -30,7 +27,8 @@ from ujjwala.forms import ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
 	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm, NewRelationCreated, \
 	CancelWalkInForm, MoveForManualOperationForm, MaterialDeliveryOtpOverrideForm, OnHoldForm, \
-	ReleaseApplicationForm
+	ReleaseApplicationForm, CompleteDisbursementDriveForm, \
+	InstallationReviewAdminForm
 from ujjwala.ujjwala_functions import download_ujjwala_physical_legal_docs, is_application_ready_for_disbursement, \
 	fsm_custom_audit_points_description
 from utils.global_functions import upload_file_to_minio_bucket, old_address_to_description, \
@@ -74,7 +72,6 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	sv = models.CharField(max_length=25, null=True, blank=True)
 	documents_required_for_reupload = models.JSONField(null=True, blank=True)
 	last_execution_state = models.CharField(max_length=50, null=True, blank=True)
-	# pre_inspection_accepted = models.OneToOneField("PreInspection", on_delete=models.CASCADE, null=True, blank=True)
 	sync_with_sdms = models.BooleanField(default=True)
 	applicant_verified = models.BooleanField(default=False)
 	applicant_verified_on = models.DateTimeField(null=True, blank=True)
@@ -96,6 +93,9 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	additional_remarks = models.TextField(null=True, blank=True)
 	ekyc_cleared = models.BooleanField(default=False)
 	robo_execution_failed_count = models.IntegerField(default=0, blank=True, null=True)
+	# form_fill_area = models.ForeignKey(
+	# 	FormFillArea, on_delete=models.CASCADE, related_name='form_fill_area', null=True, blank=True
+	# )
 
 	class Meta:
 		permissions = (
@@ -636,6 +636,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	def transition_ready_for_disbursement(self, *args, **kwargs):
 		pass
 
+
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
@@ -703,7 +704,6 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			fm.save()
 
 		self.name = self_fm.name
-
 
 
 	@fsm_log_description
@@ -853,6 +853,7 @@ class PreInspection(models.Model):
 
 	def document_main_gate_photo(self):
 		return self.documents.filter(type=UjjwalaApplicationDocumentsEnum.MAIN_GATE).first().link
+
 
 	@fsm_log_description
 	@fsm_log_by
@@ -1045,6 +1046,52 @@ class Evykati(models.Model):
 	information = models.JSONField(null=True, blank=True)
 
 
+class DisbursementDrive(models.Model):
+	created_on = models.DateTimeField(auto_now_add=True)
+	updated_on = models.DateTimeField(auto_now=True)
+	manager = models.ForeignKey(User, on_delete=models.PROTECT, related_name="owned_disbursement_drives")
+	team_members = models.ManyToManyField(User)
+	description = models.TextField()
+	date = models.DateField()
+	max_walk_ins = models.IntegerField()
+	status = FSMField(
+		default=DisbursementDriveStatusEnum.ACTIVE,
+		choices=DisbursementDriveStatusEnum.choices
+	)
+
+	class Meta:
+		permissions = (
+			("disbursement_manager", "Disbursement Manager"),
+		)
+
+	# @fsm_log_description
+	# @fsm_log_by
+	# @transition(
+	# 	field=status,
+	# 	source=DisbursementDriveStatusEnum.ACTIVE,
+	# 	target=DisbursementDriveStatusEnum.CANCELED,
+	# 	custom=dict(short_description='Cancel Disbursement Drive', admin=True, form=CancelDisbursementDriveForm),
+	# )
+	# def transition_cancel_disbursement_drive(self, *args, **kwargs):
+	# 	if self.connectiondisbursement_set.filter(
+	# 		status=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED
+	# 	):
+	# 		raise ValidationError("Not Valid Disbursement Drive For Cancellation")
+
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=DisbursementDriveStatusEnum.ACTIVE,
+		target=DisbursementDriveStatusEnum.COMPLETED,
+		custom=dict(short_description='Complete Disbursement Drive', admin=True, form=CompleteDisbursementDriveForm),
+	)
+	def transition_complete_disbursement_drive(self, *args, **kwargs):
+		if self.connectiondisbursement_set.filter().exclude(status=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED):
+			raise ValidationError("Please Complete All Material Deliveries")
+
+
 class ConnectionDisbursement(models.Model):
 	parent = models.OneToOneField(
 		UjjwalaV2Application, on_delete=models.PROTECT, related_name='connection_disbursement'
@@ -1064,6 +1111,7 @@ class ConnectionDisbursement(models.Model):
 		default=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
 		choices=ConnectionDisbursementStatusEnum.choices
 	)
+	disbursement_drive = models.ForeignKey(DisbursementDrive, on_delete=models.SET_NULL, blank=True, null=True)
 
 	def invite(self):
 		invite_url = reverse('admin:ujjwala_connectiondisbursement_invite', kwargs={'pk': self.pk})
@@ -1071,7 +1119,6 @@ class ConnectionDisbursement(models.Model):
 		<a href="{}">Send Invitation</a>
 		'''.format(invite_url)
 		return mark_safe(html)
-
 
 	def legal_document_upload_link(self):
 		html = '''
@@ -1087,12 +1134,15 @@ class ConnectionDisbursement(models.Model):
 		'''.format(url)
 		return mark_safe(html)
 
-
 	def valid_sv_link(self):
 		valid_invitation = self.invitation.filter(parent=self).first()
 
 		if valid_invitation:
 			return valid_invitation.sv_link
+
+	def form_d_link(self):
+		if self.documents.filter(type=UjjwalaApplicationDocumentsEnum.INSTALLATION_DOCUMENT):
+			return self.documents.filter(type=UjjwalaApplicationDocumentsEnum.INSTALLATION_DOCUMENT).first().link
 
 	def sv_exist(self):
 		valid_invitation = self.invitation.filter(status='VALID').first()
@@ -1229,9 +1279,41 @@ class ConnectionDisbursement(models.Model):
 		custom=dict(short_description='Upload Main Gate Photo', admin=False),
 	)
 	def transition_main_gate(self, *args, **kwargs):
-		self.parent.transition_installed(by=get_current_user())
-		self.parent.save()
 		pass
+
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=ConnectionDisbursementStatusEnum.INSTALLATION_UPLOADED,
+		target=GET_STATE(
+					lambda self, **kwargs: \
+							ConnectionDisbursementStatusEnum.INSTALLATION_ACCEPTED \
+									if kwargs.get('review_status') == 'ACCEPTED' \
+									else ConnectionDisbursementStatusEnum.INSTALLATION_REJECTED,
+					states=[
+						ConnectionDisbursementStatusEnum.INSTALLATION_ACCEPTED,
+						ConnectionDisbursementStatusEnum.INSTALLATION_REJECTED
+					]
+				),
+		custom=dict(
+			short_description='Installation Review', admin=True, form=InstallationReviewAdminForm
+		),
+	)
+	def transition_installation_reviewed(self, *args, **kwargs):
+		if kwargs.get('review_status') == 'REJECTED':
+			self.documents.filter(
+				type__in=[
+					UjjwalaApplicationDocumentsEnum.INSTALLATION_KITCHEN_PHOTO,
+					UjjwalaApplicationDocumentsEnum.INSTALLATION_STOVE_WITH_STICKER
+				]
+			).delete()
+		else:
+			self.parent.transition_installed(by=get_current_user())
+			self.parent.save()
+			# self.parent.event_installation_reupload_channel_whatsapp(kwargs.get('description'))
+
 
 	@old_walk_in_to_description
 	@fsm_log_description

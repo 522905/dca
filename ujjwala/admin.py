@@ -1,38 +1,29 @@
 import datetime
-import io
-import zipfile
 from datetime import datetime
 from functools import update_wrapper
 
-import magic
-import requests
-from django.conf import settings
 from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.db.models import F
-from django.http import HttpResponse
-from django.template import loader
-from django.urls import path, reverse
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django_admin_listfilter_dropdown.filters import DropdownFilter
 from django_fsm_log.admin import StateLogInline
 from django_fsm_log.models import StateLog
 from import_export import resources
-from import_export.admin import ExportActionMixin, ImportMixin, ImportExportMixin, ImportExportModelAdmin
+from import_export.admin import ExportActionMixin, ImportMixin
 from rangefilter.filters import DateRangeFilter
 
 from fsm_admin2_custom.admin import FSMTransitionCustomMixin
-from .enums import ResidentialStatusEnum, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, MaritalStatusEnum, \
-    PreInspectionStatusEnum, ConnectionDisbursementStatusEnum
+from ujjwala.admin_forms import DisbursementDriveAdminForm
+from .enums import PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, DisbursementDriveStatusEnum
 from .models import UjjwalaV2Application, FamilyMembers, UjjwalaApplicationDocuments, UjjwalaV2ApplicationStatus, \
     UserDocuments, PreInspectionDocuments, PreInspection, ConnectionDisbursementDocuments, ConnectionDisbursement, \
-    ConnectionDisbursementInvitation
-from .ujjwala_functions import download_ujjwala_documents, download_ujjwala_physical_legal_docs, re_create_legal_docs, \
+    ConnectionDisbursementInvitation, DisbursementDrive
+from .ujjwala_functions import download_ujjwala_documents, download_ujjwala_physical_legal_docs, \
     re_create_legal_docs_pdf
-
-from .views import SendInvitationView, NicErrorUpdateAddress
-from .forms import ReviewNicErrorUpdatedAddressForm
+from .views import SendInvitationView
 
 
 def filter_walk_in_qs(queryset, state):
@@ -67,6 +58,39 @@ class WalkInFilter(SimpleListFilter):
 
     def queryset(self, request, queryset):
         return filter_walk_in_qs(queryset, self.value())
+
+
+class DisbursementDriveFilter(SimpleListFilter):
+    title = 'Disbursement Drive Filter'
+    parameter_name = 'disbursement'
+
+    def lookups(self, request, model_admin):
+        return [
+            (i.id, f'{i.manager} ({i.id})') for i in
+            DisbursementDrive.objects.filter(status=DisbursementDriveStatusEnum.ACTIVE)
+        ]
+
+    def queryset(self, request, queryset):
+        return queryset.filter(disbursement_drive_id=self.value())
+
+
+class DisbursementDriveIdInputFilter(admin.SimpleListFilter):
+    title = 'Disbursement Id'
+    parameter_name = 'disbursement_drive_id'
+    template = 'ujjwala/extra/admin_input_filter.html'
+
+    def lookups(self, request, model_admin):
+        return ((None, None),)
+
+    def choices(self, changelist):
+        query_params = changelist.get_filters_params()
+        query_params.pop(self.parameter_name, None)
+        all_choice = next(super().choices(changelist))
+        all_choice['query_params'] = query_params
+        yield all_choice
+
+    def queryset(self, request, queryset):
+        return queryset.filter(disbursement_drive_id=self.value())
 
 
 class UjjwalaApplicationDocumentsInline(admin.TabularInline):
@@ -344,7 +368,7 @@ class ConnectionDisbursementAdmin(ExportActionMixin, FSMTransitionCustomMixin, a
         'updated_on',
         'status',
     )
-    list_filter = ('status', WalkInFilter, )
+    list_filter = ('status', WalkInFilter, DisbursementDriveFilter, DisbursementDriveIdInputFilter,)
     inlines = (ConnectionDisbursementDocumentsAdmin, ConnectionDisbursementInvitationAdmin, StateLogInline,)
     fsm_fields = ['status', ]
     readonly_fields = ['legal_document_upload_link', 'invite', 'whatsapp_form_a_b_c', ]
@@ -411,3 +435,18 @@ class StateLogAdmin(ExportActionMixin, admin.ModelAdmin):
         return super().get_queryset(
             request
         ).order_by(F('timestamp').desc())
+
+
+@admin.register(DisbursementDrive)
+class DisbursementDriveAdmin(ExportActionMixin, FSMTransitionCustomMixin, admin.ModelAdmin):
+    form = DisbursementDriveAdminForm
+    list_display = (
+        'id',
+        'date',
+        'manager',
+        'updated_on',
+        'status',
+    )
+    list_filter = ('status', 'date')
+    filter_horizontal = ['team_members']
+    fsm_fields = ['status', ]

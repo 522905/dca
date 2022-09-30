@@ -1,3 +1,5 @@
+{% load ujjwala_utils %}
+
 {% if user.is_authenticated %}
 <div class="sidebar">
     <ul class="nav-links">
@@ -32,7 +34,7 @@
                 <li><a href="{% url 'ujjwala:pre_inspection_create' %}" data-turbolinks="false">Start a New Pre-Suraksha-Drill </a></li>
             </ul>
         </li>              
-        {% if perms.ujjwala.can_do_connection_disbursement %}
+        {% if user|has_disbursement_permission %}
         <li>
             <div class="iocn-link">
             <a href="#" data-turbolinks="false">
@@ -51,10 +53,17 @@
         </li>
         {% endif %}
         <li>
-            <a href="{% url 'ujjwala:installation_list' %}" data-turbolinks="false">
-            <i class='bx bx-grid-alt' ></i>
-            <span class="link_name">Installation</span>
+            <div class="iocn-link">
+            <a href="#" data-turbolinks="false">
+                <i class='bx bx-collection' ></i>
+                <span class="link_name">Installation</span>
             </a>
+            <i class='bx bxs-chevron-down arrow' ></i>
+            </div>
+            <ul class="sub-menu">
+                <li><a href="{% url 'ujjwala:installation_list' %}" data-turbolinks="false">List View</a></li>
+                <li><a href="{% url 'ujjwala:installation_review_list' %}" data-turbolinks="false">Review List</a></li>
+            </ul>
         </li>
         {% if user.is_authenticated %}
         <li>

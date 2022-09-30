@@ -39,3 +39,10 @@ class ServiceArea(TreeNodeModel):
 class ServiceAreaMechanic(models.Model):
 	parent = models.ForeignKey(ServiceArea, on_delete=models.CASCADE, related_name='service_area')
 	mechanic = models.ForeignKey(User, on_delete=models.CASCADE, related_name='mechanic', null=True)
+
+
+class FormFillArea(models.Model):
+	name = models.CharField(max_length=256)
+	service_location = models.ForeignKey(
+		ServiceLocations, on_delete=models.CASCADE, related_name='service_locations', null=True, blank=True
+	)

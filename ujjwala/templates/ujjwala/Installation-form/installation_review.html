@@ -1,0 +1,87 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/xzoom.css' %}" media="all" /> 
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<style>
+    .hidden-field{ display: none;}
+</style>
+<div class="form_label p-2">
+    {% include 'ujjwala/disbursement/custom-template/application_detail_template.html' %}
+    <div class="mobile_review form_abc">
+        <div class="row m-0">
+            <div class="col-4 pl-1 pr-1">
+                <a class="float-left mt-1" href="{{ kitchen_photo }}">
+                    <img style="width:100%; height: 100px;" src="{{ kitchen_photo }}">
+                    <span class="text-white btn btn-primary float-left mt-1 rounded-0" style="width:100%;">Kitchen Photo</span>
+                </a>
+            </div>
+            <div class="col-4 pl-1 pr-1">
+                <a class="float-left mt-1" href="{{ stove_with_sticker }}">
+                    <img style="width:100%; height: 100px;" src="{{ stove_with_sticker }}">
+                    <span class="text-white btn btn-primary float-left mt-1 rounded-0" style="width:100%;">Stove With Sticker</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="large-5 column mt-2 desktop_review">
+        <div class="large-5 column">
+            <div class="xzoom-container">
+                <div class="row">
+                    <div class="col-10">
+                        <div class="zoom_imge_container">
+                            <img class="xzoom" id="xzoom-default" src="{{ kitchen_photo }}"/>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="xzoom-thumbs">
+                            <a href="{{ kitchen_photo }}" style="">
+                                <img class="xzoom-gallery" width="80" height="80" src="{{ kitchen_photo }}"
+                                    xpreview="{{ kitchen_photo }}" title="Form A">
+                                <p class="form_lable text-white btn btn-primary  mb-2 rounded-0">Kitchen</p>
+                            </a>
+                            <a href="{{ stove_with_sticker }}">
+                                <img class="xzoom-gallery" width="80" height="80" src="{{ stove_with_sticker }}"
+                                title="Form B">
+                                <p class="form_lable text-white btn btn-primary mb-2 rounded-0">Stove</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                
+            </div>
+        </div>
+    </div>
+    <form method="post" id="form" >
+        {% csrf_token %}
+        <div class="card">
+			<div class="p-2">
+                <p>Review Installation</p>
+                {{ form }}
+            </div>
+			<div class="card-footer p-1">
+                <div class="row m-0">
+                    <div class="col pr-0 pl-1">
+                        <input class="text-white btn btn-danger float-right" type="submit" value="Submit" name="_next_form_view">
+                    </div>
+                </div>
+			</div>
+        </div>
+    </form>
+</div>
+
+<script type="text/javascript" src="{% static '/js/setup.js' %}"></script>
+<script type="text/javascript" src="{% static '/js/xzoom.min.js' %}"></script>
+<style>
+	#xzoom-default{ width: 500px !important;}
+	.xzoom{ max-height: 500px !important;}
+    .xzoom-thumbs a{ display: inline-block;}
+    .form_abc a{ width: 100%; }
+    body .mobile_review.form_abc span,.desktop_review .form_lable{ height: 32px !important; line-height: 22px !important;}
+    .desktop_review .xzoom-thumbs img{ margin:0 !important; float: left; width: 100%; }
+    .desktop_review .xzoom-thumbs{ float: left; width: 100%;}
+    .desktop_review .xzoom-thumbs .form_lable{  font-size: 12px !important; height: 32px !important; line-height: 22px !important;}
+  </style>
+{% endblock %}

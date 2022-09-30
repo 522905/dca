@@ -1,51 +1,43 @@
 import base64
 import datetime
-import json
-import re
 import textwrap
 
 import django_rq
 from django import forms
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.signing import Signer
-from django.http import HttpResponse, Http404, HttpResponseRedirect, JsonResponse
+from django.forms import formset_factory
+from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect
-from django.template import loader
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views import View
-from django.views.decorators.clickjacking import xframe_options_exempt, xframe_options_sameorigin
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 from django_currentuser.middleware import get_current_user
-from django.forms import formset_factory
-from django.views.decorators.clickjacking import xframe_options_exempt
 
-import ujjwala.forms
 from otp.models import Otp
 from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
-    PreInspectionTypeEnum
+    PreInspectionTypeEnum, DisbursementDriveStatusEnum, UjjwalaApplicationDocumentsEnum
 from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm, \
     PreInspectionGenerateOtpForm, PreInspectionValidateOtpForm, \
     KitchenPreInspectionForm, AudioOnSafetyForm, PreviewPreInspectionForm, PreInspectionAllocatedGenerateOtpForm, \
     PreInspectionAllocatedValidateOtpForm, UjjwalaLegalDocumentsUpload, ChangeAddressForm, \
     ConnectionDisbursementSvLabelPrintForm, InstallationMainGateUploadForm, InstallationKitchenUploadForm, \
-    UjjwalaApplicationOtpInitialForm, UjjwalaApplicationGenerateOtpForm, UjjwalaApplicationValidateOtpForm, \
+    UjjwalaApplicationGenerateOtpForm, UjjwalaApplicationValidateOtpForm, \
     ConnectionDisbursementMaterialDeliveryForm, ConnectionDisbursementInvitationForm, \
-    ConnectionDisbursementSocialMediaUpdatesForm, ConnectionDisbursementSearchForm, NicUpdateAddressForm, \
+    ConnectionDisbursementSocialMediaUpdatesForm, NicUpdateAddressForm, \
     PreInspectionConvertForm, LegalDocumentsReviewAdminForm, SetPrimaryPhoneNumberForm, \
-    UpdateBankDetailsForm, NicClearedCustomerRemarksForm, PrintDocumentsForm
-
+    UpdateBankDetailsForm, NicClearedCustomerRemarksForm, PrintDocumentsForm, \
+    InstallationReviewAdminForm
 from ujjwala.global_functions import login_required_if_mech_inspection
-
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
-    ConnectionDisbursementInvitation, ConnectionDisbursementDocuments, FamilyMembers
-from ujjwala.ujjwala_functions import send_ujjwala_application_whatsapp_link_v1, find_ujjwala_application_using_contact, \
-    ujjwala_application_reject_reason_log, is_pre_inspection_applicable, get_signed_share_data, \
-    send_ujjwala_application_whatsapp_link_v2, download_audit_documents_for_ids
+    FamilyMembers, DisbursementDrive
+from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_pre_inspection_applicable, \
+    send_ujjwala_application_whatsapp_link_v2, download_audit_documents_for_ids, is_member_of_disbursement_drive
 
 
 def index(request):
@@ -154,8 +146,6 @@ class ShareWebFormLink(TemplateView):
         return super().get(request, *args, **kwargs)
 
 
-# This Function Validates Shared Link & Open Web Form
-# With Pre-Validated Contact Number & Referral Code
 class UjjwalaApplicationSharedLinkView(View):
     def get(self, request, *args, **kwargs):
         data = kwargs.get('data', '')
@@ -719,9 +709,29 @@ class UjjwalaConnectionDisbursementListView(ListView):
     def get_template_names(self):
         return 'ujjwala/disbursement/connection_disbursement_listview.html'
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        user = get_current_user()
+        if not is_member_of_disbursement_drive(user):
+            return render(self.request, 'ujjwala/no_permissions.html')
+        disbursement_drive = DisbursementDrive.objects.filter(
+            team_members=user, status=DisbursementDriveStatusEnum.ACTIVE
+        ).first()
+
+        connection_disbursement_count = ConnectionDisbursement.objects.filter(
+            disbursement_drive=disbursement_drive
+        ).count()
+
+        context.update({
+            "current_disbursement_index": connection_disbursement_count,
+            "max_walkins": disbursement_drive.max_walk_ins,
+            "disbursement_drive": disbursement_drive
+        })
+        return context
+
     def get(self, request, *args, **kwargs):
         user = get_current_user()
-        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
+        if not is_member_of_disbursement_drive(user):
             return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
@@ -761,9 +771,34 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
 
     def dispatch(self, request, *args, **kwargs):
         user = get_current_user()
-        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
+        if not is_member_of_disbursement_drive(user):
             return render(request, 'ujjwala/no_permissions.html')
+        disbursement_drive = DisbursementDrive.objects.filter(
+            date=datetime.datetime.today().date(), team_members=user
+        ).first()
+
+        if not disbursement_drive:
+            messages.add_message(
+                request, messages.INFO,
+                "No Disbursement Drive Exist For the user"
+            )
+            return redirect('ujjwala:connection_disbursement_list')
+
+        connection_disbursement_count = ConnectionDisbursement.objects.filter(
+            disbursement_drive=disbursement_drive
+        ).count()
+
+        if connection_disbursement_count == disbursement_drive.max_walk_ins:
+            messages.add_message(
+                request, messages.INFO,
+                "Max Walk-ins for Disbursement Drive achieved."
+            )
+            return redirect('ujjwala:connection_disbursement_list')
         connection_disbursement = self.get_object()
+
+        connection_disbursement.disbursement_drive = disbursement_drive
+        connection_disbursement.save(update_fields=['disbursement_drive'])
+
         if connection_disbursement:
             if not connection_disbursement.parent.ekyc_cleared:
                 messages.add_message(
@@ -901,7 +936,7 @@ class ConnectionDisbursementReviewFormAbcListView(ListView):
 
     def get(self, request, *args, **kwargs):
         user = get_current_user()
-        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
+        if not is_member_of_disbursement_drive(user):
             return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
@@ -924,6 +959,23 @@ class ConnectionDisbursementReviewFormAbcListView(ListView):
                 )
         return super().get(request, *args, **kwargs)
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        disbursement_drive = DisbursementDrive.objects.filter(
+            team_members=get_current_user(), status=DisbursementDriveStatusEnum.ACTIVE
+        ).first()
+
+        connection_disbursement_count = ConnectionDisbursement.objects.filter(
+            disbursement_drive=disbursement_drive
+        ).count()
+
+        context.update({
+            "current_disbursement_index": connection_disbursement_count,
+            "max_walkins": disbursement_drive.max_walk_ins,
+            "disbursement_drive": disbursement_drive
+        })
+        return context
+
 
 # Step - 2 Review Form A B C
 @method_decorator(login_required, 'dispatch')
@@ -945,7 +997,7 @@ class ConnectionDisbursementReviewFormAbcView(FormView, ApplicationView):
 
     def dispatch(self, request, *args, **kwargs):
         user = get_current_user()
-        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
+        if not is_member_of_disbursement_drive(user):
             return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
@@ -1013,7 +1065,7 @@ class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
 
     def get(self, request, *args, **kwargs):
         user = get_current_user()
-        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
+        if not is_member_of_disbursement_drive(user):
             return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
@@ -1043,6 +1095,23 @@ class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
                 )
         return super().get(request, *args, **kwargs)
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        disbursement_drive = DisbursementDrive.objects.filter(
+            team_members=get_current_user(), status=DisbursementDriveStatusEnum.ACTIVE
+        ).first()
+
+        connection_disbursement_count = ConnectionDisbursement.objects.filter(
+            disbursement_drive=disbursement_drive
+        ).count()
+
+        context.update({
+            "current_disbursement_index": connection_disbursement_count,
+            "max_walkins": disbursement_drive.max_walk_ins,
+            "disbursement_drive": disbursement_drive
+        })
+        return context
+
 
 @method_decorator(login_required, 'dispatch')
 class ConnectionDisbursementSvLabelPrintView(FormView, ApplicationView):
@@ -1063,7 +1132,7 @@ class ConnectionDisbursementSvLabelPrintView(FormView, ApplicationView):
 
     def dispatch(self, request, *args, **kwargs):
         user = get_current_user()
-        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
+        if not is_member_of_disbursement_drive(user):
             return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
@@ -1133,7 +1202,7 @@ class UjjwalaConnectionDisbursementSocialMediaUpdatesListView(ListView):
 
     def get(self, request, *args, **kwargs):
         user = get_current_user()
-        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
+        if not is_member_of_disbursement_drive(user):
             return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
@@ -1162,6 +1231,23 @@ class UjjwalaConnectionDisbursementSocialMediaUpdatesListView(ListView):
                 )
         return super().get(request, *args, **kwargs)
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        disbursement_drive = DisbursementDrive.objects.filter(
+            team_members=get_current_user(), status=DisbursementDriveStatusEnum.ACTIVE
+        ).first()
+
+        connection_disbursement_count = ConnectionDisbursement.objects.filter(
+            disbursement_drive=disbursement_drive
+        ).count()
+
+        context.update({
+            "current_disbursement_index": connection_disbursement_count,
+            "max_walkins": disbursement_drive.max_walk_ins,
+            "disbursement_drive": disbursement_drive
+        })
+        return context
+
 
 @method_decorator(login_required, 'dispatch')
 class ConnectionDisbursementSocialMediaUpdatesView(FormView, ApplicationView):
@@ -1182,7 +1268,7 @@ class ConnectionDisbursementSocialMediaUpdatesView(FormView, ApplicationView):
 
     def dispatch(self, request, *args, **kwargs):
         user = get_current_user()
-        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
+        if not is_member_of_disbursement_drive(user):
             return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
@@ -1247,7 +1333,7 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
 
     def get(self, request, *args, **kwargs):
         user = get_current_user()
-        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
+        if not is_member_of_disbursement_drive(user):
             return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
@@ -1280,6 +1366,23 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
                 )
         return super().get(request, *args, **kwargs)
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        disbursement_drive = DisbursementDrive.objects.filter(
+            team_members=get_current_user(), status=DisbursementDriveStatusEnum.ACTIVE
+        ).first()
+
+        connection_disbursement_count = ConnectionDisbursement.objects.filter(
+            disbursement_drive=disbursement_drive
+        ).count()
+
+        context.update({
+            "current_disbursement_index": connection_disbursement_count,
+            "max_walkins": disbursement_drive.max_walk_ins,
+            "disbursement_drive": disbursement_drive
+        })
+        return context
+
 
 @method_decorator(login_required, 'dispatch')
 class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
@@ -1294,7 +1397,7 @@ class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
 
     def dispatch(self, request, *args, **kwargs):
         user = get_current_user()
-        if not user.has_perm('ujjwala.can_do_connection_disbursement'):
+        if not is_member_of_disbursement_drive(user):
             return render(request, 'ujjwala/no_permissions.html')
         connection_disbursement = self.get_object()
         if connection_disbursement:
@@ -1400,7 +1503,7 @@ class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
         obj = self.get_object()
         invitation = obj.invitation.first()
         if invitation:
-           booking_id =  obj.invitation.first().booking_id
+           booking_id = obj.invitation.first().booking_id
         else:
            booking_id = ''
         context.update({
@@ -1421,7 +1524,8 @@ class InstallationListView(ListView):
         return ConnectionDisbursement.objects.filter(
             status__in=[
                 ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
-                ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE
+                ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE,
+                ConnectionDisbursementStatusEnum.INSTALLATION_REJECTED
             ]
         )
         # .filter(
@@ -1439,7 +1543,10 @@ class InstallationListView(ListView):
         if application_id:
             obj = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
             if obj:
-                if not obj.status == ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED:
+                if not obj.status in (
+                        ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
+                        ConnectionDisbursementStatusEnum.INSTALLATION_REJECTED,
+                ):
                     messages.add_message(
                         request, messages.ERROR, "Application Id {} Application Status: {}".format(
                             obj.parent_id, obj.get_status_display()
@@ -1486,18 +1593,28 @@ class InstallationView(FormView, ApplicationView):
 
     def get_form_class(self):
         installation_obj = self.get_object()
-        if installation_obj.status == ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED:
+        if installation_obj.status in (
+                ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
+                ConnectionDisbursementStatusEnum.INSTALLATION_REJECTED
+        ):
             return InstallationKitchenUploadForm
         elif installation_obj.status == ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE:
             return InstallationMainGateUploadForm
 
     def form_valid(self, form):
         form.save()
+        data = form.cleaned_data
+        obj = self.get_object()
+        obj.transition_installation_reviewed(description=data['description'])
+        obj.save()
         return HttpResponseRedirect(self.get_success_url())
 
     def get_template_names(self):
         installation_obj = self.get_object()
-        if installation_obj.status == ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED:
+        if installation_obj.status in (
+                ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
+                ConnectionDisbursementStatusEnum.INSTALLATION_REJECTED
+        ):
             return self.installation_step1_template
         elif installation_obj.status == ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE:
             return self.installation_step2_template
@@ -1512,6 +1629,127 @@ class InstallationView(FormView, ApplicationView):
         context = super().get_context_data(**kwargs)
         context.update({
             "obj": self.get_object()
+        })
+        return context
+
+
+@method_decorator(login_required, 'dispatch')
+class InstallationReviewListView(ListView):
+    model = ConnectionDisbursement
+
+    paginate_by = 100
+    permission = 'has_view_permission'
+
+    def get_queryset(self):
+        return ConnectionDisbursement.objects.filter(
+            status=ConnectionDisbursementStatusEnum.INSTALLATION_UPLOADED,
+        ).order_by('updated_on')
+
+    def get_template_names(self):
+        return 'ujjwala/Installation-form/installation_review_listview.html'
+
+    def get(self, request, *args, **kwargs):
+        # user = get_current_user()
+        # if not is_member_of_disbursement_drive(user):
+        #     return render(request, 'ujjwala/no_permissions.html')
+        application_id = request.GET.get('application_id', '')
+        if application_id:
+            object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
+            if object:
+                if object.status not in (
+                    ConnectionDisbursementStatusEnum.INSTALLATION_UPLOADED,
+                ):
+                    messages.add_message(
+                        request, messages.ERROR, "Application Id: {} - {}".format(
+                            application_id, object.get_status_display()
+                        )
+                    )
+                else:
+                    return redirect('ujjwala:installation_review',
+                                    pk=object.pk)
+            else:
+                messages.add_message(
+                    request, messages.ERROR, "Application Id: {} not found".format(application_id)
+                )
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        # disbursement_drive = DisbursementDrive.objects.filter(
+        #     team_members=get_current_user(), status=DisbursementDriveStatusEnum.ACTIVE
+        # ).first()
+        #
+        # connection_disbursement_count = ConnectionDisbursement.objects.filter(
+        #     disbursement_drive=disbursement_drive
+        # ).count()
+        #
+        # context.update({
+        #     "current_disbursement_index": connection_disbursement_count,
+        #     "max_walkins": disbursement_drive.max_walk_ins,
+        #     "disbursement_drive": disbursement_drive
+        # })
+        return context
+
+
+# Step - 2 Review Form A B C
+@method_decorator(login_required, 'dispatch')
+class InstallationReviewView(FormView, ApplicationView):
+    model = ConnectionDisbursement
+    template_name = 'ujjwala/Installation-form/installation_review.html'
+    form_class = InstallationReviewAdminForm
+
+    def get_success_url(self):
+        return reverse('ujjwala:installation_review_list')
+
+    def dispatch(self, request, *args, **kwargs):
+        # user = get_current_user()
+        # if not is_member_of_disbursement_drive(user):
+        #     return render(request, 'ujjwala/no_permissions.html')
+        application_id = request.GET.get('application_id', '')
+        if application_id:
+            connection_disbursement = self.get_object()
+            if connection_disbursement.status != ConnectionDisbursementStatusEnum.INSTALLATION_UPLOADED:
+                messages.add_message(
+                    request, messages.ERROR, "Application Id: {} - {}".format(
+                        connection_disbursement.parent_id, connection_disbursement.get_status_display()
+                    )
+                )
+                return redirect('ujjwala:installation_review')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset=queryset)
+        return obj
+
+    def form_valid(self, form):
+        obj = self.get_object()
+        data = form.cleaned_data
+        obj.transition_installation_reviewed(
+            review_status=data['review_status'],
+            by=get_current_user(),
+            description='{} - {}'.format(data.get('review_status'), data.get('rejected_reason' ''))
+        )
+        obj.save()
+        return redirect(self.get_success_url())
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        # connection_disbursement = self.get_object()
+        # kwargs['connection_disbursement'] = connection_disbursement
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        obj = self.get_object()
+
+        context.update({
+            "obj": obj,
+            "kitchen_photo": obj.documents.get(
+                type=UjjwalaApplicationDocumentsEnum.INSTALLATION_KITCHEN_PHOTO
+            ).link,
+            "stove_with_sticker": obj.documents.get(
+                    type=UjjwalaApplicationDocumentsEnum.INSTALLATION_STOVE_WITH_STICKER
+                ).link,
         })
         return context
 

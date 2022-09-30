@@ -3,7 +3,7 @@ from leaflet.admin import LeafletGeoAdminMixin
 from treenode.admin import TreeNodeModelAdmin
 from treenode.forms import TreeNodeForm
 
-from .models import ServiceLocations, ServiceArea, ServiceAreaMechanic
+from .models import ServiceLocations, ServiceArea, ServiceAreaMechanic, FormFillArea
 
 
 @admin.register(ServiceLocations)
@@ -18,6 +18,16 @@ class ServiceLocationsAdmin(LeafletGeoAdminMixin, admin.ModelAdmin):
         'enabled',
     )
     list_filter = ('parent', 'enabled')
+
+
+@admin.register(FormFillArea)
+class FormFillAreaAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'name',
+        'service_location',
+    )
+    list_filter = ('name', 'service_location')
 
 
 class ServiceAreaMechanicLineAdmin(admin.TabularInline):

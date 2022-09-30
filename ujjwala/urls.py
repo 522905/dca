@@ -75,6 +75,11 @@ urlpatterns = [
          name="connection_disbursement_review_form_abc_list"
     ),
 
+    path('portal/installation/installation_review_list/',
+         views.InstallationReviewListView.as_view(),
+         name="installation_review_list"
+    ),
+
     path('portal/print_documents/',
          views.PrintDocumentsView.as_view(),
          name="print_documents"
@@ -205,6 +210,11 @@ urlpatterns = [
         '^portal/disbursement/(?P<pk>[^/.]+)/material_delivery/$',
         views.ConnectionDisbursementMaterialDeliveryView.as_view(),
         name="connection_disbursement_material_delivery_view"
+    ),
+    url(
+        '^portal/installation/(?P<pk>[^/.]+)/installation_review/$',
+        views.InstallationReviewView.as_view(),
+        name="installation_review"
     ),
     url(
         '^portal/disbursement/(?P<pk>[^/.]+)/$',

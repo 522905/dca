@@ -1,6 +1,6 @@
 {% extends "material/frontend/base_module.html" %}
 {% load static %}
-{% block page_title %}CD Walk In List{% endblock %}
+{% block page_title %}CD Review Form A B C{% endblock %}
 {% block content %}
 
 <link rel="stylesheet" href="{% static '/css/style.css' %}" >
@@ -16,6 +16,7 @@
         </div>
       {% endfor %}
     {% endif %}
+    {% include 'ujjwala/disbursement/custom-template/disbursement_drive_detail.html' %}
     {% include 'ujjwala/disbursement/forms/application_search.html' %}
     <div class="main-header bg-heading" style="background-color: #2957A4;">
         <span class="text-white">List of Legal Documents Under Review</span>

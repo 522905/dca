@@ -2,8 +2,8 @@ from django.db import models
 
 
 class DisbursementDriveStatusEnum(models.TextChoices):
-	OPENED = 'OPENED', 'Opened'
-	CLOSED = 'CLOSED', 'Closed'
+	ACTIVE = 'ACTIVE', 'Active'
+	COMPLETED = 'COMPLETED', 'Completed'
 	CANCELED = 'CANCELED', 'Canceled'
 
 
@@ -174,11 +174,14 @@ class ConnectionDisbursementStatusEnum(models.TextChoices):
 	OTP_VERIFIED = 'OTP_VERIFIED', 'Otp Verified'
 	SV_LABEL_PRINT = 'SV_LABEL_PRINT', 'Social Media Photo Pending'
 	SOCIAL_MEDIA_UPDATES = 'SOCIAL_MEDIA_UPDATES', 'Material Delivery (OTP & Photo Pending)'
-	# DISBURSEMENT_PHOTO_UPLOAD = 'DISBURSEMENT_PHOTO_UPLOAD', 'Disbursement Photo Upload'
 	MATERIAL_DELIVERY_OTP_VERIFIED = 'MATERIAL_DELIVERY_OTP_VERIFIED', 'Material Delivery (OTP Done, Photo Pending)'
+	MATERIAL_PARTLY_DELIVERY_OTP_VERIFIED = 'MATERIAL_PARTLY_DELIVERY_OTP_VERIFIED', 'Material Partly Delivery (OTP Done, Photo Pending)'
 	MATERIAL_DELIVERED = 'MATERIAL_DELIVERED', 'Material Delivered'
+	MATERIAL_PARTLY_DELIVERED = 'MATERIAL_PARTLY_DELIVERED', 'Material Partly Delivered'
 	INSTALLATION_MAIN_GATE = 'INSTALLATION_MAIN_GATE', 'Installation Main Gate'
 	INSTALLATION_UPLOADED = 'INSTALLATION_UPLOADED', 'Installation Uploaded'
+	INSTALLATION_REJECTED = 'INSTALLATION_REJECTED', 'Installation Rejected'
+	INSTALLATION_ACCEPTED = 'INSTALLATION_ACCEPTED', 'Installation Accepted'
 
 
 class SchemeOnboardingStatusEnum(models.TextChoices):
