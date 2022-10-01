@@ -37,7 +37,8 @@ from ujjwala.global_functions import login_required_if_mech_inspection
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
     FamilyMembers, DisbursementDrive
 from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_pre_inspection_applicable, \
-    send_ujjwala_application_whatsapp_link_v2, download_audit_documents_for_ids, is_member_of_disbursement_drive
+    send_ujjwala_application_whatsapp_link_v2, download_audit_documents_for_ids, is_member_of_disbursement_drive, \
+    get_current_user_disbursement_drive
 
 
 def index(request):
@@ -229,6 +230,14 @@ class ApplicationStatusView(DetailView):
 @method_decorator(login_required, 'dispatch')
 class UjjwalaApplicationWebFormView(TemplateView):
     template_name = "ujjwala/web_form.html"
+
+    # def get_context_data(self, **kwargs):
+    #     context_data = super().get(**kwargs)
+    #     form_fill_area_list = FormFillArea.objects.all()
+    #     context_data = context_data.update({
+    #         "form_fill_area_list": form_fill_area_list
+    #     })
+    #     return context_data
 
 
 @method_decorator(login_required, 'dispatch')
@@ -694,6 +703,8 @@ class UjjwalaConnectionDisbursementListView(ListView):
     permission = 'has_view_permission'
 
     def get_queryset(self):
+        disbursement_drive = get_current_user_disbursement_drive(get_current_user())
+
         return ConnectionDisbursement.objects.filter(
             status__in=[
                 ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
@@ -703,7 +714,8 @@ class UjjwalaConnectionDisbursementListView(ListView):
                 ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
                 ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
             ],
-            walk_in_date__date=datetime.datetime.today().date()
+            walk_in_date__date=datetime.datetime.today().date(),
+            disbursement_drive=disbursement_drive
         ).order_by('updated_on')
 
     def get_template_names(self):
@@ -720,7 +732,7 @@ class UjjwalaConnectionDisbursementListView(ListView):
 
         connection_disbursement_count = ConnectionDisbursement.objects.filter(
             disbursement_drive=disbursement_drive
-        ).count()
+        ).exclude(walk_in_date=None).count()
 
         context.update({
             "current_disbursement_index": connection_disbursement_count,
@@ -924,11 +936,13 @@ class ConnectionDisbursementReviewFormAbcListView(ListView):
     permission = 'has_view_permission'
 
     def get_queryset(self):
+        disbursement_drive = get_current_user_disbursement_drive(get_current_user())
         return ConnectionDisbursement.objects.filter(
             status__in=[
                 ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
             ],
-            walk_in_date__date=datetime.datetime.today().date()
+            walk_in_date__date=datetime.datetime.today().date(),
+            disbursement_drive=disbursement_drive
         ).order_by('updated_on')
 
     def get_template_names(self):
@@ -967,7 +981,7 @@ class ConnectionDisbursementReviewFormAbcListView(ListView):
 
         connection_disbursement_count = ConnectionDisbursement.objects.filter(
             disbursement_drive=disbursement_drive
-        ).count()
+        ).exclude(walk_in_date=None).count()
 
         context.update({
             "current_disbursement_index": connection_disbursement_count,
@@ -1052,11 +1066,14 @@ class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
     permission = 'has_view_permission'
 
     def get_queryset(self):
+        disbursement_drive = get_current_user_disbursement_drive(get_current_user())
+
         qs = ConnectionDisbursement.objects.filter(
             status__in=[
                 ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
             ],
-            walk_in_date__date=datetime.datetime.today().date()
+            walk_in_date__date=datetime.datetime.today().date(),
+            disbursement_drive=disbursement_drive
         ).prefetch_related('invitation').order_by('updated_on')
         return qs
 
@@ -1103,7 +1120,7 @@ class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
 
         connection_disbursement_count = ConnectionDisbursement.objects.filter(
             disbursement_drive=disbursement_drive
-        ).count()
+        ).exclude(walk_in_date=None).count()
 
         context.update({
             "current_disbursement_index": connection_disbursement_count,
@@ -1190,11 +1207,14 @@ class UjjwalaConnectionDisbursementSocialMediaUpdatesListView(ListView):
     permission = 'has_view_permission'
 
     def get_queryset(self):
+        disbursement_drive = get_current_user_disbursement_drive(get_current_user())
+
         return ConnectionDisbursement.objects.filter(
             status__in=[
                 ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
             ],
-            walk_in_date__date=datetime.datetime.today().date()
+            walk_in_date__date=datetime.datetime.today().date(),
+            disbursement_drive=disbursement_drive
         ).order_by('updated_on')
 
     def get_template_names(self):
@@ -1239,7 +1259,7 @@ class UjjwalaConnectionDisbursementSocialMediaUpdatesListView(ListView):
 
         connection_disbursement_count = ConnectionDisbursement.objects.filter(
             disbursement_drive=disbursement_drive
-        ).count()
+        ).exclude(walk_in_date=None).count()
 
         context.update({
             "current_disbursement_index": connection_disbursement_count,
@@ -1320,12 +1340,14 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
     permission = 'has_view_permission'
 
     def get_queryset(self):
+        disbursement_drive = get_current_user_disbursement_drive(get_current_user())
         return ConnectionDisbursement.objects.filter(
             status__in=[
                 ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
                 ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
             ],
-            walk_in_date__date=datetime.datetime.today().date()
+            walk_in_date__date=datetime.datetime.today().date(),
+            disbursement_drive=disbursement_drive
         ).order_by('updated_on')
 
     def get_template_names(self):
@@ -1374,7 +1396,7 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
 
         connection_disbursement_count = ConnectionDisbursement.objects.filter(
             disbursement_drive=disbursement_drive
-        ).count()
+        ).exclude(walk_in_date=None).count()
 
         context.update({
             "current_disbursement_index": connection_disbursement_count,

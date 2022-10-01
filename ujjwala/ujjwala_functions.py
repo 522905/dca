@@ -1353,3 +1353,13 @@ def is_member_of_disbursement_drive(user):
         return True
     else:
         return False
+
+
+def get_current_user_disbursement_drive(user):
+    from ujjwala.models import DisbursementDrive
+
+    disbursement_drive = DisbursementDrive.objects.filter(
+        team_members=user, status=DisbursementDriveStatusEnum.ACTIVE
+    ).first()
+
+    return disbursement_drive
