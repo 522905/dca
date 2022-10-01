@@ -71,7 +71,10 @@ class DisbursementDriveFilter(SimpleListFilter):
         ]
 
     def queryset(self, request, queryset):
-        return queryset.filter(disbursement_drive_id=self.value())
+        if self.value():
+            return queryset.filter(disbursement_drive_id=self.value())
+        return queryset
+
 
 
 class DisbursementDriveIdInputFilter(admin.SimpleListFilter):
