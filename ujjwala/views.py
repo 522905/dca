@@ -789,16 +789,9 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
             date=datetime.datetime.today().date(), team_members=user
         ).first()
 
-        if not disbursement_drive:
-            messages.add_message(
-                request, messages.INFO,
-                "No Disbursement Drive Exist For the user"
-            )
-            return redirect('ujjwala:connection_disbursement_list')
-
         connection_disbursement_count = ConnectionDisbursement.objects.filter(
             disbursement_drive=disbursement_drive
-        ).count()
+        ).exclude(walk_in_date=None).count()
 
         if connection_disbursement_count == disbursement_drive.max_walk_ins:
             messages.add_message(
@@ -808,10 +801,8 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
             return redirect('ujjwala:connection_disbursement_list')
         connection_disbursement = self.get_object()
 
-        connection_disbursement.disbursement_drive = disbursement_drive
-        connection_disbursement.save(update_fields=['disbursement_drive'])
-
         if connection_disbursement:
+
             if not connection_disbursement.parent.ekyc_cleared:
                 messages.add_message(
                     request, messages.ERROR,
@@ -827,6 +818,7 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
             ):
                 if not connection_disbursement.walk_in_date or \
                         (connection_disbursement.walk_in_date.date() != datetime.datetime.today().date()):
+
                     return self.otp_verification(connection_disbursement)
             else:
                 messages.add_message(
@@ -902,7 +894,10 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
                     })
                     return render(self.request, self.stage_2_validate_otp, context)
 
+                disbursement_drive = get_current_user_disbursement_drive(get_current_user())
+
                 connection_disbursement.walk_in_date = datetime.datetime.now()
+                connection_disbursement.disbursement_drive = disbursement_drive
                 connection_disbursement.save()
                 return HttpResponseRedirect('.')
 

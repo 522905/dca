@@ -1347,6 +1347,7 @@ class ConnectionDisbursement(models.Model):
 		permission="ujjwala.can_cancel_walk_in"
 	)
 	def transition_cancel_walk_in(self, *args, **kwargs):
+		self.disbursement_drive = None
 		self.walk_in_date = None
 		self.invitation.all().delete()
 		self.save()
