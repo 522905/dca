@@ -18,6 +18,7 @@ class UjjwalaApplicationSdmsRelationshipViewSet(viewsets.ViewSet):
 		record_list = UjjwalaV2Application.objects.filter(
 			Q(status=UjjwalaV2ApplicationStatus.DOCUMENTS_UPLOADED)
 			& Q(robo_sdms_dedup=RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE)
+                        & Q(robo_execution_failed_count=0)
 			#& Q(pre_inspection__status=PreInspectionStatusEnum.SUBMITTED)
 		).exclude(
 			address_json__isnull=True
@@ -28,7 +29,7 @@ class UjjwalaApplicationSdmsRelationshipViewSet(viewsets.ViewSet):
 		).exclude(
 			family_members__dob__gte='2004-09-01'
 		).exclude(
-			robo_execution_failed_count__gt=2
+#			robo_execution_failed_count__gt=2
 		).annotate(
 			custom_order=Case(
 				When(pre_inspection__status=PreInspectionStatusEnum.ACCEPTED, then=Value(1)),

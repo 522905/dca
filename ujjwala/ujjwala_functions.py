@@ -1143,10 +1143,10 @@ def application_needs_to_be_audited(data):
 def application_needs_to_be_audited_by_id(obj):
     reason = []
 
-    result, message = is_valid_name(obj.name, 'FEMALE')
+    # result, message = is_valid_name(obj.name, 'FEMALE')
 
-    if not result:
-        reason.append("Self Member {}".format(message))
+    # if not result:
+    #    reason.append("Self Member {}".format(message))
 
     family_members = obj.family_members
 

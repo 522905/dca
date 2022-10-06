@@ -363,7 +363,7 @@ class UjjwalaWhatsappCommunication(object):
 			# "callbackData": "some_callback_data",
 			"template": {
 				# "name": "ujjwala_application_submitted_",
-				"name": "pre_inspection_type_self_19072022",
+				"name": "pre_inspection_type_self_29092022",
 				"languageCode": "hi",
 				"headerValues": [
 					# "Alert",  #
