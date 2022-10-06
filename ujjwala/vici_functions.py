@@ -15,3 +15,11 @@ def update_lead_in_ujjwala_welcome(mobile):
 		"&function=add_lead&phone_number={}&list_id=1007".format(mobile)
 	)
 	return res
+
+
+def update_lead_in_ujjwala_enquiry_list(mobile):
+	res = requests.post(
+		"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+		"&function=add_lead&phone_number={}&list_id=77771".format(mobile)
+	)
+	return res

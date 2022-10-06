@@ -10,7 +10,8 @@ from rest_framework.decorators import action
 
 from ujjwala.models import UjjwalaV2Application
 from ujjwala.ujjwala_functions import time_in_range, send_ujjwala_application_whatsapp_link_v2
-from ujjwala.vici_functions import update_lead_in_out1005_campaign, update_lead_in_ujjwala_welcome
+from ujjwala.vici_functions import update_lead_in_out1005_campaign, update_lead_in_ujjwala_welcome, \
+    update_lead_in_ujjwala_enquiry_list
 
 
 class UjjwalaApplicationExtraViewSet(viewsets.ViewSet):
@@ -49,7 +50,8 @@ class UjjwalaApplicationExtraViewSet(viewsets.ViewSet):
             # else:
             #     send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id=inbound_call_user_id)
             # To be removed for scheduled message delivery
-            send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id=inbound_call_user_id)
-            update_lead_in_ujjwala_welcome(contact_mobile)
-            update_lead_in_out1005_campaign(contact_mobile)
+            # send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id=inbound_call_user_id)
+            # update_lead_in_ujjwala_welcome(contact_mobile)
+            update_lead_in_ujjwala_enquiry_list(contact_mobile)
+            # update_lead_in_out1005_campaign(contact_mobile)
         return HttpResponse("ok")
