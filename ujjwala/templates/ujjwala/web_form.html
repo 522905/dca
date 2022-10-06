@@ -194,13 +194,13 @@
                         <div class="col pr-0">
                             <div class="form-group">
                                 <label for="house_no">House No. <br>(घर का नंबर)<strong style="color:red">*</strong></label>
-                                <input required type="text" class="form-control" id="house_no" name="house_no" onblur="this.reportValidity();" pattern="^[A-Za-z0-9 #'.,\\-\\_]+$" placeholder="House No.">
+                                <input required type="text" class="form-control" id="house_no" name="house_no" onblur="this.reportValidity();" pattern="^[A-Za-z0-9 #'.,\\-\\_\\/]+$" placeholder="House No.">
                             </div>
                         </div>
                         <div class="col">
                             <div class="form-group">
                                 <label for="room_no">Room No.(कमरा सं.) <br><span style="color:red">केवल [0-9] दर्ज करें</span> <strong style="color:red">*</strong></label><br>
-                                <input type="text" class="form-control" id="room_no" name="room_no" maxlength="3" onblur="this.reportValidity();" pattern="^(0|[1-9][0-9]*)$" required />
+                                <input type="text" class="form-control" id="room_no" name="room_no" maxlength="3" onblur="this.reportValidity();" pattern="^[0-9\\/]*)$" required />
                             </div>
                         </div>
                     </div>
@@ -242,14 +242,14 @@
                         <div class="col pr-0">
                             <div class="form-group">
                                 <label for="ward_no">Ward No. (वर्ड नंबर) <br> <span style="color:red">केवल [0-9] दर्ज करें</span> <strong style="color:red">*</strong></label>
-                                <input type="text" class="form-control" id="ward_no" name="ward_no" maxlength="3" required onblur="this.reportValidity();" pattern="^(0|[1-9][0-9]*)$" />
+                                <input type="text" class="form-control" id="ward_no" name="ward_no" maxlength="3" required onblur="this.reportValidity();" pattern="^[1-9][0-9]*$" />
                             </div>
                         </div>
                         <div class="col">
                             <div class="form-group">
                                 <label for="post_office">Post Office <br>(पोस्ट ऑफीस)<strong
                                         style="color:red">*</strong></label>
-                                <input type="text" class="form-control" id="post_office" name="post_office" minlength="5" required  onblur="this.reportValidity();" pattern="[a-zA-Z]+([\s][a-zA-Z]+)*" />
+                                <input type="text" class="form-control" id="post_office" name="post_office" minlength="5" required  onblur="this.reportValidity();" pattern="[a-zA-Z .]+)*" />
                             </div>
                         </div>
                     </div>
