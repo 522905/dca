@@ -1,17 +1,26 @@
 {% extends "material/frontend/base_module.html" %}
 {% load static %}
 {% block content %}
+
 <link rel="stylesheet" href="{% static '/css/style.css' %}" >
 <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css" >
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
 <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap"
     rel="stylesheet">
 <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
+<script src="{% static '/js/location_v2_2022_10_06.js' %}"></script>
 <style>
-     .lacation_field span{ float: left;} 
-     .lacation_field input{ border: transparent !important; } 
+     .lacation_field span{ float: left;}
+     .lacation_field input{ border: transparent !important; }
 </style>
+
 <div class="main p-2 pt-0 form_label">
+    <div class="card-header float-center">
+        {% include 'ujjwala/disbursement/custom-template/application_detail_template.html' %}
+        <br>
+        <b>{{ installation_mode }}</b>
+    </div>
+
     <form method="post" id="">
         {% csrf_token %}
         <div class="card">
@@ -19,7 +28,7 @@
                 {{form.form_type}}
                 {{form.application_id}}
                 <div class="row mb-2 M-0">
-                   
+
                     <div class="lacation_field col-sm-12 p-0">
                         <div class="" style="width: 100%; clear:both;">
                             <div class="row">
@@ -37,82 +46,48 @@
                     </div>
                     <div class="allowLocationNav" style="display: block; width: 100%;" >
                         <button type="button" class="btn btn-primary" onClick="allowLocationNav();">
-                            Capture Location
+                            Load Map
                         </button>
                     </div>
                     {{ form.latitude.errors }} {{ form.longitude.errors }} {{ form.accuracy.errors }}
                     <p class="text-danger" style="font-weight: 500;" id="map_error_msg"></p>
                 </div>
+                {% include 'ujjwala/extra/map.html' %}
             </div>
             <div class="card-footer float-right">
-                <input class="btn btn-success float-right rounded-0" type="submit" value="Submit" />
+                <button class="btn btn-success float-right rounded-0" onclick="submit_form()" type="button" >Submit</button>
             </div>
         </div>
     </form>
 </div>
-<script>
-    // lat long accuracy
-    function allowLocationNav() {
-        navigator.geolocation.getCurrentPosition(
-            successCallback,
-            errorCallback_highAccuracy,
-            {maximumAge:600000, timeout:5000, enableHighAccuracy: true}
-        );
-        console.log('allowLocationNav');
-    }
-
-    function errorCallback_highAccuracy(error) {
-        if (error.code == error.TIMEOUT)
-        {
-            // Attempt to get GPS loc timed out after 5 seconds, 
-            // try low accuracy location
-            $('#map_error_msg').append("attempting to get low accuracy location");
-            navigator.geolocation.getCurrentPosition(
-                successCallback, 
-                errorCallback_lowAccuracy,
-                {maximumAge:600000, timeout:10000, enableHighAccuracy: false});
+    <script>
+    function submit_form(){
+        if(map_obj==undefined){
+            alert("Please load map");
             return;
         }
-        
-        var msg = "<p>Can't get your location (high accuracy attempt). Error = ";
-        if (error.code == 1)
-            msg += "PERMISSION_DENIED";
-        else if (error.code == 2)
-            msg += "POSITION_UNAVAILABLE";
-        msg += ", msg = "+error.message;
-        
-        $('#map_error_msg').append(msg);
+
+        var distance_from_centre = distance(
+            window.deviceLocation.lat, window.deviceLocation.lng,
+            map_obj.getCenter().lat(), map_obj.getCenter().lng(),
+            'K'
+        );
+        if (distance_from_centre * 1000 > window.deviceLocation.accuracy){
+            alert("Please select correct location within boundry");
+            return;
+        }
+
+        $('#id_latitude').val(map_obj.getCenter().lat());
+        $('#id_longitude').val(map_obj.getCenter().lng());
+        $('#id_accuracy').val(window.deviceLocation.accuracy + 'm');
+
+        if (!$("form")[0].reportValidity()){
+            alert("Please check data and update location")
+            return;
+        }
+
+        $("form").submit();
+
     }
-
-    function errorCallback_lowAccuracy(error) {
-        var msg = "<p>Can't get your location (low accuracy attempt). Error = ";
-        if (error.code == 1)
-            msg += "PERMISSION_DENIED";
-        else if (error.code == 2)
-            msg += "POSITION_UNAVAILABLE";
-        else if (error.code == 3)
-            msg += "TIMEOUT";
-        msg += ", msg = "+error.message;
-        
-        $('#map_error_msg').append(msg);
-    }
-
-    function successCallback(position) {
-        var latitude = position.coords.latitude;
-        var longitude = position.coords.longitude;
-
-        var meter = Math.round(position.coords.accuracy);
-
-        // if (meter > 300) {
-        //     $('#map_error_msg').append("<p>किसी खुले क्षेत्र में जाएं और स्थान को फिर से कैप्चर करें। Move to an open area and capture location again. Location accuracy not precise enough! </p>");
-        //     return;
-        // }
-
-        $('#map_error_msgs').append("<p>Your location is: " + latitude + "," + longitude+" </p><p>Accuracy="+meter+"m");
-        $('#id_latitude').val(latitude);
-        $('#id_longitude').val(longitude);
-        $('#id_accuracy').val(meter + 'm');
-        console.log(successCallback);
-    }
-</script>
+    </script>
 {% endblock %}
