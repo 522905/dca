@@ -17,12 +17,12 @@ class SdmsCustomerRecord(models.Model):
 
 class SdmsFamilyMemberRecord(models.Model):
 	consumer_id = models.CharField(max_length=64)
-	dca_id = models.CharField(max_length=64)
+	dca_id = models.IntegerField()
 	relation = models.CharField(max_length=64)
 
 	first_name = models.CharField(max_length=128)
 	last_name = models.CharField(max_length=128)
-
+	dob = models.DateField()
 
 class BookResource(resources.ModelResource):
 	consumer_id = Field(attribute='consumer_id', column_name='Consumer ID')
