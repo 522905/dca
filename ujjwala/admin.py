@@ -455,3 +455,4 @@ class DisbursementDriveAdmin(ExportActionMixin, FSMTransitionCustomMixin, admin.
     list_filter = ('status', 'date')
     filter_horizontal = ['team_members']
     fsm_fields = ['status', ]
+    inlines = [StateLogInline, ]

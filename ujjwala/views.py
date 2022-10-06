@@ -850,7 +850,7 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
                         'connection_disbursement_id': connection_disbursement.id,
                         'application_id': connection_disbursement.parent_id,
                         'whatsapp_template_name': 'connection_disbursement_dac',
-                        'otp_generated_for': 'WalkInConfirmation',
+                        'otp_generated_for': 'Walk-In',
                     }
                 )
             })
@@ -1442,7 +1442,7 @@ class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
                         'connection_disbursement_id': connection_disbursement.id,
                         'application_id': connection_disbursement.parent_id,
                         'whatsapp_template_name': 'connection_disbursement_dac',
-                        'otp_generated_for': 'MaterialDelivery',
+                        'otp_generated_for': 'Material-Delivery',
                     }
                 )
             })
@@ -1542,7 +1542,8 @@ class InstallationListView(ListView):
             status__in=[
                 ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
                 ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE,
-                ConnectionDisbursementStatusEnum.INSTALLATION_REJECTED
+                ConnectionDisbursementStatusEnum.INSTALLATION_REJECTED,
+                ConnectionDisbursementStatusEnum.INSTALLATION_KITCHEN_PHOTO
             ]
         )
         # .filter(
@@ -1589,6 +1590,9 @@ class InstallationView(FormView, ApplicationView):
     installation_step2_template = 'ujjwala/Installation-form/steps/step2.html'
     success_url = '.'
 
+    stage_1_generate_otp = 'ujjwala/otp/generate_otp_form.html'
+    stage_2_validate_otp = 'ujjwala/otp/validate_otp_form.html'
+
     def dispatch(self, request, *args, **kwargs):
         user = get_current_user()
         if not user.has_perm('ujjwala.can_upload_post_installation'):
@@ -1602,6 +1606,13 @@ class InstallationView(FormView, ApplicationView):
             return render(self.request, 'ujjwala/Installation-form/installation_status.html', context={
                 'installation': installation
             })
+        if installation.status in (
+                ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
+                ConnectionDisbursementStatusEnum.SINGLE_CYLINDER_DELIVERED,
+                ConnectionDisbursementStatusEnum.INSTALLATION_REJECTED
+        ):
+            return self.otp_verification(installation)
+
         return super().dispatch(request, *args, **kwargs)
 
     def get_object(self, queryset=None):
@@ -1612,7 +1623,8 @@ class InstallationView(FormView, ApplicationView):
         installation_obj = self.get_object()
         if installation_obj.status in (
                 ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
-                ConnectionDisbursementStatusEnum.INSTALLATION_REJECTED
+                ConnectionDisbursementStatusEnum.INSTALLATION_REJECTED,
+                ConnectionDisbursementStatusEnum.INSTALLATION_KITCHEN_PHOTO
         ):
             return InstallationKitchenUploadForm
         elif installation_obj.status == ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE:
@@ -1620,17 +1632,14 @@ class InstallationView(FormView, ApplicationView):
 
     def form_valid(self, form):
         form.save()
-        data = form.cleaned_data
-        obj = self.get_object()
-        obj.transition_installation_reviewed(description=data['description'])
-        obj.save()
         return HttpResponseRedirect(self.get_success_url())
 
     def get_template_names(self):
         installation_obj = self.get_object()
         if installation_obj.status in (
                 ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
-                ConnectionDisbursementStatusEnum.INSTALLATION_REJECTED
+                ConnectionDisbursementStatusEnum.INSTALLATION_REJECTED,
+                ConnectionDisbursementStatusEnum.INSTALLATION_KITCHEN_PHOTO
         ):
             return self.installation_step1_template
         elif installation_obj.status == ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE:
@@ -1648,6 +1657,69 @@ class InstallationView(FormView, ApplicationView):
             "obj": self.get_object()
         })
         return context
+
+    def otp_verification(self, connection_disbursement):
+        context = {'connection_disbursement': connection_disbursement, 'application': connection_disbursement.parent}
+
+        if self.request.method.lower() == 'get':
+            app = connection_disbursement.parent
+            context.update({
+                'form': UjjwalaApplicationGenerateOtpForm(
+                    mobile_nos=app.all_contacts,
+                    initial={
+                        'connection_disbursement_id': connection_disbursement.id,
+                        'application_id': connection_disbursement.parent_id,
+                        'whatsapp_template_name': 'connection_disbursement_dac',
+                        'otp_generated_for': 'Installation',
+                    }
+                )
+            })
+            return render(self.request, self.stage_1_generate_otp, context)
+        elif self.request.method.lower() == 'post':
+            if self.request.POST.get('form_type') == 'generate_otp_form':
+                app = UjjwalaV2Application.objects.get(pk=connection_disbursement.parent_id)
+                form = UjjwalaApplicationGenerateOtpForm(
+                    mobile_nos=app.all_contacts,
+                    data=self.request.POST,
+                )
+                if not form.is_valid():
+                    context.update({
+                        'form': form
+                    })
+                    return render(self.request, self.stage_1_generate_otp, context)
+                otp_obj = form.send_otp()
+                app_id = form.data.get('application_id')
+                context.update({
+                    'form': UjjwalaApplicationValidateOtpForm(
+                        initial={
+                            'application_id': app_id,
+                            'reference_number': otp_obj.reference_number,
+                            'mobile': otp_obj.mobile
+                        }
+                    )
+                })
+                return render(self.request, self.stage_2_validate_otp, context)
+            elif self.request.POST.get('form_type') == 'validate_otp_form':
+                form = UjjwalaApplicationValidateOtpForm(data=self.request.POST)
+                otp_obj = Otp.objects.get(reference_number=self.request.POST['reference_number'])
+                if not form.is_valid():
+                    context.update({
+                        'form': UjjwalaApplicationValidateOtpForm(
+                            initial={
+                                'application_id': connection_disbursement.parent_id,
+                                'reference_number': otp_obj.reference_number,
+                                'mobile': otp_obj.mobile
+                            }
+                        )
+                    })
+                    return render(self.request, self.stage_2_validate_otp, context)
+
+                connection_disbursement.installation_otp_verified(
+                    by=get_current_user(),
+                    description="Installation OTP, Customer Phone {}".format(otp_obj.mobile)
+                )
+                connection_disbursement.save()
+                return HttpResponseRedirect('.')
 
 
 @method_decorator(login_required, 'dispatch')
@@ -1690,25 +1762,7 @@ class InstallationReviewListView(ListView):
                 )
         return super().get(request, *args, **kwargs)
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(object_list=object_list, **kwargs)
-        # disbursement_drive = DisbursementDrive.objects.filter(
-        #     team_members=get_current_user(), status=DisbursementDriveStatusEnum.ACTIVE
-        # ).first()
-        #
-        # connection_disbursement_count = ConnectionDisbursement.objects.filter(
-        #     disbursement_drive=disbursement_drive
-        # ).count()
-        #
-        # context.update({
-        #     "current_disbursement_index": connection_disbursement_count,
-        #     "max_walkins": disbursement_drive.max_walk_ins,
-        #     "disbursement_drive": disbursement_drive
-        # })
-        return context
 
-
-# Step - 2 Review Form A B C
 @method_decorator(login_required, 'dispatch')
 class InstallationReviewView(FormView, ApplicationView):
     model = ConnectionDisbursement

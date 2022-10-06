@@ -9,13 +9,16 @@ import track
 from django import forms
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.contrib.contenttypes.models import ContentType
 from django.forms import NumberInput
 from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django_currentuser.middleware import get_current_user
 
+from communication_log.models import CommunicationLog
 from otp.models import Otp
+from ujjwala.communication_functions import send_whatsapp_message, send_sms
 from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
 	RejectionTypeEnum, PreInspectionTypeEnum, RoboSdmsDedeupStatusEnum, NicClearedCustomerRemarksEnum, \
 	PrintDocumentsTypeEnum
@@ -27,11 +30,11 @@ from django.core import validators
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.FileHandler("/tmp/debug.log"),
-    ]
+	level=logging.DEBUG,
+	format="%(asctime)s [%(levelname)s] %(message)s",
+	handlers=[
+		logging.FileHandler("/tmp/debug.log"),
+	]
 )
 
 
@@ -190,7 +193,7 @@ class KitchenPreInspectionForm(forms.Form):
 
 		obj.documents.create(
 			type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO,
-            link=data['kitchen_photo']
+			link=data['kitchen_photo']
 		)
 
 		if obj.type == PreInspectionTypeEnum.SELF:
@@ -240,7 +243,7 @@ class AudioOnSafetyForm(forms.Form):
 		obj.witness_mobile_number = data['witness_mobile_number']
 
 		doc = obj.documents.create(type=UjjwalaApplicationDocumentsEnum.SAFETY_AUDIO,
-		                     link=data['audio_file'])
+							 link=data['audio_file'])
 		obj.pre_inspection_safety_audio_uploaded(
 			by=get_current_user(),
 			description="Safety Audio: {}".format(doc.link)
@@ -276,7 +279,7 @@ class PreviewPreInspectionForm(forms.Form):
 
 		obj.documents.create(
 			type=UjjwalaApplicationDocumentsEnum.MAIN_GATE,
-            link=data['main_gate']
+			link=data['main_gate']
 		)
 
 		obj.latitude = data['latitude']
@@ -413,8 +416,8 @@ class PreInspectionGenerateOtpForm(forms.Form):
 
 		data = track.client.post(
 			api_key=settings.INTERAKT_API_KEY,
-		 	path="/v1/public/message/",
-		 	body=body_text
+			path="/v1/public/message/",
+			body=body_text
 		).json()
 		return otp_obj
 
@@ -455,7 +458,6 @@ class PreInspectionAllocatedGenerateOtpForm(forms.Form):
 			self.fields['mobile'].choices = [(i, i) for i in mobile_nos]
 
 	def send_otp(self):
-
 		ref_no = None
 
 		while True:
@@ -481,33 +483,40 @@ class PreInspectionAllocatedGenerateOtpForm(forms.Form):
 			}
 		)
 
-		body_text = {
-			"countryCode": "+91",
-			"phoneNumber": otp_obj.mobile,
-			"type": "Template",
-			"traits": {
-				"name": otp_obj.mobile,
-			},
-			# "callbackData": "some_callback_data",
-			"template": {
-				# "name": "ujjwala_application_submitted_",
-				"name": "ujjwala_pre_inspection_otp",
-				"languageCode": "hi",
-				"headerValues": [
-					# "Alert",  #
-				],
-				"bodyValues": [
-					otp
-				]
-			}
-		}
+		message_id = None
+		channel = ""
 
-		data = track.client.post(
-		 	api_key=settings.INTERAKT_API_KEY,
-		 	path="/v1/public/message/",
-		 	body=body_text
-		).json()
+		if '_send_whatsapp' in self.data:
+			channel = "whatsapp"
+			result, response = send_whatsapp_message(
+				otp_obj.mobile, "ujjwala_pre_inspection_otp", [otp]
+			)
+			if result:
+				message_id = response.get('id')
+		elif '_send_sms' in self.data:
+			channel = "sms"
+			context = {
+				"otp_for": "PRE-INSPECTION",
+				"otp": otp,
+			}
+
+			message = settings.PRE_INSPECTION_SMS_TEMPLATE.format(**context)
+			result, response = send_sms(otp_obj.mobile, message, settings.PRE_INSPECTION_SMS_TEMPLATE_ID)
+			if result:
+				messages = response['messages']
+				message_id = messages[0].get('messageId')
+
+		from ujjwala.models import UjjwalaV2Application
+
+		CommunicationLog.objects.create(
+			content_type=ContentType.objects.get_for_model(UjjwalaV2Application),
+			object_id=self.data.get('application_id'),
+			event="pre_inspection", channel=channel,
+			channel_subscriber=self.data.get('mobile'),
+			message_id=message_id
+		)
 		return otp_obj
+
 
 
 class PreInspectionAllocatedValidateOtpForm(forms.Form):
@@ -973,7 +982,7 @@ class UjjwalaApplicationGenerateOtpForm(forms.Form):
 
 	mobile = forms.ChoiceField(
 		widget=forms.RadioSelect,
-	    label='Select Mobile Number for Sending OTP(ओटीपी भेजने के लिए मोबाइल नंबर चुनें)'
+		label='Select Mobile Number for Sending OTP(ओटीपी भेजने के लिए मोबाइल नंबर चुनें)'
 	)
 
 	def __init__(self, mobile_nos=None, *args, **kwargs):
@@ -1005,32 +1014,38 @@ class UjjwalaApplicationGenerateOtpForm(forms.Form):
 			}
 		)
 
-		body_text = {
-			"countryCode": "+91",
-			"phoneNumber": otp_obj.mobile,
-			"type": "Template",
-			"traits": {
-				"name": otp_obj.mobile,
-			},
-			# "callbackData": "some_callback_data",
-			"template": {
-				# "name": "ujjwala_application_submitted_",
-				"name": self.data.get("whatsapp_template_name"),
-				"languageCode": "hi",
-				"headerValues": [
-					# "Alert",  #
-				],
-				"bodyValues": [
-					otp
-				]
-			}
-		}
+		message_id = None
+		channel = ''
 
-		data = track.client.post(
-			api_key=settings.INTERAKT_API_KEY,
-		 	path="/v1/public/message/",
-		 	body=body_text
-		).json()
+		if '_send_whatsapp' in self.data:
+			channel = "whatsapp"
+			result, response = send_whatsapp_message(
+				otp_obj.mobile, self.data.get("whatsapp_template_name"), [otp]
+			)
+			if result:
+				message_id = response.get('id')
+		elif '_send_sms' in self.data:
+			channel = "sms"
+			context = {
+				"otp_for": self.data.get('otp_generated_for').upper(),
+				"otp": otp,
+			}
+
+			message = settings.GENERIC_SMS_OTP_TEMPLATE.format(**context)
+			result, response = send_sms(otp_obj.mobile, message, settings.GENERIC_SMS_OTP_TEMPLATE_ID)
+			if result:
+				messages = response['messages']
+				message_id = messages[0].get('messageId')
+
+		from ujjwala.models import UjjwalaV2Application
+
+		CommunicationLog.objects.create(
+			content_type=ContentType.objects.get_for_model(UjjwalaV2Application),
+			object_id=self.data.get('application_id'),
+			event=self.data.get('otp_generated_for'), channel=channel,
+			channel_subscriber=self.data.get('mobile'),
+			message_id=message_id
+		)
 		return otp_obj
 
 
@@ -1109,7 +1124,7 @@ class InstallationMainGateUploadForm(forms.Form):
 			'latitude': data['latitude'],
 			'longitude': data['longitude'],
 			'accuracy': data['accuracy']
-		                                   }
+										   }
 		self.installation.transition_main_gate(
 			by=get_current_user()
 		)

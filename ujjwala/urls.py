@@ -47,6 +47,11 @@ urlpatterns = [
     path('portal/pre-inspection/', views.UjjwalaPreInspectionListView.as_view(), name="index"),
     path('portal/web-form-share/', views.ShareWebFormLink.as_view(), name="share_web_form_link"),
 
+    # path(
+    #     'portal/pre-inspection/user_list/',
+    #     views.UjjwalaPreInspectionUserListView.as_view(),
+    #     name="ujjwala_pre_inspection_user_listview"
+    # ),
     path(
         'portal/disbursement/sv_label_print/',
         views.UjjwalaConnectionDisbursementSvLabelPrintListView.as_view(),

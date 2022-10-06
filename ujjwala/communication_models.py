@@ -1,13 +1,9 @@
-import io
-
 import requests
 import track
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.template import loader
 
 from communication_log.models import CommunicationLog
-from connection_app.models import minio_client
 from ujjwala.enums import UjjwalaApplicationDocumentsEnum
 
 
@@ -168,7 +164,7 @@ class UjjwalaWhatsappCommunication(object):
 		#)
 
 	def event_legal_documents_upload_channel_whatsapp(self):
-		from ujjwala.models import ConnectionDisbursement, PreInspection
+		from ujjwala.models import ConnectionDisbursement
 
 		connection_disbursement = ConnectionDisbursement.objects.get(parent_id=self.pk)
 
@@ -235,7 +231,7 @@ class UjjwalaWhatsappCommunication(object):
 		# )
 
 	def event_legal_documents_reupload_channel_whatsapp(self, reason):
-		from ujjwala.models import ConnectionDisbursement, PreInspection
+		from ujjwala.models import ConnectionDisbursement
 
 		connection_disbursement = ConnectionDisbursement.objects.get(parent_id=self.pk)
 

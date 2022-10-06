@@ -203,6 +203,9 @@ THUMBOR_URL = "http://dca.arungas.com:6988/unsafe/fit-in/1920x1080/filters:quali
 
 THUMBOR_URL_INTERNAL = "http://dca.arungas.com:6988/unsafe/fit-in/1520x2688/filters:quality(80)/"
 
+INFOBIP_URL = "https://4r198.api.infobip.com/sms/2/text/advanced"
+INFOBIP_NOTIFY_URL = "https://dca.arungas.com/commlog/infobip/webhook/"
+
 SUBMIT_SMS_TEMPLATE_ID = "1107164508265878553"
 
 SUBMIT_SMS_TEMPLATE = \
@@ -210,7 +213,15 @@ SUBMIT_SMS_TEMPLATE = \
     "Your application with Id {id} submitted for connection type  {application_details}. " \
     "We will get back to you within {working_days} working days."
 
+GENERIC_SMS_OTP_TEMPLATE = \
+    "Dear Customer,"\
+    "Your verification code for {otp_for} is {otp} -Arun Gas"
+
+GENERIC_SMS_OTP_TEMPLATE_ID = "1107165976858894486"
+
 VERIFIED_SMS_TEMPLATE = \
     ""
 
 UJJWALA_PRE_INSPECTION_OTP = 'ujjwala_pre_inspection_otp'
+
+X_FRAME_OPTIONS = 'ALLOWALL'
