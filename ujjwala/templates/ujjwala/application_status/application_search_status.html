@@ -131,9 +131,6 @@
                                     <b style="color:cornflowerblue"><i>Update Bank Details</i></b></a>
                             </th>
                         </tr>
-                        <tr>
-                            <th></th>
-                        </tr>
                         {% endif %}
                         {% if obj.status == 'NIC_CLEARED' %}
                         <tr>
@@ -141,6 +138,11 @@
                                 <b style="color:cornflowerblue"><i>Customer Remarks Update</i></b></a></th>
                         </tr>
                         {% endif %}
+                        <tr>
+                            <td colspan="2">
+                                <a href="{% url 'ujjwala:ujjwala_customer_profile' pk=obj.id %}"><b>View Ujjwala Customer Profile</b></a>
+                            </td>
+                        </tr>
                     </table>
                 </div>
             </div>

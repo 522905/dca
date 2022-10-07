@@ -1,35 +1,11 @@
 {% extends "material/frontend/base_module.html" %}
 {% load static %}
-{% block page_title %}Application Status Search {% endblock %}
+{% block page_title %}Ujjwala Customer Profile{% endblock %}
 {% block content %}
 <link rel="stylesheet" href="{% static '/css/style.css' %}" >
 <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
 <div class="p-2 pt-0 form_label application_form" style="width: 100%;">
-{#    <form method="post">#}
-{#    {% csrf_token %}#}
-{#        <div class="card p-0">#}
-{#            <div class="card-body search_form">#}
-{#                <div class="form-group mb-0">#}
-{#                    <label>Enter Contact Mobile: </label>#}
-{#                    <input autocomplete="off" type="tel" name="contact_mobile" />#}
-{#                </div>#}
-{#                <p class="text-center"><b style="font-size: 15px;">OR</b></p>#}
-{#                <div class="form-group mb-0">#}
-{#                    <label>Enter Aadhar Number: </label>#}
-{#                    <input autocomplete="off" type="tel" name="uid" />#}
-{#                </div>#}
-{#                <p class="text-center"><b style="font-size: 15px;">OR</b></p>#}
-{#                <div class="form-group mb-0">#}
-{#                    <label>Application Id:</label>#}
-{#                    <input autocomplete="off" type="tel" name="application_id" />#}
-{#                </div>#}
-{#            </div>#}
-{#            <div class="card-footer">#}
-{#                <button style="width: 100%;" class="btn btn-primary bg-heading">Get Application Status</button>#}
-{#            </div>#}
-{#        </div>#}
-{#    </form>#}
     {% if obj %}
         <div class="card">
             <div class="status_block">
