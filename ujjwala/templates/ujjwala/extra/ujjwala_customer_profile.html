@@ -83,7 +83,7 @@
                             <div style="overflow: scroll; display: flex;">
                                 {% if obj.pre_inspection %}
                                     {% for doc in obj.pre_inspection.documents.all %}
-                                        {% if doc.type != 'PHYSICAL_LEGAL_DOCUMENT' %}
+                                        {% if doc.type != 'PHYSICAL_LEGAL_DOCUMENT' and doc.type != 'SAFETY_AUDIO' %}
                                             <div>
                                                 <a href="{{ doc.link }}">
                                                     <img class="p-1" src="{{ doc.link }}" style="height: 150px; object-fit:contain; width: 100%;" alt="{{ doc.type }}">
