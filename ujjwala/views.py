@@ -925,6 +925,130 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
 
 
 @method_decorator(login_required, 'dispatch')
+class UjjwalaApplicationCustomerProfileView(TemplateView):
+
+    template_name = 'ujjwala/extra/ujjwala_customer_profile.html'
+
+    def get_object(self, queryset=None):
+        try:
+            obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
+        except:
+            raise Http404(
+                "No Application Exist For Given Application Id"
+            )
+        return obj
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            "obj": self.get_object()
+        })
+        return context
+
+
+
+# @method_decorator(login_required, 'dispatch')
+# class UjjwalaApplicationCustomerProfileView(TemplateView):
+#
+#     model = UjjwalaV2Application
+#     template_name = 'ujjwala/extra/ujjwala_customer_profile.html'
+#     success_url = '.'
+#
+#     stage_1_generate_otp = 'ujjwala/otp/generate_otp_form.html'
+#     stage_2_validate_otp = 'ujjwala/otp/validate_otp_form.html'
+#
+#     def dispatch(self, request, *args, **kwargs):
+#         user = get_current_user()
+#         if user.is_anonymous:
+#             return render(request, 'ujjwala/no_permissions.html')
+#         return super().dispatch(request, *args, **kwargs)
+#
+#     def otp_verification(self, connection_disbursement):
+#         context = {'connection_disbursement': connection_disbursement, 'application': connection_disbursement.parent}
+#
+#         if self.request.method.lower() == 'get':
+#             app = connection_disbursement.parent
+#             context.update({
+#                 'form': UjjwalaApplicationGenerateOtpForm(
+#                     mobile_nos=app.all_contacts,
+#                     initial={
+#                         'connection_disbursement_id': connection_disbursement.id,
+#                         'application_id': connection_disbursement.parent_id,
+#                         'whatsapp_template_name': 'connection_disbursement_dac',
+#                         'otp_generated_for': 'Walk-In',
+#                     }
+#                 )
+#             })
+#             return render(self.request, self.stage_1_generate_otp, context)
+#         elif self.request.method.lower() == 'post':
+#             if self.request.POST.get('form_type') == 'generate_otp_form':
+#                 app = UjjwalaV2Application.objects.get(pk=connection_disbursement.parent_id)
+#                 form = UjjwalaApplicationGenerateOtpForm(
+#                     mobile_nos=app.all_contacts,
+#                     data=self.request.POST,
+#                 )
+#                 if not form.is_valid():
+#                     context.update({
+#                         'form': form
+#                     })
+#                     return render(self.request, self.stage_1_generate_otp, context)
+#                 otp_obj = form.send_otp()
+#                 app_id = form.data.get('application_id')
+#                 context.update({
+#                     'form': UjjwalaApplicationValidateOtpForm(
+#                         initial={
+#                             'application_id': app_id,
+#                             'reference_number': otp_obj.reference_number,
+#                             'mobile': otp_obj.mobile
+#                         }
+#                     )
+#                 })
+#                 return render(self.request, self.stage_2_validate_otp, context)
+#             elif self.request.POST.get('form_type') == 'validate_otp_form':
+#                 form = UjjwalaApplicationValidateOtpForm(data=self.request.POST)
+#                 otp_obj = Otp.objects.get(reference_number=self.request.POST['reference_number'])
+#                 if not form.is_valid():
+#                     context.update({
+#                         'form': UjjwalaApplicationValidateOtpForm(
+#                             initial={
+#                                 'application_id': connection_disbursement.parent_id,
+#                                 'reference_number': otp_obj.reference_number,
+#                                 'mobile': otp_obj.mobile
+#                             }
+#                         )
+#                     })
+#                     return render(self.request, self.stage_2_validate_otp, context)
+#
+#                 disbursement_drive = get_current_user_disbursement_drive(get_current_user())
+#
+#                 connection_disbursement.walk_in_date = datetime.datetime.now()
+#                 connection_disbursement.disbursement_drive = disbursement_drive
+#                 connection_disbursement.save()
+#                 return HttpResponseRedirect('.')
+#
+#     def get_template_names(self):
+#         connection_disbursement = self.get_object()
+#         if not connection_disbursement.walk_in_date or \
+#                 (connection_disbursement.walk_in_date.date() != datetime.datetime.today().date()):
+#             return self.walk_in_template
+#         return self.ujjwala_form_a_b_c_template
+#
+#     def get_object(self, queryset=None):
+#         obj = super().get_object(queryset=queryset)
+#         return obj
+
+    # def form_valid(self, form):
+    #     return redirect('ujjwala:connection_disbursement_list')
+
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     context.update({
+    #         "obj": self.get_object()
+    #     })
+    #     return context
+
+
+@method_decorator(login_required, 'dispatch')
 class ConnectionDisbursementReviewFormAbcListView(ListView):
     model = ConnectionDisbursement
 
