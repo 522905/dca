@@ -106,7 +106,7 @@ function successCallback(position) {
     var meter = Math.round(position.coords.accuracy);
     window.deviceLocation = {lat: latitude, lng: longitude, accuracy: meter}
 
-    initMap();
+    initMap(window.deviceLocation.lat, window.deviceLocation.lng, window.deviceLocation.accuracy);
 
     const cityCircle = new google.maps.Circle({
       strokeColor: "#FF0000",
@@ -114,22 +114,11 @@ function successCallback(position) {
       strokeWeight: 2,
       fillColor: "#00FF00",
       fillOpacity: 0.10,
-      map_obj,
+      map: map_obj,
       center: { lat: window.deviceLocation.lat, lng: window.deviceLocation.lng },
       radius: window.deviceLocation.accuracy,
     });
-
-    map_obj.setCenter({ lat: latitude, lng: longitude });
-
-    // if (meter > 300) {
-    //     $('#map_error_msg').append("<p>किसी खुले क्षेत्र में जाएं और स्थान को फिर से कैप्चर करें।</p>");
-    //     $('#map_error_msg').append("<p>Your location is: " + latitude + "," + longitude+" </p><p>Accuracy="+meter+"m");
-    //     reattemptLocationFetch();
-    // } else {
-    //     $('#id_latitude').val(latitude);
-    //     $('#id_longitude').val(longitude);
-    //     $('#id_accuracy').val(meter + 'm');
-    // }
+    map_obj.fitBounds(cityCircle.getBounds());
     console.log(successCallback);
 
 }
