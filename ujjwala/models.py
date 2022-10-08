@@ -22,7 +22,7 @@ from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMo
 	UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, \
 	RejectionTypeEnum, RoboSdmsDedeupStatusEnum, UserDocumentsEnum, PreInspectionStatusEnum, \
 	ConnectionDisbursementStatusEnum, PreInspectionTypeEnum, SchemeOnboardingStatusEnum, NicClearedCustomerRemarksEnum, \
-	DisbursementDriveStatusEnum
+	DisbursementDriveStatusEnum, InstallationTypeEnum
 from ujjwala.forms import ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
 	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm, NewRelationCreated, \
@@ -125,6 +125,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		# 	return mark_safe(html)
 		return mark_safe("")
 
+
 	def whatsapp_nic_error_update_address(self):
 		url = reverse('ujjwala:whatsapp_nic_error_update_address', kwargs={'pk': self.pk})
 		html = '''
@@ -167,6 +168,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		'''.format(url)
 		return mark_safe(html)
 
+
 	def whatsapp_update_bank_details(self):
 		if not self.bank_account_number:
 			url = reverse('ujjwala:whatsapp_update_bank_details', kwargs={'pk': self.pk})
@@ -176,6 +178,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			return mark_safe(html)
 		else:
 			return mark_safe("Bank Details Updated")
+
 
 	@property
 	def formatted_address(self):
@@ -1108,7 +1111,13 @@ class ConnectionDisbursement(models.Model):
 	sequence = models.CharField(max_length=16, null=True, blank=True)
 	mechanic = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
 	material_delivered_on = models.DateTimeField(null=True, blank=True)
+	first_cylinder_delivered_on = models.DateTimeField(null=True, blank=True)
+	second_cylinder_delivered_on = models.DateTimeField(null=True, blank=True)
 	dac_code = models.CharField(max_length=4, null=True, blank=True)
+	installation_type = models.CharField(
+		max_length=32, choices=InstallationTypeEnum.choices, default=InstallationTypeEnum.SELF
+	)
+
 
 	status = FSMField(
 		default=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
@@ -1262,16 +1271,69 @@ class ConnectionDisbursement(models.Model):
 		)
 		transaction.on_commit(create_txn_status_job_function)
 
+
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
+		source=ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
+		target=ConnectionDisbursementStatusEnum.FIRST_DELIVERY_OTP_VERIFIED,
+		custom=dict(
+			short_description='First Cylinder Material Delivery OTP Override',
+		    admin=True, form=MaterialDeliveryOtpOverrideForm
+		),
+	)
+	def transition_first_cylinder_delivery_otp_verified(self, *args, **kwargs):
+		pass
+
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=ConnectionDisbursementStatusEnum.FIRST_DELIVERY_OTP_VERIFIED,
+		target=ConnectionDisbursementStatusEnum.FIRST_CYLINDER_DELIVERED,
+		custom=dict(short_description='First Cylinder Delivered', admin=False),
+	)
+	def transition_first_cylinder_delivered(self, *args, **kwargs):
+		# self.parent.transition_material_delivered(by=get_current_user())
+		self.first_cylinder_delivered_on = datetime.datetime.now()
+		create_txn_status_job_function = partial(
+			django_rq.enqueue,
+			"ujjwala.jobs.compress_connection_disbursement_documents",
+			parent_id=self.id
+		)
+		transaction.on_commit(create_txn_status_job_function)
+		pass
+
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=[
+			ConnectionDisbursementStatusEnum.FIRST_CYLINDER_DELIVERED,
+			ConnectionDisbursementStatusEnum.INSTALLATION_REJECTED,
+			ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
+		],
+		target=ConnectionDisbursementStatusEnum.INSTALLATION_KITCHEN_PHOTO,
+		custom=dict(short_description='Installation OTP Verify', admin=False),
+	)
+	def installation_otp_verified(self, *args, **kwargs):
+		pass
+
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=ConnectionDisbursementStatusEnum.INSTALLATION_KITCHEN_PHOTO,
 		target=ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE,
 		custom=dict(short_description='Upload Installation Kitchen Photo', admin=False),
 	)
 	def transition_installation_kitchen_upload(self, *args, **kwargs):
 		pass
+
 
 	@fsm_log_description
 	@fsm_log_by
@@ -1317,6 +1379,43 @@ class ConnectionDisbursement(models.Model):
 			self.parent.save()
 			# self.parent.event_installation_reupload_channel_whatsapp(kwargs.get('description'))
 
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=ConnectionDisbursementStatusEnum.INSTALLATION_ACCEPTED,
+		target=ConnectionDisbursementStatusEnum.SECOND_DELIVERY_OTP_VERIFIED,
+		custom=dict(
+			short_description='Second Delivery OTP Verified',
+			admin=True, form=MaterialDeliveryOtpOverrideForm
+		),
+	)
+	def transition_second_delivery_otp_verified(self, *args, **kwargs):
+		pass
+
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=ConnectionDisbursementStatusEnum.SECOND_DELIVERY_OTP_VERIFIED,
+		target=ConnectionDisbursementStatusEnum.SECOND_CYLINDER_DELIVERED,
+		custom=dict(
+			short_description='Second Cylinder Delivered',
+			admin=False
+		),
+	)
+	def transition_second_cylinder_delivered(self, *args, **kwargs):
+		# self.parent.transition_material_delivered(by=get_current_user())
+		self.second_cylinder_delivered_on = datetime.datetime.now()
+		# self.parent.save()
+		create_txn_status_job_function = partial(
+			django_rq.enqueue,
+			"ujjwala.jobs.compress_connection_disbursement_documents",
+			parent_id=self.id
+		)
+		transaction.on_commit(create_txn_status_job_function)
+		pass
 
 	@old_walk_in_to_description
 	@fsm_log_description

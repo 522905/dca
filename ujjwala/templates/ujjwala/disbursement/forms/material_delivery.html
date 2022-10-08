@@ -13,7 +13,6 @@
 <div class="main p-2 pt-0 form_label">
     <form method="post" id="">
         {% csrf_token %}
-		
 		<div class="card p-2">
 			{% if messages %}
 			{% for msg in messages %}
@@ -23,6 +22,7 @@
 			  </div>
 			{% endfor %}
 		  {% endif %}
+          <h5>{{ delivery_type }}</h5>
 		  <h4>Material Delivery QR Code</h4>
 		  <h5>Booking Id: {{ booking_id }}</h5>
 		  <img style="max-width: 100px;" src="https://chart.googleapis.com/chart?cht=qr&chs=250x250&chld=L|0&chl={{ booking_id }}"/>

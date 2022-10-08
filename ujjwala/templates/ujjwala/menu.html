@@ -48,7 +48,8 @@
                 <li><a href="{% url 'ujjwala:connection_disbursement_review_form_abc_list' %}" data-turbolinks="false">2 - Accept Legal Documents </a></li>
                 <li><a href="{% url 'ujjwala:connection_disbursement_sv_label_print_list' %}" data-turbolinks="false">3 - SV Label Print </a></li>
                 <li><a href="{% url 'ujjwala:connection_disbursement_social_media_updates_list' %}" data-turbolinks="false">4 - Social Media Updates </a></li>
-                <li><a href="{% url 'ujjwala:connection_disbursement_material_delivery_list' %}" >5 - Material Delivery </a></li>
+{#                <li><a href="{% url 'ujjwala:connection_disbursement_material_delivery_list' %}" >5 - Material Delivery </a></li>#}
+                <li><a href="{% url 'ujjwala:first_cylinder_delivery_list' %}" >5 - 1st Cylinder Delivery </a></li>
             </ul>
         </li>
         {% endif %}
@@ -65,10 +66,37 @@
 {#                <li><a href="{% url 'ujjwala:installation_review_list' %}" data-turbolinks="false">Review List</a></li> #}
             </ul>
         </li>
-=======
-{#            </ul>#}
-{#        </li>#}
->>>>>>> Stashed changes
+        {% if user|has_disbursement_permission %}
+        <li>
+            <div class="iocn-link">
+            <a href="#" data-turbolinks="false">
+                <i class='bx bx-collection' ></i>
+                <span class="link_name">2nd Cyl Delivery</span>
+            </a>
+            <i class='bx bxs-chevron-down arrow' ></i>
+            </div>
+            <ul class="sub-menu">
+                <li><a href="{% url 'ujjwala:second_cylinder_delivery_list' %}" >List </a></li>
+            </ul>
+        </li>
+        {% endif %}
+        {% if user|has_disbursement_permission %}
+        <li>
+            <div class="iocn-link">
+            <a href="#" data-turbolinks="false">
+                <i class='bx bx-collection' ></i>
+                <span class="link_name">Review</span>
+            </a>
+            <i class='bx bxs-chevron-down arrow' ></i>
+            </div>
+            <ul class="sub-menu">
+                <li><a data-turbolinks="false">Pre-Inspection </a></li>
+                <li><a href="{% url 'ujjwala:connection_disbursement_review_form_abc_list' %}" data-turbolinks="false">Legal Documents </a></li>
+                <li><a href="{% url 'ujjwala:installation_review_list' %}" data-turbolinks="false">Installation </a></li>
+            </ul>
+        </li>
+        {% endif %}
+
         {% if user.is_authenticated %}
         <li>
             <a href="{% url 'logout' %}" >

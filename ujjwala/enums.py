@@ -28,6 +28,8 @@ class UjjwalaApplicationDocumentsEnum(models.TextChoices):
 	LEGAL_DOC_PRE_INSPECTION = 'LEGAL_DOC_PRE_INSPECTION', 'Legal Doc Pre Inspection' # Form A
 	PHYSICAL_LEGAL_DOCUMENT = 'PHYSICAL_LEGAL_DOCUMENT', 'Physical Legal Document'
 	DISBURSEMENT_PHOTO = 'DISBURSEMENT_PHOTO', 'Disbursement Photo'
+	FIRST_CYLINDER_DELIVERY_PHOTO = 'FIRST_CYLINDER_DELIVERY_PHOTO', 'First Cylinder Delivery Photo'
+	SECOND_CYLINDER_DELIVERY_PHOTO = 'SECOND_CYLINDER_DELIVERY_PHOTO', 'Second Cylinder Delivery Photo'
 	SOCIAL_MEDIA_PHOTO = 'SOCIAL_MEDIA_PHOTO', 'Social Media Photo'
 	INSTALLATION_KITCHEN_PHOTO = 'INSTALLATION_KITCHEN_PHOTO', 'Installation Kitchen Photo'
 	INSTALLATION_STOVE_WITH_STICKER = 'INSTALLATION_STOVE_WITH_STICKER', 'Installation Stove With Sticker'
@@ -167,6 +169,11 @@ class PreInspectionTypeEnum(models.TextChoices):
 	MECHANIC = 'MECHANIC', 'Mechanic'
 
 
+class InstallationTypeEnum(models.TextChoices):
+	SELF = 'SELF', 'Self'
+	MECHANIC = 'MECHANIC', 'Mechanic'
+
+
 class ConnectionDisbursementStatusEnum(models.TextChoices):
 	LEGAL_DOCUMENTS_PENDING = 'LEGAL_DOCUMENTS_PENDING', 'Legal Documents Not Uploaded (Upload Pending)'
 	LEGAL_DOCUMENTS_REVIEW = 'LEGAL_DOCUMENTS_REVIEW', 'Legal Documents In Review (Review Pending)'
@@ -175,7 +182,7 @@ class ConnectionDisbursementStatusEnum(models.TextChoices):
 	SV_LABEL_PRINT = 'SV_LABEL_PRINT', 'Social Media Photo Pending'
 	SOCIAL_MEDIA_UPDATES = 'SOCIAL_MEDIA_UPDATES', 'Material Delivery (OTP & Photo Pending)'
 	MATERIAL_DELIVERY_OTP_VERIFIED = 'MATERIAL_DELIVERY_OTP_VERIFIED', 'Material Delivery (OTP Done, Photo Pending)'
-	SINGLE_DELIVERY_OTP_VERIFIED = 'SINGLE_DELIVERY_OTP_VERIFIED', 'Single Delivery OTP Verified (OTP Done, Photo Pending)'
+	FIRST_DELIVERY_OTP_VERIFIED = 'SINGLE_DELIVERY_OTP_VERIFIED', 'Single Delivery OTP Verified (OTP Done, Photo Pending)'
 	SECOND_DELIVERY_OTP_VERIFIED = 'SECOND_DELIVERY_OTP_VERIFIED', 'Second Delivery OTP Verified (OTP Done, Photo Pending)'
 	MATERIAL_DELIVERED = 'MATERIAL_DELIVERED', 'Material Delivered'
 	SINGLE_CYLINDER_DELIVERED = 'SINGLE_CYLINDER_DELIVERED', 'Single Cylinder Delivered'
@@ -184,6 +191,7 @@ class ConnectionDisbursementStatusEnum(models.TextChoices):
 	INSTALLATION_UPLOADED = 'INSTALLATION_UPLOADED', 'Installation Uploaded'
 	INSTALLATION_REJECTED = 'INSTALLATION_REJECTED', 'Installation Rejected'
 	INSTALLATION_ACCEPTED = 'INSTALLATION_ACCEPTED', 'Installation Accepted'
+	FIRST_CYLINDER_DELIVERED = 'FIRST_CYLINDER_DELIVERED', 'First Cylinder Delivered'
 	SECOND_CYLINDER_DELIVERED = 'SECOND_CYLINDER_DELIVERED', 'Second Cylinder Delivered'
 
 

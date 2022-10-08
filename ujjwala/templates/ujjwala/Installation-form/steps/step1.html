@@ -9,6 +9,12 @@
 <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
 
 <div class="main p-2 pt-0 form_label">
+    <div class="card-header float-center">
+        {% include 'ujjwala/disbursement/custom-template/application_detail_template.html' %}
+        <br>
+        <b>{{ installation_mode }}</b>
+    </div>
+
     <form method="post" id="">
         {% csrf_token %}
         <div class="card">

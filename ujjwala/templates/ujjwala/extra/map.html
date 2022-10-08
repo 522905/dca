@@ -25,12 +25,12 @@
 </style>
 
 <script>
-    window.map_obj = undefined;
-function initMap() {
+window.map_obj = undefined;
+function initMap(lat, lng, accuracy) {
     document.getElementById("map").classList.add("map");
     var mapOptions = {
         zoom: 14,
-        center: new google.maps.LatLng(52.5498783, 13.425209099999961),
+        center: new google.maps.LatLng(lat, lng),
         mapTypeId: google.maps.MapTypeId.ROADMAP
     };
     map_obj = new google.maps.Map(document.getElementById('map'), mapOptions);

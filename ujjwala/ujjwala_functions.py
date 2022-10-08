@@ -1342,6 +1342,20 @@ def download_audit_documents_for_ids(application_ids, documents_type):
     return resp
 
 
+def is_member_of_second_cylinder_delivery(user):
+    # from ujjwala.models import DisbursementDrive
+    #
+    # disbursement_drive = DisbursementDrive.objects.filter(
+    #     status=DisbursementDriveStatusEnum.ACTIVE, team_members=user
+    # ).first()
+    #
+    # if disbursement_drive:
+    #     return True
+    # else:
+    #     return False
+    return True
+
+
 def is_member_of_disbursement_drive(user):
     from ujjwala.models import DisbursementDrive
 

@@ -21,7 +21,7 @@ from otp.models import Otp
 from ujjwala.communication_functions import send_whatsapp_message, send_sms
 from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
 	RejectionTypeEnum, PreInspectionTypeEnum, RoboSdmsDedeupStatusEnum, NicClearedCustomerRemarksEnum, \
-	PrintDocumentsTypeEnum
+	PrintDocumentsTypeEnum, InstallationTypeEnum
 from ujjwala.models import UjjwalaApplicationDocumentsEnum
 from formtools.wizard.views import SessionWizardView
 
@@ -953,6 +953,60 @@ class ConnectionDisbursementMaterialDeliveryForm(forms.Form):
 		obj.save()
 
 
+class FirstCylinderMaterialDeliveryForm(forms.Form):
+	dac_code = forms.CharField(
+		widget=forms.TextInput, label='DAC Code', required=True
+	)
+	disbursement_photo = forms.CharField(
+		widget=forms.HiddenInput, label='Connection Disbursement', required=True
+	)
+
+	def __init__(self, connection_disbursement=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.connection_disbursement = connection_disbursement
+		if not self.connection_disbursement.parent.sdms_mobile_number:
+			self.fields['dac_code'] = forms.CharField(
+				widget=forms.HiddenInput, label='DAC Code', required=False
+			)
+
+	def save(self):
+		data = self.cleaned_data
+		obj = self.connection_disbursement
+		obj.dac_code = data['dac_code']
+		obj.documents.create(
+			type=UjjwalaApplicationDocumentsEnum.FIRST_CYLINDER_DELIVERY_PHOTO,
+			link=data['disbursement_photo']
+		)
+
+		obj.transition_first_cylinder_delivered(
+			by=get_current_user()
+		)
+		obj.save()
+
+
+class SecondCylinderMaterialDeliveryForm(forms.Form):
+	disbursement_photo = forms.CharField(
+		widget=forms.HiddenInput, label='Connection Disbursement', required=True
+	)
+
+	def __init__(self, connection_disbursement=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.connection_disbursement = connection_disbursement
+
+	def save(self):
+		data = self.cleaned_data
+		obj = self.connection_disbursement
+		obj.documents.create(
+			type=UjjwalaApplicationDocumentsEnum.SECOND_CYLINDER_DELIVERY_PHOTO,
+			link=data['disbursement_photo']
+		)
+
+		obj.transition_second_cylinder_delivered(
+			by=get_current_user()
+		)
+		obj.save()
+
+
 class UjjwalaApplicationOtpInitialForm(forms.Form):
 	form_type = forms.CharField(widget=forms.HiddenInput, initial='initial_form')
 	otp_generated_for = forms.CharField(widget=forms.HiddenInput)
@@ -1125,8 +1179,14 @@ class InstallationMainGateUploadForm(forms.Form):
 			'longitude': data['longitude'],
 			'accuracy': data['accuracy']
 										   }
+		user = get_current_user()
+		if not user.is_anonymous:
+			self.installation.installation_type = InstallationTypeEnum.MECHANIC
+		else:
+			self.installation.installation_type = InstallationTypeEnum.SELF
+
 		self.installation.transition_main_gate(
-			by=get_current_user()
+			by=user
 		)
 		self.installation.save()
 
