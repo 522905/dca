@@ -1298,8 +1298,9 @@ class ConnectionDisbursement(models.Model):
 		custom=dict(short_description='First Cylinder Delivered', admin=False),
 	)
 	def transition_first_cylinder_delivered(self, *args, **kwargs):
-		# self.parent.transition_material_delivered(by=get_current_user())
+		self.parent.transition_material_delivered(by=get_current_user())
 		self.first_cylinder_delivered_on = datetime.datetime.now()
+		self.parent.save()
 		create_txn_status_job_function = partial(
 			django_rq.enqueue,
 			"ujjwala.jobs.compress_connection_disbursement_documents",
