@@ -66,7 +66,7 @@
 {#                <li><a href="{% url 'ujjwala:installation_review_list' %}" data-turbolinks="false">Review List</a></li> #}
             </ul>
         </li>
-        {% if user|has_disbursement_permission %}
+        {% if user|has_second_delivery_permission %}
         <li>
             <div class="iocn-link">
             <a href="#" data-turbolinks="false">
