@@ -2474,7 +2474,7 @@ class SecondCylinderMaterialDeliveryListView(ListView):
 
     def get(self, request, *args, **kwargs):
         user = get_current_user()
-        if not is_member_of_disbursement_drive(user):
+        if not is_member_of_second_cylinder_delivery(user):
             return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
