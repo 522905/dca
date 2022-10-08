@@ -1,0 +1,96 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap"
+	rel="stylesheet">
+<script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
+<div class="form_label p-2">
+        {% include 'ujjwala/disbursement/custom-template/application_detail_template.html' %}
+</div>
+<div class="main p-2 pt-0 form_label">
+    <form method="post" id="">
+        {% csrf_token %}
+		<div class="card p-2">
+			{% if messages %}
+			{% for msg in messages %}
+			  <div class="alert alert-info alert-dismissable">
+				<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+				{{msg.message}}
+			  </div>
+			{% endfor %}
+		  {% endif %}
+          <h5>Second Cylinder Delivery</h5>
+		</div>
+
+        <div class="card">
+            <div class="card-body">
+                {{form.application_id}}
+                <div class="row mb-2 M-0">
+                    <div class="col-sm-12 photo_block">
+                        <span class="hidden-field">{{ form.disbursement_photo }}</span>
+                        <label>Disbursement Photo<br> (फोटो)</label>
+                        <p id="disbursement_photo"></p>
+                        {{ form.disbursement_photo.errors }}
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer float-right">
+                <input class="btn btn-success float-right rounded-0" type="button" value="Submit" onclick="onSubmit()" />
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+     window.kitchenPhotoUppy = new Uppy.Core({
+		debug: true,
+		autoProceed: true,
+		restrictions: {
+			maxFileSize: 50000000,
+			maxNumberOfFiles: 1,
+			minNumberOfFiles: 1,
+			allowedFileTypes: ['image/*'],
+		}
+	})
+    .use(Uppy.Dashboard, {
+        trigger: '#disbursement_photo',
+        inline: true,
+        target: '#disbursement_photo',
+        showProgressDetails: true,
+        note: 'Image only, 1 file',
+        height: 200,
+        metaFields: [],
+        id: 'disbursement_photo',
+        browserBackButtonClose: false
+    })
+    .use(Uppy.Compressor, {
+        quality: 0.8,
+        maxWidth: 2048,
+        resize: 'contain',
+        limit: 10,
+    })
+    .use(Uppy.Tus, {
+        endpoint: 'https://tus.dca.arungas.com/files/',
+    })
+    kitchenPhotoUppy.on('complete', result => {
+		$('#id_disbursement_photo').val(result.successful[0].uploadURL);
+	})
+	function disbursementUppy(uppyObj) {
+        if(uppyObj.state.totalProgress < 100) {
+            window.alert("upload in Progress(अपलोड प्रगति पर है)");
+            return false;
+        } else {
+            $('body').find('form').submit();
+        }
+    }
+
+	function onSubmit(){
+        if($('form')[0].reportValidity()) {
+            disbursementUppy(kitchenPhotoUppy);
+        }
+	}
+
+</script>
+{% endblock %}
