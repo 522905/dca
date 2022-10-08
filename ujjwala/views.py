@@ -1632,7 +1632,8 @@ class InstallationListView(ListView):
                 ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
                 ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE,
                 ConnectionDisbursementStatusEnum.INSTALLATION_REJECTED,
-                ConnectionDisbursementStatusEnum.INSTALLATION_KITCHEN_PHOTO
+                ConnectionDisbursementStatusEnum.INSTALLATION_KITCHEN_PHOTO,
+                ConnectionDisbursementStatusEnum.FIRST_CYLINDER_DELIVERED,
             ]
         )
         # .filter(
@@ -1697,7 +1698,7 @@ class InstallationView(FormView, ApplicationView):
             })
         if installation.status in (
                 ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
-                ConnectionDisbursementStatusEnum.SINGLE_CYLINDER_DELIVERED,
+                ConnectionDisbursementStatusEnum.FIRST_CYLINDER_DELIVERED,
                 ConnectionDisbursementStatusEnum.INSTALLATION_REJECTED
         ):
             return self.otp_verification(installation)
@@ -2466,7 +2467,7 @@ class SecondCylinderMaterialDeliveryListView(ListView):
             status__in=[
                 ConnectionDisbursementStatusEnum.INSTALLATION_ACCEPTED,
                 ConnectionDisbursementStatusEnum.SECOND_DELIVERY_OTP_VERIFIED,
-            ],
+            ],pending_quantity=1
         ).order_by('updated_on')
 
     def get_template_names(self):
@@ -2522,6 +2523,8 @@ class SecondCylinderMaterialDeliveryView(FormView, ApplicationView):
             return render(request, 'ujjwala/no_permissions.html')
         connection_disbursement = self.get_object()
         if connection_disbursement:
+            if connection_disbursement.pending_quantity == 0:
+                return HttpResponse(content="<h1>No Cylinder Pending</h1>")
             if not connection_disbursement.status in (
                     ConnectionDisbursementStatusEnum.INSTALLATION_ACCEPTED,
                     ConnectionDisbursementStatusEnum.SECOND_DELIVERY_OTP_VERIFIED,

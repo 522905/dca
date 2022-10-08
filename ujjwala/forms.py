@@ -977,7 +977,7 @@ class FirstCylinderMaterialDeliveryForm(forms.Form):
 			type=UjjwalaApplicationDocumentsEnum.FIRST_CYLINDER_DELIVERY_PHOTO,
 			link=data['disbursement_photo']
 		)
-
+		obj.pending_quantity = obj.pending_quantity - 1
 		obj.transition_first_cylinder_delivered(
 			by=get_current_user()
 		)

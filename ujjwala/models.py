@@ -1116,6 +1116,8 @@ class ConnectionDisbursement(models.Model):
 	first_cylinder_delivered_on = models.DateTimeField(null=True, blank=True)
 	second_cylinder_delivered_on = models.DateTimeField(null=True, blank=True)
 	dac_code = models.CharField(max_length=4, null=True, blank=True)
+	pending_quantity = models.IntegerField(default=2)
+	item_code = models.CharField(default='FC5', max_length=52)
 	installation_type = models.CharField(
 		max_length=32, choices=InstallationTypeEnum.choices, default=InstallationTypeEnum.MECHANIC
 	)
