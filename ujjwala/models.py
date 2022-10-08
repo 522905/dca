@@ -112,6 +112,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			("can_do_connection_disbursement", "Can do connection disbursement"),
 			("can_cancel_walk_in", "Can cancel walk in"),
 			("robo_manager_permission", "Robo Manager Permission"),
+			("second_cylinder_delivery", "Second Cylinder Delivery"),
+			("post_installation", "Post Installation")
 		)
 
 	def pre_inspection_accepted(self):
@@ -1115,7 +1117,7 @@ class ConnectionDisbursement(models.Model):
 	second_cylinder_delivered_on = models.DateTimeField(null=True, blank=True)
 	dac_code = models.CharField(max_length=4, null=True, blank=True)
 	installation_type = models.CharField(
-		max_length=32, choices=InstallationTypeEnum.choices, default=InstallationTypeEnum.SELF
+		max_length=32, choices=InstallationTypeEnum.choices, default=InstallationTypeEnum.MECHANIC
 	)
 
 
