@@ -1654,6 +1654,7 @@ class InstallationListView(ListView):
                 if not obj.status in (
                         ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
                         ConnectionDisbursementStatusEnum.INSTALLATION_REJECTED,
+                        ConnectionDisbursementStatusEnum.FIRST_CYLINDER_DELIVERED
                 ):
                     messages.add_message(
                         request, messages.ERROR, "Application Id {} Application Status: {}".format(
