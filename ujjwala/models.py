@@ -199,11 +199,10 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		# 'StNo {street_no} {village}'.format(
 		# 	**self.address_json
 		# )
-		addr_str = 'hNo {} '\
-		'StNo {} {} '.format(
+		addr_str = 'hNo {} StNo {} {} '.format(
 			self.address_json.get('house_no', ''),
 			self.address_json.get('street_no', ''),
-			self.address_json.get('village', ''),
+			self.address_json.get('village', '') or self.address_json.get('mohalla', ''),
 		)
 
 		# addr_tokens = [i for i in addr_str.replace(',', ' ').split(' ').split(',') if i]
@@ -224,8 +223,13 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			rs.append(i)
 			seen.append(i.lower())
 
+		addr_str = ' '.join(rs)
+		landmark = self.address_json.get('landmark', '')
+		if len(addr_str) + len(landmark) <= 100:
+			addr_str = addr_str + landmark
+
 		return {
-			'addr_str': ' '.join(rs),
+			'addr_str': addr_str,
 			'pincode': self.address_json.get('pincode', '141001')
 		}
 
