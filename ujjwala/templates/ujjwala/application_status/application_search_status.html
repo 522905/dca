@@ -143,11 +143,15 @@
                                 <a href="{% url 'ujjwala:ujjwala_customer_profile' pk=obj.id %}"><b>View Ujjwala Customer Profile</b></a>
                             </td>
                         </tr>
-                        <tr>
-                            <td colspan="2">
-                                <a href="{% url 'ujjwala:share_self_pre_inspection_link' pk=obj.id %}"><b>Share Self Pre-Inspection Link</b></a>
-                            </td>
-                        </tr>
+                        {% if obj.pre_inspection.status != 'ACCEPTED' %}
+                            {% if obj.pre_inspection.status != 'SUBMITTED' %}
+                                <tr>
+                                    <td colspan="2">
+                                        <a href="{% url 'ujjwala:share_self_pre_inspection_link' pk=obj.id %}"><b>Share Self Pre-Inspection Link</b></a>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endif %}
                     </table>
                 </div>
             </div>
