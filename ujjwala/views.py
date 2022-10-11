@@ -3,6 +3,7 @@ import datetime
 import textwrap
 
 import django_rq
+from dateutil.relativedelta import relativedelta
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -38,7 +39,9 @@ from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbur
     FamilyMembers, DisbursementDrive
 from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_pre_inspection_applicable, \
     send_ujjwala_application_whatsapp_link_v2, download_audit_documents_for_ids, is_member_of_disbursement_drive, \
-    get_current_user_disbursement_drive, is_member_of_second_cylinder_delivery
+    get_current_user_disbursement_drive, is_member_of_second_cylinder_delivery, \
+    send_ujjwala_self_pre_inspection_share_link
+from utils.global_functions import unsign_data_base64, sign_data_base64
 
 
 def index(request):
@@ -165,6 +168,67 @@ class UjjwalaApplicationSharedLinkView(View):
             "referral_code": "{} ({} {})".format(user.username, user.first_name, user.last_name)
         })
         return render(request, template_name='ujjwala/web_form.html', context=data)
+
+
+class ApplicationView(View):
+
+    def get_object(self, queryset=None):
+        try:
+            obj = ConnectionDisbursement.objects.get(pk=self.kwargs.get('pk'))
+        except:
+            raise Http404(
+                "No Application Exist For Given Application Id"
+            )
+        return obj
+
+
+# This View Shares Web Form Link To The Given Contact Number
+@method_decorator(login_required, 'dispatch')
+class ShareSelfPreInspectionLink(View):
+
+    def get(self, request, *args, **kwargs):
+        id = kwargs.get('pk')
+
+        application = UjjwalaV2Application.objects.get(id=id)
+
+        if not application.pre_inspection:
+            """
+            Create
+            """
+            pass
+
+        if application.pre_inspection.status in (
+            PreInspectionStatusEnum.SUBMITTED, PreInspectionStatusEnum.ACCEPTED
+        ):
+            return HttpResponse(
+                "Pre-Inspection Status: {}".format(application.pre_inspection.status)
+            )
+        else:
+            user = get_current_user()
+            res = send_ujjwala_self_pre_inspection_share_link(
+                application.contact_mobile, user.id, user.username, application
+            )
+            if res:
+                return HttpResponse(
+                    "Self Pre-Inspection Link Shared For Application Id: {}".format(id)
+                )
+
+
+class SharedSelfPreInspectionLinkView(View):
+
+    def get(self, request, *args, **kwargs):
+        data = kwargs.get('data', '')
+        if data:
+            data = unsign_data_base64(data)
+        response = redirect(
+            'ujjwala:pre_inspection_form_view', pk=data['pre_inspection_id'], type='self'
+        )
+        today = datetime.datetime.today()
+        cookie_expiry = today + relativedelta(years=1)
+
+        response.set_cookie('referral_user_id', sign_data_base64(data['user_id']), expires=cookie_expiry)
+        response.set_cookie('referral_username', data['username'], expires=cookie_expiry)
+        return response
 
 
 class WhatsappUploadLegalForms(View):
@@ -317,10 +381,10 @@ class PreInspectionView(FormView):
         pre_inspection = self.get_object()
 
         if pre_inspection.status == PreInspectionStatusEnum.ALLOCATED \
-            or (pre_inspection.status == PreInspectionStatusEnum.REJECTED
-                and pre_inspection.type == PreInspectionTypeEnum.MECHANIC
+                or (pre_inspection.status == PreInspectionStatusEnum.REJECTED
+                    and pre_inspection.type == PreInspectionTypeEnum.MECHANIC
         ):
-            #return self.otp_verification(pre_inspection)
+            # return self.otp_verification(pre_inspection)
             return HttpResponse("<h1>Ujjwala Pre-Inspection Currently On Hold</h1>")
         elif pre_inspection.status in (
                 PreInspectionStatusEnum.SUBMITTED,
@@ -414,7 +478,7 @@ class PreInspectionView(FormView):
         except:
             raise Http404(
                 "No %(verbose_name)s found matching the query" %
-                  {'verbose_name': queryset.model._meta.verbose_name}
+                {'verbose_name': queryset.model._meta.verbose_name}
             )
         return obj
 
@@ -437,9 +501,17 @@ class PreInspectionView(FormView):
         if form.__class__ == PreviewPreInspectionForm:
             obj = self.get_object()
             if obj.type == PreInspectionTypeEnum.SELF:
-                return HttpResponse(
+                referral_user_id = self.request.COOKIES.get('referral_user_id', '')
+                referral_user_id = unsign_data_base64(referral_user_id)
+                if referral_user_id:
+                    obj.referral_user = referral_user_id
+                    obj.save()
+                response = HttpResponse(
                     content="<h1>Pre-Inspection Submitted For Review</h1>"
                 )
+                response.delete_cookie("referral_user_id")
+                response.delete_cookie("referral_username")
+                return response
         return HttpResponseRedirect(self.get_success_url())
 
     def get_template_names(self):

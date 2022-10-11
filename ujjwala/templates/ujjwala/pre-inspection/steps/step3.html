@@ -9,6 +9,7 @@
 <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
 
 <div class="main p-2 pt-0 form_label">
+    <span><b>Referral User:&nbsp</b></span><span id="referral_user"></span>
     <form method="post" id="">
         {% csrf_token %}
         <div class="card">
@@ -82,7 +83,17 @@
 </div>
 <script src="{% static '/js/location_2022_07_15.js' %}"></script>
 <script>
-
+    function readCookie(name) {
+        name += '=';
+        for (var ca = document.cookie.split(/;\s*/), i = ca.length - 1; i >= 0; i--)
+            if (!ca[i].indexOf(name))
+                return ca[i].replace(name, '');
+    }
+    debugger;
+    var referral = readCookie("referral_username");
+    if (referral){
+        $("#referral_user").html(referral);
+    }
     $(document).ready(function() {
         ensureLocationAccess();
         allowLocationNav();

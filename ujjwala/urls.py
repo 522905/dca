@@ -46,7 +46,16 @@ urlpatterns = [
     path('portal/i-web-form/', UjjwalaApplicationIframeWebFormView.as_view(), name="i_web_form"),
     path('portal/pre-inspection/', views.UjjwalaPreInspectionListView.as_view(), name="index"),
     path('portal/web-form-share/', views.ShareWebFormLink.as_view(), name="share_web_form_link"),
-
+    url(
+        '^portal/self-pre-inspection-share/(?P<pk>[^/.]+)/$',
+        views.ShareSelfPreInspectionLink.as_view(),
+        name="share_self_pre_inspection_link"
+    ),
+    url(
+        '^portal/self-pre-inspection-share-view/(?P<data>[^/.]+)/$',
+        views.SharedSelfPreInspectionLinkView.as_view(),
+        name="shared_self_pre_inspection_link_view"
+    ),
     # path(
     #     'portal/pre-inspection/user_list/',
     #     views.UjjwalaPreInspectionUserListView.as_view(),

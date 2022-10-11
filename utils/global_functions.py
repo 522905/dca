@@ -1,11 +1,12 @@
+import base64
 import io
+import datetime
 from functools import wraps
 
 import magic
 import requests
 from django.conf import settings
-from django.contrib.auth import REDIRECT_FIELD_NAME
-from django.contrib.auth.decorators import user_passes_test
+from django.core.signing import Signer
 
 from connection_app.models import minio_client
 from domestic_app.utils import get_minio_public_url
@@ -77,3 +78,18 @@ def old_walk_in_to_description(function):
     wrapper.__name__ = function.__name__
     wrapper.__doc__ = function.__doc__
     return wrapper
+
+
+def sign_data_base64(data):
+    signer = Signer()
+    data_signed = signer.sign(data)
+    data_signed_base64 = base64.urlsafe_b64encode(data_signed.encode('ascii'))
+    data = data_signed_base64.decode('ascii')
+    return data
+
+
+def unsign_data_base64(data):
+    signer = Signer()
+    data = base64.urlsafe_b64decode(data)
+    data = eval(signer.unsign(data.decode('ascii')))
+    return data

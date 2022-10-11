@@ -11,6 +11,7 @@
 
 <script src="{% static '/js/location_2022_07_15.js' %}"></script>
 <div class="main p-2 pt-0 form_label">
+    <span><b>Referral User:&nbsp</b></span><span id="referral_user"></span>
     <form method="post" id="upload_sign_and_submit_form">
         {% csrf_token %}
         <div class="main-header bg-heading" style="background-color: #2957A4;">
@@ -63,6 +64,17 @@
 <script src="{% static '/js/location_2022_07_15.js' %}"></script>
 <!-- <script src="{% static '/json/uppy-in.json' %}"></script> -->
 <script>
+    function readCookie(name) {
+        name += '=';
+        for (var ca = document.cookie.split(/;\s*/), i = ca.length - 1; i >= 0; i--)
+            if (!ca[i].indexOf(name))
+                return ca[i].replace(name, '');
+    }
+    debugger;
+    var referral = readCookie("referral_username");
+    if (referral){
+        $("#referral_user").html(referral);
+    }
     $(document).ready(function() {
         allowLocationNav();
         ensureLocationAccess();

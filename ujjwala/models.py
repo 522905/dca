@@ -847,7 +847,9 @@ class PreInspection(models.Model):
 	mechanic = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
 	submitted_on = models.DateTimeField(null=True)
 	type = models.CharField(max_length=32, choices=PreInspectionTypeEnum.choices, default=PreInspectionTypeEnum.SELF)
-
+	referral_user = models.ForeignKey(
+		User, on_delete=models.PROTECT, null=True, blank=True, related_name='referral_user'
+	)
 
 	status = FSMField(
 		default=PreInspectionStatusEnum.ALLOCATED,

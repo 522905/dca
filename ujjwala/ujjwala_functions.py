@@ -30,7 +30,7 @@ from ujjwala.enums import UjjwalaApplicationDocumentsEnum, FamilyMemberRelationE
 from datetime import datetime
 
 
-from utils.global_functions import upload_file_to_minio_bucket
+from utils.global_functions import upload_file_to_minio_bucket, sign_data_base64
 from utils.qrcode import generate_base64_qr_code
 
 COMPILED_REGEX_PATTERN_AADHAR_EXISTS = re.compile(
@@ -1049,6 +1049,75 @@ def send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id):
         CommunicationLog.objects.create(
             channel_subscriber=contact_mobile,
             event="ujjwala_application_shared_link", channel="whatsapp",
+            message_id=data.get('id')
+        )
+        return True
+    return False
+
+
+def send_ujjwala_self_pre_inspection_share_link(contact_mobile, user_id, username, application):
+    data = sign_data_base64({
+        'user_id': user_id,
+        'username': username,
+        'creation': datetime.now(),
+        'pre_inspection_id': application.pre_inspection.id
+    })
+
+    url = reverse('ujjwala:shared_self_pre_inspection_link_view', kwargs={'data': data})
+    url = url[1:]
+
+    req = requests.get(
+        "https://tinyurl.com/api-create.php",
+        # params={'url': "https://dca.arungas.com/{}".format(url)},
+        params={'url': "https://dca.arungas.com/{}".format(url)},
+    )
+
+    short_url = req.text
+
+    body_text = {
+        "countryCode": "+91",
+        "phoneNumber": contact_mobile,
+        "type": "Template",
+        "traits": {
+            "name": application.name,
+        },
+        # "callbackData": "some_callback_data",
+        "template": {
+            # "name": "ujjwala_application_submitted_",
+            "name": "pre_inspection_type_self_29092022",
+            "languageCode": "hi",
+            "headerValues": [
+                # "Alert",  #
+            ],
+            "bodyValues": [
+                application.name,
+                'https://youtu.be/pQNdDHklka0',
+                # "https://dca.arungas.com/{}".format(url)
+                short_url
+            ],
+            "buttonValues": {
+                "0": [
+                    url
+                ]
+            }
+        }
+    }
+
+    ujjwala_pre_inspection_content_type = ContentType.objects.get(
+        app_label='ujjwala', model='preinspection'
+    )
+    data = track.client.post(
+        api_key=settings.INTERAKT_API_KEY,
+        path="/v1/public/message/",
+        body=body_text
+    ).json()
+
+    if data.get('result', ''):
+        CommunicationLog.objects.create(
+            content_type=ujjwala_pre_inspection_content_type,
+            object_id=application.pre_inspection.id,
+            channel_subscriber=contact_mobile,
+            event="pre_inspection_type_self", channel="whatsapp",
             message_id=data.get('id')
         )
         return True
