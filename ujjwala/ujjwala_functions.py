@@ -1117,7 +1117,7 @@ def send_ujjwala_self_pre_inspection_share_link(contact_mobile, user_id, usernam
             content_type=ujjwala_pre_inspection_content_type,
             object_id=application.pre_inspection.id,
             channel_subscriber=contact_mobile,
-            event="pre_inspection_type_self", channel="whatsapp",
+            event="pre_inspection_type_self_share", channel="whatsapp",
             message_id=data.get('id')
         )
         return True
@@ -1413,6 +1413,10 @@ def download_audit_documents_for_ids(application_ids, documents_type):
 
 def is_member_of_second_cylinder_delivery(user):
     return user.has_perm('second_cylinder_delivery', 'ujjwala')
+
+
+def is_member_of_reviewer_group(user):
+    return user.has_perm('is_part_of reviewer_group', 'ujjwala')
 
 
 def is_member_of_disbursement_drive(user):

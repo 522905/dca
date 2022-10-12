@@ -113,7 +113,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			("can_cancel_walk_in", "Can cancel walk in"),
 			("robo_manager_permission", "Robo Manager Permission"),
 			("second_cylinder_delivery", "Second Cylinder Delivery"),
-			("post_installation", "Post Installation")
+			("post_installation", "Post Installation"),
+			("is_part_of reviewer_group", "Is Part of Reviewer Group"),
 		)
 
 	def pre_inspection_accepted(self):

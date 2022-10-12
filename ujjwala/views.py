@@ -191,12 +191,6 @@ class ShareSelfPreInspectionLink(View):
 
         application = UjjwalaV2Application.objects.get(id=id)
 
-        if not application.pre_inspection:
-            """
-            Create
-            """
-            pass
-
         if application.pre_inspection.status in (
             PreInspectionStatusEnum.SUBMITTED, PreInspectionStatusEnum.ACCEPTED
         ):
@@ -334,6 +328,81 @@ class UjjwalaPreInspectionReviewListView(ListView):
 
     def get_template_names(self):
         return 'ujjwala/pre-inspection/pre_inspection_review_listview.html'
+
+
+@method_decorator(login_required, 'dispatch')
+class PreInspectionReviewView(FormView, ApplicationView):
+    model = PreInspection
+    template_name = 'ujjwala/pre-inspection/pre_inspection_review.html'
+    form_class = PreInspectionReviewAdminForm
+
+    def get_success_url(self):
+        return reverse('ujjwala:pre_inspection_review_list')
+
+    def dispatch(self, request, *args, **kwargs):
+        # user = get_current_user()
+        # if not is_member_of_disbursement_drive(user):
+        #     return render(request, 'ujjwala/no_permissions.html')
+        application_id = request.GET.get('application_id', '')
+        if application_id:
+            pre_inspection = self.get_object()
+            if pre_inspection.status != PreInspectionStatusEnum.SUBMITTED:
+                messages.add_message(
+                    request, messages.ERROR, "Application Id: {} - {}".format(
+                        pre_inspection.parent_id, pre_inspection.get_status_display()
+                    )
+                )
+                return redirect('ujjwala:installation_review')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        try:
+            obj = PreInspection.objects.get(pk=self.kwargs.get('pk'))
+        except:
+            raise Http404(
+                "No Application Exist For Given Application Id"
+            )
+        return obj
+
+    def form_valid(self, form):
+        obj = self.get_object()
+        data = form.cleaned_data
+        obj.pre_inspection_review(
+            review_status=data['review_status'],
+            by=get_current_user(),
+            description='{} - {}'.format(data.get('review_status'), data.get('rejected_reason' ''))
+        )
+        obj.save()
+        return redirect(self.get_success_url())
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        # connection_disbursement = self.get_object()
+        # kwargs['connection_disbursement'] = connection_disbursement
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        obj = self.get_object()
+
+        context.update({
+            "obj": obj,
+            "kitchen_photo": obj.documents.get(
+                type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO
+            ).link,
+
+            "main_gate": obj.documents.get(
+                type=UjjwalaApplicationDocumentsEnum.MAIN_GATE
+            ).link,
+        })
+
+        if obj.type == PreInspectionTypeEnum.MECHANIC:
+            context.update({
+                "audio_file": obj.documents.get(
+                    type=UjjwalaApplicationDocumentsEnum.SAFETY_AUDIO
+                ).link
+            })
+        return context
 
 
 class UjjwalaApplicationDisplayOtp(View):

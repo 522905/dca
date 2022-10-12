@@ -1,54 +1,71 @@
 {% extends "material/frontend/base_module.html" %}
 {% load static %}
+{% block page_title %}Pre-Inspection Review List{% endblock %}
 {% block content %}
 
 <link rel="stylesheet" href="{% static '/css/style.css' %}" >
 <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+
 <div class="p-2 pt-0 form_label" style="width: 100%;">
-    <div class="main-header bg-heading">
-        <span class="text-white">List of Pre-Suraksha-Drill Records</span>
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="alert alert-info alert-dismissable">
+          <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+          {{msg.message}}
+        </div>
+      {% endfor %}
+    {% endif %}
+    {% include 'ujjwala/disbursement/custom-template/disbursement_drive_detail.html' %}
+    {% include 'ujjwala/disbursement/forms/application_search.html' %}
+    <div class="main-header bg-heading" style="background-color: #2957A4;">
+        <span class="text-white">List of Pre-Inspection</span>
     </div>
+
     {% for obj in object_list %}
     <div class="card mb-2 app_card">
-        <a class="text-under-n" href="{% url 'ujjwala:pre_inspection_form_view' type='mech' pk=obj.id %}">
-            <div class="card-header p-2">
-                <div class="row m-0">
-                    <div class="col">
-                    {{ obj.parent_id }}
-                    </div>
-                    <div class="col text-right">
-                        <b class="status">{{ obj.status }}</b>
-                    </div>
-                </div>
+        <a class="text-under-n" href="{% url 'ujjwala:pre_inspection_review' pk=obj.id %}" data-turbolinks="false">
+            <div class="card-header">
+                <p class="text-center text-dark"><b>{{ obj.status }}</b>
+                     <br>
+                    <span>Updated On <b>{{ obj.updated_on }}</b> </span>
+                </p>
             </div>
-            <div class="card-body pb-0 p-2">
+            <div class="card-body pb-0 p-2 list_block">
                 <ul class="m-0">
                     <li>
-                        <p class="float-left">Name</p>
-                        <p class="float-right">{{ obj.parent.name }}</p>
+                        <p class="float-left">Application Id</p>
+                        <p class="float-right"><b>({{ obj.parent_id }})</b></p>
                     </li>
                     <li>
-                        <p class="float-left">Contact</p>
+                        <p class="float-left">Connection Disbursement Id</p>
+                        <p class="float-right"><b>({{obj.id}})</b></p>
+                    </li>
+                    <li>
+                        <p class="float-left">Name</p>
+                        <p class="float-right"><b>{{ obj.parent.name }}</b></p>
+                    </li>
+                    {% for contact in  obj.parent.all_contacts %}
+                    <li class="contact_link">
+                        <p class="float-left">Phone  {{ forloop.counter }}</p>
                         <p class="float-right">
-                            <b>{{ obj.parent.uid_linked_mobile }}</b>
-                            {% if obj.parent.contact_mobile %}
-                            / <b>{{ obj.parent.contact_mobile }} </b>
-                            {% endif %}
-                            
+                            <b> <a href="tel:{{ contact }}" onclick="return true;">{{contact}}</a></b>
                         </p>
                     </li>
+                    {% endfor %}
                 </ul>
             </div>
-            <div class="card-footer p-2">
-                <p><b>Address:</b>  {{ obj.parent.formatted_address }}</p>
-            </div>
         </a>
+
+        <div class="card-footer p-2">
+            <p><b>Address: </b>{{ obj.parent.formatted_address }}</p>
+        </div>
+
     </div>
     {% endfor %}
 </div>
-    
-    <script>
+
+    <!-- <script>
         window.onload=function(){
 
         const input = document.getElementById("input");
@@ -74,6 +91,11 @@
             };
         });
      };
-    </script>
+    </script> -->
 
+<style>
+    #id_review_status{ display: block;}
+#id_rejected_reason{ margin-top: 10px;}
+#id_rejected_reason{ border: 1px solid #ccc !important;}
+</style>
 {% endblock %}
