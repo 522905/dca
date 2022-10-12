@@ -95,6 +95,11 @@ urlpatterns = [
         name="connection_disbursement_list"
     ),
 
+    path('portal/installation/pre_inspection_review_list/',
+         views.UjjwalaPreInspectionReviewListView.as_view(),
+         name="pre_inspection_review_list"
+    ),
+
     path('portal/disbursement/review_form_abc/',
          views.ConnectionDisbursementReviewFormAbcListView.as_view(),
          name="connection_disbursement_review_form_abc_list"
@@ -104,6 +109,7 @@ urlpatterns = [
          views.InstallationReviewListView.as_view(),
          name="installation_review_list"
     ),
+
 
     path('portal/print_documents/',
          views.PrintDocumentsView.as_view(),
@@ -172,6 +178,12 @@ urlpatterns = [
         '^portal/pre-inspection/(?P<type>(self|mech))/(?P<pk>[^/.]+)/$',
         views.PreInspectionView.as_view(),
         name="pre_inspection_form_view"
+    ),
+
+    url(
+        '^portal/pre-inspection-review/(?P<pk>[^/.]+)/$',
+        views.PreInspectionReviewView.as_view(),
+        name="pre_inspection_review"
     ),
 
     url(
