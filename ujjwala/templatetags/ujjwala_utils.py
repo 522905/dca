@@ -1,6 +1,7 @@
 from django import template
 
-from ujjwala.ujjwala_functions import is_member_of_disbursement_drive, is_member_of_second_cylinder_delivery
+from ujjwala.ujjwala_functions import is_member_of_disbursement_drive, is_member_of_second_cylinder_delivery, \
+	is_member_of_reviewer_group
 
 register = template.Library()
 
@@ -13,3 +14,8 @@ def has_disbursement_permission(user):
 @register.filter()
 def has_second_delivery_permission(user):
 	return is_member_of_second_cylinder_delivery(user)
+
+
+@register.filter()
+def has_review_permission(user):
+	return is_member_of_reviewer_group(user)

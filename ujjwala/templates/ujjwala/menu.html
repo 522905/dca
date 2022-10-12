@@ -80,7 +80,7 @@
             </ul>
         </li>
         {% endif %}
-        {% if user|is_member_of_reviewer_group %}
+        {% if user|has_review_permission %}
         <li>
             <div class="iocn-link">
             <a href="#" data-turbolinks="false">
