@@ -37,6 +37,12 @@
 						<i class="material-icons">local_printshop</i> Print Form D
 						</a>
 					</div>
+                    <div class="col pr-1">
+						<a id="print_pdf" class="btn btn-danger text-white {% if bridge_available and obj.form_d_link %}{% else %}disabled{% endif %}" style="width: 100%;"
+						onclick="sendPrint('multi_print_pdf', '{{ bridge_link }}/multi_print_pdf?url=[{{ obj.valid_sv_link }}, {{ obj.valid_sv_link }}, {{ obj.form_d_link }}]')">
+						<i class="material-icons">local_printshop</i> Print SV and Form D
+						</a>
+					</div>
 				</div>
                 </br>
 

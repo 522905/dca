@@ -33,7 +33,8 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
     ConnectionDisbursementSocialMediaUpdatesForm, NicUpdateAddressForm, \
     PreInspectionConvertForm, LegalDocumentsReviewAdminForm, SetPrimaryPhoneNumberForm, \
     UpdateBankDetailsForm, NicClearedCustomerRemarksForm, PrintDocumentsForm, \
-    InstallationReviewAdminForm, FirstCylinderMaterialDeliveryForm, SecondCylinderMaterialDeliveryForm
+    InstallationReviewAdminForm, FirstCylinderMaterialDeliveryForm, SecondCylinderMaterialDeliveryForm, \
+    PreInspectionReviewAdminForm
 from ujjwala.global_functions import login_required_if_mech_inspection
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
     FamilyMembers, DisbursementDrive
@@ -41,6 +42,7 @@ from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_
     send_ujjwala_application_whatsapp_link_v2, download_audit_documents_for_ids, is_member_of_disbursement_drive, \
     get_current_user_disbursement_drive, is_member_of_second_cylinder_delivery, \
     send_ujjwala_self_pre_inspection_share_link
+from utils.enums import RoboSdmsDedeupStatusEnum
 from utils.global_functions import unsign_data_base64, sign_data_base64
 
 
@@ -369,6 +371,7 @@ class PreInspectionReviewView(FormView, ApplicationView):
         data = form.cleaned_data
         obj.pre_inspection_review(
             review_status=data['review_status'],
+            rejected_reason=data['rejected_reason'],
             by=get_current_user(),
             description='{} - {}'.format(data.get('review_status'), data.get('rejected_reason' ''))
         )
@@ -611,7 +614,6 @@ class PreInspectionView(FormView):
             kwargs['initial'] = pre_inspection.parent.address_json
         return kwargs
 
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
@@ -697,7 +699,7 @@ class PreInspectionCreateView(View):
                         'reference_number': otp_obj.reference_number,
                         'mobile': otp_obj.mobile
                     }),
-                })
+            })
         elif self.request.POST.get('form_type') == 'validate_otp_form':
             form = PreInspectionAllocatedValidateOtpForm(data=request.POST)
             otp_obj = Otp.objects.filter(reference_number=request.POST['reference_number']).first()
@@ -755,20 +757,6 @@ class ReviewForm(forms.ModelForm):
         fields = ('id', 'action', 'remarks')
 
 
-class PreInspectionReviewView(FormView):
-    template_name = "ujjwala/pre_inspection_review.html"
-
-    def get_form_class(self):
-        return formset_factory(ReviewForm, extra=0)
-
-    def get_initial(self):
-        return [
-            {
-                'pre_inspection_id': obj.id
-            } for obj in PreInspection.objects.all()
-        ]
-
-
 class UjjwalaApplicationLegalDocumentsUpload(FormView):
     form_class = UjjwalaLegalDocumentsUpload
     template_name = "ujjwala/legal-document-upload-form.html"
@@ -792,20 +780,6 @@ class UjjwalaApplicationLegalDocumentsUpload(FormView):
             "obj": connection_disbursement
         })
         return context
-
-
-# Class For Getting Application Object
-# @method_decorator(login_required, 'dispatch')
-class ApplicationView(View):
-
-    def get_object(self, queryset=None):
-        try:
-            obj = ConnectionDisbursement.objects.get(pk=self.kwargs.get('pk'))
-        except:
-            raise Http404(
-                "No Application Exist For Given Application Id"
-            )
-        return obj
 
 
 @method_decorator(login_required, 'dispatch')
@@ -832,8 +806,8 @@ class UjjwalaApplicationStatusView(TemplateView):
             return render(request, self.template_name, context={'obj': application, 'rejected_reason': reject_reason})
         else:
             messages.add_message(
-                    request, messages.ERROR, "Please Enter Contact Mobile Or Aadhaar Or Application Id To Search"
-                )
+                request, messages.ERROR, "Please Enter Contact Mobile Or Aadhaar Or Application Id To Search"
+            )
         return super().get(request, *args, **kwargs)
 
 
@@ -892,9 +866,9 @@ class UjjwalaConnectionDisbursementListView(ListView):
             object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
             if object:
                 if object.status not in (
-                    ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
-                    ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
-                    ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED
+                        ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
+                        ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
+                        ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED
                 ):
                     messages.add_message(
                         request, messages.ERROR, "Application Id: {} - {}".format(
@@ -914,7 +888,6 @@ class UjjwalaConnectionDisbursementListView(ListView):
 
 @method_decorator(login_required, 'dispatch')
 class ConnectionDisbursementView(TemplateView, ApplicationView):
-
     model = ConnectionDisbursement
     walk_in_template = 'ujjwala/disbursement/forms/walk_in_confirmation.html'
     ujjwala_form_a_b_c_template = "ujjwala/disbursement/print_ujjwala_form_a_b_c.html"
@@ -955,12 +928,11 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
                     )
                 )
             elif connection_disbursement.parent.status in (
-                UjjwalaV2ApplicationStatus.NIC_CLEARED,
-                UjjwalaV2ApplicationStatus.READY_FOR_DISBURSEMENT
+                    UjjwalaV2ApplicationStatus.NIC_CLEARED,
+                    UjjwalaV2ApplicationStatus.READY_FOR_DISBURSEMENT
             ):
                 if not connection_disbursement.walk_in_date or \
                         (connection_disbursement.walk_in_date.date() != datetime.datetime.today().date()):
-
                     return self.otp_verification(connection_disbursement)
             else:
                 messages.add_message(
@@ -1067,7 +1039,6 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
 
 # @method_decorator(login_required, 'dispatch')
 class UjjwalaApplicationCustomerProfileView(TemplateView):
-
     template_name = 'ujjwala/extra/ujjwala_customer_profile.html'
 
     stage_1_generate_otp = 'ujjwala/otp/generate_otp_form.html'
@@ -1089,7 +1060,6 @@ class UjjwalaApplicationCustomerProfileView(TemplateView):
         if user.is_anonymous:
             return self.otp_verification(obj)
         return super().dispatch(request, *args, **kwargs)
-
 
     def otp_verification(self, application):
         context = {'application': application}
@@ -1148,7 +1118,6 @@ class UjjwalaApplicationCustomerProfileView(TemplateView):
 
                 return render(self.request, self.template_name, {'obj': application})
 
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
@@ -1186,7 +1155,7 @@ class ConnectionDisbursementReviewFormAbcListView(ListView):
             object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
             if object:
                 if object.status not in (
-                    ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
+                        ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
                 ):
                     messages.add_message(
                         request, messages.ERROR, "Application Id: {} - {}".format(
@@ -1987,7 +1956,7 @@ class InstallationReviewListView(ListView):
             object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
             if object:
                 if object.status not in (
-                    ConnectionDisbursementStatusEnum.INSTALLATION_UPLOADED,
+                        ConnectionDisbursementStatusEnum.INSTALLATION_UPLOADED,
                 ):
                     messages.add_message(
                         request, messages.ERROR, "Application Id: {} - {}".format(
@@ -2060,8 +2029,8 @@ class InstallationReviewView(FormView, ApplicationView):
                 type=UjjwalaApplicationDocumentsEnum.INSTALLATION_KITCHEN_PHOTO
             ).link,
             "stove_with_sticker": obj.documents.get(
-                    type=UjjwalaApplicationDocumentsEnum.INSTALLATION_STOVE_WITH_STICKER
-                ).link,
+                type=UjjwalaApplicationDocumentsEnum.INSTALLATION_STOVE_WITH_STICKER
+            ).link,
         })
         return context
 
@@ -2078,7 +2047,7 @@ class SendInvitationView(FormView):
         except:
             raise Http404(
                 "No %(verbose_name)s found matching the query" %
-                  {'verbose_name': queryset.model._meta.verbose_name}
+                {'verbose_name': queryset.model._meta.verbose_name}
             )
         return obj
 
@@ -2154,7 +2123,6 @@ class BarCodeLabelPrintView(View):
         })
         return context_dict
 
-
     def get(self, request, *args, **kwargs):
         obj = ConnectionDisbursement.objects.get(pk=self.kwargs.get('pk'))
 
@@ -2167,7 +2135,8 @@ class BarCodeLabelPrintView(View):
             # Grab ZIP file from in-memory, make response with correct MIME-type
             resp = HttpResponse(file_data, content_type="application/octet-stream")
             # ..and correct content-disposition
-            resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_bluebook_label_{}.prn'.format(obj.parent.id)
+            resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_bluebook_label_{}.prn'.format(
+                obj.parent.id)
 
             return resp
 
@@ -2394,7 +2363,7 @@ class PrintDocumentsView(FormView):
         django_rq.enqueue(
             download_audit_documents_for_ids,
             args=(data['ids'], data['documents'],),
-            result_ttl=86400*2
+            result_ttl=86400 * 2
         )
         return HttpResponse(content='Request For Audit Documents Generated')
 
@@ -2449,7 +2418,7 @@ class FirstCylinderMaterialDeliveryListView(ListView):
                 else:
                     return redirect('ujjwala:first_cylinder_delivery_view',
                                     pk=object.pk
-                                )
+                                    )
             else:
                 messages.add_message(
                     request, messages.ERROR, "Application Id: {} not found".format(application_id)
@@ -2609,7 +2578,7 @@ class SecondCylinderMaterialDeliveryListView(ListView):
             status__in=[
                 ConnectionDisbursementStatusEnum.INSTALLATION_ACCEPTED,
                 ConnectionDisbursementStatusEnum.SECOND_DELIVERY_OTP_VERIFIED,
-            ],pending_quantity=1
+            ], pending_quantity=1
         ).order_by('updated_on')
 
     def get_template_names(self):
@@ -2641,7 +2610,7 @@ class SecondCylinderMaterialDeliveryListView(ListView):
                 else:
                     return redirect('ujjwala:second_cylinder_delivery_view',
                                     pk=object.pk
-                                )
+                                    )
             else:
                 messages.add_message(
                     request, messages.ERROR, "Application Id: {} not found".format(application_id)
@@ -2672,7 +2641,8 @@ class SecondCylinderMaterialDeliveryView(FormView, ApplicationView):
                     ConnectionDisbursementStatusEnum.SECOND_DELIVERY_OTP_VERIFIED,
             ):
                 messages.add_message(
-                    request, messages.ERROR, "Application Id {} Installation Not Accepted. Application Status: {}".format(
+                    request, messages.ERROR,
+                    "Application Id {} Installation Not Accepted. Application Status: {}".format(
                         connection_disbursement.parent_id, connection_disbursement.get_status_display()
                     )
                 )

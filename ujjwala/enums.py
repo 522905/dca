@@ -1,6 +1,15 @@
 from django.db import models
 
 
+product_quantity_map = {
+	"Ujjwala - 5 Kg DBC Package": 2
+}
+
+
+class UjjwalaProductEnum(models.TextChoices):
+	UJJWALA_5_KG = 'UJJWALA_5_KG', 'Ujjwala - 5 Kg DBC Package'
+
+
 class DisbursementDriveStatusEnum(models.TextChoices):
 	ACTIVE = 'ACTIVE', 'Active'
 	COMPLETED = 'COMPLETED', 'Completed'
@@ -210,3 +219,6 @@ class PrintDocumentsTypeEnum(models.TextChoices):
 	BANK_DETAILS = 'BANK_DETAILS', 'Bank Details'
 	FORM_ABC = 'FORM_ABC', 'Form A B C'
 	AADHAR = 'AADHAR', 'Aadhar'
+
+
+

@@ -81,6 +81,11 @@ def old_walk_in_to_description(function):
 
 
 def sign_data_base64(data):
+    """
+    Sign Base64 Give Data
+    param
+        data
+    """
     signer = Signer()
     data_signed = signer.sign(data)
     data_signed_base64 = base64.urlsafe_b64encode(data_signed.encode('ascii'))
@@ -89,6 +94,11 @@ def sign_data_base64(data):
 
 
 def unsign_data_base64(data):
+    """
+    Unsign Base64 Give Data
+    param
+        data
+    """
     signer = Signer()
     data = base64.urlsafe_b64decode(data)
     data = eval(signer.unsign(data.decode('ascii')))

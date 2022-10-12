@@ -21,7 +21,7 @@ from otp.models import Otp
 from ujjwala.communication_functions import send_whatsapp_message, send_sms
 from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
 	RejectionTypeEnum, PreInspectionTypeEnum, RoboSdmsDedeupStatusEnum, NicClearedCustomerRemarksEnum, \
-	PrintDocumentsTypeEnum, InstallationTypeEnum
+	PrintDocumentsTypeEnum, InstallationTypeEnum, UjjwalaProductEnum, product_quantity_map
 from ujjwala.models import UjjwalaApplicationDocumentsEnum
 from formtools.wizard.views import SessionWizardView
 
@@ -107,11 +107,6 @@ class PrintDocumentsForm(forms.Form):
 		label='Documents To Print',
 		required=True
 	)
-##################################################
-##################################################
-# Will be renamed to Address Change Form
-##################################################
-##################################################
 
 
 class ChangeAddressForm(forms.Form):
@@ -182,7 +177,6 @@ class KitchenPreInspectionForm(forms.Form):
 		widget=forms.TextInput, label='Kitchen Photo', required=True
 	)
 
-
 	def __init__(self, pre_inspection=None, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.pre_inspection = pre_inspection
@@ -191,13 +185,9 @@ class KitchenPreInspectionForm(forms.Form):
 		data = self.cleaned_data
 		obj = self.pre_inspection
 
-		obj.documents.create(
-			type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO,
-			link=data['kitchen_photo']
-		)
-
 		if obj.type == PreInspectionTypeEnum.SELF:
 			obj.pre_inspection_kitchen_photo_uploaded_skip_safety(
+				link=data['kitchen_photo'],
 				description='\n'.join([
 					"Witness Name: {}, Mobile Number: {}".format(obj.witness_name, obj.witness_mobile_number),
 					"Self Inspection, Skipping Safety",
@@ -205,6 +195,7 @@ class KitchenPreInspectionForm(forms.Form):
 			)
 		else:
 			obj.pre_inspection_kitchen_photo_uploaded(
+				link=data['kitchen_photo'],
 				by=get_current_user(),
 				description="Witness Name: {}, Mobile Number: {}".format(obj.witness_name, obj.witness_mobile_number)
 			)
@@ -215,7 +206,6 @@ class AudioOnSafetyForm(forms.Form):
 	audio_file = forms.CharField(
 		widget=forms.TextInput, label='Audio File', required=True
 	)
-
 	witness_name = forms.CharField(
 		widget=forms.TextInput, label='Witness Name', required=True
 	)
@@ -234,19 +224,16 @@ class AudioOnSafetyForm(forms.Form):
 		data = self.cleaned_data
 		obj = self.pre_inspection
 
-		obj.documents.create(
-			type=UjjwalaApplicationDocumentsEnum.WITNESS_SIGNATURE,
-			link=data['witness_signature_photo']
-		)
-
 		obj.witness_name = data['witness_name']
 		obj.witness_mobile_number = data['witness_mobile_number']
 
-		doc = obj.documents.create(type=UjjwalaApplicationDocumentsEnum.SAFETY_AUDIO,
-							 link=data['audio_file'])
 		obj.pre_inspection_safety_audio_uploaded(
+			doc_links={
+				"witness_signature_photo": data['witness_signature_photo'],
+				"audio_file": data['audio_file']
+			},
 			by=get_current_user(),
-			description="Safety Audio: {}".format(doc.link)
+			description="Safety Audio: {}".format(data['audio_file'])
 		)
 		obj.save()
 
@@ -265,9 +252,11 @@ class PreviewPreInspectionForm(forms.Form):
 		widget=forms.HiddenInput, label='Main Gate Photo', required=True
 	)
 
+
 	def __init__(self, pre_inspection=None, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.pre_inspection = pre_inspection
+
 
 	def clean(self):
 		data = self.cleaned_data
@@ -277,22 +266,19 @@ class PreviewPreInspectionForm(forms.Form):
 		data = self.cleaned_data
 		obj = self.pre_inspection
 
-		obj.documents.create(
-			type=UjjwalaApplicationDocumentsEnum.MAIN_GATE,
-			link=data['main_gate']
-		)
-
 		obj.latitude = data['latitude']
 		obj.longitude = data['longitude']
 		obj.accuracy = data['accuracy']
 
 		if obj.type == PreInspectionTypeEnum.SELF:
 			obj.transition_pre_inspection_submit(
+				link=data['main_gate'],
 				description="Self Inspection: Latitude: {}, Longitude: {}, Accuracy: {}".format(
 					data['latitude'], data['longitude'], data['accuracy'])
 			)
 		else:
 			obj.transition_pre_inspection_submit(
+				link=data['main_gate'],
 				by=get_current_user(),
 				description="Latitude: {}, Longitude: {}, Accuracy: {}".format(
 					data['latitude'], data['longitude'], data['accuracy'])
@@ -786,17 +772,14 @@ class PreInspectionReviewAdminForm(forms.Form):
 	rejected_reason = forms.CharField(
 		widget=forms.TextInput, max_length=255, label='Rejected Reason', required=False
 	)
-	description = forms.CharField(
-		widget=forms.Textarea, label='Remarks', required=False
-	)
 
 	def clean(self):
 		data = self.cleaned_data
 		if data:
 			if data.get('review_status', '') == 'REJECTED' and not data['rejected_reason']:
 				raise forms.ValidationError("Please enter a reason for rejection.")
-			data.update({'description': '{} - {}: {}'.format(
-					data.get('review_status'), data.get('rejected_reason'), data.get('description', '')
+			data.update({'description': '{}: {}'.format(
+					data.get('review_status'), data.get('rejected_reason')
 				)
 			})
 		return data
@@ -1194,6 +1177,7 @@ class InstallationMainGateUploadForm(forms.Form):
 class ConnectionDisbursementInvitationForm(forms.Form):
 	invited_for = forms.DateTimeField(widget=forms.HiddenInput, label='Invited For', required=False)
 	sv_link = forms.URLField(widget=forms.HiddenInput, label='SV Document', required=True)
+	product = forms.ChoiceField(label='Product', required=True, choices=UjjwalaProductEnum.choices)
 	booking_id = forms.CharField(widget=forms.TextInput(), label='Booking Id', required=True, validators=[validators.RegexValidator(regex='^2-[0-9]{12}$')])
 	sv_uploaded_on = forms.DateTimeField(widget=forms.HiddenInput, required=False)
 
@@ -1206,8 +1190,11 @@ class ConnectionDisbursementInvitationForm(forms.Form):
 		obj.invitation.create(
 			sv_link=data['sv_link'],
 			booking_id=data['booking_id'],
-			sv_uploaded_on=datetime.datetime.now()
+			sv_uploaded_on=datetime.datetime.now(),
+			product=data['product']
 		)
+		obj.pending_quantity = product_quantity_map.get(data['product'])
+		obj.save()
 
 
 class ConnectionDisbursementSearchForm(forms.Form):

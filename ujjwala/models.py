@@ -22,7 +22,7 @@ from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMo
 	UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, \
 	RejectionTypeEnum, RoboSdmsDedeupStatusEnum, UserDocumentsEnum, PreInspectionStatusEnum, \
 	ConnectionDisbursementStatusEnum, PreInspectionTypeEnum, SchemeOnboardingStatusEnum, NicClearedCustomerRemarksEnum, \
-	DisbursementDriveStatusEnum, InstallationTypeEnum
+	DisbursementDriveStatusEnum, InstallationTypeEnum, product_quantity_map
 from ujjwala.forms import ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
 	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm, NewRelationCreated, \
@@ -943,7 +943,14 @@ class PreInspection(models.Model):
 		custom=dict(short_description='Upload Main Gate Pic & Location', admin=False),
 	)
 	def pre_inspection_kitchen_photo_uploaded_skip_safety(self, *args, **kwargs):
-		pass
+		self.documents.filter(
+			type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO
+		).delete()
+
+		self.documents.create(
+			type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO,
+			link=kwargs.get('link')
+		)
 
 	@fsm_log_description
 	@fsm_log_by
@@ -954,7 +961,14 @@ class PreInspection(models.Model):
 		custom=dict(short_description='Upload Safety Audio', admin=False),
 	)
 	def pre_inspection_kitchen_photo_uploaded(self, *args, **kwargs):
-		pass
+		self.documents.filter(
+			type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO
+		).delete()
+
+		self.documents.create(
+			type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO,
+			link=kwargs.get('link')
+		)
 
 	@fsm_log_description
 	@fsm_log_by
@@ -965,7 +979,22 @@ class PreInspection(models.Model):
 		custom=dict(short_description='Upload Main Gate Pic & Location', admin=False),
 	)
 	def pre_inspection_safety_audio_uploaded(self, *args, **kwargs):
-		pass
+		doc_links = kwargs.get('doc_links')
+		self.documents.filter(
+			type__in=[
+				UjjwalaApplicationDocumentsEnum.WITNESS_SIGNATURE,
+				UjjwalaApplicationDocumentsEnum.SAFETY_AUDIO
+			]
+		).delete()
+
+		self.documents.create(
+			type=UjjwalaApplicationDocumentsEnum.WITNESS_SIGNATURE,
+			link=doc_links.get('witness_signature_photo')
+		)
+		self.documents.create(
+			type=UjjwalaApplicationDocumentsEnum.SAFETY_AUDIO,
+			link=doc_links.get('audio_file')
+		)
 
 	@fsm_log_description
 	@fsm_log_by
@@ -976,13 +1005,23 @@ class PreInspection(models.Model):
 		custom=dict(short_description='Submit Pre-Inspection', admin=False),
 	)
 	def transition_pre_inspection_submit(self, *args, **kwargs):
+		self.documents.filter(
+			type=UjjwalaApplicationDocumentsEnum.MAIN_GATE
+		).delete()
+
+		self.documents.create(
+			type=UjjwalaApplicationDocumentsEnum.MAIN_GATE,
+			link=kwargs.get('link')
+		)
+
 		if self.type == PreInspectionTypeEnum.SELF:
 			self.mechanic = None
 		else:
 			self.mechanic = get_current_user()
 		self.submitted_on = datetime.datetime.now()
+
 		self.save()
-		#Commented For Exif Evaluation
+
 		create_txn_status_job_function = partial(
 			django_rq.enqueue,
 			"ujjwala.jobs.compress_pre_inspection_documents",
@@ -1013,7 +1052,8 @@ class PreInspection(models.Model):
 		if kwargs.get('review_status') == 'ACCEPTED':
 			ConnectionDisbursement.objects.create(
 				parent=self.parent,
-				mechanic=self.mechanic
+				mechanic=self.mechanic,
+				pending_quantity=product_quantity_map.get(self.parent.product, 0)
 			)
 			# Bucket Name: ujjwaladocuments
 			physical_legal_document = download_ujjwala_physical_legal_docs(self.parent)
@@ -1123,7 +1163,7 @@ class ConnectionDisbursement(models.Model):
 	first_cylinder_delivered_on = models.DateTimeField(null=True, blank=True)
 	second_cylinder_delivered_on = models.DateTimeField(null=True, blank=True)
 	dac_code = models.CharField(max_length=4, null=True, blank=True)
-	pending_quantity = models.IntegerField(default=2)
+	pending_quantity = models.IntegerField(default=0)
 	item_code = models.CharField(default='FC5', max_length=52)
 	installation_type = models.CharField(
 		max_length=32, choices=InstallationTypeEnum.choices, default=InstallationTypeEnum.MECHANIC
