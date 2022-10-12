@@ -80,7 +80,7 @@
             </ul>
         </li>
         {% endif %}
-        {% if user|has_disbursement_permission %}
+        {% if user|is_member_of_reviewer_group %}
         <li>
             <div class="iocn-link">
             <a href="#" data-turbolinks="false">
@@ -90,13 +90,12 @@
             <i class='bx bxs-chevron-down arrow' ></i>
             </div>
             <ul class="sub-menu">
-                <li><a data-turbolinks="false">Pre-Inspection </a></li>
+                <li><a href="{% url 'ujjwala:pre_inspection_review_list' %}" data-turbolinks="false">Pre-Inspection </a></li>
                 <li><a href="{% url 'ujjwala:connection_disbursement_review_form_abc_list' %}" data-turbolinks="false">Legal Documents </a></li>
                 <li><a href="{% url 'ujjwala:installation_review_list' %}" data-turbolinks="false">Installation </a></li>
             </ul>
         </li>
         {% endif %}
-
         {% if user.is_authenticated %}
         <li>
             <a href="{% url 'logout' %}" >
