@@ -1412,11 +1412,11 @@ def download_audit_documents_for_ids(application_ids, documents_type):
 
 
 def is_member_of_second_cylinder_delivery(user):
-    return user.has_perm('second_cylinder_delivery', 'ujjwala')
+    return user.has_perm('ujjwala.second_cylinder_delivery')
 
 
 def is_member_of_reviewer_group(user):
-    return user.has_perm('is_part_of reviewer_group', 'ujjwala')
+    return user.has_perm('ujjwala.is_part_of_reviewer_group')
 
 
 def is_member_of_disbursement_drive(user):

@@ -114,7 +114,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			("robo_manager_permission", "Robo Manager Permission"),
 			("second_cylinder_delivery", "Second Cylinder Delivery"),
 			("post_installation", "Post Installation"),
-			("is_part_of reviewer_group", "Is Part of Reviewer Group"),
+			("is_part_of_reviewer_group", "Is Part of Reviewer Group"),
 		)
 
 	def pre_inspection_accepted(self):

@@ -41,7 +41,7 @@ from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbur
 from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_pre_inspection_applicable, \
     send_ujjwala_application_whatsapp_link_v2, download_audit_documents_for_ids, is_member_of_disbursement_drive, \
     get_current_user_disbursement_drive, is_member_of_second_cylinder_delivery, \
-    send_ujjwala_self_pre_inspection_share_link
+    send_ujjwala_self_pre_inspection_share_link, is_member_of_reviewer_group
 from utils.enums import RoboSdmsDedeupStatusEnum
 from utils.global_functions import unsign_data_base64, sign_data_base64
 
@@ -317,7 +317,7 @@ class UjjwalaPreInspectionListView(ListView):
 
 
 @method_decorator(login_required, 'dispatch')
-class UjjwalaPreInspectionReviewListView(ListView):
+class PreInspectionReviewListView(ListView):
     model = PreInspection
 
     paginate_by = 20
@@ -329,22 +329,22 @@ class UjjwalaPreInspectionReviewListView(ListView):
         )
 
     def get_template_names(self):
-        return 'ujjwala/pre-inspection/pre_inspection_review_listview.html'
+        return 'ujjwala/review/pre_inspection_review_listview.html'
 
 
 @method_decorator(login_required, 'dispatch')
 class PreInspectionReviewView(FormView, ApplicationView):
     model = PreInspection
-    template_name = 'ujjwala/pre-inspection/pre_inspection_review.html'
+    template_name = 'ujjwala/review/pre_inspection_review.html'
     form_class = PreInspectionReviewAdminForm
 
     def get_success_url(self):
         return reverse('ujjwala:pre_inspection_review_list')
 
     def dispatch(self, request, *args, **kwargs):
-        # user = get_current_user()
-        # if not is_member_of_disbursement_drive(user):
-        #     return render(request, 'ujjwala/no_permissions.html')
+        user = get_current_user()
+        if not is_member_of_reviewer_group(user):
+            return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
             pre_inspection = self.get_object()
@@ -1945,7 +1945,7 @@ class InstallationReviewListView(ListView):
         ).order_by('updated_on')
 
     def get_template_names(self):
-        return 'ujjwala/Installation-form/installation_review_listview.html'
+        return 'ujjwala/review/installation_review_listview.html'
 
     def get(self, request, *args, **kwargs):
         # user = get_current_user()
@@ -1976,7 +1976,7 @@ class InstallationReviewListView(ListView):
 @method_decorator(login_required, 'dispatch')
 class InstallationReviewView(FormView, ApplicationView):
     model = ConnectionDisbursement
-    template_name = 'ujjwala/Installation-form/installation_review.html'
+    template_name = 'ujjwala/review/installation_review.html'
     form_class = InstallationReviewAdminForm
 
     def get_success_url(self):
@@ -2031,6 +2031,117 @@ class InstallationReviewView(FormView, ApplicationView):
             "stove_with_sticker": obj.documents.get(
                 type=UjjwalaApplicationDocumentsEnum.INSTALLATION_STOVE_WITH_STICKER
             ).link,
+        })
+        return context
+
+
+@method_decorator(login_required, 'dispatch')
+class ReviewFormAbcListView(ListView):
+    model = ConnectionDisbursement
+
+    paginate_by = 100
+    permission = 'has_view_permission'
+
+    def get_queryset(self):
+        disbursement_drive = get_current_user_disbursement_drive(get_current_user())
+        return ConnectionDisbursement.objects.filter(
+            status__in=[
+                ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
+            ],
+            walk_in_date__date=datetime.datetime.today().date(),
+            disbursement_drive=disbursement_drive
+        ).order_by('updated_on')
+
+    def get_template_names(self):
+        return 'ujjwala/review/review_form_abc_listview.html'
+
+    def get(self, request, *args, **kwargs):
+        user = get_current_user()
+        if not is_member_of_reviewer_group(user):
+            return render(request, 'ujjwala/no_permissions.html')
+        application_id = request.GET.get('application_id', '')
+        if application_id:
+            object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
+            if object:
+                if object.status not in (
+                        ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
+                ):
+                    messages.add_message(
+                        request, messages.ERROR, "Application Id: {} - {}".format(
+                            application_id, object.get_status_display()
+                        )
+                    )
+                else:
+                    return redirect('ujjwala:connection_disbursement_review_form_abc_view',
+                                    pk=object.pk)
+            else:
+                messages.add_message(
+                    request, messages.ERROR, "Application Id: {} not found".format(application_id)
+                )
+        return super().get(request, *args, **kwargs)
+
+
+@method_decorator(login_required, 'dispatch')
+class ReviewFormAbcView(FormView, ApplicationView):
+    model = ConnectionDisbursement
+    template_name = 'ujjwala/review/review_form_abc.html'
+    form_class = LegalDocumentsReviewAdminForm
+
+    def get_success_url(self):
+        if '_back_list_view' in self.request.POST:
+            return reverse('ujjwala:connection_disbursement_review_form_abc_list')
+        if '_next_form_view' in self.request.POST:
+            obj = self.get_object()
+            return reverse(
+                'ujjwala:connection_disbursement_sv_label_print_view',
+                kwargs={'pk': obj.pk}
+            )
+        return '.'
+
+    def dispatch(self, request, *args, **kwargs):
+        user = get_current_user()
+        if not is_member_of_reviewer_group(user):
+            return render(request, 'ujjwala/no_permissions.html')
+        application_id = request.GET.get('application_id', '')
+        if application_id:
+            connection_disbursement = self.get_object()
+            if connection_disbursement.status != ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW:
+                messages.add_message(
+                    request, messages.ERROR, "Application Id: {} - {}".format(
+                        connection_disbursement.parent_id, connection_disbursement.get_status_display()
+                    )
+                )
+                return redirect('ujjwala:connection_disbursement_review_form_abc_list')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset=queryset)
+        return obj
+
+    def form_valid(self, form):
+        obj = self.get_object()
+        data = form.cleaned_data
+        obj.transition_legal_documents_reviewed(
+            review_status=data['review_status'],
+            by=get_current_user(),
+            description='{} - {}'.format(data.get('review_status'), data.get('rejected_reason' ''))
+        )
+        obj.save()
+        return redirect(self.get_success_url())
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        # connection_disbursement = self.get_object()
+        # kwargs['connection_disbursement'] = connection_disbursement
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        obj = self.get_object()
+        form_abc = obj.parent.get_form_abc()
+        context.update({
+            "obj": obj,
+            "form_abc": form_abc
         })
         return context
 
