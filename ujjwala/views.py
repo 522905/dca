@@ -576,7 +576,7 @@ class PreInspectionView(FormView):
                 referral_user_id = self.request.COOKIES.get('referral_user_id', '')
                 referral_user_id = unsign_data_base64(referral_user_id)
                 if referral_user_id:
-                    obj.referral_user = referral_user_id
+                    obj.referral_user_id = referral_user_id
                     obj.save()
                 response = HttpResponse(
                     content="<h1>Pre-Inspection Submitted For Review</h1>"
