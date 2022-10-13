@@ -7,12 +7,11 @@ import requests
 from django.conf import settings
 from django.db import close_old_connections
 from minio import Minio
-from rq import get_current_job
 
 from domestic_app.utils import get_minio_public_url
 from sdms.services import IoclOmcDedup
 from ujjwala.enums import RoboSdmsDedeupStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum, \
-    FamilyMemberRelationEnum, UjjwalaV2ApplicationStatus
+    UjjwalaV2ApplicationStatus
 from ujjwala.management.commands.ujjwala_file_worker import upload_compressed_file_to_tus
 from ujjwala.ujjwala_functions import application_needs_to_be_audited, application_needs_to_be_audited_by_id
 
@@ -24,62 +23,6 @@ minio_api_client = Minio(
     secret_key=settings.MINIO_CREDENTIAL.get("secret_key"),
     secure=False
 )
-
-# def interakt_webhook_job_processing(data):
-#     mid = data['data']['message']['id']
-#     comm_obj = CommunicationLog.objects.get(channel='whatsapp', message_id=mid)
-#
-#     _type = data.get('type')
-#     if _type == "message_api_sent":
-#         comm_obj.status = "SENT"
-#     elif _type == "message_api_delivered":
-#         comm_obj.status = "DELIVERED"
-#     elif _type == "message_api_read":
-#         comm_obj.status = "READ"
-#     elif _type == "message_api_failed":
-#         comm_obj.status = "FAILED"
-#         method_name = 'event_{}_channel_{}'.format(comm_obj.event, 'sms')
-#         if hasattr(comm_obj.content_object, method_name):
-#             method = getattr(comm_obj.content_object, method_name)
-#             method()
-#
-#     comm_obj.save()
-#
-#
-# # @job
-# def infobip_webhook_job_processing(data):
-#     # {
-#     #     "bulkId": "1478260834465349757",
-#     #     "messages": [
-#     #         {
-#     #             "to": "41793026727",
-#     #             "status": {
-#     #                 "groupId": 1,
-#     #                 "groupName": "PENDING",
-#     #                 "id": 7,
-#     #                 "name": "PENDING_ENROUTE",
-#     #                 "description": "Message sent to next instance"
-#     #             },
-#     #             "smsCount": 1,
-#     #             "messageId": "844acc75-e5c6-4a21-a7e3-444c412c385b"
-#     #         }
-#     #     ]
-#     # }
-#     messages = data['messages']
-#
-#     for msg in messages:
-#         mid = msg['messageId']
-#         comm_obj = CommunicationLog.objects.get(message_id=mid)
-#         msg_status = msg['status']['groupName']
-#         if msg_status in ('ACCEPTED', 'PENDING'):
-#             comm_obj.status = "SENT"
-#         elif msg_status in ('UNDELIVERABLE', 'EXPIRED', 'REJECTED'):
-#             comm_obj.status = "FAILED"
-#             # Push to vicidial
-#             # In Next Update
-#         elif msg_status == 'DELIVERED':
-#             comm_obj.status = "DELIVERED"
-#         comm_obj.save()
 
 
 def ensure_db_connection(func):
@@ -241,7 +184,10 @@ def compress_connection_disbursement_documents(parent_id):
 def move_connection_disbursement_files_to_minio(parent_id):
     from ujjwala.models import ConnectionDisbursement
 
-    cd_obj = ConnectionDisbursement.objects.get(parent_id=parent_id)
+    cd_obj = ConnectionDisbursement.objects.filter(parent_id=parent_id).first()
+
+    if not cd_obj:
+        return
 
     for doc in cd_obj.documents.all():
         if doc.link.find("tus"):
@@ -273,7 +219,11 @@ def compress_pre_inspection_documents(parent_id):
 def move_pre_inspection_files_to_minio(parent_id):
     from ujjwala.models import PreInspection
 
-    pi_obj = PreInspection.objects.get(parent_id=parent_id)
+    pi_obj = PreInspection.objects.filter(parent_id=parent_id).first()
+
+    if not pi_obj:
+        return
+
     for doc in pi_obj.documents.all():
         if doc.link.find("tus"):
             print(doc.link)
@@ -320,41 +270,6 @@ def compress_application_documents(application_id):
 
         family_member.uid_back_file_size = file_size
         family_member.save()
-
-
-def enqueue_dedupe_and_audit_jobs(application_id, data):
-    dedupe_job = django_rq.enqueue("ujjwala.jobs.do_primary_omc_dedupe_check", args=(application_id,))
-
-    django_rq.enqueue(
-        move_application_for_audit,
-        args=(application_id, data,),
-        depends_on=dedupe_job
-    )
-
-
-def move_application_for_audit(application_id, data):
-    from ujjwala.models import UjjwalaV2Application
-
-    application = UjjwalaV2Application.objects.get(pk=application_id)
-
-    if not application.robo_sdms_dedup == RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE:
-        return False
-
-    move_to_audit = application_needs_to_be_audited(data)
-    if move_to_audit:
-        application.transition_audit_application(audit_points=move_to_audit)
-        application.save()
-
-
-def move_application_for_audit_by_id(application_id):
-    from ujjwala.models import UjjwalaV2Application
-
-    obj = UjjwalaV2Application.objects.get(id=application_id)
-    move_to_audit = application_needs_to_be_audited_by_id(obj)
-    if move_to_audit:
-        application = UjjwalaV2Application.objects.get(pk=application_id)
-        application.transition_audit_application(audit_points=move_to_audit)
-        application.save()
 
 
 @ensure_db_connection
@@ -429,3 +344,38 @@ def is_application_ready_for_disbursement(application_id):
             type=PreInspectionTypeEnum.SELF
         )
         obj.parent.event_whatsapp_pre_inspection_type_self(obj.pk)
+
+
+def enqueue_dedupe_and_audit_jobs(application_id, data):
+    dedupe_job = django_rq.enqueue("ujjwala.jobs.do_primary_omc_dedupe_check", args=(application_id,))
+
+    django_rq.enqueue(
+        move_application_for_audit,
+        args=(application_id, data,),
+        depends_on=dedupe_job
+    )
+
+
+def move_application_for_audit(application_id, data):
+    from ujjwala.models import UjjwalaV2Application
+
+    application = UjjwalaV2Application.objects.get(pk=application_id)
+
+    if not application.robo_sdms_dedup == RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE:
+        return False
+
+    move_to_audit = application_needs_to_be_audited(data)
+    if move_to_audit:
+        application.transition_audit_application(audit_points=move_to_audit)
+        application.save()
+
+
+def move_application_for_audit_by_id(application_id):
+    from ujjwala.models import UjjwalaV2Application
+
+    obj = UjjwalaV2Application.objects.get(id=application_id)
+    move_to_audit = application_needs_to_be_audited_by_id(obj)
+    if move_to_audit:
+        application = UjjwalaV2Application.objects.get(pk=application_id)
+        application.transition_audit_application(audit_points=move_to_audit)
+        application.save()
