@@ -239,8 +239,8 @@ class ConnectionApplication(models.Model):
 				channel_subscriber=self.mobile,
 				message_id=data.get('id')
 			)
-		# else:
-		# 	self.event_submit_channel_sms()
+		else:
+			self.event_submit_channel_sms()
 
 	def event_submit_channel_sms(self):
 		context = {
@@ -285,7 +285,7 @@ class ConnectionApplication(models.Model):
 			'Authorization': 'App 140a3abf6dd9134f5defb703a54dfcf0-e3df520b-f144-4282-a174-aa3765c7b438'
 		})
 		if x.status_code == 200:
-			messages = x['messages']
+			messages = x.json()['messages']
 			message_id = messages[0].get('messageId')
 			connection_application_content_type = ContentType.objects.get_for_model(ConnectionApplication)
 			CommunicationLog.objects.create(
