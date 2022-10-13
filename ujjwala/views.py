@@ -1948,9 +1948,9 @@ class InstallationReviewListView(ListView):
         return 'ujjwala/review/installation_review_listview.html'
 
     def get(self, request, *args, **kwargs):
-        # user = get_current_user()
-        # if not is_member_of_disbursement_drive(user):
-        #     return render(request, 'ujjwala/no_permissions.html')
+        user = get_current_user()
+        if not is_member_of_reviewer_group(user):
+            return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
             object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
@@ -1983,9 +1983,9 @@ class InstallationReviewView(FormView, ApplicationView):
         return reverse('ujjwala:installation_review_list')
 
     def dispatch(self, request, *args, **kwargs):
-        # user = get_current_user()
-        # if not is_member_of_disbursement_drive(user):
-        #     return render(request, 'ujjwala/no_permissions.html')
+        user = get_current_user()
+        if not is_member_of_reviewer_group(user):
+            return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
             connection_disbursement = self.get_object()

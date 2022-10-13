@@ -779,13 +779,6 @@ def process_omc_dedupe_result(omc_dedup_result):
     return {}
 
 
-def is_application_ready_for_disbursement(application):
-    if application.status == UjjwalaV2ApplicationStatus.NIC_CLEARED and \
-            application.pre_inspection.status == PreInspectionStatusEnum.ACCEPTED:
-        application.transition_ready_for_disbursement()
-        application.save()
-
-
 def send_whatsapp_contact_otp(request, contact_mobile):
     from otp.models import Otp
 

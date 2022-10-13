@@ -29,7 +29,7 @@ from ujjwala.forms import ConnectionStatusApproved, ApplicationRejected, \
 	CancelWalkInForm, MoveForManualOperationForm, MaterialDeliveryOtpOverrideForm, OnHoldForm, \
 	ReleaseApplicationForm, CompleteDisbursementDriveForm, \
 	InstallationReviewAdminForm
-from ujjwala.ujjwala_functions import download_ujjwala_physical_legal_docs, is_application_ready_for_disbursement, \
+from ujjwala.ujjwala_functions import download_ujjwala_physical_legal_docs, \
 	fsm_custom_audit_points_description
 from utils.global_functions import upload_file_to_minio_bucket, old_address_to_description, \
 	old_walk_in_to_description
@@ -503,15 +503,12 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		permission='ujjwala.robo_manager_permission',
 	)
 	def transition_nic_cleared(self, *args, **kwargs):
-		try:
-			is_application_ready_for_disbursement(self)
-		except self.RelatedObjectDoesNotExist:
-			obj = PreInspection.objects.create(
-				parent_id=self.pk,
-				status=PreInspectionStatusEnum.KITCHEN_PHOTO,
-				type=PreInspectionTypeEnum.SELF
-			)
-			obj.parent.event_whatsapp_pre_inspection_type_self(obj.pk)
+		create_job_function = partial(
+			django_rq.enqueue,
+			"ujjwala.jobs.is_application_ready_for_disbursement",
+			parent_id=self.id
+		)
+		transaction.on_commit(create_job_function)
 
 
 	@fsm_log_description
@@ -1073,7 +1070,12 @@ class PreInspection(models.Model):
 			self.parent.accuracy = self.accuracy
 			self.parent.save()
 			self.parent.event_legal_documents_upload_channel_whatsapp()
-			is_application_ready_for_disbursement(self.parent)
+			create_job_function = partial(
+				django_rq.enqueue,
+				"ujjwala.jobs.is_application_ready_for_disbursement",
+				parent_id=self.parent.id
+			)
+			transaction.on_commit(create_job_function)
 		else:
 			self.parent.event_whatsapp_pre_inspection_reject(self.id, kwargs.get('rejected_reason'))
 

@@ -12,7 +12,7 @@ from rq import get_current_job
 from domestic_app.utils import get_minio_public_url
 from sdms.services import IoclOmcDedup
 from ujjwala.enums import RoboSdmsDedeupStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum, \
-    FamilyMemberRelationEnum
+    FamilyMemberRelationEnum, UjjwalaV2ApplicationStatus
 from ujjwala.management.commands.ujjwala_file_worker import upload_compressed_file_to_tus
 from ujjwala.ujjwala_functions import application_needs_to_be_audited, application_needs_to_be_audited_by_id
 
@@ -408,3 +408,24 @@ def compress_and_move_all_docs_to_minio(application_id):
         "ujjwala.jobs.move_connection_disbursement_files_to_minio",
         args=(application_id,)
     )
+
+
+@ensure_db_connection
+def is_application_ready_for_disbursement(application_id):
+    from ujjwala.models import UjjwalaV2Application, PreInspection
+
+    application = UjjwalaV2Application.objects.get(id=application_id)
+    pre_inspection = PreInspection.objects.filter(parent=application)
+
+    if pre_inspection:
+        if application.status == UjjwalaV2ApplicationStatus.NIC_CLEARED and \
+                pre_inspection.status == PreInspectionStatusEnum.ACCEPTED:
+            application.transition_ready_for_disbursement()
+            application.save()
+    else:
+        obj = PreInspection.objects.create(
+            parent_id=application.id,
+            status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+            type=PreInspectionTypeEnum.SELF
+        )
+        obj.parent.event_whatsapp_pre_inspection_type_self(obj.pk)
