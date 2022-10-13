@@ -83,6 +83,9 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	)
 	filled_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
 	service_area = models.ForeignKey(
+		ServiceArea, on_delete=models.PROTECT, null=True, blank=True
+	)
+	service_area_hex = models.ForeignKey(
 		ServiceAreaHex, on_delete=models.SET_NULL, null=True, blank=True
 	)
 	customer_remarks = models.CharField(
