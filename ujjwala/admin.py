@@ -167,7 +167,7 @@ class UjjwalaV2Admin(ImportMixin, ExportActionMixin, FSMTransitionCustomMixin, a
 
     resource_class = UjjwalaV2ApplicationResource
 
-    autocomplete_fields = ('service_area',)
+    # autocomplete_fields = ('service_area',)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

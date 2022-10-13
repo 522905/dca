@@ -46,3 +46,20 @@ class FormFillArea(models.Model):
 	service_location = models.ForeignKey(
 		ServiceLocations, on_delete=models.CASCADE, related_name='service_locations', null=True, blank=True
 	)
+
+
+class ServiceAreaHex(models.Model):
+	hex_bound = models.CharField(max_length=512, blank=True, null=True)
+	hex_centroid = models.CharField(max_length=512, blank=True, null=True)
+	public_place_point = models.CharField(max_length=512, blank=True, null=True)
+	public_place_name = models.CharField(max_length=512, blank=True, null=True)
+	public_place_link = models.CharField(max_length=512, blank=True, null=True)
+	hex_id = models.CharField(max_length=64, blank=True, null=True)  # This field type is a guess.
+	cluster_name = models.CharField(max_length=256, blank=True, null=True)
+	hex_resolution = models.IntegerField(blank=True, null=True)
+	id = models.IntegerField(primary_key=True)
+	service_area = models.CharField(max_length=256, blank=True, null=True)
+
+	class Meta:
+		managed = False
+		db_table = 'service_area_hex'

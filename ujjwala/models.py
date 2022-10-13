@@ -16,7 +16,7 @@ from django_fsm_log.decorators import fsm_log_description, fsm_log_by
 from organizations.models import Organization
 
 from communication_log.models import CommunicationLog
-from teams.models import ServiceLocations, ServiceArea, FormFillArea
+from teams.models import ServiceLocations, ServiceArea, FormFillArea, ServiceAreaHex
 from ujjwala.communication_models import UjjwalaWhatsappCommunication
 from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMobileStatusEnum, \
 	UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, \
@@ -83,7 +83,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	)
 	filled_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
 	service_area = models.ForeignKey(
-		ServiceArea, on_delete=models.PROTECT, null=True, blank=True
+		ServiceAreaHex, on_delete=models.SET_NULL, null=True, blank=True
 	)
 	customer_remarks = models.CharField(
 		max_length=64, choices=NicClearedCustomerRemarksEnum.choices,
