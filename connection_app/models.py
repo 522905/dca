@@ -239,8 +239,8 @@ class ConnectionApplication(models.Model):
 				channel_subscriber=self.mobile,
 				message_id=data.get('id')
 			)
-		else:
-			self.event_submit_channel_sms()
+		# else:
+		# 	self.event_submit_channel_sms()
 
 	def event_submit_channel_sms(self):
 		context = {
