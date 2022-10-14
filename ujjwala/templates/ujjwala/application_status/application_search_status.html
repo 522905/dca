@@ -143,7 +143,8 @@
                                 <a href="{% url 'ujjwala:ujjwala_customer_profile' pk=obj.id %}"><b>View Ujjwala Customer Profile</b></a>
                             </td>
                         </tr>
-                        {% if obj.pre_inspection.status != 'ACCEPTED' %}
+
+                        {% if obj.pre_inspection.status != 'ACCEPTED' and obj.status != 'APPLICATION_REJECTED' %}
                             {% if obj.pre_inspection.status != 'SUBMITTED' %}
                                 <tr>
                                     <td colspan="2">
