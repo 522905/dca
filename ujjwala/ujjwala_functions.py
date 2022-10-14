@@ -1076,17 +1076,14 @@ def send_ujjwala_self_pre_inspection_share_link(contact_mobile, user_id, usernam
         },
         # "callbackData": "some_callback_data",
         "template": {
-            # "name": "ujjwala_application_submitted_",
-            "name": "pre_inspection_type_self_29092022",
+            "name": "ujjwala_self_pre_inspection_share_link_14102022",
             "languageCode": "hi",
             "headerValues": [
-                # "Alert",  #
+                "https://arungas.com/public/ujjwala_stickers.pdf"
             ],
             "bodyValues": [
                 application.name,
-                'https://youtu.be/pQNdDHklka0',
-                # "https://dca.arungas.com/{}".format(url)
-                short_url
+                "https://arungas.com/public/self_pre_inspection_help_file.pdf"
             ],
             "buttonValues": {
                 "0": [
