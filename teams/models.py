@@ -4,6 +4,8 @@ from djgeojson.fields import PointField, PolygonField
 from organizations.models import Organization
 from treenode.models import TreeNodeModel
 
+from teams.enums import UserProfileTypeEnum
+
 
 class LocationTypeEnum(models.TextChoices):
 	FIXED = 'FIXED', 'Fixed'
@@ -63,3 +65,9 @@ class ServiceAreaHex(models.Model):
 	class Meta:
 		managed = False
 		db_table = 'service_area_hex'
+
+
+class UserProfile(models.Model):
+	user = models.OneToOneField(User, on_delete=models.PROTECT)
+	type = models.CharField(max_length=32, choices=UserProfileTypeEnum.choices)
+	photo = models.URLField()
