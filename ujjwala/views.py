@@ -48,7 +48,6 @@ from utils.global_functions import unsign_data_base64, sign_data_base64
 
 def index(request):
     return redirect('ujjwala:web_form')
-    # return render(request, 'ujjwala/index.html')
 
 
 def legal_documents(request):
@@ -217,13 +216,9 @@ class SharedSelfPreInspectionLinkView(View):
         if data:
             data = unsign_data_base64(data)
         response = redirect(
-            'ujjwala:pre_inspection_form_view', pk=data['pre_inspection_id'], type='self'
+            reverse('ujjwala:pre_inspection_form_view') + '?referral_user_id={}'.format(sign_data_base64(data['user_id'])),
+            pk=data['pre_inspection_id'], type='self'
         )
-        today = datetime.datetime.today()
-        cookie_expiry = today + relativedelta(years=1)
-
-        response.set_cookie('referral_user_id', sign_data_base64(data['user_id']), expires=cookie_expiry)
-        response.set_cookie('referral_username', data['username'], expires=cookie_expiry)
         return response
 
 
@@ -573,7 +568,7 @@ class PreInspectionView(FormView):
         if form.__class__ == PreviewPreInspectionForm:
             obj = self.get_object()
             if obj.type == PreInspectionTypeEnum.SELF:
-                referral_user_id = self.request.COOKIES.get('referral_user_id', '')
+                referral_user_id = self.request.GET.get('referral_user_id', '')
                 referral_user_id = unsign_data_base64(referral_user_id)
                 if referral_user_id:
                     obj.referral_user_id = referral_user_id
@@ -581,8 +576,6 @@ class PreInspectionView(FormView):
                 response = HttpResponse(
                     content="<h1>Pre-Inspection Submitted For Review</h1>"
                 )
-                response.delete_cookie("referral_user_id")
-                response.delete_cookie("referral_username")
                 return response
         return HttpResponseRedirect(self.get_success_url())
 
@@ -616,9 +609,16 @@ class PreInspectionView(FormView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        referral_user_id = self.request.GET.get('referral_user_id', '')
+        referral_user_id = unsign_data_base64(referral_user_id)
+        user = User.objects.filter(id=referral_user_id).first()
+
         context.update({
-            "obj": self.get_object()
+            "obj": self.get_object(),
+            "referral_user": user
         })
+
         return context
 
 
@@ -2471,12 +2471,15 @@ class PrintDocumentsView(FormView):
 
     def form_valid(self, form):
         data = form.cleaned_data
-        django_rq.enqueue(
-            download_audit_documents_for_ids,
-            args=(data['ids'], data['documents'],),
-            result_ttl=86400 * 2
-        )
-        return HttpResponse(content='Request For Audit Documents Generated')
+        res = download_audit_documents_for_ids(data['ids'], data['documents'],)
+
+        # django_rq.enqueue(
+        #     download_audit_documents_for_ids,
+        #     args=(data['ids'], data['documents'],),
+        #     result_ttl=86400 * 2
+        # )
+        # return HttpResponse(content=res)
+        return res
 
 
 @method_decorator(login_required, 'dispatch')
