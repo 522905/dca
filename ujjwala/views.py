@@ -224,9 +224,16 @@ class SharedSelfPreInspectionLinkView(View):
         data = kwargs.get('data', '')
         if data:
             data = unsign_data_base64(data)
-        response = redirect(
-            reverse('ujjwala:pre_inspection_form_view', args=('self', data['pre_inspection_id'])) + '?referral_user_id={}'.format(sign_data_base64(data['user_id']))
-        )
+            response = redirect(
+                reverse('ujjwala:pre_inspection_form_view',
+                        args=('self', data['pre_inspection_id'])) + '?referral_user_id={}'.format(
+                    sign_data_base64(data['user_id']))
+            )
+        else:
+            response = redirect(
+                reverse('ujjwala:pre_inspection_form_view',
+                        args=('self', data['pre_inspection_id']))
+            )
         return response
 
 
@@ -578,8 +585,8 @@ class PreInspectionView(FormView):
             obj = self.get_object()
             if obj.type == PreInspectionTypeEnum.SELF:
                 referral_user_id = self.request.GET.get('referral_user_id', '')
-                referral_user_id = unsign_data_base64(referral_user_id)
                 if referral_user_id:
+                    referral_user_id = unsign_data_base64(referral_user_id)
                     obj.referral_user_id = referral_user_id
                 else:
                     obj.referral_user_id = None
