@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.db import connection
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
+from django.urls import reverse
 
 from ujjwala.enums import PreInspectionTypeEnum
 from ujjwala.models import PreInspection
@@ -28,35 +29,56 @@ def login_required_if_mech_inspection(function, redirect_field_name=REDIRECT_FIE
 		if pi.type == PreInspectionTypeEnum.MECHANIC and url_type == 'self':
 			if request.user.is_authenticated:
 				return redirect(
-					'ujjwala:pre_inspection_form_view', pk=pi.pk, type='mech'
+					reverse('ujjwala:pre_inspection_form_view',
+					         args=(pi.pk, 'mech')) + '?{}'.format(request.GET.urlencode())
 				)
 			else:
 				return redirect(
-					'ujjwala:pre_inspection_view_convert_to', pk=pi.pk, convert_to='self'
+					reverse('ujjwala:pre_inspection_view_convert_to',
+					        args=(pi.pk, 'self')) + '?{}'.format(request.GET.urlencode())
 				)
+				# return redirect(
+				# 	'ujjwala:pre_inspection_view_convert_to', pk=pi.pk, convert_to='self'
+				# )
 		elif pi.type == PreInspectionTypeEnum.MECHANIC and url_type == 'mech':
 			if request.user.is_authenticated:
 				return actual_decorator(function)(request, *args, **kwargs)
 			else:
 				return redirect(
-					'ujjwala:pre_inspection_view_convert_to', pk=pi.pk, convert_to='self'
+					reverse('ujjwala:pre_inspection_view_convert_to',
+					        args=(pi.pk, 'self')) + '?{}'.format(request.GET.urlencode())
 				)
+				# return redirect(
+				# 	'ujjwala:pre_inspection_view_convert_to', pk=pi.pk, convert_to='self'
+				# )
 		elif pi.type == PreInspectionTypeEnum.SELF and url_type == 'self':
 			if not request.user.is_authenticated:
 				return function(request, *args, **kwargs)
 			else:
 				return redirect(
-					'ujjwala:pre_inspection_view_convert_to', pk=pi.pk, convert_to='mech'
+					reverse('ujjwala:pre_inspection_view_convert_to',
+					        args=(pi.pk, 'mech')) + '?{}'.format(request.GET.urlencode())
 				)
+				# return redirect(
+				# 	'ujjwala:pre_inspection_view_convert_to', pk=pi.pk, convert_to='mech'
+				# )
 		elif pi.type == PreInspectionTypeEnum.SELF and url_type == 'mech':
 			if request.user.is_authenticated:
 				return redirect(
-					'ujjwala:pre_inspection_view_convert_to', pk=pi.pk, convert_to='mech'
+					reverse('ujjwala:pre_inspection_view_convert_to',
+					        args=(pi.pk, 'mech')) + '?{}'.format(request.GET.urlencode())
 				)
+				# return redirect(
+				# 	'ujjwala:pre_inspection_view_convert_to', pk=pi.pk, convert_to='mech'
+				# )
 			else:
 				return redirect(
-					'ujjwala:pre_inspection_form_view', pk=pi.pk, type='self'
+					reverse('ujjwala:pre_inspection_form_view',
+					        args=(pi.pk, 'self')) + '?{}'.format(request.GET.urlencode())
 				)
+				# return redirect(
+				# 	'ujjwala:pre_inspection_form_view', pk=pi.pk, type='self'
+				# )
 	# wrapper.__name__ = function.__name__
 	# wrapper.__doc__ = function.__doc__
 	return wrapper

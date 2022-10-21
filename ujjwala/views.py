@@ -2327,9 +2327,17 @@ class PreInspectionConvertToView(FormView):
             ):
                 return HttpResponse("Pre Inspection Already Submitted")
             if self.kwargs.get('convert_to') == 'mech' and obj.type == PreInspectionTypeEnum.MECHANIC:
-                return redirect('ujjwala:pre_inspection_form_view', type="mech", pk=obj.pk)
+                return redirect(
+                    reverse('ujjwala:pre_inspection_form_view',
+                            args=(obj.pk, 'mech')) + '?{}'.format(request.GET.urlencode())
+                )
+                # return redirect('ujjwala:pre_inspection_form_view', type="mech", pk=obj.pk)
             elif self.kwargs.get('convert_to') == 'self' and obj.type == PreInspectionTypeEnum.SELF:
-                return redirect('ujjwala:pre_inspection_form_view', type="self", pk=obj.pk)
+                return redirect(
+                    reverse('ujjwala:pre_inspection_form_view',
+                            args=(obj.pk, 'self')) + '?{}'.format(request.GET.urlencode())
+                )
+                # return redirect('ujjwala:pre_inspection_form_view', type="self", pk=obj.pk)
         return super().dispatch(request, *args, **kwargs)
 
     def get_object(self, queryset=None):
@@ -2370,7 +2378,11 @@ class PreInspectionConvertToView(FormView):
         if not obj.type == convert_to:
             obj.convert_inspection_type(convert_to_type=data['convert_to'])
             obj.save()
-        return redirect('ujjwala:pre_inspection_form_view', type=data['convert_to'], pk=obj.pk)
+        return redirect(
+            reverse('ujjwala:pre_inspection_form_view',
+                    args=(obj.pk, data['convert_to'])) + '?{}'.format(self.request.GET.urlencode())
+        )
+        # return redirect('ujjwala:pre_inspection_form_view', type=data['convert_to'], pk=obj.pk)
 
 
 @method_decorator(login_required, 'dispatch')
