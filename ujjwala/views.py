@@ -192,6 +192,15 @@ class ShareSelfPreInspectionLink(View):
 
         application = UjjwalaV2Application.objects.get(id=id)
 
+        pi = PreInspection.objects.filter(parent_id=application.id)
+
+        if not pi:
+            PreInspection.objects.create(
+                parent_id=application.id,
+                status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+                type=PreInspectionTypeEnum.SELF
+            )
+
         if application.pre_inspection.status in (
             PreInspectionStatusEnum.SUBMITTED, PreInspectionStatusEnum.ACCEPTED
         ):
@@ -216,8 +225,7 @@ class SharedSelfPreInspectionLinkView(View):
         if data:
             data = unsign_data_base64(data)
         response = redirect(
-            reverse('ujjwala:pre_inspection_form_view') + '?referral_user_id={}'.format(sign_data_base64(data['user_id'])),
-            pk=data['pre_inspection_id'], type='self'
+            reverse('ujjwala:pre_inspection_form_view', args=('self', data['pre_inspection_id'])) + '?referral_user_id={}'.format(sign_data_base64(data['user_id']))
         )
         return response
 
@@ -447,12 +455,13 @@ class PreInspectionView(FormView):
     def dispatch(self, request, *args, **kwargs):
         pre_inspection = self.get_object()
 
-        if pre_inspection.status == PreInspectionStatusEnum.ALLOCATED \
-                or (pre_inspection.status == PreInspectionStatusEnum.REJECTED
-                    and pre_inspection.type == PreInspectionTypeEnum.MECHANIC
-        ):
-            # return self.otp_verification(pre_inspection)
-            return HttpResponse("<h1>Ujjwala Pre-Inspection Currently On Hold</h1>")
+        if self.kwargs.get('type') == 'mech':
+            if pre_inspection.status == PreInspectionStatusEnum.ALLOCATED \
+                    or (pre_inspection.status == PreInspectionStatusEnum.REJECTED
+                        and pre_inspection.type == PreInspectionTypeEnum.MECHANIC
+            ):
+                # return self.otp_verification(pre_inspection)
+                return HttpResponse("<h1>Ujjwala Pre-Inspection Currently On Hold</h1>")
         elif pre_inspection.status in (
                 PreInspectionStatusEnum.SUBMITTED,
                 PreInspectionStatusEnum.ACCEPTED,
@@ -572,12 +581,18 @@ class PreInspectionView(FormView):
                 referral_user_id = unsign_data_base64(referral_user_id)
                 if referral_user_id:
                     obj.referral_user_id = referral_user_id
-                    obj.save()
+                else:
+                    obj.referral_user_id = None
+                obj.save()
+
                 response = HttpResponse(
                     content="<h1>Pre-Inspection Submitted For Review</h1>"
                 )
                 return response
-        return HttpResponseRedirect(self.get_success_url())
+
+        return HttpResponseRedirect(
+            self.get_success_url() + '?referral_user_id={}'.format(self.request.GET.get('referral_user_id', ''))
+        )
 
     def get_template_names(self):
         pre_inspection_obj = self.get_object()
