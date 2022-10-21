@@ -1779,7 +1779,9 @@ class InstallationListView(ListView):
                 if not obj.status in (
                         ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
                         ConnectionDisbursementStatusEnum.INSTALLATION_REJECTED,
-                        ConnectionDisbursementStatusEnum.FIRST_CYLINDER_DELIVERED
+                        ConnectionDisbursementStatusEnum.FIRST_CYLINDER_DELIVERED,
+                        ConnectionDisbursementStatusEnum.INSTALLATION_KITCHEN_PHOTO,
+                        ConnectionDisbursementStatusEnum.INSTALLATION_MAIN_GATE,
                 ):
                     messages.add_message(
                         request, messages.ERROR, "Application Id {} Application Status: {}".format(
@@ -1839,6 +1841,7 @@ class InstallationView(FormView, ApplicationView):
         installation_obj = self.get_object()
         if installation_obj.status in (
                 ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED,
+                ConnectionDisbursementStatusEnum.FIRST_CYLINDER_DELIVERED,
                 ConnectionDisbursementStatusEnum.INSTALLATION_REJECTED,
                 ConnectionDisbursementStatusEnum.INSTALLATION_KITCHEN_PHOTO
         ):
