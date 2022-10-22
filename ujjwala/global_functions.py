@@ -35,7 +35,7 @@ def login_required_if_mech_inspection(function, redirect_field_name=REDIRECT_FIE
 			else:
 				return redirect(
 					reverse('ujjwala:pre_inspection_view_convert_to',
-					        args=(pi.pk, 'self')) + '?{}'.format(request.GET.urlencode())
+					        args=('self', pi.pk)) + '?{}'.format(request.GET.urlencode())
 				)
 				# return redirect(
 				# 	'ujjwala:pre_inspection_view_convert_to', pk=pi.pk, convert_to='self'
@@ -46,7 +46,7 @@ def login_required_if_mech_inspection(function, redirect_field_name=REDIRECT_FIE
 			else:
 				return redirect(
 					reverse('ujjwala:pre_inspection_view_convert_to',
-					        args=(pi.pk, 'self')) + '?{}'.format(request.GET.urlencode())
+					        args=('self', pi.pk)) + '?{}'.format(request.GET.urlencode())
 				)
 				# return redirect(
 				# 	'ujjwala:pre_inspection_view_convert_to', pk=pi.pk, convert_to='self'
@@ -57,7 +57,7 @@ def login_required_if_mech_inspection(function, redirect_field_name=REDIRECT_FIE
 			else:
 				return redirect(
 					reverse('ujjwala:pre_inspection_view_convert_to',
-					        args=(pi.pk, 'mech')) + '?{}'.format(request.GET.urlencode())
+					        args=('mech', pi.pk)) + '?{}'.format(request.GET.urlencode())
 				)
 				# return redirect(
 				# 	'ujjwala:pre_inspection_view_convert_to', pk=pi.pk, convert_to='mech'
@@ -66,7 +66,7 @@ def login_required_if_mech_inspection(function, redirect_field_name=REDIRECT_FIE
 			if request.user.is_authenticated:
 				return redirect(
 					reverse('ujjwala:pre_inspection_view_convert_to',
-					        args=(pi.pk, 'mech')) + '?{}'.format(request.GET.urlencode())
+					        args=('mech', pi.pk)) + '?{}'.format(request.GET.urlencode())
 				)
 				# return redirect(
 				# 	'ujjwala:pre_inspection_view_convert_to', pk=pi.pk, convert_to='mech'
