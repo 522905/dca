@@ -9,7 +9,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 
 from ujjwala.models import UjjwalaV2Application
-from ujjwala.ujjwala_functions import time_in_range, send_ujjwala_application_whatsapp_link_v2
+from ujjwala.ujjwala_functions import time_in_range, send_ujjwala_application_whatsapp_link_v2, send_offer_whatsapp_link
 from ujjwala.vici_functions import update_lead_in_out1005_campaign, update_lead_in_ujjwala_welcome, \
     update_lead_in_ujjwala_enquiry_list
 
@@ -54,4 +54,11 @@ class UjjwalaApplicationExtraViewSet(viewsets.ViewSet):
             update_lead_in_ujjwala_welcome(contact_mobile)
             # update_lead_in_ujjwala_enquiry_list(contact_mobile)
             update_lead_in_out1005_campaign(contact_mobile)
+        return HttpResponse("ok")
+
+    @action(methods=['get'], detail=False, url_path='offer_call_manage')
+    def offer_call_manage(self, request, *args, **kwargs):
+        contact_mobile = request.GET.get('contact_mobile')
+        update_lead_in_out1005_campaign(contact_mobile)
+        send_offer_whatsapp_link(contact_mobile)
         return HttpResponse("ok")

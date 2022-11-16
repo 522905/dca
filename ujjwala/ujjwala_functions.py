@@ -545,6 +545,42 @@ def download_installation_form(obj):
     return resp
 
 
+def download_installation_form_with_signature(obj):
+
+    customer_signature_file = obj.documents.filter(
+        type=UjjwalaApplicationDocumentsEnum.CUSTOMER_SIGNATURE
+    ).first()
+
+    if customer_signature_file:
+        customer_signature_file = customer_signature_file.link
+    else:
+        customer_signature_file = ''
+
+    self_doc = obj.family_members.filter(relation=FamilyMemberRelationEnum.SELF).first()
+
+    installation_form_html_template = loader.get_template("ujjwala/forms/signed_installation_form.html")
+    installation_html = installation_form_html_template.render({
+        'app_id': obj.id,
+        'name': obj.name,
+        'uid_no': self_doc.uid_no,
+        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "INSTALLATION_DOCUMENT")),
+        'customer_signature_file': customer_signature_file
+    })
+
+    installation_form_pdf = requests.post(
+        settings.HTML_TO_PDF_SERVER_URL,
+        json={
+            "content": installation_html,
+            "options": PDF_COMPRESSION_OPTIONS
+        }
+    )
+    return installation_form_pdf
+
+    # resp = HttpResponse(installation_form_pdf.content, content_type="application/pdf")
+    # resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_signed_installation_{}_doc.pdf'.format(obj.id)
+    # return resp
+
+
 def get_salutation(family_member):
     if family_member.relation in ('HUSBAND', 'FATHER'):
         return 'Mr.'
@@ -1048,6 +1084,47 @@ def send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id):
     return False
 
 
+def send_offer_whatsapp_link(contact_mobile, user_id):
+
+    body_text = {
+        "countryCode": "+91",
+        "phoneNumber": contact_mobile,
+        "type": "Template",
+        "traits": {
+            "name": contact_mobile,
+        },
+        "template": {
+            "name": "send_offer_whatsapp_link",
+             "languageCode": "hi",
+            "headerValues": [
+            ],
+            "bodyValues": [
+                "https://www.arungas.com/public/offer/offer.html",
+            ],
+            "buttonValues": {
+                "0": [
+                    "https://www.arungas.com/public/offer/offer.html"
+                ]
+            }
+        }
+    }
+
+    data = track.client.post(
+        api_key=settings.INTERAKT_API_KEY,
+        path="/v1/public/message/",
+        body=body_text
+    ).json()
+
+    if data.get('result', ''):
+        CommunicationLog.objects.create(
+            channel_subscriber=contact_mobile,
+            event="01615201005_offer", channel="whatsapp",
+            message_id=data.get('id')
+        )
+        return True
+    return False
+
+
 def send_ujjwala_self_pre_inspection_share_link(contact_mobile, user_id, username, application):
     data = sign_data_base64({
         'user_id': user_id,
@@ -1062,7 +1139,8 @@ def send_ujjwala_self_pre_inspection_share_link(contact_mobile, user_id, usernam
     req = requests.get(
         "https://tinyurl.com/api-create.php",
         # params={'url': "https://dca.arungas.com/{}".format(url)},
-        params={'url': "https://dca.arungas.com/{}".format(url)},
+        params={'url': "http://0.0.0.0:60610/{}".format(url)},
+        # params={'url': "https://dca.arungas.com/{}".format(url)},
     )
 
     short_url = req.text
