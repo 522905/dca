@@ -11,8 +11,9 @@ from minio import Minio
 from domestic_app.utils import get_minio_public_url
 from sdms.services import IoclOmcDedup
 from ujjwala.enums import RoboSdmsDedeupStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum, \
-    UjjwalaV2ApplicationStatus
+    UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum
 from ujjwala.management.commands.ujjwala_file_worker import upload_compressed_file_to_tus
+from ujjwala.models import ConnectionDisbursementInvitation, ConnectionDisbursement, PreInspection
 from ujjwala.ujjwala_functions import application_needs_to_be_audited, application_needs_to_be_audited_by_id
 
 dedup_portal = IoclOmcDedup('305948', 'Indane@123')
@@ -70,49 +71,6 @@ def move_file_to_minio(file_url_to_move, new_file_name, bucket_name, delete_src=
     return new_file_url
 
 
-def move_ujjwala_application_files_to_minio(application_id):
-    """
-    Moves Ujjwala Application Files To Minio
-    Params:
-        application_id: Ujjwala Application Id
-    """
-    from ujjwala.models import UjjwalaV2Application
-
-    obj = UjjwalaV2Application.objects.get(id=application_id)
-
-    for doc in obj.documents.all():
-        if doc.link.find("tus"):
-            new_file_url = move_file_to_minio(
-                doc.link,
-                "ujjwala_app_{}_{}".format(obj.id, doc.type.lower()),
-                settings.MINIO_UJJWALA_BUCKET_NAME
-            )
-            # Saving Link of Original File
-            doc.original_link = doc.link
-            doc.link = new_file_url
-            doc.save()
-
-    for fm in obj.family_members.all():
-        new_file_url = move_file_to_minio(
-            fm.uid_front_link,
-            "ujjwala_app_{}_{}_uid_front".format(obj.id, fm.relation),
-            settings.MINIO_UJJWALA_BUCKET_NAME
-        )
-        # Saving Link of Original File
-        fm.uid_original_front_link = fm.uid_front_link
-        fm.uid_front_link = new_file_url
-
-        new_file_url = move_file_to_minio(
-            fm.uid_back_link,
-            "ujjwala_app_{}_{}_uid_back".format(obj.id, fm.relation),
-            settings.MINIO_UJJWALA_BUCKET_NAME
-        )
-        # Saving Link of Original File
-        fm.uid_original_back_link = fm.uid_back_link
-        fm.uid_back_link = new_file_url
-        fm.save()
-
-
 @ensure_db_connection
 def do_primary_omc_dedupe_check(id):
     from ujjwala.models import UjjwalaV2Application, PreInspection
@@ -167,81 +125,18 @@ def do_primary_omc_dedupe_check(id):
     application.save()
 
 
-def compress_connection_disbursement_documents(parent_id):
-    from ujjwala.models import ConnectionDisbursementDocuments
-
-    docs = ConnectionDisbursementDocuments.objects.filter(parent_id=parent_id, compressed=False)
-    for customer_doc in docs:
-        print("Disb Doc {} {} {}".format(customer_doc.parent_id, customer_doc.type, customer_doc.link))
-        success, upload_url, file_size = upload_compressed_file_to_tus(customer_doc.link)
-        customer_doc.file_size = file_size
-        if success and not customer_doc.link == upload_url:
-            customer_doc.link = upload_url
-            customer_doc.compressed = True
-        customer_doc.save()
-
-
-def move_connection_disbursement_files_to_minio(parent_id):
-    from ujjwala.models import ConnectionDisbursement
-
-    cd_obj = ConnectionDisbursement.objects.filter(parent_id=parent_id).first()
-
-    if not cd_obj:
-        return
-
-    for doc in cd_obj.documents.all():
-        if doc.link.find("tus"):
-            new_file_url = move_file_to_minio(
-                doc.link,
-                "ujjwala_app_{}_cd_{}_{}".format(
-                    cd_obj.parent_id, cd_obj.parent_id, doc.type.lower()
-                ),
-                settings.MINIO_UJJWALA_BUCKET_NAME
-            )
-            doc.link = new_file_url
-            doc.save()
-
-
-def compress_pre_inspection_documents(parent_id):
-    from ujjwala.models import PreInspectionDocuments
-
-    docs = PreInspectionDocuments.objects.filter(parent_id=parent_id, compressed=False)
-    for customer_doc in docs:
-        print("PreInspection Doc {} {} {}".format(customer_doc.parent_id, customer_doc.type, customer_doc.link))
-        success, upload_url, file_size = upload_compressed_file_to_tus(customer_doc.link)
-        customer_doc.file_size = file_size
-        if success and not customer_doc.link == upload_url:
-            customer_doc.link = upload_url
-            customer_doc.compressed = True
-        customer_doc.save()
-
-
-def move_pre_inspection_files_to_minio(parent_id):
-    from ujjwala.models import PreInspection
-
-    pi_obj = PreInspection.objects.filter(parent_id=parent_id).first()
-
-    if not pi_obj:
-        return
-
-    for doc in pi_obj.documents.all():
-        if doc.link.find("tus"):
-            print(doc.link)
-            new_file_url = move_file_to_minio(
-                doc.link,
-                "ujjwala_app_{}_pi_{}_{}".format(
-                    pi_obj.parent_id, pi_obj.id, doc.type.lower()
-                ),
-                settings.MINIO_UJJWALA_BUCKET_NAME
-            )
-            doc.link = new_file_url
-            doc.save()
-
-
 def compress_application_documents(application_id):
+    """
+    Compress Application Documents
+    """
     from ujjwala.models import UjjwalaV2Application
 
     application = UjjwalaV2Application.objects.filter(id=application_id).first()
+    if not application:
+        print("No application with id {} exists".format(application_id))
+
+    print("Application Documents Compressing".format(application_id))
+
     for customer_doc in application.documents.all():
         print("Customer Doc {} {}".format(customer_doc.type, customer_doc.link))
         success, upload_url, file_size = upload_compressed_file_to_tus(customer_doc.link)
@@ -252,6 +147,7 @@ def compress_application_documents(application_id):
         customer_doc.file_size = file_size
         customer_doc.save()
 
+    print("Application Documents Family Member Compressing".format(application_id))
     for family_member in application.family_members.all():
         print("UID Front {}".format(family_member.uid_front_link))
         success, upload_url, file_size = upload_compressed_file_to_tus(family_member.uid_front_link)
@@ -272,6 +168,213 @@ def compress_application_documents(application_id):
         family_member.save()
 
 
+def compress_pre_inspection_documents(parent_id):
+    """
+    Compress Pre Inspection Documents
+    """
+    from ujjwala.models import PreInspectionDocuments
+
+    docs = PreInspectionDocuments.objects.filter(parent_id=parent_id, compressed=False)
+    for customer_doc in docs:
+        print("PreInspection Doc {} {} {}".format(customer_doc.parent_id, customer_doc.type, customer_doc.link))
+        if customer_doc.type in (
+            UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT,
+            UjjwalaApplicationDocumentsEnum.INSTALLATION_DOCUMENT,
+            UjjwalaApplicationDocumentsEnum.SAFETY_AUDIO,
+            UjjwalaApplicationDocumentsEnum.SV,
+        ):
+            continue
+        success, upload_url, file_size = upload_compressed_file_to_tus(customer_doc.link)
+        customer_doc.file_size = file_size
+        if success and not customer_doc.link == upload_url:
+            customer_doc.link = upload_url
+            customer_doc.compressed = True
+        customer_doc.save()
+
+
+def compress_connection_disbursement_documents(parent_id):
+    """
+    Compress Connection Disbursement Documents
+    """
+    from ujjwala.models import ConnectionDisbursementDocuments
+
+    docs = ConnectionDisbursementDocuments.objects.filter(parent_id=parent_id, compressed=False)
+    for customer_doc in docs:
+        print("Disb Doc {} {} {}".format(customer_doc.parent_id, customer_doc.type, customer_doc.link))
+        if customer_doc.type in (
+            UjjwalaApplicationDocumentsEnum.INSTALLATION_DOCUMENT,
+            UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT,
+            UjjwalaApplicationDocumentsEnum.SAFETY_AUDIO,
+            UjjwalaApplicationDocumentsEnum.SV,
+        ):
+            continue
+        success, upload_url, file_size = upload_compressed_file_to_tus(customer_doc.link)
+        customer_doc.file_size = file_size
+        if success and not customer_doc.link == upload_url:
+            customer_doc.link = upload_url
+            customer_doc.compressed = True
+        customer_doc.save()
+
+
+def move_ujjwala_application_files_to_minio(application_id):
+    """
+    Moves Ujjwala Application Files To Minio
+    Params:
+        application_id: Ujjwala Application Id
+    """
+    from ujjwala.models import UjjwalaV2Application
+
+    obj = UjjwalaV2Application.objects.get(id=application_id)
+
+    for doc in obj.documents.all():
+        if doc.link.find("tus"):
+            new_file_url = move_file_to_minio(
+                doc.link,
+                "ujjwala_app_{}_{}".format(obj.id, doc.type.lower()),
+                settings.MINIO_UJJWALA_BUCKET_NAME
+            )
+            # Saving Link of Original File
+            doc.original_link = doc.link
+            doc.link = new_file_url
+            doc.save()
+        else:
+            print("Already moved {}".format(doc.link))
+
+    for fm in obj.family_members.all():
+        if fm.uid_front_link.find("tus"):
+            new_file_url = move_file_to_minio(
+                fm.uid_front_link,
+                "ujjwala_app_{}_{}_uid_front".format(obj.id, fm.relation),
+                settings.MINIO_UJJWALA_BUCKET_NAME
+            )
+            # Saving Link of Original File
+            fm.uid_original_front_link = fm.uid_front_link
+            fm.uid_front_link = new_file_url
+        else:
+            print("Already moved {}".format(fm.uid_front_link.link))
+
+        if fm.uid_back_link.find("tus"):
+            new_file_url = move_file_to_minio(
+                fm.uid_back_link,
+                "ujjwala_app_{}_{}_uid_back".format(obj.id, fm.relation),
+                settings.MINIO_UJJWALA_BUCKET_NAME
+            )
+            # Saving Link of Original File
+            fm.uid_original_back_link = fm.uid_back_link
+            fm.uid_back_link = new_file_url
+            fm.save()
+        else:
+            print("Already moved {}".format(fm.uid_back_link.link))
+
+
+def move_pre_inspection_files_to_minio(parent_id):
+    """
+    Move Pre Inspection Documents To MinIO
+    """
+    from ujjwala.models import PreInspection
+
+    pi_obj = PreInspection.objects.filter(parent_id=parent_id).first()
+
+    if not pi_obj:
+        return
+
+    for doc in pi_obj.documents.all():
+        if doc.link.find("tus"):
+            print(doc.link)
+            new_file_url = move_file_to_minio(
+                doc.link,
+                "ujjwala_app_{}_pi_{}_{}".format(
+                    pi_obj.parent_id, pi_obj.id, doc.type.lower()
+                ),
+                settings.MINIO_UJJWALA_BUCKET_NAME
+            )
+            doc.link = new_file_url
+            doc.save()
+        else:
+            print("Already moved {}".format(doc.link))
+
+
+def move_connection_disbursement_files_to_minio(parent_id):
+    """
+    Move Connection Disbursement Files To MinIO
+    """
+    from ujjwala.models import ConnectionDisbursement
+
+    cd_obj = ConnectionDisbursement.objects.filter(parent_id=parent_id).first()
+
+    if not cd_obj:
+        return
+
+    for doc in cd_obj.documents.all():
+        if doc.link.find("tus"):
+            new_file_url = move_file_to_minio(
+                doc.link,
+                "ujjwala_app_{}_cd_{}_{}".format(
+                    cd_obj.parent_id, cd_obj.parent_id, doc.type.lower()
+                ),
+                settings.MINIO_UJJWALA_BUCKET_NAME
+            )
+            doc.link = new_file_url
+            doc.save()
+        else:
+            print("Already moved {}".format(doc.link))
+
+
+def move_sv_files_to_minio(parent_id):
+    """
+    Move Connection Disbursement Files To MinIO
+    """
+    from ujjwala.models import ConnectionDisbursement
+
+    cd_obj = ConnectionDisbursement.objects.filter(parent_id=parent_id).first()
+
+    if not cd_obj:
+        print("No Connection Disbursement Exist")
+        return
+
+    invitation_obj = ConnectionDisbursementInvitation.objects.filter(parent_id=cd_obj.id).first()
+
+    if not invitation_obj:
+        print("No Invitation Exist")
+        return
+
+    if invitation_obj.sv_link.find("tus"):
+        new_file_url = move_file_to_minio(
+            invitation_obj.sv_link,
+            "ujjwala_app_{}_cd_{}_{}".format(
+                cd_obj.parent_id, invitation_obj.parent_id, "sv"
+            ),
+            settings.MINIO_UJJWALA_BUCKET_NAME
+        )
+        invitation_obj.sv_link = new_file_url
+        invitation_obj.save()
+    else:
+        print("Already moved {}".format(invitation_obj.sv_link))
+
+
+def compress_and_move_all_ujjwala_docs_to_minio(application_id):
+
+    compress_application_documents(application_id)
+    move_ujjwala_application_files_to_minio(application_id)
+
+    pi_obj = PreInspection.objects.filter(parent_id=application_id)
+    if pi_obj:
+        print("Compressing Pre Inspection Documents")
+        compress_pre_inspection_documents(application_id)
+        move_pre_inspection_files_to_minio(application_id)
+    else:
+        print("No Pre Inspection Exist")
+
+    cd_obj = ConnectionDisbursement.objects.filter(parent_id=application_id)
+    if cd_obj:
+        print("Compressing Connection Disbursement Documents")
+        compress_connection_disbursement_documents(application_id)
+        move_connection_disbursement_files_to_minio(application_id)
+        move_sv_files_to_minio(application_id)
+    else:
+        print("No Connection Disbursement Exist")
+
+
 @ensure_db_connection
 def compress_and_move_ujjwala_application_docs_to_minio(application_id):
     result = django_rq.enqueue(compress_application_documents, args=(application_id,))
@@ -280,6 +383,7 @@ def compress_and_move_ujjwala_application_docs_to_minio(application_id):
     	args=(application_id,),
     	depends_on=result
     )
+    print(move_result)
     # django_rq.enqueue(
     #     delete_files,
     #     args=(application_id,),
