@@ -145,6 +145,7 @@ def compress_application_documents(application_id):
     for customer_doc in application.documents.all():
         print("Customer Doc {} {}".format(customer_doc.type, customer_doc.link))
         if not customer_doc.link:
+            print("No url exist for document")
             continue
         success, upload_url, file_size = upload_compressed_file_to_tus(customer_doc.link)
         if success and not customer_doc.link == upload_url:
@@ -158,6 +159,7 @@ def compress_application_documents(application_id):
     for family_member in application.family_members.all():
         print("UID Front {}".format(family_member.uid_front_link))
         if not family_member.uid_front_link:
+            print("No url exist for document")
             continue
 
         success, upload_url, file_size = upload_compressed_file_to_tus(family_member.uid_front_link)
@@ -170,6 +172,7 @@ def compress_application_documents(application_id):
 
         print("UID Back {}".format(family_member.uid_back_link))
         if not family_member.uid_back_link:
+            print("No url exist for document")
             continue
 
         success, upload_url, file_size = upload_compressed_file_to_tus(family_member.uid_back_link)
@@ -193,6 +196,7 @@ def compress_pre_inspection_documents(parent_id):
     for customer_doc in docs:
         print("PreInspection Doc {} {} {}".format(customer_doc.parent_id, customer_doc.type, customer_doc.link))
         if not customer_doc.link:
+            print("No url exist for document")
             continue
         if customer_doc.type in (
             UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT,
@@ -221,6 +225,7 @@ def compress_connection_disbursement_documents(parent_id):
     for customer_doc in docs:
         print("Disb Doc {} {} {}".format(customer_doc.parent_id, customer_doc.type, customer_doc.link))
         if not customer_doc.link:
+            print("No url exist for document")
             continue
         if customer_doc.type in (
             UjjwalaApplicationDocumentsEnum.INSTALLATION_DOCUMENT,
@@ -248,6 +253,10 @@ def move_ujjwala_application_files_to_minio(application_id):
     obj = UjjwalaV2Application.objects.get(id=application_id)
 
     for doc in obj.documents.all():
+        if not doc.link:
+            print("No url exist for document")
+            continue
+
         if not doc.link.find("tus") == -1:
             new_file_url = move_file_to_minio(
                 doc.link,
@@ -266,6 +275,9 @@ def move_ujjwala_application_files_to_minio(application_id):
             print("Already moved {}".format(doc.link))
 
     for fm in obj.family_members.all():
+        if not fm.uid_front_link:
+            print("No url exist for document")
+            continue
         if not fm.uid_front_link.find("tus") == -1:
             new_file_url = move_file_to_minio(
                 fm.uid_front_link,
@@ -282,6 +294,9 @@ def move_ujjwala_application_files_to_minio(application_id):
         else:
             print("Already moved {}".format(fm.uid_front_link))
 
+        if not fm.uid_back_link:
+            print("No url exist for document")
+            continue
         if not fm.uid_back_link.find("tus") == -1:
             new_file_url = move_file_to_minio(
                 fm.uid_back_link,
@@ -313,6 +328,10 @@ def move_pre_inspection_files_to_minio(parent_id):
         return
 
     for doc in pi_obj.documents.all():
+        if not doc.link:
+            print("No url exist for document")
+            continue
+
         print(doc.link)
         if not doc.link.find("tus") == -1:
             print("Moving File: {}".format(doc.link))
@@ -349,6 +368,9 @@ def move_connection_disbursement_files_to_minio(parent_id):
         return
 
     for doc in cd_obj.documents.all():
+        if not doc.link:
+            print("No url exist for document")
+            continue
         if not doc.link.find("tus") == -1:
             print("Moving File: {}".format(doc.link))
             new_file_url = move_file_to_minio(
@@ -381,6 +403,10 @@ def move_sv_files_to_minio(parent_id, application_id):
 
     if not invitation_obj:
         print("No Invitation Exist")
+        return
+
+    if not invitation_obj.sv_link:
+        print("No url exist for document")
         return
 
     if not invitation_obj.sv_link.find("tus") == -1:
