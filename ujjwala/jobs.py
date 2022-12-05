@@ -275,12 +275,15 @@ def move_pre_inspection_files_to_minio(parent_id):
 
     pi_obj = PreInspection.objects.filter(parent_id=parent_id).first()
 
+    print(pi_obj.documents.all().first().link)
+
     if not pi_obj:
         return
 
     for doc in pi_obj.documents.all():
+        print(doc.link)
         if not doc.link.find("tus") == -1:
-            print(doc.link)
+            print("Moving File: {}".format(doc.link))
             new_file_url = move_file_to_minio(
                 doc.link,
                 "ujjwala_app_{}_pi_{}_{}".format(
@@ -288,6 +291,7 @@ def move_pre_inspection_files_to_minio(parent_id):
                 ),
                 settings.MINIO_UJJWALA_BUCKET_NAME
             )
+            doc.original_link = doc.link
             doc.link = new_file_url
             doc.save()
         else:
@@ -307,6 +311,7 @@ def move_connection_disbursement_files_to_minio(parent_id):
 
     for doc in cd_obj.documents.all():
         if not doc.link.find("tus") == -1:
+            print("Moving File: {}".format(doc.link))
             new_file_url = move_file_to_minio(
                 doc.link,
                 "ujjwala_app_{}_cd_{}_{}".format(
@@ -314,6 +319,7 @@ def move_connection_disbursement_files_to_minio(parent_id):
                 ),
                 settings.MINIO_UJJWALA_BUCKET_NAME
             )
+            doc.original_link = doc.link
             doc.link = new_file_url
             doc.save()
         else:
@@ -361,6 +367,7 @@ def compress_and_move_all_ujjwala_docs_to_minio(application_id):
     if pi_obj:
         print("Compressing Pre Inspection Documents")
         compress_pre_inspection_documents(application_id)
+        print("Moving Pre Inspection Documents")
         move_pre_inspection_files_to_minio(application_id)
     else:
         print("No Pre Inspection Exist")
