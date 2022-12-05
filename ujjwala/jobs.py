@@ -227,7 +227,7 @@ def move_ujjwala_application_files_to_minio(application_id):
     obj = UjjwalaV2Application.objects.get(id=application_id)
 
     for doc in obj.documents.all():
-        if doc.link.find("tus"):
+        if not doc.link.find("tus") == -1:
             new_file_url = move_file_to_minio(
                 doc.link,
                 "ujjwala_app_{}_{}".format(obj.id, doc.type.lower()),
@@ -241,7 +241,7 @@ def move_ujjwala_application_files_to_minio(application_id):
             print("Already moved {}".format(doc.link))
 
     for fm in obj.family_members.all():
-        if fm.uid_front_link.find("tus"):
+        if not fm.uid_front_link.find("tus") == -1:
             new_file_url = move_file_to_minio(
                 fm.uid_front_link,
                 "ujjwala_app_{}_{}_uid_front".format(obj.id, fm.relation),
@@ -251,9 +251,9 @@ def move_ujjwala_application_files_to_minio(application_id):
             fm.uid_original_front_link = fm.uid_front_link
             fm.uid_front_link = new_file_url
         else:
-            print("Already moved {}".format(fm.uid_front_link.link))
+            print("Already moved {}".format(fm.uid_front_link))
 
-        if fm.uid_back_link.find("tus"):
+        if not fm.uid_back_link.find("tus") == -1:
             new_file_url = move_file_to_minio(
                 fm.uid_back_link,
                 "ujjwala_app_{}_{}_uid_back".format(obj.id, fm.relation),
@@ -264,7 +264,7 @@ def move_ujjwala_application_files_to_minio(application_id):
             fm.uid_back_link = new_file_url
             fm.save()
         else:
-            print("Already moved {}".format(fm.uid_back_link.link))
+            print("Already moved {}".format(fm.uid_back_link))
 
 
 def move_pre_inspection_files_to_minio(parent_id):
@@ -279,7 +279,7 @@ def move_pre_inspection_files_to_minio(parent_id):
         return
 
     for doc in pi_obj.documents.all():
-        if doc.link.find("tus"):
+        if not doc.link.find("tus") == -1:
             print(doc.link)
             new_file_url = move_file_to_minio(
                 doc.link,
@@ -306,7 +306,7 @@ def move_connection_disbursement_files_to_minio(parent_id):
         return
 
     for doc in cd_obj.documents.all():
-        if doc.link.find("tus"):
+        if not doc.link.find("tus") == -1:
             new_file_url = move_file_to_minio(
                 doc.link,
                 "ujjwala_app_{}_cd_{}_{}".format(
@@ -338,7 +338,7 @@ def move_sv_files_to_minio(parent_id):
         print("No Invitation Exist")
         return
 
-    if invitation_obj.sv_link.find("tus"):
+    if not invitation_obj.sv_link.find("tus") == -1:
         new_file_url = move_file_to_minio(
             invitation_obj.sv_link,
             "ujjwala_app_{}_cd_{}_{}".format(
