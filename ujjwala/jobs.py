@@ -144,6 +144,8 @@ def compress_application_documents(application_id):
 
     for customer_doc in application.documents.all():
         print("Customer Doc {} {}".format(customer_doc.type, customer_doc.link))
+        if not customer_doc.link:
+            continue
         success, upload_url, file_size = upload_compressed_file_to_tus(customer_doc.link)
         if success and not customer_doc.link == upload_url:
             customer_doc.link = upload_url
@@ -155,6 +157,9 @@ def compress_application_documents(application_id):
     print("Application Documents Family Member Compressing".format(application_id))
     for family_member in application.family_members.all():
         print("UID Front {}".format(family_member.uid_front_link))
+        if not family_member.uid_front_link:
+            continue
+
         success, upload_url, file_size = upload_compressed_file_to_tus(family_member.uid_front_link)
         if success and not family_member.uid_front_link == upload_url:
             family_member.uid_front_link = upload_url
@@ -164,6 +169,9 @@ def compress_application_documents(application_id):
         family_member.save()
 
         print("UID Back {}".format(family_member.uid_back_link))
+        if not family_member.uid_back_link:
+            continue
+
         success, upload_url, file_size = upload_compressed_file_to_tus(family_member.uid_back_link)
         if success and not family_member.uid_back_link == upload_url:
             family_member.uid_back_link = upload_url
@@ -184,6 +192,8 @@ def compress_pre_inspection_documents(parent_id):
     docs = PreInspectionDocuments.objects.filter(parent_id=parent_id, compressed=False)
     for customer_doc in docs:
         print("PreInspection Doc {} {} {}".format(customer_doc.parent_id, customer_doc.type, customer_doc.link))
+        if not customer_doc.link:
+            continue
         if customer_doc.type in (
             UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT,
             UjjwalaApplicationDocumentsEnum.INSTALLATION_DOCUMENT,
@@ -210,6 +220,8 @@ def compress_connection_disbursement_documents(parent_id):
     docs = ConnectionDisbursementDocuments.objects.filter(parent_id=parent_id, compressed=False)
     for customer_doc in docs:
         print("Disb Doc {} {} {}".format(customer_doc.parent_id, customer_doc.type, customer_doc.link))
+        if not customer_doc.link:
+            continue
         if customer_doc.type in (
             UjjwalaApplicationDocumentsEnum.INSTALLATION_DOCUMENT,
             UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT,
