@@ -128,6 +128,8 @@ def do_primary_omc_dedupe_check(id):
 def compress_application_documents(application_id):
     """
     Compress Application Documents
+    Params:
+        application_id: Ujjwala Application Object Id
     """
     from ujjwala.models import UjjwalaV2Application
 
@@ -171,6 +173,8 @@ def compress_application_documents(application_id):
 def compress_pre_inspection_documents(parent_id):
     """
     Compress Pre Inspection Documents
+    Params:
+        parent_id = Pre Inspection Object Id
     """
     from ujjwala.models import PreInspectionDocuments
 
@@ -195,6 +199,8 @@ def compress_pre_inspection_documents(parent_id):
 def compress_connection_disbursement_documents(parent_id):
     """
     Compress Connection Disbursement Documents
+    Params:
+        parent_id: Connection Disbursement Object Id
     """
     from ujjwala.models import ConnectionDisbursementDocuments
 
@@ -250,6 +256,7 @@ def move_ujjwala_application_files_to_minio(application_id):
             # Saving Link of Original File
             fm.uid_original_front_link = fm.uid_front_link
             fm.uid_front_link = new_file_url
+            fm.save()
         else:
             print("Already moved {}".format(fm.uid_front_link))
 
@@ -270,6 +277,8 @@ def move_ujjwala_application_files_to_minio(application_id):
 def move_pre_inspection_files_to_minio(parent_id):
     """
     Move Pre Inspection Documents To MinIO
+    Params:
+        parent_id: Ujjwala Application Id
     """
     from ujjwala.models import PreInspection
 
@@ -301,6 +310,8 @@ def move_pre_inspection_files_to_minio(parent_id):
 def move_connection_disbursement_files_to_minio(parent_id):
     """
     Move Connection Disbursement Files To MinIO
+    Params:
+        parent_id: Ujjwala Application Id
     """
     from ujjwala.models import ConnectionDisbursement
 
@@ -329,16 +340,11 @@ def move_connection_disbursement_files_to_minio(parent_id):
 def move_sv_files_to_minio(parent_id):
     """
     Move Connection Disbursement Files To MinIO
+    Params:
+        parent_id: Connection Disbursement Object Id
     """
-    from ujjwala.models import ConnectionDisbursement
 
-    cd_obj = ConnectionDisbursement.objects.filter(parent_id=parent_id).first()
-
-    if not cd_obj:
-        print("No Connection Disbursement Exist")
-        return
-
-    invitation_obj = ConnectionDisbursementInvitation.objects.filter(parent_id=cd_obj.id).first()
+    invitation_obj = ConnectionDisbursementInvitation.objects.filter(parent_id=parent_id).first()
 
     if not invitation_obj:
         print("No Invitation Exist")
@@ -348,7 +354,7 @@ def move_sv_files_to_minio(parent_id):
         new_file_url = move_file_to_minio(
             invitation_obj.sv_link,
             "ujjwala_app_{}_cd_{}_{}".format(
-                cd_obj.parent_id, invitation_obj.parent_id, "sv"
+                parent_id, invitation_obj.parent_id, "sv"
             ),
             settings.MINIO_UJJWALA_BUCKET_NAME
         )
@@ -365,8 +371,11 @@ def compress_and_move_all_ujjwala_docs_to_minio(application_id):
 
     pi_obj = PreInspection.objects.filter(parent_id=application_id)
     if pi_obj:
+        pi_obj = pi_obj.first()
+
         print("Compressing Pre Inspection Documents")
-        compress_pre_inspection_documents(application_id)
+        compress_pre_inspection_documents(pi_obj.id)
+
         print("Moving Pre Inspection Documents")
         move_pre_inspection_files_to_minio(application_id)
     else:
@@ -374,9 +383,15 @@ def compress_and_move_all_ujjwala_docs_to_minio(application_id):
 
     cd_obj = ConnectionDisbursement.objects.filter(parent_id=application_id)
     if cd_obj:
+        cd_obj = cd_obj.first()
+
         print("Compressing Connection Disbursement Documents")
-        compress_connection_disbursement_documents(application_id)
+        compress_connection_disbursement_documents(cd_obj.id)
+
+        print("Moving Connection Disbursement Documents")
         move_connection_disbursement_files_to_minio(application_id)
+
+        print("Moving SV To MinIO")
         move_sv_files_to_minio(application_id)
     else:
         print("No Connection Disbursement Exist")
