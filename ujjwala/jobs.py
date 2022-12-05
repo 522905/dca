@@ -51,7 +51,7 @@ def move_file_to_minio(file_url_to_move, new_file_name, bucket_name, delete_src=
     descriptor = magic.detect_from_content(doc_file_bytes.read(2048))
     file_extension = descriptor.mime_type.split('/')[-1]
 
-    if file_extension == 'plain':
+    if file_extension in ('plain', 'x-empty'):
         return file_url_to_move
 
     doc_file_name = "{}.{}".format(new_file_name, file_extension)
@@ -358,7 +358,7 @@ def move_connection_disbursement_files_to_minio(parent_id):
             print("Already moved {}".format(doc.link))
 
 
-def move_sv_files_to_minio(parent_id):
+def move_sv_files_to_minio(parent_id, application_id):
     """
     Move Connection Disbursement Files To MinIO
     Params:
@@ -374,8 +374,8 @@ def move_sv_files_to_minio(parent_id):
     if not invitation_obj.sv_link.find("tus") == -1:
         new_file_url = move_file_to_minio(
             invitation_obj.sv_link,
-            "ujjwala_app_{}_cd_{}_{}".format(
-                parent_id, invitation_obj.parent_id, "sv"
+            "sv_{}".format(
+                application_id
             ),
             settings.MINIO_UJJWALA_BUCKET_NAME
         )
@@ -418,7 +418,7 @@ def compress_and_move_all_ujjwala_docs_to_minio(application_id):
         move_connection_disbursement_files_to_minio(application_id)
 
         print("Moving SV To MinIO")
-        move_sv_files_to_minio(cd_obj.id)
+        move_sv_files_to_minio(cd_obj.id, application_id)
     else:
         print("No Connection Disbursement Exist")
 
