@@ -418,7 +418,7 @@ def compress_and_move_all_ujjwala_docs_to_minio(application_id):
         move_connection_disbursement_files_to_minio(application_id)
 
         print("Moving SV To MinIO")
-        move_sv_files_to_minio(application_id)
+        move_sv_files_to_minio(cd_obj.id)
     else:
         print("No Connection Disbursement Exist")
 
