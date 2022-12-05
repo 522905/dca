@@ -51,6 +51,9 @@ def move_file_to_minio(file_url_to_move, new_file_name, bucket_name, delete_src=
     descriptor = magic.detect_from_content(doc_file_bytes.read(2048))
     file_extension = descriptor.mime_type.split('/')[-1]
 
+    if file_extension == 'plain':
+        return file_url_to_move
+
     doc_file_name = "{}.{}".format(new_file_name, file_extension)
     doc_file_bytes.seek(0)
 
@@ -239,10 +242,14 @@ def move_ujjwala_application_files_to_minio(application_id):
                 "ujjwala_app_{}_{}".format(obj.id, doc.type.lower()),
                 settings.MINIO_UJJWALA_BUCKET_NAME
             )
-            # Saving Link of Original File
-            doc.original_link = doc.link
-            doc.link = new_file_url
-            doc.save()
+
+            if not doc.link == new_file_url:
+                # Saving Link of Original File
+                doc.original_link = doc.link
+                doc.link = new_file_url
+                doc.save()
+            else:
+                print("File Could Not Moved {}".format(doc.link))
         else:
             print("Already moved {}".format(doc.link))
 
@@ -253,10 +260,13 @@ def move_ujjwala_application_files_to_minio(application_id):
                 "ujjwala_app_{}_{}_uid_front".format(obj.id, fm.relation),
                 settings.MINIO_UJJWALA_BUCKET_NAME
             )
-            # Saving Link of Original File
-            fm.uid_original_front_link = fm.uid_front_link
-            fm.uid_front_link = new_file_url
-            fm.save()
+            if not fm.uid_front_link == new_file_url:
+                # Saving Link of Original File
+                fm.uid_original_front_link = fm.uid_front_link
+                fm.uid_front_link = new_file_url
+                fm.save()
+            else:
+                print("File Could Not Moved {}".format(fm.uid_front_link))
         else:
             print("Already moved {}".format(fm.uid_front_link))
 
@@ -266,10 +276,13 @@ def move_ujjwala_application_files_to_minio(application_id):
                 "ujjwala_app_{}_{}_uid_back".format(obj.id, fm.relation),
                 settings.MINIO_UJJWALA_BUCKET_NAME
             )
-            # Saving Link of Original File
-            fm.uid_original_back_link = fm.uid_back_link
-            fm.uid_back_link = new_file_url
-            fm.save()
+            if not fm.uid_back_link == new_file_url:
+                # Saving Link of Original File
+                fm.uid_original_back_link = fm.uid_back_link
+                fm.uid_back_link = new_file_url
+                fm.save()
+            else:
+                print("File Could Not Moved {}".format(fm.uid_back_link))
         else:
             print("Already moved {}".format(fm.uid_back_link))
 
@@ -283,8 +296,6 @@ def move_pre_inspection_files_to_minio(parent_id):
     from ujjwala.models import PreInspection
 
     pi_obj = PreInspection.objects.filter(parent_id=parent_id).first()
-
-    print(pi_obj.documents.all().first().link)
 
     if not pi_obj:
         return
@@ -300,9 +311,14 @@ def move_pre_inspection_files_to_minio(parent_id):
                 ),
                 settings.MINIO_UJJWALA_BUCKET_NAME
             )
-            doc.original_link = doc.link
-            doc.link = new_file_url
-            doc.save()
+
+            if not doc.link == new_file_url:
+                # Saving Link of Original File
+                doc.original_link = doc.link
+                doc.link = new_file_url
+                doc.save()
+            else:
+                print("File Could Not Moved {}".format(doc.link))
         else:
             print("Already moved {}".format(doc.link))
 
@@ -330,9 +346,14 @@ def move_connection_disbursement_files_to_minio(parent_id):
                 ),
                 settings.MINIO_UJJWALA_BUCKET_NAME
             )
-            doc.original_link = doc.link
-            doc.link = new_file_url
-            doc.save()
+
+            if not doc.link == new_file_url:
+                # Saving Link of Original File
+                doc.original_link = doc.link
+                doc.link = new_file_url
+                doc.save()
+            else:
+                print("File Could Not Moved {}".format(doc.link))
         else:
             print("Already moved {}".format(doc.link))
 
@@ -358,8 +379,13 @@ def move_sv_files_to_minio(parent_id):
             ),
             settings.MINIO_UJJWALA_BUCKET_NAME
         )
-        invitation_obj.sv_link = new_file_url
-        invitation_obj.save()
+
+        if not invitation_obj.sv_link == new_file_url:
+            # Saving Link of Original File
+            invitation_obj.sv_link = new_file_url
+            invitation_obj.save()
+        else:
+            print("File Could Not Moved {}".format(invitation_obj.sv_link))
     else:
         print("Already moved {}".format(invitation_obj.sv_link))
 
