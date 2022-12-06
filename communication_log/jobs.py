@@ -5,11 +5,12 @@ from django.conf import settings
 from django_rq import job
 from communication_log.models import CommunicationLog
 from connection_app.enums import ConnectionApplicationDocumentsEnum
-from connection_app.models import ConnectionApplication, minio_client
+
 import magic
 
 # @job
 from domestic_app.utils import get_minio_public_url
+from ujjwala.management.commands.ujjwala_file_worker import upload_compressed_file_to_tus
 from ujjwala.models import UjjwalaV2Application
 import logging
 
@@ -81,32 +82,125 @@ def infobip_webhook_job_processing(data):
             continue
 
 
+def compress_connection_application_documents(application_id):
+    """
+    Compress Connection Application Documents
+    Params:
+        application_id: Connection Application Object Id
+    """
+    from connection_app.models import ConnectionApplication
 
-def move_files_to_minio_processing(id):
-    obj = ConnectionApplication.objects.get(id=id)
+    application = ConnectionApplication.objects.filter(id=application_id).first()
+    if not application:
+        print("No application with id {} exists".format(application_id))
+
+    print("Application Documents Compressing".format(application_id))
+
+    for customer_doc in application.documents.all():
+        print("Customer Doc {} {}".format(customer_doc.type, customer_doc.link))
+        if not customer_doc.link:
+            print("No url exist for document")
+            continue
+        success, upload_url, file_size = upload_compressed_file_to_tus(customer_doc.link)
+        if success and not customer_doc.link == upload_url:
+            customer_doc.link = upload_url
+
+        customer_doc.save()
+
+
+def move_files_to_minio_processing(application_id):
+    from connection_app.models import ConnectionApplication
+    from connection_app.models import minio_client
+
+    obj = ConnectionApplication.objects.get(id=application_id)
+    delete_tus_url = ''
+
     for doc in obj.documents.all():
-        if doc.link.find("tus"):
-            doc_file = requests.get(doc.link)
+        if not doc.link:
+            print("No url exist for document")
+            continue
+
+        doc_file = requests.get("{}".format(doc.link))
+
+        if doc_file.status_code != 200:
+            doc.valid_size = False
+            doc.save()
+            continue
+
+        doc_file_bytes = io.BytesIO(doc_file.content)
+        descriptor = magic.detect_from_content(doc_file_bytes.read(2048))
+        file_extension = descriptor.mime_type.split('/')[-1]
+
+        if not file_extension == 'pdf':
+            if not len(doc_file.content) <= 512000:
+                print("File To Be Compressed: {} Original Size: {}".format(doc.link, len(doc_file.content)))
+                response = requests.get("{}{}".format(settings.THUMBOR_URL_INTERNAL_WEBP_COMPRESSED, doc.link))
+            else:
+                print("File To Be Compressed: {} Original Size: {}".format(doc.link, len(doc_file.content)))
+                response = requests.get("{}{}".format(settings.THUMBOR_URL_INTERNAL_WEBP_UNCOMPRESSED, doc.link))
+
+            if response.status_code != 200:
+                raise Exception("Could not compress file: {}".format(doc.link))
+
+            doc_file = response
+
             # Converting PDF file to Bytes IO Stream and Uploading To minio
             doc_file_bytes = io.BytesIO(doc_file.content)
             descriptor = magic.detect_from_content(doc_file_bytes.read(2048))
             file_extension = descriptor.mime_type.split('/')[-1]
 
-            doc_file_name = "{}_{}.{}".format(obj.consumer_id, doc.type.lower(), file_extension)
+        if "tus." in doc.link:
+            delete_tus_url = doc.link
+            doc_file_name = "cnapp_{}_{}.{}".format(obj.id, doc.type.lower(), file_extension)
+        else:
+            doc_file_name = doc.link.split("/")[-1]
+            # file_extension = file_name.split(".")[:-1]
+            # doc_file_name = "{}_{}.{}".format(obj.consumer_id, doc.type.lower(), file_extension)
 
-            doc_file_bytes.seek(0)
+        doc_file_bytes.seek(0)
 
-            minio_client.put_object(
-                settings.MINIO_BUCKET_NAME,
-                doc_file_name,
-                doc_file_bytes, doc_file_bytes.getbuffer().nbytes,
-                content_type=descriptor.mime_type
-            )
-            doc.link = get_minio_public_url(settings.MINIO_BUCKET_NAME, doc_file_name)
-            doc.save()
+        minio_client.put_object(
+            settings.MINIO_BUCKET_NAME,
+            doc_file_name,
+            doc_file_bytes, doc_file_bytes.getbuffer().nbytes,
+            content_type=descriptor.mime_type
+        )
+        doc.link = get_minio_public_url(settings.MINIO_BUCKET_NAME, doc_file_name)
+        doc.valid_size = True
+        doc.save()
+
+        if delete_tus_url:
+            del_req = requests.delete(delete_tus_url, headers={"Tus-Resumable": "1.0.0"})
+            delete_tus_url = ''
+
+
+def move_sv_doc_file_tus_to_minio(url, application_id, consumer_id):
+    # obj = ConnectionApplication.objects.get(id=application_id)
+    from connection_app.models import minio_client
+
+    if "tus." in url:
+        doc_file = requests.get(url)
+        # Converting PDF file to Bytes IO Stream and Uploading To minio
+        doc_file_bytes = io.BytesIO(doc_file.content)
+        descriptor = magic.detect_from_content(doc_file_bytes.read(2048))
+        file_extension = descriptor.mime_type.split('/')[-1]
+
+        doc_file_name = "cnapp_{}_sv_{}.{}".format(application_id, consumer_id, file_extension)
+
+        doc_file_bytes.seek(0)
+
+        minio_client.put_object(
+            settings.MINIO_BUCKET_NAME,
+            doc_file_name,
+            doc_file_bytes, doc_file_bytes.getbuffer().nbytes,
+            content_type=descriptor.mime_type
+        )
+        return get_minio_public_url(settings.MINIO_BUCKET_NAME, doc_file_name)
 
 
 def send_message_on_whatsapp(id):
+    from connection_app.models import ConnectionApplication
+
     obj = ConnectionApplication.objects.get(id=id)
     obj.event_completed_channel_whatsapp()
 
