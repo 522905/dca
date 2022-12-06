@@ -114,10 +114,13 @@ def move_files_to_minio_processing(application_id):
 
     obj = ConnectionApplication.objects.get(id=application_id)
     delete_tus_url = ''
-
+    delete_minio_file = ''
     for doc in obj.documents.all():
         if not doc.link:
             print("No url exist for document")
+            continue
+        if "cnapp_" in doc.link:
+            print("Already processed {}".format(doc.link))
             continue
 
         doc_file = requests.get("{}".format(doc.link))
@@ -136,7 +139,7 @@ def move_files_to_minio_processing(application_id):
                 print("File To Be Compressed: {} Original Size: {}".format(doc.link, len(doc_file.content)))
                 response = requests.get("{}{}".format(settings.THUMBOR_URL_INTERNAL_WEBP_COMPRESSED, doc.link))
             else:
-                print("File To Be Compressed: {} Original Size: {}".format(doc.link, len(doc_file.content)))
+                print("File To Be Converted To Webp Format {}".format(doc.link))
                 response = requests.get("{}{}".format(settings.THUMBOR_URL_INTERNAL_WEBP_UNCOMPRESSED, doc.link))
 
             if response.status_code != 200:
@@ -151,11 +154,10 @@ def move_files_to_minio_processing(application_id):
 
         if "tus." in doc.link:
             delete_tus_url = doc.link
-            doc_file_name = "cnapp_{}_{}.{}".format(obj.id, doc.type.lower(), file_extension)
         else:
-            doc_file_name = doc.link.split("/")[-1]
-            # file_extension = file_name.split(".")[:-1]
-            # doc_file_name = "{}_{}.{}".format(obj.consumer_id, doc.type.lower(), file_extension)
+            delete_minio_file = doc.link.split("/")[-1]
+
+        doc_file_name = "cnapp_{}_{}.{}".format(obj.id, doc.type.lower(), file_extension)
 
         doc_file_bytes.seek(0)
 
@@ -168,10 +170,16 @@ def move_files_to_minio_processing(application_id):
         doc.link = get_minio_public_url(settings.MINIO_BUCKET_NAME, doc_file_name)
         doc.valid_size = True
         doc.save()
+        print("New URL {}".format(doc.link))
 
         if delete_tus_url:
             del_req = requests.delete(delete_tus_url, headers={"Tus-Resumable": "1.0.0"})
             delete_tus_url = ''
+
+        if delete_minio_file:
+            # Remove object.
+            minio_client.remove_object(settings.MINIO_BUCKET_NAME, delete_minio_file)
+            delete_minio_file = ''
 
 
 def move_sv_doc_file_tus_to_minio(url, application_id, consumer_id):
