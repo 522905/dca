@@ -524,7 +524,8 @@ def is_application_ready_for_disbursement(parent_id):
     application = UjjwalaV2Application.objects.get(id=application_id)
     pre_inspection = PreInspection.objects.filter(parent=application)
 
-    if pre_inspection:
+    if pre_inspection.exists():
+        pre_inspection = pre_inspection.first()
         if application.status == UjjwalaV2ApplicationStatus.NIC_CLEARED and \
                 pre_inspection.status == PreInspectionStatusEnum.ACCEPTED:
             application.transition_ready_for_disbursement()
