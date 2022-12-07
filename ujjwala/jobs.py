@@ -516,8 +516,10 @@ def compress_and_move_all_docs_to_minio(application_id):
 
 
 @ensure_db_connection
-def is_application_ready_for_disbursement(application_id):
+def is_application_ready_for_disbursement(parent_id):
     from ujjwala.models import UjjwalaV2Application, PreInspection
+
+    application_id = parent_id
 
     application = UjjwalaV2Application.objects.get(id=application_id)
     pre_inspection = PreInspection.objects.filter(parent=application)
