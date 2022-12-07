@@ -8,11 +8,13 @@ import requests
 from django.conf import settings
 from django.core.signing import Signer
 
-from connection_app.models import minio_client
+
 from domestic_app.utils import get_minio_public_url
 
 
 def move_file_to_minio_bucket(file_url, bucket_name, file_name):
+    from connection_app.models import minio_client
+
     doc_file = requests.get(file_url)
     # Converting PDF file to Bytes IO Stream and Uploading To minio
     doc_file_bytes = io.BytesIO(doc_file.content)
@@ -38,6 +40,8 @@ def upload_file_to_minio_bucket(file, bucket_name, file_name, content_type=None)
 
 
 def upload_file_type_obj_to_minio_bucket(file, bucket_name, file_name, content_type=None):
+    from connection_app.models import minio_client
+
     if content_type:
         file_extension = content_type.split('/')[-1]
     else:
