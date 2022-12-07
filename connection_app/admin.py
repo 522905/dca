@@ -30,9 +30,17 @@ class StatusFilter(SimpleListFilter):
     def queryset(self, request, queryset):
         state = self.value()
         if state == 'SP':
-            return queryset.exclude(status__in=(ConnectionApplicationLeadStatus.COMPLETED, ConnectionApplicationLeadStatus.NOT_INTERESTED))
+            return queryset.exclude(
+                status__in=(
+                    ConnectionApplicationLeadStatus.COMPLETED, ConnectionApplicationLeadStatus.NOT_INTERESTED
+                )
+            )
         if state == 'E':
-            return queryset.filter(status__in=(ConnectionApplicationLeadStatus.COMPLETED, ConnectionApplicationLeadStatus.NOT_INTERESTED))
+            return queryset.filter(
+                status__in=(
+                    ConnectionApplicationLeadStatus.COMPLETED, ConnectionApplicationLeadStatus.NOT_INTERESTED
+                )
+            )
         return queryset
 
 

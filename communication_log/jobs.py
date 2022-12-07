@@ -2,16 +2,12 @@ import io
 
 import requests
 from django.conf import settings
-from django_rq import job
 from communication_log.models import CommunicationLog
-from connection_app.enums import ConnectionApplicationDocumentsEnum
 
 import magic
 
-# @job
 from domestic_app.utils import get_minio_public_url
 from ujjwala.management.commands.ujjwala_file_worker import upload_compressed_file_to_tus
-from ujjwala.models import UjjwalaV2Application
 import logging
 
 
@@ -41,7 +37,6 @@ def interakt_webhook_job_processing(data):
         pass
 
 
-# @job
 def infobip_webhook_job_processing(data):
     # {
     #     "bulkId": "1478260834465349757",
@@ -183,8 +178,9 @@ def move_files_to_minio_processing(application_id):
 
 
 def move_sv_doc_file_tus_to_minio(url, application_id, consumer_id):
-    # obj = ConnectionApplication.objects.get(id=application_id)
     from connection_app.models import minio_client
+
+    delete_tus_url = ''
 
     if "tus." in url:
         doc_file = requests.get(url)
@@ -203,6 +199,11 @@ def move_sv_doc_file_tus_to_minio(url, application_id, consumer_id):
             doc_file_bytes, doc_file_bytes.getbuffer().nbytes,
             content_type=descriptor.mime_type
         )
+
+        if delete_tus_url:
+            del_req = requests.delete(delete_tus_url, headers={"Tus-Resumable": "1.0.0"})
+            delete_tus_url = ''
+
         return get_minio_public_url(settings.MINIO_BUCKET_NAME, doc_file_name)
 
 
@@ -211,6 +212,3 @@ def send_message_on_whatsapp(id):
 
     obj = ConnectionApplication.objects.get(id=id)
     obj.event_completed_channel_whatsapp()
-
-
-

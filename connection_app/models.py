@@ -1,5 +1,6 @@
 import io
 
+import django_rq
 import requests
 import track
 from django.conf import settings
@@ -13,6 +14,7 @@ from django_fsm import transition, FSMField, GET_STATE
 from django_fsm_log.decorators import fsm_log_description, fsm_log_by
 from minio import Minio
 
+from communication_log.jobs import move_sv_doc_file_tus_to_minio, move_files_to_minio_processing
 from communication_log.models import CommunicationLog
 from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTypeEnum, \
 	ConnectionApplicationProcessType, ConnectionApplicationLeadStatus, ConnectionApplicationDocumentsEnum, \
@@ -189,6 +191,10 @@ class ConnectionApplication(models.Model):
 		"""
 		Called when application is uploaded via api to change state to submitted
 		"""
+		django_rq.enqueue(
+			move_files_to_minio_processing,
+			args=(self.id,),
+		)
 		self.event_submit_channel_whatsapp()
 		self.send_reminder_for_installation_upload()
 
@@ -383,7 +389,6 @@ class ConnectionApplication(models.Model):
 		field=status,
 		source=ConnectionApplicationLeadStatus.BACK_OFFICE_END,
 		target=ConnectionApplicationLeadStatus.FRONT_OFFICE,
-#		conditions=[lambda app: app.installation_status == ConnectionInstallationStatus.ACCEPTED],
 		custom=dict(
 			short_description='Back Office Processing End',
 			admin=True,
@@ -395,16 +400,32 @@ class ConnectionApplication(models.Model):
 			self.remarks = kwargs.get("remarks")
 			self.consumer_id = kwargs.get("consumer_id")
 
+			new_sv_doc_url = move_sv_doc_file_tus_to_minio(
+				kwargs.get('sv_doc_url'), self.id, kwargs.get("consumer_id")
+			)
+			#
+			# self.documents.create(
+			# 	type=ConnectionApplicationDocumentsEnum.SV,
+			# 	link=kwargs.get('sv_doc_url')
+			# )
 			self.documents.create(
 				type=ConnectionApplicationDocumentsEnum.SV,
-				link=kwargs.get('sv_doc_url')
+				link=new_sv_doc_url
 			)
 		elif self.process_type == ConnectionApplicationProcessType.REGULARISATION:
 			self.remarks = kwargs.get("remarks")
 
+			new_sv_doc_url = move_sv_doc_file_tus_to_minio(
+				kwargs.get('sv_doc_url'), self.id, kwargs.get("consumer_id")
+			)
+			#
+			# self.documents.create(
+			# 	type=ConnectionApplicationDocumentsEnum.SV,
+			# 	link=kwargs.get('sv_doc_url')
+			# )
 			self.documents.create(
 				type=ConnectionApplicationDocumentsEnum.SV,
-				link=kwargs.get('sv_doc_url')
+				link=new_sv_doc_url
 			)
 		else:
 			sv_doc_html_template = loader.get_template("connection_app/sv-doc.html")
@@ -420,7 +441,8 @@ class ConnectionApplication(models.Model):
 
 			# Converting PDF file to Bytes IO Stream and Uploading To minio
 			sv_doc_pdf_bytes = io.BytesIO(sv_doc_pdf.content)
-			sv_doc_file_name = "{}_sv.pdf".format(self.consumer_id)
+			sv_doc_file_name = "cnapp_{}_sv_{}.pdf".format(self.id, self.consumer_id)
+			# sv_doc_file_name = "{}_sv.pdf".format(self.consumer_id)
 			minio_client.put_object(
 				settings.MINIO_BUCKET_NAME,
 				sv_doc_file_name,
@@ -455,7 +477,6 @@ class ConnectionApplication(models.Model):
 		if kwargs.get("verified"):
 			self.remarks = kwargs.get("remarks")
 
-		
 	def event_installation_upload_channel_whatsapp(self):
 
 		body_text = {
@@ -556,3 +577,4 @@ class ConnectionApplicationDocuments(models.Model):
 	parent = models.ForeignKey(ConnectionApplication, on_delete=models.CASCADE, related_name='documents', null=True)
 	type = models.CharField(max_length=25, choices=ConnectionApplicationDocumentsEnum.choices)
 	link = models.URLField()
+	valid_size = models.BooleanField(default=False, null=True, blank=True)

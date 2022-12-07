@@ -1,17 +1,17 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
-<div class="image_module_contain">
-  <ul>
+<div class="" style="display: flex">
     {% for doc in obj.documents.all %}
-      <li>
-        <a target="_blank" href="{{ doc.link }}" download>
-          <!-- <img src="{{ doc.link }}" /> -->
-          <!-- Attachments -->
-          <p><i style="padding-right: 10px; font-size: 14px;" class="fa fa-eye" aria-hidden="true"></i>{{ doc.get_type_display }}</p>
+    <p>
+        {{ doc.get_type_display }}
+        <a style="padding-right: 10px; font-size: 14px;"  href='http://dca.arungas.com:6988/unsafe/fit-in/1920x1080/filters:quality(75):format(jpeg)/{{ doc.link }}' target="blank">
+            <i class="fa fa-download" aria-hidden="true"></i>
         </a>
-      </li>
+        <a target="_blank" href="{{ doc.link }}">
+            <i style="padding-right: 10px; font-size: 14px;" class="fa fa-eye" aria-hidden="true"></i>
+        </a>
+    </p>
     {% endfor %}
-  </ul>
 </div>
 <style>
  .image_module_contain ul{ float: left; padding: 0 !important; margin-left: 0 !important; width: 100%; margin-top: 20px;;}
