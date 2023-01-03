@@ -222,13 +222,12 @@ class SharedSelfPreInspectionLinkView(View):
 
     def get(self, request, *args, **kwargs):
         data = kwargs.get('data', '')
+
         if data:
             data = unsign_data_base64(data)
             user_id = data.get('user_id', '')
             if user_id:
                 user_id = sign_data_base64(data['user_id'])
-            else:
-                user_id = '1'
 
             response = redirect(
                 reverse('ujjwala:pre_inspection_form_view',
