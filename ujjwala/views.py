@@ -637,8 +637,12 @@ class PreInspectionView(FormView):
         context = super().get_context_data(**kwargs)
 
         referral_user_id = self.request.GET.get('referral_user_id', '')
-        referral_user_id = unsign_data_base64(referral_user_id)
-        user = User.objects.filter(id=referral_user_id).first()
+
+        if referral_user_id:
+            referral_user_id = unsign_data_base64(referral_user_id)
+            user = User.objects.filter(id=referral_user_id).first()
+        else:
+            user = None
 
         context.update({
             "obj": self.get_object(),
