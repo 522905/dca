@@ -45,7 +45,7 @@
 
     .main_block {
         background-color: #fff;
-        margin: 40px;
+        margin-top: 40px;
     }
     .container{ border-radius: 5px;}
 </style>
@@ -141,7 +141,7 @@
                                 <label> Mobile Number<strong style="color:red">*</strong></label>
                                 <input type="tel" class="form-control" id="uid_linked_mobile"
                                     onblur="checkContactMobileValidity();" pattern="[6789][0-9]{9}"
-                                    name="mobile_number" value="7888708560" maxlength="10" required />
+                                    name="mobile_number"  maxlength="10" required />
                                 <div class="row m-0">
                                     <span id="contact_mobile_detail"></span>
                                 </div>
@@ -156,7 +156,7 @@
                                     <div class="col-10 pl-0">
                                         <input type="tel" class="form-control" id="whatsapp_number"
                                             pattern="[6789][0-9]{9}" name="whatsapp_number" maxlength="10"
-                                            required value="7888708560" />
+                                            required  />
                                     </div>
                                     <div class="col-2 pr-0">
                                         <button type="button" id="verifyWhatsappButton"
@@ -260,7 +260,7 @@
                 <div class="main-header bg-heading rounded-0" style="background-color: #2957A4;">
                     <span class="text-white">Document Upload</span>
                 </div>
-                <div class="mb-2 family_heading">
+                <div class="mb-2 family_heading mt-2">
                     <div id="family_members_tree" class="container p-0">
                     </div>
                 </div>
