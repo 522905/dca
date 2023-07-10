@@ -1,0 +1,79 @@
+{% load static %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}">
+<!-- <link rel="stylesheet" href="{% static '/css/zoom/zoomist.css' %}">
+<script src="{% static '/js/zoomist.js' %}"></script>
+<script defer src="{% static '/js/test.js' %}" ></script> -->
+	<h3>Application Status:<span> {{obj.get_status_display}}</h3>
+	<h3>Installation Status:<span> {{obj.get_installation_status_display}}</h3>
+	<div class="form-group">
+		<p>
+			<label>Name:</label> 
+			<span>{{obj.name}}</span>
+		</p>
+		<p>
+			<label>Contact:</label> 
+			<span>{{obj.mobile}}</span>
+		</p>
+		<p>
+			<label>Channel:</label> 
+			<span>{{obj.communication_mode}}</span>
+		</p>
+		<p>
+			<label>Address:</label> 
+			<span>{{obj.address}}</span>
+		</p>
+		<p>
+			<label>Application Type:</label> 
+			<span>{{obj.application_type}}</span>
+		</p>
+		<p>
+			<label>Item:</label> 
+			<span>{{obj.item_code}}</span>
+		</p>
+		<p>
+			<label>Connection Type:</label> 
+			<span>{{obj.connection_type}}</span>
+		</p>
+		<p>
+			<label>Required By:</label> 
+			<span>{{obj.required_by}}</span>
+		</p>
+		<p>
+			<label>Applicant Remarks:</label> 
+			<span> {{obj.applicant_remarks}}</span>
+		</p>
+		<p>
+			<label>Referral Code:</label> 
+			<span> {{obj.referral_code}}</span>
+		</p>
+	</div>
+
+	<div class="form-group" style="margin-top:10px">
+	{%  if obj.consumer_id %}
+		<p>
+			<label>Consumer Id:</label> 
+			<span> {{obj.consumer_id}}</span>
+		</p>
+		<p>
+			<label>Process Type: </label> 
+			<span>{{obj.process_type}}</span>
+		</p>
+	{% endif %}
+	</div>
+
+ <style>
+	 .form-group{ float: left; width: 80%; background: #ececec; border: 1px solid #ddd;  padding: 10px;}
+	.form-group p label{  width: 50%; float: left; padding-left: 10px;}
+	.form-group p span{ font-weight: normal; float: left;}
+	.form-group p{ float: right; width: 100%;}
+ 	.readonly{ float: left; width: 100%; margin: 0 !important;}
+	label{  font-weight: bold;}
+	.field-lead_details_in_html .readonly{ margin-left: 0 !important;}
+	.image_module{ display: flex; padding: 10px 0;}
+	.image_module a{ flex: 1; margin: 0 auto; text-align: center; margin: 10px 0;}
+	.image_module a img{ width:100%; padding: 10px; border: 1px solid #ccc; height: 150px; margin-bottom: 10px;}
+	select.form-control:not([size]):not([multiple]) {
+    height: calc(2.25rem + 10px) !important;
+}
+</style>
+

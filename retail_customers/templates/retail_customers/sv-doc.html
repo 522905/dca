@@ -1,0 +1,192 @@
+
+<!DOCTYPE html>
+<head>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500&family=Roboto+Condensed:wght@300;400;700&family=Roboto:wght@100&display=swap" rel="stylesheet">
+<script src='https://kit.fontawesome.com/a076d05399.js' crossorigin='anonymous'></script>
+</head>
+<body>
+<div class="container">
+	<div class="row">
+		
+        <div class="receipt-main col-xs-10 col-sm-10 col-md-6 col-xs-offset-1 col-sm-offset-1 col-md-offset-3">
+            <div class="row">
+    			<div class="receipt-header">
+					<div class="col-xs-6 col-sm-6 col-md-6">
+						<div class="receipt-left">
+							<img class="img-responsive" alt="Arun Gas" src="https://www.arungas.com/domestic/domestic-logo.png">
+						</div>
+					</div>
+					<div class="col-xs-6 col-sm-6 col-md-6 text-right">
+						<div class="receipt-right">
+							<h5>Arun Gas Service</h5>
+							<p><i class="fa fa-phone"></i>0161-5201005</i></p>
+							<p><i class='fas fa-map-marker-alt' style='font-size:15px'></i>328, INDUSTRIAL AREA-A, Cheema Chowk, Near JK Bank, Ludhiana, Punjab, 141003</p>
+						</div>
+					</div>
+				</div>
+            </div>
+			
+			<div class="row">
+				<div class="receipt-header receipt-header-mid">
+					<div class="col-xs-8 col-sm-8 col-md-8 text-left">
+						<div class="receipt-right">
+							<p style="font-size: 16px;"><b>Download SV</b></p>
+
+						</div>
+					</div>
+					<div class="col-xs-4 col-sm-4 col-md-4">
+						<div class="receipt-left">
+							<h1></h1>
+						</div>
+					</div>
+				</div>
+            </div>
+			
+            <div>
+                <table class="table table-bordered">
+                    <tr>
+                        <td class="col-md-6">Name:</td>
+                        <td class="col-md-6">{{obj.name}}</td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-6">Contact</td>
+                        <td class="col-md-6">{{obj.mobile}}</td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-6">Address</td>
+                        <td class="col-md-6">{{obj.address}}</td>
+                    </tr>
+					<tr>
+                        <td class="col-md-6">Consumer ID:</td>
+                        <td class="col-md-6">{{obj.consumer_id}}</td>
+                    </tr>
+                </table>
+            </div>
+            <hr style="border-top:5px solid #FF431E; margin-bottom: 10px;">
+            <div class="row">
+                <div class="receipt-header receipt-header-mid receipt-footer" style="margin: 10px 0;">
+                    <div class="col-xs-6 col-sm-6 col-md-6 text-left">
+                        <div class="receipt-right">
+                            <p style="font-size: 30px;"><b>Just one call:</b> </p>
+                        </div>
+                    </div>
+                    <div class="col-xs-5 col-sm-5 col-md-5 float-right" style="float: right;">
+                        <div class="receipt-right">
+                            <h1 style="background-color:#FF431E; color: #fff; border-radius: 10px; font-size: 22px; padding: 10px; text-align: center;"><i class="fa fa-phone-square" aria-hidden="true"></i> 0161-5201005</h1>
+                        </div>
+                    </div>
+                </div>
+                <p class="footer-link" style="text-align: center; margin-top:20px">
+                    <i style="color:#000" class="fa fa-globe" aria-hidden="true"></i> <span><a style="color:#000" href="#">https://www.arungas.com/</a></span>
+                    </span>
+                </p>
+            </div> 
+        </div>   
+	</div>
+</div>
+</body>
+</html>
+<style>
+    .footer-link span:after {
+        content: "";
+  border-top: 1px solid #ccc;
+  color: green;
+  height: 1px ;
+  width: 50%;
+}
+
+    body{
+        font-family: 'Poppins', sans-serif;
+        font-family: 'Roboto', sans-serif;
+        font-family: 'Roboto Condensed', sans-serif;
+    }
+    .text-danger strong {
+    		color: #9f181c;
+		}
+		.receipt-main {
+			background: #ffffff none repeat scroll 0 0;
+			border-bottom: 12px solid #333333;
+			border-top: 12px solid #9f181c;
+			margin-top: 30px;
+			margin-bottom:30px;
+			padding: 20px 30px 10px 30px!important;
+			position: relative;
+			box-shadow: 0 1px 21px #acacac;
+			color: #333333;
+			font-family:'Poppins', sans-serif;;
+		}
+		.receipt-main p {
+			color: #333333;
+			font-family: 'Poppins', sans-serif;;
+			line-height: 1.42857;
+		}
+		.receipt-footer h1 {
+			font-size: 15px;
+			font-weight: 400 !important;
+			margin: 0 !important;
+		}
+		.receipt-main::after {
+			background: #414143 none repeat scroll 0 0;
+			content: "";
+			height: 5px;
+			left: 0;
+			position: absolute;
+			right: 0;
+			top: -13px;
+		}
+		.receipt-main thead {
+			background: #414143 none repeat scroll 0 0;
+		}
+		.receipt-main thead th {
+			color:#fff;
+		}
+		.receipt-right h5 {
+			font-size: 16px;
+			font-weight: bold;
+			margin: 0 0 7px 0;
+		}
+		.receipt-right p {
+			font-size: 12px;
+			margin: 0px;
+		}
+		.receipt-right p i {
+			text-align: center;
+			width: 18px;
+		}
+		.receipt-main td {
+			padding: 9px 20px !important;
+		}
+		.receipt-main th {
+			padding: 13px 20px !important;
+		}
+		.receipt-main td {
+			font-size: 13px;
+			font-weight: initial !important;
+		}
+		.receipt-main td p:last-child {
+			margin: 0;
+			padding: 0;
+		}	
+		.receipt-main td h2 {
+			font-size: 20px;
+			font-weight: 900;
+			margin: 0;
+			text-transform: uppercase;
+		}
+		.receipt-header-mid .receipt-left h1 {
+			font-weight: 100;
+			margin: 34px 0 0;
+			text-align: right;
+			text-transform: uppercase;
+		}
+		.receipt-header-mid {
+			margin: 24px 0;
+			overflow: hidden;
+		}
+		
+		#container {
+			background-color: #dcdcdc;
+		}
+</style>

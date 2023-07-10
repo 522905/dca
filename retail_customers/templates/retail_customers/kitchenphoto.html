@@ -1,0 +1,302 @@
+{% load static %}
+<!DOCTYPE html>
+
+<head>
+	
+	
+	<meta charset="utf-8"></meta>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+	<link href="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	<link href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,600,800&amp;display=swap" rel="stylesheet">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static '/css/style.css' %}">
+	<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+	<script src="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.js"></script>
+	<script src=”https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js”></script>
+
+
+
+<script type=”text/javascript” src=”js/responsive-table/js.js”></script>
+	<style>
+	iframe { margin-left:20px;}
+		@media screen and (min-width:200px) and (max-width:1300px)
+					{
+					iframe {width:320px; height:250px; margin-left:20px;}
+					
+					.buttons { 	display:block; margin:2em auto;}
+					.iddetail {margin-left:50px;}
+				
+					} 
+	</style>
+	<script>
+		function valid() {
+			let files = [];
+			
+			documentsRequired.forEach(documentType => {
+				details = documentTypesList[documentType];
+				uppy = window.uppy_ins[documentType];
+				files.push(
+					validateUppy(uppy, documentType, details.label, true)
+				)
+			});
+
+			if (!files.reduce((aggr, current) => { return current.valid && aggr }, true)) {
+				let error = files.reduce((aggr, current) => {
+					if (current.msg) {
+						return aggr + '\n' + current.msg
+					} else {
+						return aggr
+					}
+				}, '');
+				window.alert(error);
+				return null;
+			}
+			let documentArray = files.filter(e => e.url).map(e => { return { type: e.key, link: e.url } });
+			console.log(documentArray);
+			return documentArray;
+		}
+
+		function validateUppy(uppyObj, key, label, fileMandatory) {
+
+			if (!uppyObj.state || uppyObj.state.totalProgress == 0) {
+				if (fileMandatory) {
+					return {
+						valid: false, key: key,
+						msg: `${label} is required`
+					};
+				}
+				return { valid: true };
+			} else if (uppyObj.state.totalProgress < 100) {
+				return { valid: false, key: key, msg: `${label} upload in Progress(अपलोड प्रगति पर है)` };
+			} else {
+				return { valid: true, key: key, url: Object.values(uppyObj.state.files)[0].uploadURL };
+			}
+		}
+	</script>
+</head>
+
+<body>
+
+    <div class="container px-1 px-md-4 py-5 mx-auto">
+        <h3 class="text-center"></h3>
+        <h4 class="text-center"></h4>
+        <div class="card">
+            <div class="row d-flex justify-content-between px-3 top">
+                <div class="d-flex">
+                <h5 style="font-size:15px; margin-left:20px;" class="text-info font-weight-bold iddetail">Your Application Id is : <span class="text-info font-weight-bold">{{ object.pk }}</span></h5>
+                    </div><hr>
+                    <div class="form-group">
+                      
+						<div class="container">
+						<table class="table table-striped table-class" id= "responside-table-demo">
+							<tr>							<th>Name</th>
+								<th>{{object.name}}</th>
+							</tr>
+							<tr>
+								<th>Contact:</th>
+								<th >{{object.mobile}}</th>
+							</tr>
+							<tr>
+								<th>Address:</th> 
+								<th>{{object.address}}</th>
+							</tr>
+							<tr>
+								<th>Application Type:</th> 
+								<th>{{object.application_type}}</th>
+							</tr>
+							<tr>
+								<th>Item:</th> 
+								<th>{{object.item_code}}</th>
+							</tr>
+							<tr>
+								<th>Connection Type:</th> 
+								<th>{{object.connection_type}}</th>
+							</tr>
+						</table>
+						<div class="row visible-sm-block visible-xs-block table-xs" style="width: 100% ;">
+						</div>
+					  </div>
+                            
+                       
+                    </div>
+					<div class="container">
+					<table class="table table-striped table-class" id= "responside-table-demo">
+						<tr>
+							<th>Remarks: </th> 
+							<th>{{object.documents_reupload_remarks}}</th>
+						</tr>
+					</table>
+					<div class="row visible-sm-block visible-xs-block table-xs" style="width: 100% ;">
+					</div>
+				  </div>
+				  <hr>
+			<h5 style="font-size:15px; margin-left:20px; text-decoration: underline;" class="text-info font-weight-bold iddetail">See below video how to upload kitchen photo.</h5>
+				 
+			<iframe width="420" height="315" 
+				src="https://www.youtube.com/embed/pByPsmipwL4?autoplay=1&mute=1" title="YouTube video player" 
+				frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+				allowfullscreen>
+			</iframe>
+        </div>
+    </div>
+	<hr>
+
+	<div class="container register">
+		<div class="form-contain">
+			<div id="form_hide">
+				<form class="form-horizontal" action="" id="punjab" method="POST" enctype="multipart/form-data">
+						<div class="row">
+						<div id="uppy_row" class="row">
+						</div>
+						</div>
+					<hr>	
+					<input class="btn btn-success buttons" type="submit" id="submit" name="submit" value="submit" >
+				</form><br>
+			</div>
+			<div id="cus_id"></div>
+			<div id="application_receipt">
+				<span id="app_id"></span>
+				<span id="app_id_creation"></span>
+			</div>
+			<div id="message"></div>
+		</div>
+	</div>
+	
+
+<script type="text/javascript">
+        responsiveTable ('#responside-table-demo');
+        balanceSize();
+</script>
+	<script>
+
+	let documentsRequired = ['KITCHEN_PHOTO'];
+	
+	let documentTypesList = {
+		KITCHEN_PHOTO: {label: "Kitchen Photo (रसोई की फोटो)"},
+	}
+	
+	$(document).ready(function(){
+		window.uppy_ins = {};
+		documentsRequired.forEach(documentType => {
+			details = documentTypesList[documentType];
+			$("#uppy_row").append(`
+				<div class ="col-sm-2 col">
+					<p>${details.label}
+					</p>
+					<span
+						class="custom-file-input"
+						name="customerpicture"
+						id="${documentType}"
+					></span>
+					<span id="${documentType}_detail" class="text-danger"></span>
+				</div>
+			`);
+			initUppy(documentType);
+		});
+	});
+
+
+	function getCookie(name) {
+		let cookieValue = null;
+			if (document.cookie && document.cookie !== '') {
+				const cookies = document.cookie.split(';');
+				for (let i = 0; i < cookies.length; i++) {
+					const cookie = cookies[i].trim();
+					// Does this cookie string begin with the name we want?
+					if (cookie.substring(0, name.length + 1) === (name + '=')) {
+						cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+						break;
+					}
+				}
+			}
+			return cookieValue;
+		}
+		
+	$('#punjab').on('submit', function (event) {
+		event.preventDefault();
+		let documentArray = valid();
+		if(documentArray == null) return;
+
+		let formdata = $('form').serializeArray()
+			.reduce(function (accum, item) {
+
+				if (-1 === ['ignoreThis', 'andThat'].indexOf(item.name)) {
+
+					if (item.value !== null) {
+						accum[item.name] = item.value;
+					}
+				}
+				return accum;
+			},
+				{}
+			);
+
+		formdata.documents = documentArray;
+
+		console.log(formdata);
+
+		jQuery('#submit').val('Please wait...');
+		jQuery('#submit').attr('disabled', true);
+
+		var formData = new FormData(this);
+
+		jQuery.ajax({
+			url: '/connection-app/connection-application/{{object.pk}}/upload_installation/',
+			type: 'POST',
+			data: JSON.stringify(formdata),
+			contentType: "application/json; charset=utf-8",
+			dataType: 'JSON',
+			headers: {'X-CSRFToken': getCookie('csrftoken')},
+
+			processData: false,
+			success: function (result) {
+
+				$('#form_hide').hide();
+				console.log(result);
+				jQuery('#punjab')['0'].reset();
+				window.location.href = '/connection-app/connection-application/{{object.pk}}/status/';
+			}
+		});
+	});
+	
+	function initUppy(doc_id){
+
+		window.uppy_ins[doc_id] = new Uppy.Core({
+			debug: true,
+			autoProceed: true,
+			restrictions: {
+				maxFileSize: 50000000,
+				maxNumberOfFiles: 1,
+				minNumberOfFiles: 1,
+				allowedFileTypes: ['image/*'],
+				//requiredMetaFields: ['caption'],
+			}
+		})
+		.use(Uppy.Dashboard, {
+			trigger: `#${doc_id}`,
+			inline: true,
+			target: `#${doc_id}`,
+			showProgressDetails: true,
+			note: 'Images and video only, 2–3 files, up to 10 MB',
+			height: 250,
+			metaFields: [],
+			id: `#${doc_id}`,
+			browserBackButtonClose: false
+		})
+		.use(Uppy.Tus, {
+			endpoint: 'https://tus.dca.arungas.com/files/',
+		});
+		
+		window.uppy_ins[doc_id].on('complete', result => {
+			console.log('successful files:', result.successful)
+			console.log('failed files:', result.failed)
+		});
+	}
+	</script>
+</body>
+</html>

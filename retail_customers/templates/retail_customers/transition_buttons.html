@@ -1,0 +1,8 @@
+{% load static %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}">
+{% for button in transition_buttons %}
+<a class="btn" href="{{ button.url }}">{{ button.title }}</a>
+{% if not forloop.last %}&nbsp|&nbsp{% endif %}
+{% empty %}
+ <span>No Transitions Pending On You</span>
+{% endfor %}
