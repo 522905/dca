@@ -24,6 +24,9 @@ class RetailCustomerAddress(models.Model):
 	locality = models.CharField(max_length=128)
 	city = models.CharField(max_length=48)
 	pincode = models.CharField(max_length=10)
+	latitude = models.CharField(max_length=32, null=True, blank=True)
+	longitude = models.CharField(max_length=32, null=True, blank=True)
+	accuracy = models.CharField(max_length=24, null=True, blank=True)
 
 
 class RetailCustomerDocuments(models.Model):

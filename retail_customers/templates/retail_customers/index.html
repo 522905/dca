@@ -111,11 +111,27 @@
                 </div>
 
                 <div class="p-2">
+                    <div class="row border-bottom mb-2">
+                        <div class="location_field col-sm-8">
+                            <span>{{ wizard.form.latitude }}</span>
+                            <span>{{ wizard.form.longitude }}</span>
+                            <span>{{ wizard.form.accuracy }}</span>
+                            <p id="map_error_msg"></p>
+                        </div>
+                        <div class="col-sm-4 photo_block pl-lg-0 mb-3">
+                            <div class="allowLocationNav">
+                                <button class="btn btn-primary" onClick="allowLocationNav();">
+                                    Capture Location
+                                </button>
+                            </div>
+                            {{ wizard.form.latitude.errors }} {{ wizard.form.longitude.errors }} {{ wizard.form.accuracy.errors }}
+                        </div>
+                    </div>
                     <div class="row p-2">
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label>Shop Name<strong style="color:red">*</strong></label>
-                                <input type="text" class="form-control" value="test" name="shop_name"
+                                <input type="text" class="form-control" value="" name="shop_name"
                                     required />
                                 <div class="row m-0">
                                     <span id="shop_name"></span>
@@ -159,11 +175,11 @@
                                             required  />
                                     </div>
                                     <div class="col-2 pr-0">
-                                        <button type="button" id="verifyWhatsappButton"
+                                        <!-- <button type="button" id="verifyWhatsappButton"
                                             class="btn btn-primary float-right"
                                             onclick="whatsapp_verifier.start_verification()">
                                             Verify
-                                        </button>
+                                        </button> -->
                                         <button type="button" id="changeWhatsappButton"
                                             class="btn btn-primary float-right"
                                             onclick="whatsapp_verifier.reset_verification()"
@@ -253,6 +269,7 @@
                             </div>
                         </div>
                     </div>
+                    
                 </div>
             </div>
 
@@ -279,6 +296,11 @@
                         <label>Upload MCL License Photo</label>
                         <span class="custom-file-input" name="mclicense" id="mclicense"></span><br>
                         <span id="mclicense_detail" class="text-danger"></span>
+                    </div>
+                    <div class="col-sm-3 col">
+                        <label>Shop Photo</label>
+                        <span class="custom-file-input" name="shopphoto" id="shopphoto"></span><br>
+                        <span id="shopphoto" class="text-danger"></span>
                     </div>
                 </div>
             </div>
@@ -363,6 +385,66 @@
 <!-- <script src="https://arungas.com/public/ujwalla/js/app.js"></script> -->
 <script src="/static/js/retail_webform.js"></script>
 <script>
+// lat long accuracy
+function allowLocationNav() {
+        navigator.geolocation.getCurrentPosition(
+            successCallback,
+            errorCallback_highAccuracy,
+            {maximumAge:600000, timeout:5000, enableHighAccuracy: true}
+        );
+        console.log('allowLocationNav');
+    }
+
+    function errorCallback_highAccuracy(error) {
+        if (error.code == error.TIMEOUT)
+        {
+            // Attempt to get GPS loc timed out after 5 seconds, 
+            // try low accuracy location
+            $('#map_error_msg').append("attempting to get low accuracy location");
+            navigator.geolocation.getCurrentPosition(
+                successCallback, 
+                errorCallback_lowAccuracy,
+                {maximumAge:600000, timeout:10000, enableHighAccuracy: false});
+            return;
+        }
+        
+        var msg = "<p>Can't get your location (high accuracy attempt). Error = ";
+        if (error.code == 1)
+            msg += "PERMISSION_DENIED";
+        else if (error.code == 2)
+            msg += "POSITION_UNAVAILABLE";
+        msg += ", msg = "+error.message;
+        
+        $('#map_error_msg').append(msg);
+    }
+
+    function errorCallback_lowAccuracy(error) {
+        var msg = "<p>Can't get your location (low accuracy attempt). Error = ";
+        if (error.code == 1)
+            msg += "PERMISSION_DENIED";
+        else if (error.code == 2)
+            msg += "POSITION_UNAVAILABLE";
+        else if (error.code == 3)
+            msg += "TIMEOUT";
+        msg += ", msg = "+error.message;
+        
+        $('#map_error_msg').append(msg);
+    }
+
+    function successCallback(position) {
+        var latitude = position.coords.latitude;
+        var longitude = position.coords.longitude;
+
+        var meter = Math.round(position.coords.accuracy);
+
+        $('#map_error_msgs').append("<p>Your location is: " + latitude + "," + longitude+" </p><p>Accuracy="+meter+"m");
+        $('#id_preview_pre_inspection_form-latitude').val(latitude);
+        $('#id_preview_pre_inspection_form-longitude').val(longitude);
+        $('#id_preview_pre_inspection_form-accuracy').val(meter + 'm');
+        console.log(successCallback);
+
+    }
+
 
 
     $("input").attr('autocomplete', "fill-form");
@@ -465,6 +547,45 @@
         })
 
     mclicenseuppy.on('complete', result => {
+        console.log('successful files:', result.successful)
+        console.log('failed files:', result.failed)
+    });
+
+    // bankdetailuppy
+    window.shophotouppy = new Uppy.Core({
+        debug: true,
+        autoProceed: true,
+        restrictions: {
+            maxFileSize: 50000000,
+            maxNumberOfFiles: 1,
+            minNumberOfFiles: 1,
+            allowedFileTypes: ['image/*'],
+        }
+    })
+        .use(Uppy.Dashboard, {
+            trigger: '#shopphoto',
+            inline: true,
+            target: '#shopphoto',
+            showProgressDetails: true,
+            note: 'Images only, 1 file, up to 10 MB',
+            height: 250,
+            metaFields: [],
+            id: 'shopphoto',
+            browserBackButtonClose: false
+        })
+        .use(Uppy.Compressor, {
+            quality: 0.9,
+            maxWidth: 2048,
+            resize: 'contain',
+            limit: 10,
+            convertTypes: ['image/png', 'image/jpg', 'image/jpeg'],
+            convertSize: 1000000,
+        })
+        .use(Uppy.Tus, {
+            endpoint: 'https://tus.dca.arungas.com/files/',
+        })
+
+    shophotouppy.on('complete', result => {
         console.log('successful files:', result.successful)
         console.log('failed files:', result.failed)
     });
@@ -1037,28 +1158,28 @@
             if (fm.uid_no.length == 0) return Promise.resolve(true);
 
             // Run Dedup Over Api
-            return new Promise((resolve, reject) => {
-                jQuery.ajax({
-                    url: '/ujjwala/ujjwala-application/check_uid/',
-                    type: "GET",
-                    data: { 'uid': fm.uid_no }
-                }).then(response => {
-                    if (response.status === true) return resolve({});
+            // return new Promise((resolve, reject) => {
+            //     jQuery.ajax({
+            //         url: '/ujjwala/ujjwala-application/check_uid/',
+            //         type: "GET",
+            //         data: { 'uid': fm.uid_no }
+            //     }).then(response => {
+            //         if (response.status === true) return resolve({});
 
-                    var app = response.data.applications[0];
-                    return reject([{
-                        uid_no: {
-                            msg: `Application alreay exists DCA ${app.id} ${app.name} ${app.status}`
-                        }
-                    }]);
-                }).fail((e) => {
-                    return reject([{
-                        uid_no: {
-                            msg: e
-                        }
-                    }]);
-                })
-            });
+            //         var app = response.data.applications[0];
+            //         return reject([{
+            //             uid_no: {
+            //                 msg: `Application alreay exists DCA ${app.id} ${app.name} ${app.status}`
+            //             }
+            //         }]);
+            //     }).fail((e) => {
+            //         return reject([{
+            //             uid_no: {
+            //                 msg: e
+            //             }
+            //         }]);
+            //     })
+            // });
 
         }
 

@@ -6,53 +6,47 @@ function checkContactMobileValidity() {
 
     $("#contact_mobile_detail").html('');
     if (!mobile){
-        document.getElementById("uid_linked_mobile").setCustomValidity("Invalid mobile number.");
+        // document.getElementById("uid_linked_mobile").setCustomValidity("Invalid mobile number.");
         document.getElementById("uid_linked_mobile").reportValidity();
         // document.getElementById("uid_linked_mobile").focus();
         return;
     }
 
     if (!(mobile.match(/^[6789][0-9]{9}$/))){
-        document.getElementById("uid_linked_mobile").setCustomValidity("Invalid mobile number.");
+        // document.getElementById("uid_linked_mobile").setCustomValidity("Invalid mobile number.");
         document.getElementById("uid_linked_mobile").reportValidity();
         // document.getElementById("uid_linked_mobile").focus();
         return;
     }
     $("#contact_mobile_detail").show();
-    $("#contact_mobile_detail").html('<img style="width:18px; margin-left:10px;" align="left">&nbsp;Checking Mobile...');
+    // $("#contact_mobile_detail").html('<img style="width:18px; margin-left:10px;" align="left">&nbsp;Checking Mobile...');
 
     $("#uid_linked_mobile" ).attr("validated_value", mobile);
 
-    jQuery.ajax({
-        url: '/ujjwala/ujjwala-application/check_phone/',
-        type: "GET",
-        data: {'whatsapp_number': mobile},
-        success: function (data) {
-            response = data;
-            if (response.status === true) {
-                $("#contact_mobile_detail").show();
-                $("#contact_mobile_detail").html('✔ Available for New Application').css({'color': 'green', 'font-size' : '14px'});
-                document.getElementById("uid_linked_mobile").setCustomValidity("")
-                document.getElementById("uid_linked_mobile").reportValidity();
-                return true;
-            } else {
-                console.log(response);
-                var datas = response.data;
-                var msg = response.msg;
-                var status = response.status;
-                var applications = datas.applications;
-
-
-                window.alert(`आपका आवेदन पहले से मौजूद है आइ डी: ${applications[0].id} और नाम ${applications[0].name} स्टेटस ` + msg);
-                document.getElementById("uid_linked_mobile").setCustomValidity(`ID: ${applications[0].id} Name: ${applications[0].name}`);
-                document.getElementById("uid_linked_mobile").reportValidity();
-
-                msg = applications.map(e=>`<p>आपका आवेदन पहले से मौजूद है ${e.id} Name: ${e.name}</p>`).join('');
-
-                $("#contact_mobile_detail").html(msg).css({'color': 'red', 'font-size' : '17px'});
-            }
-        },
-    });
+    // jQuery.ajax({
+    //     url: '/ujjwala/ujjwala-application/check_phone/',
+    //     type: "GET",
+    //     data: {'whatsapp_number': mobile},
+    //     success: function (data) {
+    //         // response = data;
+    //         document.getElementById("uid_linked_mobile").reportValidity();
+    //         if (response.status === true) {
+    //             $("#contact_mobile_detail").show();
+    //             $("#contact_mobile_detail").html('✔ Unique Mobile Number').css({'color': 'green', 'font-size' : '14px'});
+    //             // document.getElementById("uid_linked_mobile").setCustomValidity("")
+    //             document.getElementById("uid_linked_mobile").reportValidity();
+    //             return true;
+    //         } else {
+    //             console.log(response);
+    //             var datas = response.data;
+    //             var msg = response.msg;
+    //             // var status = response.status;
+    //             // var applications = datas.applications;
+    //             document.getElementById("uid_linked_mobile").reportValidity();
+    //             $("#contact_mobile_detail").html(msg).css({'color': 'red', 'font-size' : '17px'});
+    //         }
+    //     },
+    // });
 };
 
 function checkMobileValidity() {
@@ -62,20 +56,20 @@ function checkMobileValidity() {
 
     $("#mobile_detail").html('');
     if (!mobile){
-        document.getElementById("whatsapp_number").setCustomValidity("Invalid mobile number.");
+        // document.getElementById("whatsapp_number").setCustomValidity("Invalid mobile number.");
         document.getElementById("whatsapp_number").reportValidity();
         // document.getElementById("whatsapp_number").focus();
         return;
     }
 
     if (!(mobile.match(/^[6789][0-9]{9}$/))){
-        document.getElementById("whatsapp_number").setCustomValidity("Invalid mobile number.");
+        // document.getElementById("whatsapp_number").setCustomValidity("Invalid mobile number.");
         document.getElementById("whatsapp_number").reportValidity();
         // document.getElementById("whatsapp_number").focus();
         return;
     }
     $("#mobile_detail").show();
-    $("#mobile_detail").html('<img style="width:18px; margin-left:10px;" align="left"> Checking Mobile...');
+    // $("#mobile_detail").html('<img style="width:18px; margin-left:10px;" align="left"> Checking Mobile...');
 
     $("#mobile_detail" ).attr("validated_value", mobile);
 
@@ -83,36 +77,7 @@ function checkMobileValidity() {
 
     $('#verifyWhatsappButton').attr('disabled', true);
 
-    jQuery.ajax({
-        url: '/ujjwala/ujjwala-application/check_phone/',
-        type: "GET",
-        data: {'whatsapp_number': mobile},
-        success: function (data) {
-            response = data;
-            if (response.status === true) {
-                $("#mobile_detail").show();
-                $("#mobile_detail").html('✔ Available for New Application').css({'color': 'green', 'font-size' : '14px'});
-                document.getElementById("whatsapp_number").setCustomValidity("")
-                document.getElementById("whatsapp_number").reportValidity();
-                $('#verifyWhatsappButton').attr('disabled', false);
-                return true;
-            } else {
-                console.log(response);
-                var datas = response.data;
-                var msg = response.msg;
-                var status = response.status;
-                var applications = datas.applications;
-                window.alert(`आपका व्हाट्सएप नंबर पहले से मौजूद है ID: ${applications[0].id} and Name ${applications[0].name} `);
-
-                document.getElementById("whatsapp_number").setCustomValidity(`ID: ${applications[0].id} Name: ${applications[0].name}`);
-                document.getElementById("whatsapp_number").reportValidity();
-
-                msg = applications.map(e=>`<p>आपका व्हाट्सएप नंबर पहले से मौजूद है ${e.id} Name: ${e.name}</p>`).join('');
-
-                $("#mobile_detail").html(msg).css({'color': 'red', 'font-size' : '17px'});
-            }
-        },
-    });
+    // jQuessssss
 };
 
 function init_sign_document() {
@@ -190,6 +155,7 @@ function submit_form(signature_url) {
 
 
     formdata.addresses = [{
+        title: 'Main Address',
         shop_name: formdata.shop_name,
         floor: formdata.floor,
         street_no: formdata.street_no,
@@ -399,20 +365,20 @@ function checkApplicantsAadhaarValidity(uid_data) {
             return reject("Aadhaar already entered in Family Members List");
         }
 
-        jQuery.ajax({
-            url: '/ujjwala/ujjwala-application/check_uid/',
-            type: "GET",
-            data: {'uid': uid},
-            success: function (data) {
-                response = data;
-                if (response.status === true) {
-                    $("#Customer-uid-msg").html('<p style=" color:green; "> ✔ Detail submitted </p>');
-                    return resolve(uid_data);
-                }
+        // jQuery.ajax({
+        //     url: '/ujjwala/ujjwala-application/check_uid/',
+        //     type: "GET",
+        //     data: {'uid': uid},
+        //     success: function (data) {
+        //         response = data;
+        //         if (response.status === true) {
+        //             $("#Customer-uid-msg").html('<p style=" color:green; "> ✔ Detail submitted </p>');
+        //             return resolve(uid_data);
+        //         }
 
-                return reject(`ID: ${data.data.applications[0].id} Name: ${data.data.applications[0].name}`);
-            },
-        });
+        //         return reject(`ID: ${data.data.applications[0].id} Name: ${data.data.applications[0].name}`);
+        //     },
+        // });
 
     });
 }
