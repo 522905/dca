@@ -6,7 +6,7 @@ from retail_customers.enums import RetailCustomerDocTypeEnum
 class RetailCustomer(models.Model):
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
-	shop_name = models.CharField(max_length=128)
+	unit_name = models.CharField(max_length=128)
 	shop_type = models.CharField(max_length=128)
 	mobile_number = models.CharField(max_length=10)
 	whatsapp_number = models.CharField(max_length=10)

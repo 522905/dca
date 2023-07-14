@@ -13,7 +13,7 @@ class RetailCustomerAdmin(admin.ModelAdmin):
         'id',
         'created_on',
         'updated_on',
-        'shop_name',
+        'unit_name',
         'shop_type',
         'mobile_number',
         'whatsapp_number',
