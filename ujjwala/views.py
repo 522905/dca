@@ -471,8 +471,8 @@ class PreInspectionView(FormView):
                     or (pre_inspection.status == PreInspectionStatusEnum.REJECTED
                         and pre_inspection.type == PreInspectionTypeEnum.MECHANIC
             ):
-                # return self.otp_verification(pre_inspection)
-                return HttpResponse("<h1>Ujjwala Pre-Inspection Currently On Hold</h1>")
+                return self.otp_verification(pre_inspection)
+                # return HttpResponse("<h1>Ujjwala Pre-Inspection Currently On Hold</h1>")
         elif pre_inspection.status in (
                 PreInspectionStatusEnum.SUBMITTED,
                 PreInspectionStatusEnum.ACCEPTED,
