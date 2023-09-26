@@ -64,7 +64,7 @@ class UjjwalaWhatsappCommunication(object):
 		family_member_with_connection: FamilyMembers = None
 		for family_member in self.family_members.all():
 			if not family_member.uid_check_result: continue
-			distributor_name = family_member.uid_check_result.get('distributor_name', '')
+			distributor_name = family_member.uid_check_result.get('distributor_name', ' ')
 			if not distributor_name or (
 				distributor_name and 'arun indane' in distributor_name.lower()
 			):
@@ -93,8 +93,9 @@ class UjjwalaWhatsappCommunication(object):
 					self.name,
 					self.id,
 					family_member_with_connection.name,
-					family_member_with_connection.uid_check_result.get('distributor_name', ''),
-					family_member_with_connection.uid_check_result.get('consumer_id')
+					family_member_with_connection.uid_check_result.get('distributor_name', ' '),
+					family_member_with_connection.uid_check_result.get(
+						'consumer_id') if family_member_with_connection.uid_check_result.get('consumer_id') else ' '
 				],
 			}
 		}
