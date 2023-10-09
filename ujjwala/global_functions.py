@@ -74,7 +74,7 @@ def login_required_if_mech_inspection(function, redirect_field_name=REDIRECT_FIE
 			else:
 				return redirect(
 					reverse('ujjwala:pre_inspection_form_view',
-					        args=(pi.pk, 'self')) + '?{}'.format(request.GET.urlencode())
+					        args=('self', pi.pk)) + '?{}'.format(request.GET.urlencode())
 				)
 				# return redirect(
 				# 	'ujjwala:pre_inspection_form_view', pk=pi.pk, type='self'
