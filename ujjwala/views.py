@@ -467,19 +467,19 @@ class PreInspectionView(FormView):
         pre_inspection = self.get_object()
 
         if self.kwargs.get('type') == 'mech':
-            if pre_inspection.status == PreInspectionStatusEnum.ALLOCATED \
-                    or (pre_inspection.status == PreInspectionStatusEnum.REJECTED
+            if pre_inspection.status in (
+                    PreInspectionStatusEnum.SUBMITTED,
+                    PreInspectionStatusEnum.ACCEPTED,
+            ):
+                return render(self.request, 'ujjwala/pre-inspection/pre_inspection_status.html', context={
+                    'pre_inspection': pre_inspection
+                })
+            elif pre_inspection.status == PreInspectionStatusEnum.ALLOCATED \
+                    or (pre_inspection.status in (PreInspectionStatusEnum.REJECTED, PreInspectionStatusEnum.REDO)
                         and pre_inspection.type == PreInspectionTypeEnum.MECHANIC
             ):
                 return self.otp_verification(pre_inspection)
                 # return HttpResponse("<h1>Ujjwala Pre-Inspection Currently On Hold</h1>")
-        elif pre_inspection.status in (
-                PreInspectionStatusEnum.SUBMITTED,
-                PreInspectionStatusEnum.ACCEPTED,
-        ):
-            return render(self.request, 'ujjwala/pre-inspection/pre_inspection_status.html', context={
-                'pre_inspection': pre_inspection
-            })
         return super().dispatch(request, *args, **kwargs)
 
     def otp_verification(self, pre_inspection):
