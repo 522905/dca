@@ -1,3 +1,5 @@
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 from django.db import models
@@ -23,6 +25,12 @@ class Otp(models.Model):
 	valid_till = models.DateTimeField()
 
 	closed = models.BooleanField(default=False)
+
+	content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True)
+	object_id = models.PositiveIntegerField(null=True)
+	content_object = GenericForeignKey('content_type', 'object_id')
+	transition = models.CharField(max_length=256, null=True, blank=True)
+
 
 	def verify_and_close(self, otp):
 		if self.closed:
