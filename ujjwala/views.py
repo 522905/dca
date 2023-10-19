@@ -576,7 +576,8 @@ class PreInspectionView(FormView):
             return ChangeAddressForm
         elif application.status in (
                 PreInspectionStatusEnum.KITCHEN_PHOTO,
-                PreInspectionStatusEnum.REJECTED
+                PreInspectionStatusEnum.REJECTED,
+                PreInspectionStatusEnum.REDO
         ):
             return KitchenPreInspectionForm
         elif application.status == PreInspectionStatusEnum.SAFETY_AUDIO:
@@ -613,6 +614,7 @@ class PreInspectionView(FormView):
         elif pre_inspection_obj.status in (
                 PreInspectionStatusEnum.KITCHEN_PHOTO,
                 PreInspectionStatusEnum.REJECTED,
+                PreInspectionStatusEnum.REDO,
         ):
             return self.pre_inspection_step1_template
         elif pre_inspection_obj.status == PreInspectionStatusEnum.SAFETY_AUDIO:
