@@ -16,7 +16,8 @@ from django_fsm_log.decorators import fsm_log_description, fsm_log_by
 from organizations.models import Organization
 
 from communication_log.models import CommunicationLog
-from teams.models import ServiceLocations, ServiceArea, FormFillArea, ServiceAreaHex
+from teams.models import ServiceLocations, ServiceArea, FormFillArea
+from teams.models import ServiceAreaHex
 from ujjwala.communication_models import UjjwalaWhatsappCommunication
 from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMobileStatusEnum, \
 	UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, \
@@ -848,6 +849,9 @@ class PreInspection(models.Model):
 	mechanic = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
 	submitted_on = models.DateTimeField(null=True)
 	type = models.CharField(max_length=32, choices=PreInspectionTypeEnum.choices, default=PreInspectionTypeEnum.SELF)
+	last_status = models.CharField(
+		max_length=128, choices=PreInspectionStatusEnum.choices, null=True
+	)
 	referral_user = models.ForeignKey(
 		User, on_delete=models.PROTECT, null=True, blank=True, related_name='referral_user'
 	)
@@ -883,6 +887,7 @@ class PreInspection(models.Model):
 			PreInspectionStatusEnum.REUPLOAD,
 			PreInspectionStatusEnum.REJECTED,
 			PreInspectionStatusEnum.SAFETY_AUDIO,
+			PreInspectionStatusEnum.REDO,
 		],
 		target=GET_STATE(
 			lambda self, **kwargs: \
@@ -912,7 +917,8 @@ class PreInspection(models.Model):
 		field=status,
 		source=[
 			PreInspectionStatusEnum.ALLOCATED,
-			PreInspectionStatusEnum.REJECTED
+			PreInspectionStatusEnum.REJECTED,
+			PreInspectionStatusEnum.REDO,
 		],
 		target=PreInspectionStatusEnum.CHANGE_ADDRESS,
 		custom=dict(short_description='Verify Otp', admin=False),
@@ -938,7 +944,11 @@ class PreInspection(models.Model):
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=[PreInspectionStatusEnum.KITCHEN_PHOTO, PreInspectionStatusEnum.REJECTED],
+		source=[
+			PreInspectionStatusEnum.KITCHEN_PHOTO,
+			PreInspectionStatusEnum.REJECTED,
+			PreInspectionStatusEnum.REDO,
+		],
 		target=PreInspectionStatusEnum.PREVIEW_INSPECTION,
 		custom=dict(short_description='Upload Main Gate Pic & Location', admin=False),
 	)
@@ -1081,6 +1091,35 @@ class PreInspection(models.Model):
 			transaction.on_commit(create_job_function)
 		else:
 			self.parent.event_whatsapp_pre_inspection_reject(self.id, kwargs.get('rejected_reason'))
+
+
+	# for doc in j.documents.filter(link__contains="tus."):
+	# 	if requests.get(doc.link).status_code == 404:
+	# 		doc.link = ''
+	# 		doc.save()
+
+
+
+	# j.status = 'SUBMITTED'
+	# j.pre_inspection_review(
+	# 	review_status='REJECTED', description='Missing Files, Please UploadAgain',
+	# 	rejected_reason="Missing Files, Please UploadAgain"
+	# )
+	# j.documents.exclude(type='PHYSICAL_LEGAL_DOCUMENT').delete()
+	# j.save()
+
+import requests
+
+# k = [12606,12566,2721,4871,2913,1006,1373,2932,3073,4103,1569,3371,240,3137,1492,1382,1624,5963,2855,11812,11841,7975,5957,11593,5877,8065,1024,5692,3678,5506,11280,8363,5376,4013,3939,12021,11670,646,11918,12986,7306,11577,1375]
+#
+# for i in k:
+# 	j = PreInspection.objects.get(pk=i)
+#
+# 	ids_to_preserve = {}
+# 	for doc in j.documents.filter(link="").order_by('-id'):
+# 		if doc.type not in ids_to_preserve:
+# 			ids_to_preserve[doc.type] = doc.id
+# 	j.documents.filter(type__in=ids_to_preserve.keys()).exclude(id__in=ids_to_preserve.values()).delete()
 
 
 class PreInspectionDocuments(models.Model):
@@ -1544,3 +1583,9 @@ class ConnectionDisbursementInvitation(models.Model):
 		<a href="{}" target="blank">View File</a>
 		'''.format(self.sv_link)
 		return mark_safe(html)
+
+def dummy():
+	from ujjwala.models import FamilyMembers
+
+	for obj in FamilyMembers.objects.filter(uid_front_link__contains='tus.', uid_back_link__contains='tus.'):
+		print(obj.id)
