@@ -997,7 +997,7 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
                         'connection_disbursement_id': connection_disbursement.id,
                         'application_id': connection_disbursement.parent_id,
                         'whatsapp_template_name': 'connection_disbursement_dac',
-                        'otp_generated_for': 'Walk-In',
+                        'otp_generated_for': f'connectiondisbursement:{connection_disbursement.id}:Walk-In',
                     }
                 )
             })
@@ -1105,7 +1105,7 @@ class UjjwalaApplicationCustomerProfileView(TemplateView):
                     initial={
                         'application_id': application.id,
                         'whatsapp_template_name': 'connection_disbursement_dac',
-                        'otp_generated_for': 'View-Customer-Profile',
+                        'otp_generated_for': f'ujjwalav2application:{application.id}:View-Customer-Profile',
                     }
                 )
             })
@@ -1916,7 +1916,7 @@ class InstallationView(FormView, ApplicationView):
                         'connection_disbursement_id': connection_disbursement.id,
                         'application_id': connection_disbursement.parent_id,
                         'whatsapp_template_name': 'connection_disbursement_dac',
-                        'otp_generated_for': 'Installation',
+                        'otp_generated_for': f'connectiondisbursement:{connection_disbursement.id}:Installation',
                     }
                 )
             })
@@ -2646,7 +2646,7 @@ class FirstCylinderMaterialDeliveryView(FormView, ApplicationView):
                         'connection_disbursement_id': connection_disbursement.id,
                         'application_id': connection_disbursement.parent_id,
                         'whatsapp_template_name': 'connection_disbursement_dac',
-                        'otp_generated_for': 'Material-Delivery',
+                        'otp_generated_for': f'connectiondisbursement:{connection_disbursement.id}:Material-Delivery',
                     }
                 )
             })
@@ -2825,7 +2825,7 @@ class SecondCylinderMaterialDeliveryView(FormView, ApplicationView):
                         'connection_disbursement_id': connection_disbursement.id,
                         'application_id': connection_disbursement.parent_id,
                         'whatsapp_template_name': 'connection_disbursement_dac',
-                        'otp_generated_for': 'Second-Cylinder-Delivery',
+                        'otp_generated_for': f'connectiondisbursement:{connection_disbursement.id}:Second-Cylinder-Delivery',
                     }
                 )
             })

@@ -3,30 +3,24 @@ import json
 import logging
 import string
 from datetime import timedelta
-from time import timezone
 
+import pytz
 import track
 from django import forms
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
-from django.forms import NumberInput
-from django.http import HttpResponseRedirect, HttpResponseBadRequest
-from django.shortcuts import render
-from django.utils.decorators import method_decorator
+from django.core import validators
+from django.http import HttpResponseRedirect
 from django_currentuser.middleware import get_current_user
 
 from communication_log.models import CommunicationLog
 from otp.models import Otp
 from ujjwala.communication_functions import send_whatsapp_message, send_sms
-from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
+from ujjwala.enums import UjjwalaV2ApplicationStatus, ConnectionDisbursementStatusEnum, \
 	RejectionTypeEnum, PreInspectionTypeEnum, RoboSdmsDedeupStatusEnum, NicClearedCustomerRemarksEnum, \
 	PrintDocumentsTypeEnum, InstallationTypeEnum, UjjwalaProductEnum, product_quantity_map
 from ujjwala.models import UjjwalaApplicationDocumentsEnum
-from formtools.wizard.views import SessionWizardView
-
 from ujjwala.ujjwala_functions import __get_ref_no__, id_generator, valid_file_uploaded
-from django.core import validators
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -302,7 +296,6 @@ class PreviewPreInspectionForm(forms.Form):
 		return con
 
 	def done(self, form_list, **kwargs):
-		from ujjwala.models import UjjwalaV2Application
 
 		data = self.get_all_cleaned_data()
 
@@ -1029,27 +1022,45 @@ class UjjwalaApplicationGenerateOtpForm(forms.Form):
 
 
 	def send_otp(self):
-		ref_no = None
-		while True:
-			ref_no = __get_ref_no__()
-			try:
-				Otp.objects.get(reference_number=ref_no)
-			except Otp.DoesNotExist:
-				break
-		otp = id_generator(4, chars=string.digits)
-		valid_till = datetime.datetime.now() + timedelta(minutes=15)
-		closed = False
+		cleaned_data = self.cleaned_data
 
-		otp_obj = Otp.objects.create(
-			reference_number=ref_no,
-			mobile=self.data.get('mobile'),
-			otp=otp,
-			valid_till=valid_till,
-			closed=closed,
-			extra={
-				"application_id": self.data.get('application_id')
-			}
-		)
+		if cleaned_data['otp_generated_for']:
+			content_type, pk, transition = cleaned_data['otp_generated_for'].split(":")
+			content_type = ContentType.objects.get(app_label='ujjwala', model=content_type)
+		else:
+			content_type, pk, transition = None, None, None
+
+		otp_obj = Otp.objects.filter(
+			mobile=self.data.get('mobile'), content_type=content_type, object_id=pk, transition=transition
+		).first()
+
+		if otp_obj and datetime.datetime.now().replace(tzinfo=pytz.UTC) < otp_obj.valid_till.replace(tzinfo=pytz.UTC):
+			otp = otp_obj.otp
+		else:
+			ref_no = None
+			while True:
+				ref_no = __get_ref_no__()
+				try:
+					Otp.objects.get(reference_number=ref_no)
+				except Otp.DoesNotExist:
+					break
+			otp = id_generator(4, chars=string.digits)
+			valid_till = datetime.datetime.now() + timedelta(minutes=30)
+			closed = False
+
+			otp_obj = Otp.objects.create(
+				reference_number=ref_no,
+				mobile=self.data.get('mobile'),
+				otp=otp,
+				valid_till=valid_till,
+				closed=closed,
+				content_type=content_type,
+				object_id=pk,
+				transition=transition,
+				extra={
+					"application_id": self.data.get('application_id')
+				}
+			)
 
 		message_id = None
 		channel = ''
