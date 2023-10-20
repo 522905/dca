@@ -27,7 +27,7 @@ from utils.qrcode import append_qr_code_to_sv
 from . import models
 from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, FamilyMemberRelationEnum, \
     ManualOperationCodeEnum, MaritalStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum, \
-    UjjwalaApplicationDocumentsEnum
+    UjjwalaApplicationDocumentsEnum, UjjwalaV2ApplicationAvailabilityStatus
 from .forms import ApplicationRejected
 from .global_functions import get_sdms_mismatched_records
 from .jobs import do_primary_omc_dedupe_check, compress_connection_disbursement_documents, enqueue_dedupe_and_audit_jobs
@@ -275,6 +275,18 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             existing_application.delete()
         return super().create(request, *args, **kwargs)
 
+    @action(methods=['post'], detail=False, url_path='ujjwala_ivr_confirmation')
+    def ujjwala_ivr_confirmation(self, request, *args, **kwargs):
+        application_id = request.GET.get('application_id')
+        response_code = request.GET.get('response_code')
+
+        application = UjjwalaV2Application.objects.get(id=application_id)
+        if response_code == 2:
+            application.status = UjjwalaV2ApplicationAvailabilityStatus.NOT_INTERESTED
+        elif response_code == 5:
+            application.status = UjjwalaV2ApplicationAvailabilityStatus.IVR_CONFIRMATION
+        application.save()
+
     @action(methods=['post'], detail=False, url_path='legal_documents_upload')
     def legal_documents_upload(self, request, *args, **kwargs):
         connection_disbursement_id = request.data.get('connection_disbursement_id')
@@ -316,7 +328,10 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     def check_ujjwala_application(self, request, *args, **kwargs):
         contact_mobile = request.GET.get('contact_mobile')
 
-        application = UjjwalaV2Application.objects.filter(contact_mobile=contact_mobile).first()
+        application = UjjwalaV2Application.objects.filter(
+            Q(contact_mobile=contact_mobile) | Q(uid_linked_mobile=contact_mobile) | Q(
+                sdms_mobile_number=contact_mobile)
+        ).first()
 
         if application:
             return JsonResponse({
