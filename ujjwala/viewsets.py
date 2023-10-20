@@ -7,6 +7,7 @@ import django_filters
 import django_rq
 import pytz
 import requests
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import connection, transaction
 from django.db.models import Q
@@ -324,6 +325,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 "application": "Ujjwala Application Id: {} {}".format(
                     application.pk, application.name
                 ),
+                "application_id": application.pk,
                 "state": application.status
             })
         else:
@@ -1199,7 +1201,9 @@ class UjjwalaApplicationOtpViewSet(viewsets.ViewSet):
     @action(methods=['get'], detail=False, url_path='send_whatsapp_otp')
     def send_whatsapp_otp(self, request: HttpRequest, *args, **kwargs):
         contact_mobile = request.GET.get('contact_mobile')
-        result = send_whatsapp_contact_otp(request, contact_mobile)
+        result = send_whatsapp_contact_otp(
+            request, contact_mobile
+        )
         return JsonResponse({
             "reference_number": result
         })
