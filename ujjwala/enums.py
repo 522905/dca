@@ -105,6 +105,11 @@ class RoboSdmsDedeupStatusEnum(models.TextChoices):
 	ENRICH_REJECTION_DETAILS = 'ENRICH_REJECTION_DETAILS', 'Enrich Rejection Details'
 
 
+class UjjwalaV2ApplicationAvailabilityStatus(models.TextChoices):
+	NOT_INTERESTED = 'NOT_INTERESTED', 'Not Interested'
+	IVR_CONFIRMATION = 'IVR_CONFIRMATION', 'IVR Confirmation'
+
+
 class UjjwalaV2ApplicationStatus(models.TextChoices):
 	DOCUMENTS_UPLOADED = 'DOCUMENTS_UPLOADED', 'Documents Uploaded'
 	DOCUMENTS_REUPLOAD = 'DOCUMENTS_REUPLOAD', 'Documents Reupload'
@@ -130,6 +135,7 @@ class UjjwalaV2ApplicationStatus(models.TextChoices):
 	NIC_ERROR_ADDRESS_ACCEPTED = 'NIC_ERROR_ADDRESS_ACCEPTED', 'Nic Error Address Accepted'
 	NIC_ERROR_APPROVED = 'NIC_ERROR_APPROVED', 'Nic Error Approved'
 	ON_HOLD = 'ON_HOLD', 'On Hold'
+	NOT_INTERESTED = 'NOT_INTERESTED', 'Not Interested'
 
 
 class RejectionTypeEnum(models.TextChoices):
@@ -171,6 +177,7 @@ class PreInspectionStatusEnum(models.TextChoices):
 	ACCEPTED = 'ACCEPTED', 'Accepted'
 	REUPLOAD = 'REUPLOAD', 'Reupload'
 	REJECTED = 'REJECTED', 'Rejected'
+	REDO = 'REDO', 'Redo'
 
 
 class PreInspectionTypeEnum(models.TextChoices):
