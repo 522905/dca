@@ -277,15 +277,21 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
     @action(methods=['post'], detail=False, url_path='ujjwala_ivr_confirmation')
     def ujjwala_ivr_confirmation(self, request, *args, **kwargs):
-        application_id = request.GET.get('application_id')
-        response_code = request.GET.get('response_code')
+        application_id = request.data.get('application_id')
+        response_code = request.data.get('response_code')
 
         application = UjjwalaV2Application.objects.get(id=application_id)
         if response_code == 2:
-            application.status = UjjwalaV2ApplicationAvailabilityStatus.NOT_INTERESTED
+            application.availability_status = UjjwalaV2ApplicationAvailabilityStatus.NOT_INTERESTED
         elif response_code == 5:
-            application.status = UjjwalaV2ApplicationAvailabilityStatus.IVR_CONFIRMATION
+            application.availability_status = UjjwalaV2ApplicationAvailabilityStatus.IVR_CONFIRMATION
+
+        application.availability_updated_on = datetime.datetime.now()
         application.save()
+
+        return JsonResponse({
+            "status": "Updated"
+        })
 
     @action(methods=['post'], detail=False, url_path='legal_documents_upload')
     def legal_documents_upload(self, request, *args, **kwargs):
