@@ -1512,7 +1512,7 @@ class ConnectionDisbursementSocialMediaUpdatesView(FormView, ApplicationView):
         if '_next_form_view' in self.request.POST:
             obj = self.get_object()
             return reverse(
-                'ujjwala:connection_disbursement_material_delivery_view',
+                'ujjwala:first_cylinder_delivery_view',
                 kwargs={'pk': obj.pk}
             )
         return '.'
