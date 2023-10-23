@@ -934,8 +934,21 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
         if not is_member_of_disbursement_drive(user):
             return render(request, 'ujjwala/no_permissions.html')
         disbursement_drive = DisbursementDrive.objects.filter(
-            date=datetime.datetime.today().date(), team_members=user
+            status=DisbursementDriveStatusEnum.ACTIVE, team_members=user
         ).first()
+
+        if not disbursement_drive:
+            messages.add_message(
+                request, messages.INFO,
+                f"No Active Disbursement Drive. For Help Contact Manager - {disbursement_drive.manager.first_name} {disbursement_drive.manager.last_name}."
+            )
+            return redirect('ujjwala:connection_disbursement_list')
+        if not datetime.datetime.today().date() == disbursement_drive.date:
+            messages.add_message(
+                request, messages.INFO,
+                f"Please Close Existing Disbursement Drive. For Help Contact Manager - {disbursement_drive.manager.first_name} {disbursement_drive.manager.last_name}."
+            )
+            return redirect('ujjwala:connection_disbursement_list')
 
         connection_disbursement_count = ConnectionDisbursement.objects.filter(
             disbursement_drive=disbursement_drive
@@ -950,7 +963,6 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
         connection_disbursement = self.get_object()
 
         if connection_disbursement:
-
             if not connection_disbursement.parent.ekyc_cleared:
                 messages.add_message(
                     request, messages.ERROR,
@@ -1512,7 +1524,7 @@ class ConnectionDisbursementSocialMediaUpdatesView(FormView, ApplicationView):
         if '_next_form_view' in self.request.POST:
             obj = self.get_object()
             return reverse(
-                'ujjwala:first_cylinder_delivery_view',
+                'ujjwala:connection_disbursement_material_delivery_view',
                 kwargs={'pk': obj.pk}
             )
         return '.'
@@ -1678,7 +1690,7 @@ class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
                         'connection_disbursement_id': connection_disbursement.id,
                         'application_id': connection_disbursement.parent_id,
                         'whatsapp_template_name': 'connection_disbursement_dac',
-                        'otp_generated_for': 'Material-Delivery',
+                        'otp_generated_for': f'connectiondisbursement:{connection_disbursement.id}:Material-Delivery',
                     }
                 )
             })
