@@ -2,12 +2,14 @@ from django.db import models
 
 
 product_quantity_map = {
-	"Ujjwala - 5 Kg DBC Package": 2
+	# "Ujjwala - 5 Kg DBC Package": 2,
+	"Ujjwala - 14 Kg SBC Package": 1
 }
 
 
 class UjjwalaProductEnum(models.TextChoices):
-	UJJWALA_5_KG = 'UJJWALA_5_KG', 'Ujjwala - 5 Kg DBC Package'
+	# UJJWALA_5_KG = 'UJJWALA_5_KG', 'Ujjwala - 5 Kg DBC Package'
+	UJJWALA_14_KG = 'UJJWALA_14_KG', 'Ujjwala - 14 Kg SBC Package'
 
 
 class DisbursementDriveStatusEnum(models.TextChoices):
@@ -107,7 +109,12 @@ class RoboSdmsDedeupStatusEnum(models.TextChoices):
 
 class UjjwalaV2ApplicationAvailabilityStatus(models.TextChoices):
 	NOT_INTERESTED = 'NOT_INTERESTED', 'Not Interested'
-	IVR_CONFIRMATION = 'IVR_CONFIRMATION', 'IVR Confirmation'
+	INTERESTED = 'INTERESTED', 'Interested'
+
+
+class UjjwalaV2ApplicationAvailabilityChannel(models.TextChoices):
+	IVR = 'IVR', 'IVR'
+	USER = 'USER', 'User'
 
 
 class UjjwalaV2ApplicationStatus(models.TextChoices):
@@ -218,6 +225,7 @@ class SchemeOnboardingStatusEnum(models.TextChoices):
 
 class NicClearedCustomerRemarksEnum(models.TextChoices):
 	NOT_INTERESTED = 'NOT_INTERESTED', 'Not Interested'
+	INTERESTED = 'INTERESTED', 'Interested'
 	NOT_APPROACHABLE = 'NOT_APPROACHABLE', 'Not Approachable'
 	SCHEDULED_DELIVERY = 'SCHEDULED_DELIVERY', 'Scheduled Delivery'
 

@@ -76,14 +76,15 @@ class DisbursementDriveFilter(SimpleListFilter):
         return queryset
 
 
-
 class DisbursementDriveIdInputFilter(admin.SimpleListFilter):
     title = 'Disbursement Id'
     parameter_name = 'disbursement_drive_id'
     template = 'ujjwala/extra/admin_input_filter.html'
 
     def lookups(self, request, model_admin):
-        return ((None, None),)
+        return (
+            (None, None),
+        )
 
     def choices(self, changelist):
         query_params = changelist.get_filters_params()
@@ -132,6 +133,7 @@ class UjjwalaV2Admin(ImportMixin, ExportActionMixin, FSMTransitionCustomMixin, a
         'contact_mobile',
         'referral_code',
         'robo_sdms_dedup',
+        'ekyc_cleared',
         'status',
         'consumer_id',
         'filled_by'

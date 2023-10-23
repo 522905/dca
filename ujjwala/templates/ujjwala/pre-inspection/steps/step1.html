@@ -11,7 +11,7 @@
 
 <script src="{% static '/js/location_2022_07_15.js' %}"></script>
 <div class="main p-2 pt-0 form_label">
-    <span><b>Referral User:&nbsp</b></span><span id="referral_username">{{ referral_user.username }}</span>
+    <span><b>Referral User: {{ referral_user.username }}</b></span>
     <form method="post" id="upload_sign_and_submit_form">
         {% csrf_token %}
         <div class="main-header bg-heading" style="background-color: #2957A4;">

@@ -23,7 +23,8 @@ from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMo
 	UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, \
 	RejectionTypeEnum, RoboSdmsDedeupStatusEnum, UserDocumentsEnum, PreInspectionStatusEnum, \
 	ConnectionDisbursementStatusEnum, PreInspectionTypeEnum, SchemeOnboardingStatusEnum, NicClearedCustomerRemarksEnum, \
-	DisbursementDriveStatusEnum, InstallationTypeEnum, product_quantity_map, UjjwalaV2ApplicationAvailabilityStatus
+	DisbursementDriveStatusEnum, InstallationTypeEnum, product_quantity_map, UjjwalaV2ApplicationAvailabilityStatus, \
+	UjjwalaV2ApplicationAvailabilityChannel
 from ujjwala.forms import ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
 	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm, NewRelationCreated, \
@@ -99,7 +100,10 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	robo_execution_failed_count = models.IntegerField(default=0, blank=True, null=True)
 	availability_updated_on = models.DateTimeField(null=True)
 	availability_status = models.CharField(
-		max_length=64, choices=UjjwalaV2ApplicationAvailabilityStatus.choices, blank=True, null=True
+		max_length=128, choices=UjjwalaV2ApplicationAvailabilityStatus.choices, blank=True, null=True
+	)
+	availability_channel = models.CharField(
+		max_length=128, choices=UjjwalaV2ApplicationAvailabilityChannel.choices, blank=True, null=True
 	)
 	# form_fill_area = models.ForeignKey(
 	# 	FormFillArea, on_delete=models.CASCADE, related_name='form_fill_area', null=True, blank=True

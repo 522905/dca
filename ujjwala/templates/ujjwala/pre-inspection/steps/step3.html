@@ -9,7 +9,7 @@
 <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
 
 <div class="main p-2 pt-0 form_label">
-    <span><b>Referral User:&nbsp</b></span><span id="referral_username">{{ referral_user.username }}</span>
+    <span><b>Referral User: {{ referral_user.username }}</b></span>
     <form method="post" id="">
         {% csrf_token %}
         <div class="card">

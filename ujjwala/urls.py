@@ -72,23 +72,22 @@ urlpatterns = [
         views.UjjwalaConnectionDisbursementSocialMediaUpdatesListView.as_view(),
         name="connection_disbursement_social_media_updates_list"
     ),
+    path(
+        'portal/disbursement/material_delivery/',
+        views.UjjwalaConnectionDisbursementMaterialDeliveryListView.as_view(),
+        name="connection_disbursement_material_delivery_list"
+    ),
     # path(
-    #     'portal/disbursement/material_delivery/',
-    #     views.UjjwalaConnectionDisbursementMaterialDeliveryListView.as_view(),
-    #     name="connection_disbursement_material_delivery_list"
+    #     'portal/disbursement/first_cylinder_delivery_list/',
+    #     views.FirstCylinderMaterialDeliveryListView.as_view(),
+    #     name="first_cylinder_delivery_list"
     # ),
-    path(
-        'portal/disbursement/first_cylinder_delivery_list/',
-        views.FirstCylinderMaterialDeliveryListView.as_view(),
-        name="first_cylinder_delivery_list"
-    ),
-
-    path(
-        'portal/disbursement/second_cylinder_delivery_list/',
-        views.SecondCylinderMaterialDeliveryListView.as_view(),
-        name="second_cylinder_delivery_list"
-    ),
-
+    #
+    # path(
+    #     'portal/disbursement/second_cylinder_delivery_list/',
+    #     views.SecondCylinderMaterialDeliveryListView.as_view(),
+    #     name="second_cylinder_delivery_list"
+    # ),
     path(
         'portal/disbursement/list/',
         views.UjjwalaConnectionDisbursementListView.as_view(),
@@ -260,21 +259,21 @@ urlpatterns = [
         name="connection_disbursement_social_media_updates_view"
     ),
 
+    url(
+        '^portal/disbursement/(?P<pk>[^/.]+)/material_delivery/$',
+        views.ConnectionDisbursementMaterialDeliveryView.as_view(),
+        name="connection_disbursement_material_delivery_view"
+    ),
     # url(
-    #     '^portal/disbursement/(?P<pk>[^/.]+)/material_delivery/$',
-    #     views.ConnectionDisbursementMaterialDeliveryView.as_view(),
-    #     name="connection_disbursement_material_delivery_view"
+    #     '^portal/disbursement/(?P<pk>[^/.]+)/first_cylinder_delivery_view/$',
+    #     views.FirstCylinderMaterialDeliveryView.as_view(),
+    #     name="first_cylinder_delivery_view"
     # ),
-    url(
-        '^portal/disbursement/(?P<pk>[^/.]+)/first_cylinder_delivery_view/$',
-        views.FirstCylinderMaterialDeliveryView.as_view(),
-        name="first_cylinder_delivery_view"
-    ),
-    url(
-        '^portal/disbursement/(?P<pk>[^/.]+)/second_cylinder_delivery_view/$',
-        views.SecondCylinderMaterialDeliveryView.as_view(),
-        name="second_cylinder_delivery_view"
-    ),
+    # url(
+    #     '^portal/disbursement/(?P<pk>[^/.]+)/second_cylinder_delivery_view/$',
+    #     views.SecondCylinderMaterialDeliveryView.as_view(),
+    #     name="second_cylinder_delivery_view"
+    # ),
     url(
         '^portal/installation/(?P<pk>[^/.]+)/installation_review/$',
         views.InstallationReviewView.as_view(),

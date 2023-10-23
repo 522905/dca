@@ -33,7 +33,7 @@
                 <li><a href="{% url 'ujjwala:index' %}" data-turbolinks="false">Pre-Suraksha-Drill List</a></li>
                 <li><a href="{% url 'ujjwala:pre_inspection_create' %}" data-turbolinks="false">Start a New Pre-Suraksha-Drill </a></li>
             </ul>
-        </li>              
+        </li>
         {% if user|has_disbursement_permission %}
         <li>
             <div class="iocn-link">
@@ -48,8 +48,7 @@
                 <li><a href="{% url 'ujjwala:connection_disbursement_review_form_abc_list' %}" data-turbolinks="false">2 - Accept Legal Documents </a></li>
                 <li><a href="{% url 'ujjwala:connection_disbursement_sv_label_print_list' %}" data-turbolinks="false">3 - SV Label Print </a></li>
                 <li><a href="{% url 'ujjwala:connection_disbursement_social_media_updates_list' %}" data-turbolinks="false">4 - Social Media Updates </a></li>
-{#                <li><a href="{% url 'ujjwala:connection_disbursement_material_delivery_list' %}" >5 - Material Delivery </a></li>#}
-                <li><a href="{% url 'ujjwala:first_cylinder_delivery_list' %}" >5 - 1st Cylinder Delivery </a></li>
+                <li><a href="{% url 'ujjwala:connection_disbursement_material_delivery_list' %}" >5 - Material Delivery </a></li>
             </ul>
         </li>
         {% endif %}
@@ -63,23 +62,23 @@
             </div>
             <ul class="sub-menu">
                 <li><a href="{% url 'ujjwala:installation_list' %}" data-turbolinks="false">List View</a></li>
-{#                <li><a href="{% url 'ujjwala:installation_review_list' %}" data-turbolinks="false">Review List</a></li> #}
+                <li><a href="{% url 'ujjwala:installation_review_list' %}" data-turbolinks="false">Review List</a></li>
             </ul>
         </li>
-        {% if user|has_second_delivery_permission %}
-        <li>
-            <div class="iocn-link">
-            <a href="#" data-turbolinks="false">
-                <i class='bx bx-collection' ></i>
-                <span class="link_name">2nd Cyl Delivery</span>
-            </a>
-            <i class='bx bxs-chevron-down arrow' ></i>
-            </div>
-            <ul class="sub-menu">
-                <li><a href="{% url 'ujjwala:second_cylinder_delivery_list' %}" >List </a></li>
-            </ul>
-        </li>
-        {% endif %}
+{#        {% if user|has_second_delivery_permission %}#}
+{#        <li>#}
+{#            <div class="iocn-link">#}
+{#            <a href="#" data-turbolinks="false">#}
+{#                <i class='bx bx-collection' ></i>#}
+{#                <span class="link_name">2nd Cyl Delivery</span>#}
+{#            </a>#}
+{#            <i class='bx bxs-chevron-down arrow' ></i>#}
+{#            </div>#}
+{#            <ul class="sub-menu">#}
+{#                <li><a href="{% url 'ujjwala:second_cylinder_delivery_list' %}" >List </a></li>#}
+{#            </ul>#}
+{#        </li>#}
+{#        {% endif %}#}
         {% if user|has_review_permission %}
         <li>
             <div class="iocn-link">
@@ -116,7 +115,7 @@
         arrowParent.classList.toggle("showMenu");
     });
   }
-  
+
   let sidebar = document.querySelector(".sidebar");
   let sidebarBtn = document.querySelector(".bx-menu");
   console.log(sidebarBtn);
@@ -129,7 +128,7 @@
       $(selector).removeClass('active-submenu');
       $(this).addClass('active-submenu');
   });
-  
+
 </script>
 {% endif %}
 
@@ -139,7 +138,7 @@
     }
     .collapsible.collapsible-accordion{
         background: #11101d;
-        
+
      }
      .collapsible.collapsible-accordion li a{
         color: #fff;
@@ -171,7 +170,7 @@
     }
     .sidebar .nav-links li:hover{
       background: #1d1b31;
-    } 
+    }
     .sidebar .nav-links li .iocn-link{
       display: flex;
       align-items: center;
@@ -243,7 +242,7 @@
       pointer-events: none;
       transition: 0s;
     }
-    
+
     .sidebar.close .nav-links li .sub-menu .link_name{
       font-size: 18px;
       opacity: 1;
@@ -264,7 +263,7 @@
       width: calc(100% - 260px);
       transition: all 0.5s ease;
     }
-    
+
     .home-section .home-content{
       height: 60px;
       display: flex;
