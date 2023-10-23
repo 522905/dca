@@ -27,7 +27,7 @@ from utils.qrcode import append_qr_code_to_sv
 from . import models
 from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, FamilyMemberRelationEnum, \
     ManualOperationCodeEnum, MaritalStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum, \
-    UjjwalaApplicationDocumentsEnum, UjjwalaV2ApplicationAvailabilityStatus
+    UjjwalaApplicationDocumentsEnum, UjjwalaV2ApplicationAvailabilityStatus, UjjwalaV2ApplicationAvailabilityChannel
 from .forms import ApplicationRejected
 from .global_functions import get_sdms_mismatched_records
 from .jobs import do_primary_omc_dedupe_check, compress_connection_disbursement_documents, enqueue_dedupe_and_audit_jobs
@@ -284,8 +284,8 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         if response_code == 2:
             application.availability_status = UjjwalaV2ApplicationAvailabilityStatus.NOT_INTERESTED
         elif response_code == 5:
-            application.availability_status = UjjwalaV2ApplicationAvailabilityStatus.IVR_CONFIRMATION
-
+            application.availability_status = UjjwalaV2ApplicationAvailabilityStatus.INTERESTED
+        application.availability_channel = UjjwalaV2ApplicationAvailabilityChannel.IVR
         application.availability_updated_on = datetime.datetime.now()
         application.save()
 

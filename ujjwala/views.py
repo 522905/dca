@@ -22,7 +22,8 @@ from django_currentuser.middleware import get_current_user
 
 from otp.models import Otp
 from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
-    PreInspectionTypeEnum, DisbursementDriveStatusEnum, UjjwalaApplicationDocumentsEnum
+    PreInspectionTypeEnum, DisbursementDriveStatusEnum, UjjwalaApplicationDocumentsEnum, NicClearedCustomerRemarksEnum, \
+    UjjwalaV2ApplicationAvailabilityChannel
 from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm, \
     PreInspectionGenerateOtpForm, PreInspectionValidateOtpForm, \
     KitchenPreInspectionForm, AudioOnSafetyForm, PreviewPreInspectionForm, PreInspectionAllocatedGenerateOtpForm, \
@@ -2466,7 +2467,12 @@ class UpdateBankDetailsFormView(FormView):
 
     def form_valid(self, form):
         form.save()
-        return HttpResponse(content="Bank Details Updated Successfully.")
+
+        obj = self.get_object()
+        messages.add_message(
+            self.request, messages.INFO, "Application Id {}: Remarks Updated: {}".format(obj.pk, obj.customer_remarks)
+        )
+        return redirect('ujjwala:application_status_search')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
@@ -2502,17 +2508,23 @@ class NicClearedCustomerRemarks(FormView):
         data = form.cleaned_data
         obj = self.get_object()
         obj.customer_remarks = data['customer_remarks']
+        obj.availability_status = data['customer_remarks']
+        obj.availability_channel = UjjwalaV2ApplicationAvailabilityChannel.USER
+        obj.availability_updated_on = datetime.datetime.now()
         obj.scheduled_date = data['scheduled_date']
         obj.additional_remarks = data['description']
         obj.save()
-        return HttpResponse(content="Customer Remarks Updated Successfully.")
+        messages.add_message(
+            self.request, messages.INFO, "Application Id {}: Remarks Updated: {}".format(obj.pk, obj.customer_remarks)
+        )
+        return redirect('ujjwala:application_status_search')
+        #
+        # return HttpResponse(content="Customer Remarks Updated Successfully.")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
         obj = self.get_object()
-        context.update({
-            "obj": obj,
-        })
+        context.update({"obj": obj, })
         return context
 
 
