@@ -1204,6 +1204,7 @@ class ConnectionDisbursementInvitationForm(forms.Form):
 			sv_uploaded_on=datetime.datetime.now(),
 			product=data['product']
 		)
+		obj.item_code = 'FC14.2'
 		obj.pending_quantity = product_quantity_map.get(data['product'])
 		obj.save()
 

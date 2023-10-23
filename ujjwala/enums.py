@@ -3,7 +3,7 @@ from django.db import models
 
 product_quantity_map = {
 	# "Ujjwala - 5 Kg DBC Package": 2,
-	"Ujjwala - 14 Kg SBC Package": 1
+	"UJJWALA_14_KG": 1
 }
 
 
