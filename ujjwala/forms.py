@@ -807,6 +807,32 @@ class LegalDocumentsReviewAdminForm(forms.Form):
 		return data
 
 
+class LegalDocumentsAcceptedToPendingAdminForm(forms.Form):
+	reason = forms.ChoiceField(
+		label="Select Reason Status ?",
+		required=True,
+		help_text="",
+		choices=[
+			('', '-- Select Review Status --'),
+			('LOST', 'Lost'),
+			('OTHER', 'Other')
+		]
+	)
+	other_reason = forms.CharField(
+		widget=forms.TextInput, max_length=255, label='Other Reason', required=False
+	)
+
+	def clean(self):
+		data = self.cleaned_data
+		if data:
+			if data.get('reason', '') == 'OTHER' and not data['other_reason']:
+				raise forms.ValidationError("Please enter a reason for rejection.")
+			data.update({
+				'description': '{} - {}'.format(data.get('reason'), data.get('other_reason' ''))
+			})
+		return data
+
+
 class ConnectionDisbursementLabelPrintForm(forms.Form):
 	application_id = forms.IntegerField(widget=forms.HiddenInput)
 	reference_number = forms.CharField()
