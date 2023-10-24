@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.signing import Signer
 from django.forms import formset_factory
-from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.http import HttpResponse, Http404, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils.decorators import method_decorator
@@ -897,26 +897,28 @@ class UjjwalaConnectionDisbursementListView(ListView):
             return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
         if application_id:
-            object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
-            if object:
-                if object.status not in (
-                        ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
-                        ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
-                        ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED
-                ):
-                    messages.add_message(
-                        request, messages.ERROR, "Application Id: {} - {}".format(
-                            application_id, object.get_status_display()
-                        )
-                    )
-                else:
-                    return redirect('ujjwala:connection_disbursement_form_view',
-                                    pk=object.pk
-                                    )
-            else:
+            disbursement_drive = DisbursementDrive.objects.filter(
+                date__lte=datetime.datetime.now().date(), status=DisbursementDriveStatusEnum.ACTIVE
+            ).first()
+            if not disbursement_drive:
                 messages.add_message(
-                    request, messages.ERROR, "Application Id: {} not found".format(application_id)
+                    request, messages.INFO, "No Active Disbursement Drive Exist"
                 )
+            else:
+                obj = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
+                if obj:
+                    if obj.status not in disbursement_drive.legal_documents_conditions:
+                        messages.add_message(
+                            request, messages.ERROR, "Application Id: {} - {}".format(
+                                application_id, obj.get_status_display()
+                            )
+                        )
+                    else:
+                        return redirect('ujjwala:connection_disbursement_form_view', pk=obj.pk)
+                else:
+                    messages.add_message(
+                        request, messages.ERROR, "Application Id: {} not found".format(application_id)
+                    )
         return super().get(request, *args, **kwargs)
 
 
@@ -927,7 +929,8 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
     ujjwala_form_a_b_c_template = "ujjwala/disbursement/print_ujjwala_form_a_b_c.html"
     success_url = '.'
 
-    stage_1_generate_otp = 'ujjwala/otp/generate_otp_form.html'
+    stage_1_generate_otp = 'ujjwala/disbursement/otp/generate_otp_form.html'
+    # stage_1_generate_otp = 'ujjwala/otp/generate_otp_form.html'
     stage_2_validate_otp = 'ujjwala/otp/validate_otp_form.html'
 
     def dispatch(self, request, *args, **kwargs):
@@ -2928,3 +2931,14 @@ class PrintDocumentsView(FormView):
 #             "obj": obj
 #         })
 #         return context
+
+class LegalDocumentsAcceptedToPendingView(View):
+
+    def dispatch(self, request, *args, **kwargs):
+        connection_disbursement = ConnectionDisbursement.objects.get(parent_id=kwargs.get('pk'))
+        connection_disbursement.transition_legal_documents_pending(data={'reason': 'LOST'})
+        connection_disbursement.save()
+
+        return JsonResponse({
+            "status": "Updated"
+        })
