@@ -1030,6 +1030,14 @@ class UjjwalaApplicationOtpInitialForm(forms.Form):
 		return value
 
 
+class ConnectionDisbursementPreGenerateOtpForm(forms.Form):
+	form_type = forms.CharField(widget=forms.HiddenInput, initial='pre_generate_otp_form')
+	form_abc_available = forms.BooleanField(widget=forms.CheckboxInput)
+
+	def clean(self):
+		pass
+
+
 class UjjwalaApplicationGenerateOtpForm(forms.Form):
 	form_type = forms.CharField(widget=forms.HiddenInput, initial='generate_otp_form')
 	otp_generated_for = forms.CharField(widget=forms.HiddenInput)

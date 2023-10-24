@@ -1,0 +1,71 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% load material_form %}
+{% block content %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap"
+    rel="stylesheet">
+<style>
+    p{ margin:0;}
+    #select_number_for_otp .radio-field .col{ flex: none; }
+    .user_profile img{ height:100px; }
+    .user_profile{margin: 0 auto;display: block;text-align: center;}
+    .username{ font-size:15px; font-weight:600; color:#ff5c6c !important;}
+    .user_address{ font-size:12px; font-weight:500}
+</style>
+<div class="main p-2 pt-0 form_label" id="select_number_for_otp">
+    {% if application.connection_disbursement.status == 'LEGAL_DOCUMENTS_ACCEPTED' %}
+        <div class="card">
+            <div class="row justify-content-left m-0" style="margin: 0 auto !important; padding: 10px;">
+                <div style="width:100%; float:left">
+                    <h6>Legal Documents Status: {{ application.connection_disbursement.status }}</h6>
+                </div>
+            </div>
+            <div class="card-body border-top">
+                If customer has lost the Form A B C. Click the link to reupload the Form A B C
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'ujjwala:legal_documents_pending' pk=application.id %}" class="btn btn-success float-center rounded-0">Reupload Legal Documents</a>
+            </div>
+        </div>
+    {% endif %}
+    <form method="post" id="">
+        {% csrf_token %}
+        <div class="card">
+            <div class="row justify-content-center m-0" style="margin: 0 auto !important; padding: 10px;">
+                <div style="width:30%; float:left">
+                    <div class="card-profile-image">
+                        <a href="#">
+                            <img style="max-height:200px" src="{{application.document_self}}">
+                        </a>
+                    </div>
+                </div>
+                <div style="width:70%; float:right">
+                    <div class="card-body pt-0">
+                        <div class="text-center">
+                            <p class="username mt-2"> {{application.name}}({{ application.id }})</p>
+                            <p class="user_address">
+                                {% if address_json == address_json  %}
+                                    {% for key,data in application.address_json.items %}
+                                        {{data}},
+                                    {% endfor %}
+                                {% else %}
+                                    {{ obj.address }}
+                                {% endif%}
+                            </p> 
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body border-top">
+                {% form form=form %}{% endform %}
+            </div>
+            <div class="card-footer">
+                <input class="btn btn-success float-left rounded-0" type="submit" name="_send_whatsapp" value="Send Whatsapp"/>
+{#                <input class="btn btn-success float-right rounded-0" type="submit" name="_send_sms" value="Send SMS"/>#}
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

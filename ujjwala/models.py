@@ -1165,6 +1165,10 @@ class DisbursementDrive(models.Model):
 		default=DisbursementDriveStatusEnum.ACTIVE,
 		choices=DisbursementDriveStatusEnum.choices
 	)
+	social_media_required = models.BooleanField(default=True)
+	legal_documents_conditions = models.JSONField(
+		null=True, blank=True, default=["LEGAL_DOCUMENTS_ACCEPTED", "LEGAL_DOCUMENTS_REVIEW"]
+	)
 
 	class Meta:
 		permissions = (
@@ -1310,7 +1314,8 @@ class ConnectionDisbursement(models.Model):
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
+		source=[ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
+		        ConnectionDisbursementStatusEnum.SV_LABEL_PRINT],
 		target=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
 		custom=dict(
 			short_description='Legal Documents Pending', admin=True, form=LegalDocumentsAcceptedToPendingAdminForm

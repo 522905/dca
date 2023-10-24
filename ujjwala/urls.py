@@ -16,7 +16,8 @@ from .extra_viewsets import UjjwalaApplicationExtraViewSet
 from .robos.nic_error_robo import UjjwalaApplicationNicErrorRobotAPIViewSet
 from .robos.robo_error_viewsets import UjjwalaApplicationRoboExecutionErrorAPIViewSet
 from .robos.sdms_relationship_robo import UjjwalaApplicationSdmsRelationshipViewSet
-from .views import UjjwalaApplicationWebFormView, WebFormOldView, UjjwalaApplicationIframeWebFormView
+from .views import UjjwalaApplicationWebFormView, WebFormOldView, UjjwalaApplicationIframeWebFormView, \
+    LegalDocumentsAcceptedToPendingView
 from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet, UjjwalaApplicationOtpViewSet
 
 router = routers.DefaultRouter()
@@ -313,5 +314,10 @@ urlpatterns = [
         '^portal/installation/(?P<pk>[^/.]+)/$',
         views.InstallationView.as_view(),
         name="installation_form_view"
+    ),
+    url(
+        '^ujjwala-application/(?P<pk>[^/.]+)/legal_documents_pending$',
+        LegalDocumentsAcceptedToPendingView.as_view(),
+        name="legal_documents_pending"
     ),
 ]

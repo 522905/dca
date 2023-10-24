@@ -293,6 +293,18 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             "status": "Updated"
         })
 
+    @action(methods=['post'], detail=False, url_path='legal_documents_reupload')
+    def legal_documents_reupload(self, request, *args, **kwargs):
+        application_id = request.data.get('application_id')
+
+        application = UjjwalaV2Application.objects.get(id=application_id)
+        application.transition_legal_documents_pending(data={'reason': 'LOST'})
+        application.save()
+
+        return JsonResponse({
+            "status": "Updated"
+        })
+
     @action(methods=['post'], detail=False, url_path='legal_documents_upload')
     def legal_documents_upload(self, request, *args, **kwargs):
         connection_disbursement_id = request.data.get('connection_disbursement_id')
