@@ -30,7 +30,7 @@ from ujjwala.forms import ConnectionStatusApproved, ApplicationRejected, \
 	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm, NewRelationCreated, \
 	CancelWalkInForm, MoveForManualOperationForm, MaterialDeliveryOtpOverrideForm, OnHoldForm, \
 	ReleaseApplicationForm, CompleteDisbursementDriveForm, \
-	InstallationReviewAdminForm
+	InstallationReviewAdminForm, LegalDocumentsAcceptedToPendingAdminForm
 from ujjwala.ujjwala_functions import download_ujjwala_physical_legal_docs, \
 	fsm_custom_audit_points_description
 from utils.global_functions import upload_file_to_minio_bucket, old_address_to_description, \
@@ -1304,6 +1304,21 @@ class ConnectionDisbursement(models.Model):
 		else:
 			self.documents.all().delete()
 			self.parent.event_legal_documents_reupload_channel_whatsapp(kwargs.get('description'))
+
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
+		target=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
+		custom=dict(
+			short_description='Legal Documents Pending', admin=True, form=LegalDocumentsAcceptedToPendingAdminForm
+		),
+	)
+	def transition_legal_documents_pending(self, *args, **kwargs):
+		self.documents.all().delete()
+		self.parent.event_legal_documents_reupload_channel_whatsapp("Reupload Form A B C")
 
 
 	@fsm_log_description
