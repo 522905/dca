@@ -918,9 +918,11 @@ class ConnectionDisbursementSocialMediaUpdatesForm(forms.Form):
 			link=data['social_media_photo']
 		)
 
-		obj.transition_social_media_updates_done(
-			by=get_current_user()
-		)
+		obj.social_media_update_done = True
+
+		# obj.transition_social_media_updates_done(
+		# 	by=get_current_user()
+		# )
 		obj.save()
 
 

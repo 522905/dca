@@ -1224,7 +1224,7 @@ class ConnectionDisbursement(models.Model):
 	installation_type = models.CharField(
 		max_length=32, choices=InstallationTypeEnum.choices, default=InstallationTypeEnum.MECHANIC
 	)
-
+	social_media_update_done = models.BooleanField(null=True, blank=True)
 
 	status = FSMField(
 		default=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
@@ -1352,7 +1352,9 @@ class ConnectionDisbursement(models.Model):
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
+		source=[
+			ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES, ConnectionDisbursementStatusEnum.SV_LABEL_PRINT
+		],
 		# target=ConnectionDisbursementStatusEnum.DISBURSEMENT_PHOTO_UPLOAD,
 		target=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
 		custom=dict(short_description='Material Delivery OTP Verification', admin=False),

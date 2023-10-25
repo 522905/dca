@@ -1482,16 +1482,14 @@ class UjjwalaConnectionDisbursementSocialMediaUpdatesListView(ListView):
                         )
                     )
                     return redirect('ujjwala:connection_disbursement_social_media_updates_list')
-                if object.status != ConnectionDisbursementStatusEnum.SV_LABEL_PRINT:
-                    messages.add_message(
-                        request, messages.ERROR, "Application Id: {} - {}".format(
-                            application_id, object.get_status_display()
-                        )
-                    )
+                # if object.status != ConnectionDisbursementStatusEnum.SV_LABEL_PRINT:
+                #     messages.add_message(
+                #         request, messages.ERROR, "Application Id: {} - {}".format(
+                #             application_id, object.get_status_display()
+                #         )
+                #     )
                 else:
-                    return redirect('ujjwala:connection_disbursement_social_media_updates_view',
-                                    pk=object.pk
-                                    )
+                    return redirect('ujjwala:connection_disbursement_social_media_updates_view', pk=object.pk)
             else:
                 messages.add_message(
                     request, messages.ERROR, "Application Id: {} not found".format(application_id)
@@ -1619,12 +1617,13 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
                         ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
                         ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
                         ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED
-                ):
+                ) and object.social_media_update_done:
                     messages.add_message(
-                        request, messages.ERROR, "Application Id: {} - {}".format(
-                            application_id, object.get_status_display()
+                        request, messages.ERROR, "Application Id: {} - {} Social Media Done: {}".format(
+                            application_id, object.get_status_display(), object.social_media_update_done
                         )
                     )
+
                 else:
                     return redirect('ujjwala:connection_disbursement_material_delivery_view',
                                     pk=object.pk
