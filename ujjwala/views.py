@@ -1636,6 +1636,7 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
             return redirect('ujjwala:connection_disbursement_material_delivery_list')
 
         if object.status not in (
+                ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
                 ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
                 ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED
         ):
