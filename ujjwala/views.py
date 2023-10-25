@@ -1457,9 +1457,10 @@ class UjjwalaConnectionDisbursementSocialMediaUpdatesListView(ListView):
         disbursement_drive = get_current_user_disbursement_drive(get_current_user())
 
         return ConnectionDisbursement.objects.filter(
-            status__in=[
-                ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
-            ],
+            # status__in=[
+            #     ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
+            # ],
+            social_media_update_done=False,
             walk_in_date__date=datetime.datetime.today().date(),
             disbursement_drive=disbursement_drive
         ).order_by('updated_on')
@@ -1481,6 +1482,10 @@ class UjjwalaConnectionDisbursementSocialMediaUpdatesListView(ListView):
                             object.parent_id, object.get_status_display()
                         )
                     )
+                    return redirect('ujjwala:connection_disbursement_social_media_updates_list')
+
+                if object.social_media_update_done:
+                    messages.add_message(request, messages.ERROR, "Application Id {} Social Media Already Done.")
                     return redirect('ujjwala:connection_disbursement_social_media_updates_list')
                 # if object.status != ConnectionDisbursementStatusEnum.SV_LABEL_PRINT:
                 #     messages.add_message(
@@ -1648,7 +1653,6 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
             return redirect('ujjwala:connection_disbursement_material_delivery_list')
 
         return redirect('ujjwala:connection_disbursement_material_delivery_view', pk=object.pk)
-
 
 
     def get_context_data(self, *, object_list=None, **kwargs):
