@@ -1605,37 +1605,50 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
         if not is_member_of_disbursement_drive(user):
             return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
-        if application_id:
-            object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
-            if object:
-                if not object.walk_in_date:
-                    messages.add_message(
-                        request, messages.ERROR, "Application Id {} Not Walked In.\n Application Status: {}".format(
-                            object.parent_id, object.get_status_display()
-                        )
-                    )
-                    return redirect('ujjwala:connection_disbursement_material_delivery_list')
-                if object.status not in (
-                        # ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
-                        ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
-                        ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED
-                ):
-                    messages.add_message(
-                        request, messages.ERROR, "Application Id: {} - {}".format(
-                            application_id, object.get_status_display(), object.social_media_update_done
-                        )
-                    )
-                if not object.social_media_update_done:
-                    messages.add_message(
-                        request, messages.ERROR, "Social Media Photo Is Pending. Please Upload To Continue"
-                    )
-                else:
-                    return redirect('ujjwala:connection_disbursement_material_delivery_view', pk=object.pk)
-            else:
-                messages.add_message(
-                    request, messages.ERROR, "Application Id: {} not found".format(application_id)
+
+        if not application_id:
+            #Load List View
+            return super().get(request, *args, **kwargs)
+
+        object: ConnectionDisbursement = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
+        if not object:
+            messages.add_message(
+                request, messages.ERROR, "Application Id: {} not found".format(application_id)
+            )
+
+        if not object.walk_in_date:
+            messages.add_message(
+                request, messages.ERROR, "Application Id {} Not Walked In.\n Application Status: {}".format(
+                    object.parent_id, object.get_status_display()
                 )
-        return super().get(request, *args, **kwargs)
+            )
+            return redirect('ujjwala:connection_disbursement_material_delivery_list')
+
+        social_step_cleared = True
+        if object.disbursement_drive.social_media_required:
+            if not object.social_media_update_done:
+                social_step_cleared = False
+
+        if not (object.status == ConnectionDisbursementStatusEnum.SV_LABEL_PRINT and social_step_cleared):
+            messages.add_message(
+                request, messages.ERROR, "Social Media Photo Is Pending. Please Upload To Continue"
+            )
+            return redirect('ujjwala:connection_disbursement_material_delivery_list')
+
+        if object.status not in (
+                ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
+                ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED
+        ):
+            messages.add_message(
+                request, messages.ERROR, "Application Id: {} - {}".format(
+                    application_id, object.get_status_display(), object.social_media_update_done
+                )
+            )
+            return redirect('ujjwala:connection_disbursement_material_delivery_list')
+
+        return redirect('ujjwala:connection_disbursement_material_delivery_view', pk=object.pk)
+
+
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
@@ -1680,7 +1693,7 @@ class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
                 )
                 return redirect('ujjwala:connection_disbursement_material_delivery_list')
             if connection_disbursement.status == \
-                    ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES:
+                    ConnectionDisbursementStatusEnum.SV_LABEL_PRINT:
                 return self.otp_verification(connection_disbursement)
         return super().dispatch(request, *args, **kwargs)
 
