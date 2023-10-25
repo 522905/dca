@@ -45,10 +45,27 @@
             </div>
             <ul class="sub-menu">
                 <li><a href="{% url 'ujjwala:connection_disbursement_list' %}" data-turbolinks="false">1 - Applicant Walk In </a></li>
-                <li><a href="{% url 'ujjwala:connection_disbursement_review_form_abc_list' %}" data-turbolinks="false">2 - Accept Legal Documents </a></li>
-                <li><a href="{% url 'ujjwala:connection_disbursement_sv_label_print_list' %}" data-turbolinks="false">3 - SV Label Print </a></li>
-                <li><a href="{% url 'ujjwala:connection_disbursement_material_delivery_list' %}" >4 - Material Delivery </a></li>
+{#                <li><a href="{% url 'ujjwala:connection_disbursement_review_form_abc_list' %}" data-turbolinks="false">2 - Accept Legal Documents </a></li>#}
+{#                <li><a href="{% url 'ujjwala:connection_disbursement_sv_label_print_list' %}" data-turbolinks="false">3 - SV Label Print </a></li>#}
+                <li><a href="{% url 'ujjwala:connection_disbursement_material_delivery_list' %}" >2 - Material Delivery </a></li>
                 <li><a href="{% url 'ujjwala:connection_disbursement_social_media_updates_list' %}" data-turbolinks="false">Social Media Updates </a></li>
+            </ul>
+        </li>
+        {% endif %}
+
+        {% if user|has_disbursement_permission %}
+        <li>
+            <div class="iocn-link">
+            <a href="#" data-turbolinks="false">
+                <i class='bx bx-collection' ></i>
+                <span class="link_name">Back End</span>
+            </a>
+            <i class='bx bxs-chevron-down arrow' ></i>
+            </div>
+            <ul class="sub-menu">
+{#                <li><a href="{% url 'ujjwala:connection_disbursement_list' %}" data-turbolinks="false">1 - Applicant Walk In </a></li>#}
+                <li><a href="{% url 'ujjwala:connection_disbursement_review_form_abc_list' %}" data-turbolinks="false">1 - Accept Legal Documents </a></li>
+                <li><a href="{% url 'ujjwala:connection_disbursement_sv_label_print_list' %}" data-turbolinks="false">2 - SV Label Print </a></li>
             </ul>
         </li>
         {% endif %}
