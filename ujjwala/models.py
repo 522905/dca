@@ -1337,24 +1337,22 @@ class ConnectionDisbursement(models.Model):
 	def transition_sv_label_printed(self, *args, **kwargs):
 		pass
 
-	@fsm_log_description
-	@fsm_log_by
-	@transition(
-		field=status,
-		source=ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
-		target=ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
-		custom=dict(short_description='Social Media Updates', admin=False),
-	)
-	def transition_social_media_updates_done(self, *args, **kwargs):
-		pass
+	# @fsm_log_description
+	# @fsm_log_by
+	# @transition(
+	# 	field=status,
+	# 	source=ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
+	# 	target=ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
+	# 	custom=dict(short_description='Social Media Updates', admin=False),
+	# )
+	# def transition_social_media_updates_done(self, *args, **kwargs):
+	# 	pass
 
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=[
-			ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES, ConnectionDisbursementStatusEnum.SV_LABEL_PRINT
-		],
+		source=ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
 		# target=ConnectionDisbursementStatusEnum.DISBURSEMENT_PHOTO_UPLOAD,
 		target=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
 		custom=dict(short_description='Material Delivery OTP Verification', admin=False),
