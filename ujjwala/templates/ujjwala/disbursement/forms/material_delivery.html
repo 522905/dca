@@ -8,7 +8,7 @@
 	rel="stylesheet">
 <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
 <div class="form_label p-2">
-        {% include 'ujjwala/disbursement/custom-template/application_detail_template.html' %}>
+        {% include 'ujjwala/disbursement/custom-template/application_detail_template.html' %}
 </div>
 <div class="main p-2 pt-0 form_label">
     <form method="post" id="">
@@ -22,7 +22,7 @@
 			  </div>
 			{% endfor %}
 		  {% endif %}
-          <h5>{{ delivery_type }}</h5>
+{#          <h5>{{ delivery_type }}</h5>#}
 		  <h4>Material Delivery QR Code</h4>
 		  <h5>Booking Id: {{ booking_id }}</h5>
 		  <img style="max-width: 100px;" src="https://chart.googleapis.com/chart?cht=qr&chs=250x250&chld=L|0&chl={{ booking_id }}"/>
