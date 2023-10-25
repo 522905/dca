@@ -1525,10 +1525,11 @@ class ConnectionDisbursementSocialMediaUpdatesView(FormView, ApplicationView):
             return reverse('ujjwala:connection_disbursement_social_media_updates_list')
         if '_next_form_view' in self.request.POST:
             obj = self.get_object()
-            return reverse(
-                'ujjwala:connection_disbursement_material_delivery_view',
-                kwargs={'pk': obj.pk}
-            )
+            # return reverse(
+            #     'ujjwala:connection_disbursement_material_delivery_view',
+            #     kwargs={'pk': obj.pk}
+            # )
+            return reverse('ujjwala:connection_disbursement_social_media_updates_list')
         return '.'
 
     def dispatch(self, request, *args, **kwargs):
@@ -1588,7 +1589,8 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
         disbursement_drive = get_current_user_disbursement_drive(get_current_user())
         return ConnectionDisbursement.objects.filter(
             status__in=[
-                ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
+                # ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
+                ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
                 ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
             ],
             walk_in_date__date=datetime.datetime.today().date(),
@@ -1614,7 +1616,7 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
                     )
                     return redirect('ujjwala:connection_disbursement_material_delivery_list')
                 if object.status not in (
-                        ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
+                        # ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
                         ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
                         ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED
                 ) and object.social_media_update_done:
