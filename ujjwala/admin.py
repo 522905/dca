@@ -373,6 +373,7 @@ class ConnectionDisbursementAdmin(ExportActionMixin, FSMTransitionCustomMixin, a
         'parent',
         'created_on',
         'updated_on',
+        'social_media_update_done',
         'status',
     )
     list_filter = ('status', WalkInFilter, DisbursementDriveFilter, DisbursementDriveIdInputFilter,)
