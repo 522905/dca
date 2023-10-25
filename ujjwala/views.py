@@ -1591,16 +1591,29 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
     permission = 'has_view_permission'
 
     def get_queryset(self):
-        disbursement_drive = get_current_user_disbursement_drive(get_current_user())
-        return ConnectionDisbursement.objects.filter(
-            status__in=[
-                # ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
-                ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
-                ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
-            ],
-            walk_in_date__date=datetime.datetime.today().date(),
-            disbursement_drive=disbursement_drive
-        ).order_by('updated_on')
+        disbursement_drive: DisbursementDrive = get_current_user_disbursement_drive(get_current_user())
+
+        if disbursement_drive.social_media_required:
+            return ConnectionDisbursement.objects.filter(
+                social_media_update_done=True,
+                status__in=[
+                    # ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
+                    ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
+                    ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
+                ],
+                walk_in_date__date=datetime.datetime.today().date(),
+                disbursement_drive=disbursement_drive
+            ).order_by('updated_on')
+        else:
+            return ConnectionDisbursement.objects.filter(
+                status__in=[
+                    # ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
+                    ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
+                    ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
+                ],
+                walk_in_date__date=datetime.datetime.today().date(),
+                disbursement_drive=disbursement_drive
+            ).order_by('updated_on')
 
     def get_template_names(self):
         return 'ujjwala/disbursement/forms/connection_disbursement_material_delivery_listview.html'
