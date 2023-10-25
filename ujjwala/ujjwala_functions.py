@@ -1192,6 +1192,63 @@ def send_ujjwala_self_pre_inspection_share_link(contact_mobile, user_id, usernam
     return False
 
 
+def send_ujjwala_share_on_social_media_link(request, contact_mobile, application):
+    url = reverse('ujjwala:share_on_social_media', kwargs={'pk': application.connection_disbursement.id})
+    url = url[1:]
+    url = request.build_absolute_uri(url)
+    req = requests.get(
+        "https://tinyurl.com/api-create.php",
+        # params={'url': "https://dca.arungas.com/{}".format(url)},
+        params={'url': url},
+        # params={'url': "https://dca.arungas.com/{}".format(url)},
+    )
+
+    short_url = req.text
+
+    body_text = {
+        "countryCode": "+91",
+        "phoneNumber": contact_mobile,
+        "type": "Template",
+        "traits": {
+            "name": application.name,
+        },
+        # "callbackData": "some_callback_data",
+        "template": {
+            "name": "ujjwala_share_on_social_media",
+            "languageCode": "hi",
+            "headerValues": [],
+            "bodyValues": [
+                short_url
+            ],
+            "buttonValues": {
+                "0": [
+                    url
+                ]
+            }
+        }
+    }
+
+    ujjwala_connection_disbursement_content_type = ContentType.objects.get(
+        app_label='ujjwala', model='connectiondisbursement'
+    )
+    data = track.client.post(
+        api_key=settings.INTERAKT_API_KEY,
+        path="/v1/public/message/",
+        body=body_text
+    ).json()
+
+    if data.get('result', ''):
+        CommunicationLog.objects.create(
+            content_type=ujjwala_connection_disbursement_content_type,
+            object_id=application.connection_disbursement_id,
+            channel_subscriber=contact_mobile,
+            event="walk_in_social_media_share_link", channel="whatsapp",
+            message_id=data.get('id')
+        )
+        return True
+    return False
+
+
 def find_ujjwala_application_using_contact(contact_mobile):
     return True
 

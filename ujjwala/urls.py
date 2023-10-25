@@ -17,7 +17,7 @@ from .robos.nic_error_robo import UjjwalaApplicationNicErrorRobotAPIViewSet
 from .robos.robo_error_viewsets import UjjwalaApplicationRoboExecutionErrorAPIViewSet
 from .robos.sdms_relationship_robo import UjjwalaApplicationSdmsRelationshipViewSet
 from .views import UjjwalaApplicationWebFormView, WebFormOldView, UjjwalaApplicationIframeWebFormView, \
-    LegalDocumentsAcceptedToPendingView
+    LegalDocumentsAcceptedToPendingView, ShareOnSocialMediaView
 from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet, UjjwalaApplicationOtpViewSet
 
 router = routers.DefaultRouter()
@@ -319,5 +319,10 @@ urlpatterns = [
         '^ujjwala-application/(?P<pk>[^/.]+)/legal_documents_pending$',
         LegalDocumentsAcceptedToPendingView.as_view(),
         name="legal_documents_pending"
+    ),
+    url(
+        '^ujjwala-application/share_on_social_media/(?P<pk>[^/.]+)/$',
+        ShareOnSocialMediaView.as_view(),
+        name="share_on_social_media"
     ),
 ]

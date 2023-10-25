@@ -42,7 +42,7 @@ from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbur
 from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_pre_inspection_applicable, \
     send_ujjwala_application_whatsapp_link_v2, download_audit_documents_for_ids, is_member_of_disbursement_drive, \
     get_current_user_disbursement_drive, is_member_of_second_cylinder_delivery, \
-    send_ujjwala_self_pre_inspection_share_link, is_member_of_reviewer_group
+    send_ujjwala_self_pre_inspection_share_link, is_member_of_reviewer_group, send_ujjwala_share_on_social_media_link
 from utils.enums import RoboSdmsDedeupStatusEnum
 from utils.global_functions import unsign_data_base64, sign_data_base64
 
@@ -1062,6 +1062,10 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
                 connection_disbursement.walk_in_date = datetime.datetime.now()
                 connection_disbursement.disbursement_drive = disbursement_drive
                 connection_disbursement.save()
+
+                send_ujjwala_share_on_social_media_link(self.request, connection_disbursement.parent.contact_mobile,
+                                                        connection_disbursement.parent
+                                                        )
                 return HttpResponseRedirect('.')
 
     def get_template_names(self):
@@ -2976,3 +2980,27 @@ class LegalDocumentsAcceptedToPendingView(View):
         return JsonResponse({
             "status": "Updated"
         })
+
+
+class ShareOnSocialMediaView(View):
+    def get(self, request, *args, **kwargs):
+        connection_disbursement_id = kwargs.get('pk', '')
+
+        if not connection_disbursement_id:
+            return render(
+                self.request, "ujjwala/response.html",
+                {"heading": "Share On Social Media", "message": "Invalid Link"}
+            )
+
+        connection_disbursement = ConnectionDisbursement.objects.get(pk=connection_disbursement_id)
+
+        if connection_disbursement.social_media_update_done:
+            return render(
+                self.request, "ujjwala/response.html",
+                {"heading": "Share On Social Media", "message": "Page Will Be Here !!!"}
+            )
+        else:
+            return render(
+                self.request, "ujjwala/response.html",
+                {"heading": "Share On Social Media", "message": "Social Media Photo Not Uploaded"}
+            )
