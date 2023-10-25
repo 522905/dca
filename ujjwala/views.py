@@ -1629,7 +1629,7 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
             if not object.social_media_update_done:
                 social_step_cleared = False
 
-        if not (object.status == ConnectionDisbursementStatusEnum.SV_LABEL_PRINT and social_step_cleared):
+        if object.status == ConnectionDisbursementStatusEnum.SV_LABEL_PRINT and not social_step_cleared:
             messages.add_message(
                 request, messages.ERROR, "Social Media Photo Is Pending. Please Upload To Continue"
             )
