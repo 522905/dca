@@ -910,7 +910,7 @@ class UjjwalaConnectionDisbursementListView(ListView):
                     if obj.status not in disbursement_drive.legal_documents_conditions:
                         messages.add_message(
                             request, messages.ERROR, "Application Id: {} - {}".format(
-                                application_id, obj.get_status_display()
+                                application_id, obj.status
                             )
                         )
                     else:

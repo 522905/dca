@@ -1167,7 +1167,9 @@ class DisbursementDrive(models.Model):
 	)
 	social_media_required = models.BooleanField(default=True)
 	legal_documents_conditions = models.JSONField(
-		null=True, blank=True, default=["LEGAL_DOCUMENTS_ACCEPTED", "LEGAL_DOCUMENTS_REVIEW"]
+		null=True, blank=True, default=[
+			"LEGAL_DOCUMENTS_ACCEPTED", "LEGAL_DOCUMENTS_REVIEW", "LEGAL_DOCUMENTS_REVIEW", "SV_LABEL_PRINT"
+		]
 	)
 
 	class Meta:
@@ -1224,7 +1226,7 @@ class ConnectionDisbursement(models.Model):
 	installation_type = models.CharField(
 		max_length=32, choices=InstallationTypeEnum.choices, default=InstallationTypeEnum.MECHANIC
 	)
-	social_media_update_done = models.BooleanField(null=True, blank=True)
+	social_media_update_done = models.BooleanField(default=False)
 
 	status = FSMField(
 		default=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
