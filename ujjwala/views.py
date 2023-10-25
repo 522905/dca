@@ -1387,11 +1387,12 @@ class ConnectionDisbursementSvLabelPrintView(FormView, ApplicationView):
         if '_back_list_view' in self.request.POST:
             return reverse('ujjwala:connection_disbursement_sv_label_print_list')
         if '_next_form_view' in self.request.POST:
-            obj = self.get_object()
-            return reverse(
-                'ujjwala:connection_disbursement_social_media_updates_view',
-                kwargs={'pk': obj.pk}
-            )
+            return reverse('ujjwala:connection_disbursement_sv_label_print_list')
+            # obj = self.get_object()
+            # return reverse(
+            #     'ujjwala:connection_disbursement_social_media_updates_view',
+            #     kwargs={'pk': obj.pk}
+            # )
         return '.'
 
     def dispatch(self, request, *args, **kwargs):
