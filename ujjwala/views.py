@@ -2315,14 +2315,14 @@ class BarCodeLabelPrintView(View):
             dict([(f'address_{index + 1}', val) for index, val in enumerate(address_lines)])
         )
 
+        name = obj.parent.name
         sdms_info = obj.parent.get_sdms_consumer_details()
-        # contact_name, contact_address
-        name = sdms_info.get('contact_name')
-        if not name:
-            name = obj.parent.name
+        if sdms_info:
+            name = sdms_info.get('contact_name')
 
+        # contact_name, contact_address
         context_dict.update({
-            # "name": sdms_info.get('contact_name', obj.parent.name),
+            # "name": sdms_info.get('contact_name', obj.parent.name) if sdms_info else obj.parent.name,
             "name": name,
             "id": obj.parent.id,
             "date": datetime.datetime.today().strftime("%d/%m/%Y")
