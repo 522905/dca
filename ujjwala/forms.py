@@ -1040,6 +1040,11 @@ class ConnectionDisbursementPreGenerateOtpForm(forms.Form):
 		pass
 
 
+class CancelInvitationForm(forms.Form):
+	application_id = forms.IntegerField()
+	reason = forms.CharField(widget=forms.TextInput)
+
+
 class UjjwalaApplicationGenerateOtpForm(forms.Form):
 	form_type = forms.CharField(widget=forms.HiddenInput, initial='generate_otp_form')
 	otp_generated_for = forms.CharField(widget=forms.HiddenInput)
