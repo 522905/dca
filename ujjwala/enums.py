@@ -223,6 +223,11 @@ class SchemeOnboardingStatusEnum(models.TextChoices):
 	ONBOARD_WITH_NCTC = 'ONBOARD_WITH_NCTC', 'Onboard With NCTC'
 
 
+class ConnectionDisbursementInvitationEnum(models.TextChoices):
+	VALID = 'VALID', 'Valid'
+	CANCELED = 'CANCELED', 'Canceled'
+
+
 class NicClearedCustomerRemarksEnum(models.TextChoices):
 	NOT_INTERESTED = 'NOT_INTERESTED', 'Not Interested'
 	INTERESTED = 'INTERESTED', 'Interested'

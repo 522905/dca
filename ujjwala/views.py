@@ -23,7 +23,7 @@ from django_currentuser.middleware import get_current_user
 from otp.models import Otp
 from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
     PreInspectionTypeEnum, DisbursementDriveStatusEnum, UjjwalaApplicationDocumentsEnum, NicClearedCustomerRemarksEnum, \
-    UjjwalaV2ApplicationAvailabilityChannel
+    UjjwalaV2ApplicationAvailabilityChannel, ConnectionDisbursementInvitationEnum
 from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm, \
     PreInspectionGenerateOtpForm, PreInspectionValidateOtpForm, \
     KitchenPreInspectionForm, AudioOnSafetyForm, PreviewPreInspectionForm, PreInspectionAllocatedGenerateOtpForm, \
@@ -35,7 +35,7 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
     PreInspectionConvertForm, LegalDocumentsReviewAdminForm, SetPrimaryPhoneNumberForm, \
     UpdateBankDetailsForm, NicClearedCustomerRemarksForm, PrintDocumentsForm, \
     InstallationReviewAdminForm, FirstCylinderMaterialDeliveryForm, SecondCylinderMaterialDeliveryForm, \
-    PreInspectionReviewAdminForm
+    PreInspectionReviewAdminForm, CancelInvitationForm
 from ujjwala.global_functions import login_required_if_mech_inspection
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
     FamilyMembers, DisbursementDrive
@@ -3010,3 +3010,40 @@ class ShareOnSocialMediaView(View):
                 self.request, "ujjwala/response.html",
                 {"heading": "Share On Social Media", "message": "Social Media Photo Not Uploaded"}
             )
+
+
+# @method_decorator(login_required, 'dispatch')
+class CancelInvitationView(FormView):
+    form_class = CancelInvitationForm
+    template_name = "ujjwala/disbursement/cancel_invitation.html"
+
+    def get_object(self, queryset=None):
+        try:
+            obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
+        except:
+            raise Http404(
+                "No application with id: {} found.".format(self.kwargs.get('pk'))
+            )
+        return obj
+
+
+    def form_valid(self, form):
+        data = form.clean()
+        obj = UjjwalaV2Application.objects.filter(id=data['application_id']).first()
+        if not obj:
+            messages.add_message(self.request, messages.ERROR,
+                                 "No Application Exist With Given Id: {}".format(data['application_id']))
+            return redirect(".")
+
+        invitation = obj.connection_disbursement.invitation.filter(status=ConnectionDisbursementInvitationEnum.VALID)
+        if not invitation.exists():
+            messages.add_message(self.request, messages.ERROR,
+                                 "No Invitation Exist For Given Application Id: {}".format(data['application_id']))
+            return redirect(".")
+
+        invitation = invitation.first(0)
+        invitation.status = ConnectionDisbursementInvitationEnum.CANCELED
+        invitation.canceled_reason = data['reason']
+        invitation.save()
+        messages.add_message(self.request, messages.ERROR, "Invitation Canceled")
+        return redirect(".")

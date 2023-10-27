@@ -24,7 +24,7 @@ from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMo
 	RejectionTypeEnum, RoboSdmsDedeupStatusEnum, UserDocumentsEnum, PreInspectionStatusEnum, \
 	ConnectionDisbursementStatusEnum, PreInspectionTypeEnum, SchemeOnboardingStatusEnum, NicClearedCustomerRemarksEnum, \
 	DisbursementDriveStatusEnum, InstallationTypeEnum, product_quantity_map, UjjwalaV2ApplicationAvailabilityStatus, \
-	UjjwalaV2ApplicationAvailabilityChannel, UjjwalaProductEnum
+	UjjwalaV2ApplicationAvailabilityChannel, UjjwalaProductEnum, ConnectionDisbursementInvitationEnum
 from ujjwala.forms import ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
 	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm, NewRelationCreated, \
@@ -1607,6 +1607,7 @@ class ConnectionDisbursementInvitation(models.Model):
 	sv_uploaded_on = models.DateTimeField(null=True, blank=True)
 	booking_id = models.CharField(max_length=16, null=True, blank=True)
 	product = models.CharField(max_length=128, choices=UjjwalaProductEnum.choices, null=True, blank=True)
+	canceled_reason = models.CharField(max_length=256, null=True, blank=True)
 	status = models.CharField(max_length=32, default='VALID')
 
 	def download_links(self):
