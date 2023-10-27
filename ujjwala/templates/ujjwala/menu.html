@@ -67,10 +67,11 @@
 {#                <li><a href="{% url 'ujjwala:connection_disbursement_list' %}" data-turbolinks="false">1 - Applicant Walk In </a></li>#}
                 <li><a href="{% url 'ujjwala:connection_disbursement_review_form_abc_list' %}" data-turbolinks="false">1 - Accept Legal Documents </a></li>
                 <li><a href="{% url 'ujjwala:connection_disbursement_sv_label_print_list' %}" data-turbolinks="false">2 - SV Label Print </a></li>
+
             </ul>
         </li>
         {% endif %}
-
+        <li><a href="{% url 'ujjwala:cancel_invitation' %}" data-turbolinks="false">Cancel Invitation</a></li>
         <li>
             <div class="iocn-link">
             <a href="#" data-turbolinks="false">
