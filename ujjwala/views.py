@@ -8,6 +8,7 @@ from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.signing import Signer
 from django.forms import formset_factory
@@ -20,6 +21,7 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 from django_currentuser.middleware import get_current_user
 
+from communication_log.models import CommunicationLog
 from otp.models import Otp
 from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
     PreInspectionTypeEnum, DisbursementDriveStatusEnum, UjjwalaApplicationDocumentsEnum, NicClearedCustomerRemarksEnum, \
@@ -42,7 +44,8 @@ from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbur
 from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_pre_inspection_applicable, \
     send_ujjwala_application_whatsapp_link_v2, download_audit_documents_for_ids, is_member_of_disbursement_drive, \
     get_current_user_disbursement_drive, is_member_of_second_cylinder_delivery, \
-    send_ujjwala_self_pre_inspection_share_link, is_member_of_reviewer_group, send_ujjwala_share_on_social_media_link
+    send_ujjwala_self_pre_inspection_share_link, is_member_of_reviewer_group, send_ujjwala_share_on_social_media_link, \
+    send_otp_using_channel
 from utils.enums import RoboSdmsDedeupStatusEnum
 from utils.global_functions import unsign_data_base64, sign_data_base64
 
@@ -1066,6 +1069,10 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
                 send_ujjwala_share_on_social_media_link(self.request, connection_disbursement.parent.contact_mobile,
                                                         connection_disbursement.parent
                                                         )
+                send_otp_using_channel('connection_disbursement_dac', connection_disbursement.parent.contact_mobile,
+                                       f'connectiondisbursement:{connection_disbursement.id}:Material-Delivery',
+                                       connection_disbursement.id
+                                       )
                 return HttpResponseRedirect('.')
 
     def get_template_names(self):
@@ -1717,6 +1724,8 @@ class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
                 return redirect('ujjwala:connection_disbursement_material_delivery_list')
             if connection_disbursement.status == \
                     ConnectionDisbursementStatusEnum.SV_LABEL_PRINT:
+
+
                 return self.otp_verification(connection_disbursement)
         return super().dispatch(request, *args, **kwargs)
 
@@ -3041,7 +3050,7 @@ class CancelInvitationView(FormView):
                                  "No Invitation Exist For Given Application Id: {}".format(data['application_id']))
             return redirect(".")
 
-        invitation = invitation.first(0)
+        invitation = invitation.first()
         invitation.status = ConnectionDisbursementInvitationEnum.CANCELED
         invitation.canceled_reason = data['reason']
         invitation.save()
