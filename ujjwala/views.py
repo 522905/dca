@@ -2323,7 +2323,7 @@ class BarCodeLabelPrintView(View):
 
         # contact_name, contact_address
         context_dict.update({
-            # "name": sdms_info.get('contact_name', obj.parent.name) if sdms_info else obj.parent.name,
+            #"name": sdms_info.get('contact_name', obj.parent.name) if sdms_info else obj.parent.name)
             "name": name,
             "id": obj.parent.id,
             "date": datetime.datetime.today().strftime("%d/%m/%Y")

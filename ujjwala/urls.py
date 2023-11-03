@@ -19,6 +19,7 @@ from .robos.sdms_relationship_robo import UjjwalaApplicationSdmsRelationshipView
 from .views import UjjwalaApplicationWebFormView, WebFormOldView, UjjwalaApplicationIframeWebFormView, \
     LegalDocumentsAcceptedToPendingView, ShareOnSocialMediaView, CancelInvitationView
 from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet, UjjwalaApplicationOtpViewSet
+from .robos.sv_cancellation import SvCancellationViewSet
 
 router = routers.DefaultRouter()
 router.register(r'ujjwala-application', UjjwalaApplicationViewSet)
@@ -32,6 +33,7 @@ router.register(
 )
 router.register(r'ujjwala-otp', UjjwalaApplicationOtpViewSet, basename='ujjwala_otp')
 router.register(r'ujjwala-extra', UjjwalaApplicationExtraViewSet, basename='ujjwala_extra')
+router.register(r'sv-cancellation', SvCancellationViewSet, basename='sv_cancellation')
 
 urlpatterns = [
     path('', views.index),

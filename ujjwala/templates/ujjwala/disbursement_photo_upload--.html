@@ -1,0 +1,70 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap"
+    rel="stylesheet">
+<script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
+<div class="main p-2 pt-0 form_label">
+    <form method="post" id="">
+        {% csrf_token %}
+        <div class="card">
+            <div class="card-body">
+                {{form.application_id}}
+                <div class="row mb-2 m-0">
+                    <div class="col-sm-12 photo_block">
+                        <span class="hidden-field">{{ form.disbursement_photo }}</span>
+                        <label>Disbursement Photo<br> (फोटो)</label>
+                        <p id="disbursement_photo"></p>
+                        {{ form.disbursement_photo.errors }}
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer float-right">
+                <input class="btn btn-success float-right rounded-0"  onclick="disbursementUppy()" type="button" value="Submit" />
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+     window.kitchenPhotoUppy = new Uppy.Core({
+		debug: true,
+		autoProceed: true,
+		restrictions: {
+			maxFileSize: 50000000,
+			maxNumberOfFiles: 1,
+			minNumberOfFiles: 1,
+			allowedFileTypes: ['image/*'],
+		}
+	})
+    .use(Uppy.Dashboard, {
+        trigger: '#disbursement_photo',
+        inline: true,
+        target: '#disbursement_photo',
+        showProgressDetails: true,
+        note: 'Image only, 1 file',
+        height: 200,
+        metaFields: [],
+        id: 'disbursement_photo',
+        browserBackButtonClose: false
+    })
+    .use(Uppy.Tus, {
+        endpoint: 'https://tus.dca.arungas.com/files/',
+    })
+    kitchenPhotoUppy.on('complete', result => {
+		$('#id_disbursement_photo').val(result.successful[0].uploadURL);
+	})
+    function disbursementUppy(uppyObj, key, label, fileMandatory) {
+        if(uppyObj.state.totalProgress < 100) {
+            window.alert("upload in Progress(अपलोड प्रगति पर है)");
+            return {valid: false, key: key, msg: `${label} upload in Progress(अपलोड प्रगति पर है)`};
+        } else {
+            $('body').find('form').submit;
+        }
+    }
+
+</script>
+{% endblock %}

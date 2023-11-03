@@ -1,14 +1,25 @@
 import io
 
+import arrow
 import requests
 from django.conf import settings
 from communication_log.models import CommunicationLog
 
 import magic
-
+from functools import wraps
 from domestic_app.utils import get_minio_public_url
+# from ujjwala.jobs import ensure_db_connection
+from django.db import close_old_connections
 from ujjwala.management.commands.ujjwala_file_worker import upload_compressed_file_to_tus
 import logging
+
+
+def ensure_db_connection(func):
+    @wraps(func)
+    def run(*args, **kwargs):
+        close_old_connections()
+        return func(*args, **kwargs)
+    return run
 
 
 def interakt_webhook_job_processing(data):
@@ -19,12 +30,16 @@ def interakt_webhook_job_processing(data):
         comm_obj = CommunicationLog.objects.get(channel='whatsapp', message_id=mid)
 
         _type = data.get('type')
+        _timestamp = arrow.get(data['timestamp']).to("Asia/Kolkata").datetime
         if _type == "message_api_sent":
             comm_obj.status = "SENT"
+            comm_obj.sent_on = _timestamp
         elif _type == "message_api_delivered":
             comm_obj.status = "DELIVERED"
+            comm_obj.delivered_on = _timestamp
         elif _type == "message_api_read":
             comm_obj.status = "READ"
+            comm_obj.read_on = _timestamp
         elif _type == "message_api_failed":
             comm_obj.status = "FAILED"
             method_name = 'event_{}_channel_{}'.format(comm_obj.event, 'sms')
@@ -103,6 +118,7 @@ def compress_connection_application_documents(application_id):
         customer_doc.save()
 
 
+@ensure_db_connection
 def move_files_to_minio_processing(application_id):
     from connection_app.models import ConnectionApplication
     from connection_app.models import minio_client
@@ -128,8 +144,9 @@ def move_files_to_minio_processing(application_id):
         doc_file_bytes = io.BytesIO(doc_file.content)
         descriptor = magic.detect_from_content(doc_file_bytes.read(2048))
         file_extension = descriptor.mime_type.split('/')[-1]
+        if file_extension == 'plain': continue
 
-        if not file_extension == 'pdf':
+        if file_extension not in ('pdf',):
             if not len(doc_file.content) <= 512000:
                 print("File To Be Compressed: {} Original Size: {}".format(doc.link, len(doc_file.content)))
                 response = requests.get("{}{}".format(settings.THUMBOR_URL_INTERNAL_WEBP_COMPRESSED, doc.link))

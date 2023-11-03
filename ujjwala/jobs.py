@@ -17,7 +17,7 @@ from ujjwala.management.commands.ujjwala_file_worker import upload_compressed_fi
 from ujjwala.models import ConnectionDisbursementInvitation, ConnectionDisbursement, PreInspection
 from ujjwala.ujjwala_functions import application_needs_to_be_audited, application_needs_to_be_audited_by_id
 
-dedup_portal = IoclOmcDedup('305948', 'Indane@123')
+dedup_portal = IoclOmcDedup('305948', 'Ludhiana@123')
 
 minio_api_client = Minio(
     settings.MINIO_API_ENDPOINT,
@@ -37,7 +37,7 @@ def ensure_db_connection(func):
     return run
 
 
-def move_file_to_minio(file_url_to_move, new_file_name, bucket_name, delete_src=False):
+def move_file_to_minio(file_url_to_move, new_file_name, bucket_name, delete_src=True):
     """
     Move given file to minio
     params:

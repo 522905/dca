@@ -29,7 +29,7 @@ class UjjwalaApplicationSdmsRelationshipViewSet(viewsets.ViewSet):
 		).exclude(
 			family_members__dob__gte='2004-09-01'
 		).exclude(
-#			robo_execution_failed_count__gt=2
+			robo_execution_failed_count__gt=2
 		).annotate(
 			custom_order=Case(
 				When(pre_inspection__status=PreInspectionStatusEnum.ACCEPTED, then=Value(1)),

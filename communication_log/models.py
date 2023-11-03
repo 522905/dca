@@ -16,3 +16,7 @@ class CommunicationLog(models.Model):
 	status = models.CharField(max_length=25, default="Initial")
 	cron_processed = models.BooleanField(default=False)
 	message_id = models.CharField(max_length=64, null=True)
+
+	sent_on = models.DateTimeField(null=True, blank=True)
+	delivered_on = models.DateTimeField(null=True, blank=True)
+	read_on = models.DateTimeField(null=True, blank=True)

@@ -1,0 +1,112 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap"
+	rel="stylesheet">
+<script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
+<div class="form_label p-2">
+    <div class="card card-profile pt-0 mt-0 " style="width:100%">
+		<div class="row justify-content-center m-0" style="max-width: 400px; margin: 0 auto !important; padding: 10px;">
+			<div style="width: 50%; float:left">
+				<div class="card-profile-image">
+					<img style="max-height:150px;width:100%" src="{{obj.parent.document_self}}">
+				</div>
+			</div>
+			<div style="width: 50%; float:right">
+				<div class="card-body pt-0">
+					<div class="text-center">
+						<h5 class="h3">{{ obj.parent.name }}({{ obj.parent.id }})<span class="font-weight-light"></span></h5>
+						<div class="h5 font-weight-300">
+							<i class="ni location_pin mr-2"></i>{{ obj.parent.contact_mobile }}
+						</div>
+						<div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
+							{% if address_json == address_json  %}
+								{% for key,data in obj.parent.address_json.items %}
+									{{data}},
+								{% endfor %}
+							{% else %}
+								{{ obj.parent.address }}
+							{% endif%}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="main p-2 pt-0 form_label">
+    <form method="post" id="">
+        {% csrf_token %}
+		
+		<div class="card p-2">
+			{% if messages %}
+			{% for msg in messages %}
+			  <div class="alert alert-info alert-dismissable">
+				<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+				{{msg.message}}
+			  </div>
+			{% endfor %}
+		  {% endif %}
+		  <h4>Material Delivery QR Code</h4>
+		  <h5>Booking Id: {{ booking_id }}</h5>
+		  <img style="max-width: 100px;" src="https://chart.googleapis.com/chart?cht=qr&chs=250x250&chld=L|0&chl={{ booking_id }}"/>
+		</div>
+
+        <div class="card">
+            <div class="card-body">
+                {{form.application_id}}
+                <div class="row mb-2 M-0">
+                    <div class="col-sm-12 photo_block">
+                        <span class="hidden-field">{{ form.disbursement_photo }}</span>
+                        <label>Disbursement Photo<br> (फोटो)</label>
+                        <p id="disbursement_photo"></p>
+                        {{ form.disbursement_photo.errors }}
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer float-right">
+                <input class="btn btn-success float-right rounded-0" type="submit" value="Submit" />
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+     window.kitchenPhotoUppy = new Uppy.Core({
+		debug: true,
+		autoProceed: true,
+		restrictions: {
+			maxFileSize: 50000000,
+			maxNumberOfFiles: 1,
+			minNumberOfFiles: 1,
+			allowedFileTypes: ['image/*'],
+		}
+	})
+    .use(Uppy.Dashboard, {
+        trigger: '#disbursement_photo',
+        inline: true,
+        target: '#disbursement_photo',
+        showProgressDetails: true,
+        note: 'Image only, 1 file',
+        height: 200,
+        metaFields: [],
+        id: 'disbursement_photo',
+        browserBackButtonClose: false
+    })
+    .use(Uppy.Compressor, {
+        quality: 0.8,
+        maxWidth: 2048,
+        resize: 'contain',
+        limit: 10,
+    })
+    .use(Uppy.Tus, {
+        endpoint: 'https://tus.dca.arungas.com/files/',
+    })
+    kitchenPhotoUppy.on('complete', result => {
+		$('#id_disbursement_photo').val(result.successful[0].uploadURL);
+	})
+
+</script>
+{% endblock %}

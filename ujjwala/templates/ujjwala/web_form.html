@@ -55,13 +55,13 @@
             </div>
             <div class="row mb-2">
                 {# <img src="https://arungas.com/public/har-ghar-tiranga.png" style="width: 100%;">#}
-		<img src="https://arungas.com/public/web_form_banner.JPG" style="width: 100%;">
+		<img src="https://arungas.com/public/web_formbanner-news.jpg" style="width: 100%;">
             </div>
             <div class="row">
                 <div class="col-12">
                     <h3 class="" style="font-size: 20px; margin-top: 0px; text-align: center;">प्रधानमंत्री उज्ज्वला
-                        योजना 2.0<br><span style="font-size: 12px;">(फ्री गैस कनेक्शन पात्रता योग्य प्रवासी ज़रूरतमंद
-                            महिलाओं के लिए)
+                        योजना 2.0<br><span style="font-size: 12px;">  <b style="color: red;">नोट सभी सेवाएँ निःशुल्क हैं</b>
+                          
                         </span>
                     </h3>
                     <p style="font-size: 12px; text-align: center; color: #2d5593; font-weight: bold;"> प्रधानमंत्री
@@ -134,12 +134,12 @@
                     <span id="self-details"></span>
                     
                     <div class="form-group">
-                        <label>Applicant Mobile Number.(आवेदक का मोबाइल नंबर) <strong style="color:red">*</strong></label>
+                        <label>Aadhaar linked mobile number.(आधार से जुड़ा मोबाइल नंबर) <strong style="color:red">*</strong></label>
                         <input type="tel" class="form-control" id="uid_linked_mobile" onblur="checkContactMobileValidity();" pattern="[6789][0-9]{9}" name="uid_linked_mobile"
                             maxlength="10" required />
                         <div class="row m-0">
                             <span id="contact_mobile_detail"></span>
-                        </div>
+                        </div>                   
                     </div>
 
                     <div class="form-group ">
@@ -149,7 +149,7 @@
                                 Select Marital Status (चुनें वैवाहिक स्थिति)
                             </option>
                             <option value="MARRIED">Married (विवाहित)</option>
-                            <option value="UNMARRIED">Unmarried (अविवाहित)</option>
+                            <!-- <option value="UNMARRIED">Unmarried (अविवाहित)</option> -->
                             <!-- <option value="DIVORCED">Divorced (तलाक)</option>
                                 <option value="WIDOW">WIDOW ()</option> -->
                         </select>
@@ -195,7 +195,7 @@
                         <div class="col">
                             <div class="form-group">
                                 <label for="room_no">Room No.(कमरा सं.) <br><span style="color:red">केवल [0-9] दर्ज करें</span> <strong style="color:red">*</strong></label><br>
-                                <input type="text" class="form-control" id="room_no" name="room_no" maxlength="3" onblur="this.reportValidity();" pattern="^[0-9\\/]*)$" required />
+                                <input type="text" class="form-control" id="room_no" name="room_no" maxlength="5" onblur="this.reportValidity();" pattern="^[0-9\\/]*)$" required />
                             </div>
                         </div>
                     </div>

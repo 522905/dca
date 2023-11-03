@@ -23,15 +23,10 @@ from django_currentuser.middleware import get_current_user
 from django_rq import job
 
 from communication_log.models import CommunicationLog
-from reference_data.models import TokensExcluded
 from ujjwala.enums import UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, ResidentialStatusEnum, \
-    MaritalStatusEnum, UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, RoboSdmsDedeupStatusEnum, \
-    PrintDocumentsTypeEnum, DisbursementDriveStatusEnum
+    MaritalStatusEnum, UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, RoboSdmsDedeupStatusEnum
 from datetime import datetime
 
-
-from utils.global_functions import upload_file_to_minio_bucket, sign_data_base64
-from utils.qrcode import generate_base64_qr_code
 
 COMPILED_REGEX_PATTERN_AADHAR_EXISTS = re.compile(
     """Aadhaar already exists for customer (?P<contact_name>.*?) of (?P<distributor_name>.*)\(SBL-EXL-00151\)"""
@@ -59,14 +54,10 @@ PDF_COMPRESSION_OPTIONS = {
     "pageSize": "A4", "imageDpi": 150, "imageQuality": 80, "lowquality": True
 }
 
-VALID_CHARS_IN_NAME_PATTERN = r'^[A-Za-z. ]+$'
-RELATION_VALIDATION_PATTERN = r'.(fathe|moth|husba|government|india).'
-
 
 def valid_file_uploaded(url):
     res = requests.head(url, headers={"Tus-Resumable": "1.0.0"})
     header_info = res.headers
-    if 'Upload-Length' not in header_info: return True, 0
     upload_length = int(header_info['Upload-Length'])
     if upload_length == 0 or int(header_info['Upload-Offset']) == 0:
         return False, upload_length
@@ -80,10 +71,7 @@ def get_compressed_file_link_jpeg(url):
     res = requests.head(url, headers={"Tus-Resumable": "1.0.0"})
     header_info = res.headers
 
-    if 'Upload-Length' not in header_info:
-        return f'http://dca.arungas.com:6988/unsafe/fit-in/1920x1080/filters:format(jpeg)/{url}'
-
-    if int(header_info.get('Upload-Length', 0)) <= 499000:
+    if int(header_info['Upload-Length']) <= 499000:
         file_type = header_info['Upload-Metadata'].split(',')[0].split(' ')[1]
         if 'webp' not in base64.b64decode(file_type).decode():
             return url
@@ -173,8 +161,7 @@ def download_ujjwala_documents(obj):
             'age': '{}'.format(str(datetime.now().year - self_doc.dob.year)),
             'relation_name': relationship_name,
             'customer_signature_file': customer_signature_file,
-            'date': datetime.now().strftime("%d-%m-%Y"),
-            'qr_code': generate_base64_qr_code("{},{}".format(obj.parent.parent_id, "FORM_C"))
+            'date': datetime.now().strftime("%d-%m-%Y")
         })
 
         ujjwala_declaration_pdf = requests.post(
@@ -184,7 +171,6 @@ def download_ujjwala_documents(obj):
                 "options": PDF_COMPRESSION_OPTIONS
             }
         )
-
         attachments.append(('annexure_14_points.pdf', ujjwala_declaration_pdf))
 
         if obj.residential_status == ResidentialStatusEnum.LIVING_ALONE:
@@ -200,8 +186,7 @@ def download_ujjwala_documents(obj):
         occupancy_form_html_template = loader.get_template(occupancy_template_html)
         occupancy_form_html = occupancy_form_html_template.render({
             'obj': obj,
-            'customer_signature_file': customer_signature_file,
-            'qr_code': generate_base64_qr_code("{},{}".format(obj.parent.parent_id, "FORM_B"))
+            'customer_signature_file': customer_signature_file
         })
 
         occupancy_form_pdf = requests.post(
@@ -268,6 +253,7 @@ def download_ujjwala_documents(obj):
 
 
 def download_ujjwala_legal_docs_to_upload(obj, signature=True):
+<<<<<<< Updated upstream
     attachments = []
     if obj.version == 'V1':
         signature = False
@@ -345,8 +331,7 @@ def download_ujjwala_legal_docs_to_upload(obj, signature=True):
     #     file_extension = descriptor.mime_type.split('/')[-1]
     #     attachments.append(('{}.{}'.format(customer_doc.type, file_extension), doc_file))
 
-    family_members_doc = obj.family_members.all()
-    #.exclude(relation=FamilyMemberRelationEnum.SELF)
+    family_members_doc = obj.family_members.exclude(relation=FamilyMemberRelationEnum.SELF)
 
     for family_member in family_members_doc:
         uid_front_doc_file = get_compressed_file_link_jpeg(family_member.uid_front_link)
@@ -384,6 +369,124 @@ def download_ujjwala_legal_docs_to_upload(obj, signature=True):
     resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_{}_legal_docs.zip'.format(obj.id)
 
     return resp
+=======
+	attachments = []
+	if obj.version == 'V1':
+		signature = False
+	if signature:
+		customer_signature_file = obj.documents.filter(
+			type=UjjwalaApplicationDocumentsEnum.CUSTOMER_SIGNATURE
+		).first().link
+	else:
+		customer_signature_file = None
+
+	self_doc = obj.family_members.filter(relation=FamilyMemberRelationEnum.SELF).first()
+
+	relationship_name = ''
+
+	if obj.residential_status == ResidentialStatusEnum.LIVING_WITH_FAMILY:
+		if obj.marital_status == MaritalStatusEnum.MARRIED:
+			relationship_name = obj.family_members.filter(relation=FamilyMemberRelationEnum.HUSBAND).first().name
+		elif obj.marital_status == MaritalStatusEnum.UNMARRIED:
+			relationship_name = obj.family_members.filter(relation=FamilyMemberRelationEnum.FATHER).first().name
+
+	ujjwala_declaration_html_template = loader.get_template("ujjwala/forms/ujjwala_declaration_form.html")
+	ujjwala_declaration_html = ujjwala_declaration_html_template.render({
+		'app_id': obj.id,
+		'name': obj.name,
+		'uid': list(self_doc.uid_no),
+		'age': '{}'.format(str(datetime.now().year - self_doc.dob.year)),
+		'relation_name': relationship_name,
+		'customer_signature_file': customer_signature_file,
+		'date': datetime.now().strftime("%d-%m-%Y")
+	})
+
+	ujjwala_declaration_pdf = requests.post(
+		settings.HTML_TO_PDF_SERVER_URL,
+		json={
+			"content": ujjwala_declaration_html,
+			"options": PDF_COMPRESSION_OPTIONS
+		}
+	)
+	attachments.append(('annexure_14_points.pdf', ujjwala_declaration_pdf))
+
+	if obj.residential_status == ResidentialStatusEnum.LIVING_ALONE:
+		occupancy_template_html = "ujjwala/forms/single_occupancy_form.html"
+		occupancy_file_name = "single_occupancy"
+	else:
+		occupancy_template_html = "ujjwala/forms/family_occupancy_form.html"
+		occupancy_file_name = "family_occupancy"
+
+	if obj.version not in ('V1', 'V2'):
+		obj.address = ' '.join([obj.address_json.get(r, '') for r in obj.address_json])
+
+	occupancy_form_html_template = loader.get_template(occupancy_template_html)
+	occupancy_form_html = occupancy_form_html_template.render({
+		'obj': obj,
+		'customer_signature_file': customer_signature_file
+	})
+
+	occupancy_form_pdf = requests.post(
+		settings.HTML_TO_PDF_SERVER_URL,
+		json={
+			"content": occupancy_form_html,
+			"options": PDF_COMPRESSION_OPTIONS
+		}
+	)
+
+	attachments.append(('{}.pdf'.format(occupancy_file_name), occupancy_form_pdf))
+
+	# customer_docs = obj.documents.exclude(
+	#     type=UjjwalaApplicationDocumentsEnum.CUSTOMER_SIGNATURE
+	# ).all()
+	#
+	# for customer_doc in customer_docs:
+	#     doc_file = requests.get("{}{}".format(settings.THUMBOR_URL, customer_doc.link))
+	#     doc_file_bytes = io.BytesIO(doc_file.content)
+	#     descriptor = magic.detect_from_content(doc_file_bytes.read(2048))
+	#     file_extension = descriptor.mime_type.split('/')[-1]
+	#     attachments.append(('{}.{}'.format(customer_doc.type, file_extension), doc_file))
+
+	family_members_doc = obj.family_members.all()
+	#.exclude(relation=FamilyMemberRelationEnum.SELF)
+
+	for family_member in family_members_doc:
+		uid_front_doc_file = get_compressed_file_link_jpeg(family_member.uid_front_link)
+		uid_front_doc_file = requests.get(uid_front_doc_file)
+
+		# uid_back_doc_file = requests.get(family_member.uid_back_link)
+		# if not valid_file_size(uid_back_doc_file):
+		#     uid_back_doc_file = requests.get("{}{}".format(settings.THUMBOR_URL, family_member.uid_back_link))
+
+		uid_front_doc_file_bytes = io.BytesIO(uid_front_doc_file.content)
+		# uid_back_doc_file_bytes = io.BytesIO(uid_back_doc_file.content)
+
+		uid_front_descriptor = magic.detect_from_content(uid_front_doc_file_bytes.read(2048))
+		# uid_back_descriptor = magic.detect_from_content(uid_back_doc_file_bytes.read(2048))
+
+		uid_front_doc_file_extension = uid_front_descriptor.mime_type.split('/')[-1]
+		# uid_back_doc_file_extension = uid_back_descriptor.mime_type.split('/')[-1]
+
+		attachments.append(
+			('{}_uid_front.{}'.format(family_member.relation, uid_front_doc_file_extension), uid_front_doc_file)
+		)
+		# attachments.append(
+		#     ('{}_uid_back.{}'.format(family_member.relation, uid_back_doc_file_extension), uid_back_doc_file)
+		# )
+
+	documents_zip = io.BytesIO()
+
+	with zipfile.ZipFile(documents_zip, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
+		for key, value in attachments:
+			zf.writestr(key, value.content)
+
+	# Grab ZIP file from in-memory, make response with correct MIME-type
+	resp = HttpResponse(documents_zip.getvalue(), content_type="application/x-zip-compressed")
+	# ..and correct content-disposition
+	resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_{}_legal_docs.zip'.format(obj.id)
+
+	return resp
+>>>>>>> Stashed changes
 
 
 def download_ujjwala_physical_legal_docs(obj):
@@ -414,8 +517,7 @@ def download_ujjwala_physical_legal_docs(obj):
         'relation_name': relationship_name,
         # 'customer_signature_file': customer_signature_file,
         'customer_signature_file': '',
-        'date': datetime.now().strftime("%d-%m-%Y"),
-        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "LEGAL_DOC_ANNEXURE_14_POINTS"))
+        'date': datetime.now().strftime("%d-%m-%Y")
     })
 
     ujjwala_declaration_pdf = requests.post(
@@ -441,8 +543,7 @@ def download_ujjwala_physical_legal_docs(obj):
     occupancy_form_html = occupancy_form_html_template.render({
         'obj': obj,
         # 'customer_signature_file': customer_signature_file
-        'customer_signature_file': '',
-        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "LEGAL_DOC_FAMILY_OCCUPANCY"))
+        'customer_signature_file': ''
     })
 
     occupancy_form_pdf = requests.post(
@@ -456,8 +557,7 @@ def download_ujjwala_physical_legal_docs(obj):
     attachments.append(('{}.pdf'.format(occupancy_file_name), occupancy_form_pdf))
     ujjwala_pre_inspection_html_template = loader.get_template("ujjwala/forms/pre_inspection_form.html")
     ujjwala_pre_inspection_html = ujjwala_pre_inspection_html_template.render({
-        'obj': pre_inspection,
-        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "LEGAL_DOC_PRE_INSPECTION"))
+        'obj': pre_inspection
     })
 
     ujjwala_pre_inspection_pdf = requests.post(
@@ -488,101 +588,6 @@ def download_ujjwala_physical_legal_docs(obj):
     resp = HttpResponse(myio.getvalue(), content_type="application/pdf")
     resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_physical_{}_legal_docs.pdf'.format(obj.id)
     return resp
-
-
-def re_create_legal_docs(application):
-    physical_legal_document = download_ujjwala_physical_legal_docs(application)
-    upload_url = upload_file_to_minio_bucket(
-        physical_legal_document,
-        "ujjwaladocuments",
-        "ujjwala_{}_physical_legal_document".format(application.id)
-    )
-    return physical_legal_document
-
-
-def re_create_legal_docs_pdf(application):
-    document = re_create_legal_docs(application)
-    resp = HttpResponse(document, content_type="application/pdf")
-    resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_physical_{}_legal_docs.pdf'.format(
-        application.id)
-    return resp
-
-
-def download_installation_form(obj):
-
-    self_doc = obj.family_members.filter(relation=FamilyMemberRelationEnum.SELF).first()
-
-    installation_form_html_template = loader.get_template("ujjwala/forms/installation_form.html")
-    installation_html = installation_form_html_template.render({
-        'app_id': obj.id,
-        'name': obj.name,
-        'uid_no': self_doc.uid_no,
-        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "INSTALLATION_DOCUMENT"))
-    })
-
-    installation_form_pdf = requests.post(
-        settings.HTML_TO_PDF_SERVER_URL,
-        json={
-            "content": installation_html,
-            "options": PDF_COMPRESSION_OPTIONS
-        }
-    )
-
-    # merger = PdfFileMerger()
-    # temp_files = []
-    # for key, value in attachments:
-    #     file = io.BytesIO()
-    #     file.write(value.content)
-    #     temp_files.append(file)
-    #     merger.append(file, import_bookmarks=False)
-    #
-    # myio = io.BytesIO()
-    # merger.write(myio)
-    # merger.close()
-    #
-    # [f.close() for f in temp_files]
-    #
-    # myio.seek(0)
-
-    resp = HttpResponse(installation_form_pdf.content, content_type="application/pdf")
-    resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_installation_{}_doc.pdf'.format(obj.id)
-    return resp
-
-
-def download_installation_form_with_signature(obj):
-
-    customer_signature_file = obj.documents.filter(
-        type=UjjwalaApplicationDocumentsEnum.CUSTOMER_SIGNATURE
-    ).first()
-
-    if customer_signature_file:
-        customer_signature_file = customer_signature_file.link
-    else:
-        customer_signature_file = ''
-
-    self_doc = obj.family_members.filter(relation=FamilyMemberRelationEnum.SELF).first()
-
-    installation_form_html_template = loader.get_template("ujjwala/forms/signed_installation_form.html")
-    installation_html = installation_form_html_template.render({
-        'app_id': obj.id,
-        'name': obj.name,
-        'uid_no': self_doc.uid_no,
-        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "INSTALLATION_DOCUMENT")),
-        'customer_signature_file': customer_signature_file
-    })
-
-    installation_form_pdf = requests.post(
-        settings.HTML_TO_PDF_SERVER_URL,
-        json={
-            "content": installation_html,
-            "options": PDF_COMPRESSION_OPTIONS
-        }
-    )
-    return installation_form_pdf
-
-    # resp = HttpResponse(installation_form_pdf.content, content_type="application/pdf")
-    # resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_signed_installation_{}_doc.pdf'.format(obj.id)
-    # return resp
 
 
 def get_salutation(family_member):
@@ -819,6 +824,13 @@ def process_omc_dedupe_result(omc_dedup_result):
     return {}
 
 
+def is_application_ready_for_disbursement(application):
+    if application.status == UjjwalaV2ApplicationStatus.NIC_CLEARED and \
+            application.pre_inspection.status == PreInspectionStatusEnum.ACCEPTED:
+        application.transition_ready_for_disbursement()
+        application.save()
+
+
 def send_whatsapp_contact_otp(request, contact_mobile):
     from otp.models import Otp
 
@@ -1047,6 +1059,7 @@ def send_ujjwala_application_whatsapp_link_v1(contact_mobile, user_id):
 
 
 def send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id):
+<<<<<<< Updated upstream
     data = get_signed_share_data(contact_mobile, user_id)
     url = reverse('ujjwala:ujjwala_application_link', kwargs={'data': data})
     url = url[1:]
@@ -1058,9 +1071,10 @@ def send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id):
         "traits": {
             "name": contact_mobile,
         },
+        # "callbackData": "some_callback_data",
         "template": {
-            "name": "ujjwala_application_shared_link_20082022",
-            #"name": "votercard3122022",
+            # "name": "ujjwala_application_shared_link_20082022",
+            "name": "ujjwala_application_shared_link",
             "languageCode": "hi",
             "headerValues": [
             ],
@@ -1087,274 +1101,65 @@ def send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id):
         )
         return True
     return False
+=======
+	data = get_signed_share_data(contact_mobile, user_id)
+	url = reverse('ujjwala:ujjwala_application_link', kwargs={'data': data})
+	url = url[1:]
 
+	body_text = {
+		"countryCode": "+91",
+		"phoneNumber": contact_mobile,
+		"type": "Template",
+		"traits": {
+			"name": contact_mobile,
+		},
+		# "callbackData": "some_callback_data",
+		"template": {
+			"name": "ujjwala_application_shared_link_20082022",
+			#"name": "ujjwala_application_shared_link_27082022",
+			"languageCode": "hi",
+			"headerValues": [
+			],
+			"bodyValues": [],
+			"buttonValues": {
+				"0": [
+					url
+				]
+			}
+		}
+	}
 
-def send_offer_whatsapp_link(contact_mobile):
+	data = track.client.post(
+		api_key=settings.INTERAKT_API_KEY,
+		path="/v1/public/message/",
+		body=body_text
+	).json()
 
-    body_text = {
-        "countryCode": "+91",
-        "phoneNumber": contact_mobile,
-        "type": "Template",
-        "traits": {
-            "name": contact_mobile,
-        },
-        "template": {
-            "name": "offer_template",
-             "languageCode": "en",
-            "headerValues": [
-            ],
-            "bodyValues": [
-                "https://www.arungas.com/public/offer/offer.html",
-            ],
-            "buttonValues": {
-                "0": [
-                    "https://www.arungas.com/public/offer/offer.html"
-                ]
-            }
-        }
-    }
-
-    data = track.client.post(
-        api_key=settings.INTERAKT_API_KEY,
-        path="/v1/public/message/",
-        body=body_text
-    ).json()
-
-    if data.get('result', ''):
-        CommunicationLog.objects.create(
-            channel_subscriber=contact_mobile,
-            event="01615201005_offer", channel="whatsapp",
-            message_id=data.get('id')
-        )
-        return True
-    return False
-
-
-def send_ujjwala_self_pre_inspection_share_link(contact_mobile, user_id, username, application):
-    data = sign_data_base64({
-        'user_id': user_id,
-        'username': username,
-        'creation': datetime.now(),
-        'pre_inspection_id': application.pre_inspection.id
-    })
-
-    url = reverse('ujjwala:shared_self_pre_inspection_link_view', kwargs={'data': data})
-    url = url[1:]
-
-    req = requests.get(
-        "https://tinyurl.com/api-create.php",
-        # params={'url': "https://dca.arungas.com/{}".format(url)},
-        params={'url': "http://0.0.0.0:60610/{}".format(url)},
-        # params={'url': "https://dca.arungas.com/{}".format(url)},
-    )
-
-    short_url = req.text
-
-    body_text = {
-        "countryCode": "+91",
-        "phoneNumber": contact_mobile,
-        "type": "Template",
-        "traits": {
-            "name": application.name,
-        },
-        # "callbackData": "some_callback_data",
-        "template": {
-            "name": "ujjwala_self_pre_inspection_share_link_14102022",
-            "languageCode": "hi",
-            "headerValues": [
-                "https://arungas.com/public/ujjwala_stickers.pdf"
-            ],
-            "bodyValues": [
-                application.name,
-                "https://arungas.com/public/self_pre_inspection_help_file.pdf"
-            ],
-            "buttonValues": {
-                "0": [
-                    url
-                ]
-            }
-        }
-    }
-
-    ujjwala_pre_inspection_content_type = ContentType.objects.get(
-        app_label='ujjwala', model='preinspection'
-    )
-    data = track.client.post(
-        api_key=settings.INTERAKT_API_KEY,
-        path="/v1/public/message/",
-        body=body_text
-    ).json()
-
-    if data.get('result', ''):
-        CommunicationLog.objects.create(
-            content_type=ujjwala_pre_inspection_content_type,
-            object_id=application.pre_inspection.id,
-            channel_subscriber=contact_mobile,
-            event="pre_inspection_type_self_share", channel="whatsapp",
-            message_id=data.get('id')
-        )
-        return True
-    return False
-
-
-def send_ujjwala_share_on_social_media_link(request, contact_mobile, application):
-    url = reverse('ujjwala:share_on_social_media', kwargs={'pk': application.connection_disbursement.id})
-    url = url[1:]
-    url = request.build_absolute_uri(url)
-    req = requests.get(
-        "https://tinyurl.com/api-create.php",
-        # params={'url': "https://dca.arungas.com/{}".format(url)},
-        params={'url': url},
-        # params={'url': "https://dca.arungas.com/{}".format(url)},
-    )
-
-    short_url = req.text
-
-    body_text = {
-        "countryCode": "+91",
-        "phoneNumber": contact_mobile,
-        "type": "Template",
-        "traits": {
-            "name": application.name,
-        },
-        # "callbackData": "some_callback_data",
-        "template": {
-            "name": "ujjwala_share_on_social_media",
-            "languageCode": "hi",
-            "headerValues": [],
-            "bodyValues": [
-                short_url
-            ],
-            "buttonValues": {
-                "0": [
-                    url
-                ]
-            }
-        }
-    }
-
-    ujjwala_connection_disbursement_content_type = ContentType.objects.get(
-        app_label='ujjwala', model='connectiondisbursement'
-    )
-    data = track.client.post(
-        api_key=settings.INTERAKT_API_KEY,
-        path="/v1/public/message/",
-        body=body_text
-    ).json()
-
-    if data.get('result', ''):
-        CommunicationLog.objects.create(
-            content_type=ujjwala_connection_disbursement_content_type,
-            object_id=application.connection_disbursement.id,
-            channel_subscriber=contact_mobile,
-            event="walk_in_social_media_share_link", channel="whatsapp",
-            message_id=data.get('id')
-        )
-        return True
-    return False
+	if data.get('result', ''):
+		CommunicationLog.objects.create(
+			channel_subscriber=contact_mobile,
+			event="ujjwala_application_shared_link", channel="whatsapp",
+			message_id=data.get('id')
+		)
+		return True
+	return False
+>>>>>>> Stashed changes
 
 
 def find_ujjwala_application_using_contact(contact_mobile):
     return True
 
 
-def match_name(name):
-    """
-    Matches given name against pattern
-    params:
-        name
-    """
-    return re.match(VALID_CHARS_IN_NAME_PATTERN, name)
-
-
-def get_valid_tokens(tokens, gender):
-    valid_tokens = []
-    for token in tokens:
-        if not TokensExcluded.objects.filter(name=token.lower(), gender=gender).exists():
-            valid_tokens.append(token)
-    return valid_tokens
-
-
-def get_gender(relation):
-    if relation in (
-            FamilyMemberRelationEnum.SELF,
-            FamilyMemberRelationEnum.MOTHER,
-            FamilyMemberRelationEnum.DAUGHTER
-    ):
-        return "Female"
-    else:
-        return "Male"
-
-
-def is_valid_name(name, gender):
-    """
-    Validates given name
-    """
-    name = name.lower()
-    if len(name) <= 3:
-        return False, "Name Length"
-
-    tokens = name.strip().split(" ")
-
-    tokens = get_valid_tokens(tokens, gender)
-
-    if len(tokens) > 2:
-        return False, "Name Tokens Count Exceeds"
-
-    for token in tokens:
-        if len(token) <= 3:
-            return False, "Token: {} Length less than equal to 3".format(token)
-
-        if re.match(RELATION_VALIDATION_PATTERN, token):
-            return False, "Wrong Name: {}".format(token)
-
-        if not re.match(VALID_CHARS_IN_NAME_PATTERN, token):
-            return False, "Wrong Character In Name: {}".format(token)
-
-    return True, "No Error In Name"
-
-
 def application_needs_to_be_audited(data):
-    reason = []
-
-    result, message = is_valid_name(data.get('name'), 'FEMALE')
-
-    if not result:
-        reason.append("Self Member {}".format(message))
-
     family_members = data.get('family_members')
-
+    reason = []
     for fm in family_members:
-        result, message = is_valid_name(fm['name'], get_gender(fm['relation']).upper())
-
-        if not result:
-            reason.append("{} Member {}".format(fm['relation'], message))
-
         if fm.get('ocr_processed') == 'no':
             reason.append(
                 "Family Member: {} having UID {} ocr could not be processed.".format(
                     fm['name'], fm['uid_no']
                 )
             )
-    return '\n'.join(reason)
-
-
-def application_needs_to_be_audited_by_id(obj):
-    reason = []
-
-    # result, message = is_valid_name(obj.name, 'FEMALE')
-
-    # if not result:
-    #    reason.append("Self Member {}".format(message))
-
-    family_members = obj.family_members
-
-    for fm in family_members.all():
-        result, message = is_valid_name(fm.name, fm.get_gender().upper())
-
-        if not result:
-            reason.append("{} Member {}".format(fm.relation, message))
-
     return '\n'.join(reason)
 
 
@@ -1431,142 +1236,3 @@ def fsm_custom_audit_points_description(func=None):
         kwargs['description'] = instance.audit_points
         return func(instance, *args, **kwargs)
     return wrapped
-
-
-def download_audit_document(application, documents_type):
-    attachments = []
-    documents_list = []
-    form_template = loader.get_template("ujjwala/extra/audit_document_template.html")
-    for document_type in documents_type:
-        if document_type == PrintDocumentsTypeEnum.FORM_ABC:
-            documents_list.append({
-                'img_url': application.connection_disbursement.documents.filter(
-                    type="LEGAL_DOC_PRE_INSPECTION"
-                ).first().link,
-                'alt_text': "Form A",
-                'file_name': 'form_a'
-            })
-
-            documents_list.append({
-                'img_url': application.connection_disbursement.documents.filter(
-                    type="LEGAL_DOC_FAMILY_OCCUPANCY"
-                ).first().link,
-                'alt_text': "Form B",
-                'file_name': 'form_b'
-            })
-
-            documents_list.append({
-                'img_url': application.connection_disbursement.documents.filter(
-                    type="LEGAL_DOC_ANNEXURE_14_POINTS"
-                ).first().link,
-                'alt_text': "Form C",
-                'file_name': 'form_c'
-            })
-
-        if document_type == PrintDocumentsTypeEnum.AADHAR:
-            for fm in application.family_members.all():
-                documents_list.append({
-                    'info': "{} {}".format(fm.name, fm.relation),
-                    'img_url': fm.uid_front_link,
-                    'alt_text': "Uid Front",
-                    'file_name': 'uid_front_{}'.format(fm.uid_no)
-                })
-
-        if document_type == PrintDocumentsTypeEnum.BANK_DETAILS:
-            documents_list.append({
-                'info': "{} {}".format(application.bank_account_number, application.ifsc_code),
-                'img_url': application.documents.filter(
-                    type=UjjwalaApplicationDocumentsEnum.BANK_DETAIL
-                ).first().link,
-                'alt_text': "Bank Details",
-                'file_name': 'bank_{}'.format(application.bank_account_number)
-            })
-
-    for document in documents_list:
-        form_template_html = form_template.render(document)
-        form_pdf = requests.post(
-            settings.HTML_TO_PDF_SERVER_URL,
-            json={
-                "content": form_template_html,
-                "options": PDF_COMPRESSION_OPTIONS
-            }
-        )
-        attachments.append(('{}.pdf'.format(document.get('file_name')), form_pdf))
-
-    merger = PdfFileMerger()
-    temp_files = []
-    for key, value in attachments:
-        file = io.BytesIO()
-        file.write(value.content)
-        temp_files.append(file)
-        merger.append(file, import_bookmarks=False)
-
-    myio = io.BytesIO()
-    merger.write(myio)
-    merger.close()
-
-    [f.close() for f in temp_files]
-
-    myio.seek(0)
-    return {
-        'filename': 'ujjwala_id_{}_audit_docs.pdf'.format(application.id),
-        'content': myio.getvalue()
-    }
-    # resp = HttpResponse(myio.getvalue(), content_type="application/pdf")
-    # resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_id_{}_audit_docs.pdf'.format(application.id)
-    # return resp
-
-
-def download_audit_documents_for_ids(application_ids, documents_type):
-    from ujjwala.models import UjjwalaV2Application
-
-    application_id_list = application_ids.split(",")
-    application_list = UjjwalaV2Application.objects.filter(id__in=application_id_list)
-
-    documents_to_zip = []
-
-    for application in application_list:
-        document = download_audit_document(application, documents_type)
-        documents_to_zip.append(document)
-
-    documents_zip = io.BytesIO()
-
-    with zipfile.ZipFile(documents_zip, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
-        for document in documents_to_zip:
-            zf.writestr(document.get('filename'), data=document.get('content'))
-
-    # Grab ZIP file from in-memory, make response with correct MIME-type
-    resp = HttpResponse(documents_zip.getvalue(), content_type="application/x-zip-compressed")
-    resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_audit_docs.zip'
-    return resp
-
-
-def is_member_of_second_cylinder_delivery(user):
-    return user.has_perm('ujjwala.second_cylinder_delivery')
-
-
-def is_member_of_reviewer_group(user):
-    return user.has_perm('ujjwala.is_part_of_reviewer_group')
-
-
-def is_member_of_disbursement_drive(user):
-    from ujjwala.models import DisbursementDrive
-
-    disbursement_drive = DisbursementDrive.objects.filter(
-        status=DisbursementDriveStatusEnum.ACTIVE, team_members=user
-    ).first()
-
-    if disbursement_drive:
-        return True
-    else:
-        return False
-
-
-def get_current_user_disbursement_drive(user):
-    from ujjwala.models import DisbursementDrive
-
-    disbursement_drive = DisbursementDrive.objects.filter(
-        team_members=user, status=DisbursementDriveStatusEnum.ACTIVE
-    ).first()
-
-    return disbursement_drive

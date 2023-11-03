@@ -82,9 +82,9 @@
                                     </a>
                                     {% if obj.pre_inspection.status != 'ACCEPTED' %}
                                         {% if obj.pre_inspection.status != 'SUBMITTED' %}
-                                            <a href="{% url 'ujjwala:whatsapp_pre_inspection_type_self' pk=obj.id %}">
+                                            <!--<a href="{% url 'ujjwala:whatsapp_pre_inspection_type_self' pk=obj.id %}">
                                                 <b> (Whatsapp Pre-Inspection Type Self)</b>
-                                            </a>
+                                            </a>-->
                                         {% endif %}
                                     {% endif %}
                                     {% else %}

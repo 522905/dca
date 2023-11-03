@@ -371,6 +371,7 @@ class UjjwalaWhatsappCommunication(object):
 				],
 				"bodyValues": [
 					self.name,
+					'https://youtu.be/pQNdDHklka0',
 					"https://dca.arungas.com/ujjwala/portal/pre-inspection/self/{}/".format(str(pre_inspection_id))
 				],
 				"buttonValues": {
