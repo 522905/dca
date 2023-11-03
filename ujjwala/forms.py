@@ -20,7 +20,7 @@ from ujjwala.enums import UjjwalaV2ApplicationStatus, ConnectionDisbursementStat
 	RejectionTypeEnum, PreInspectionTypeEnum, RoboSdmsDedeupStatusEnum, NicClearedCustomerRemarksEnum, \
 	PrintDocumentsTypeEnum, InstallationTypeEnum, UjjwalaProductEnum, product_quantity_map
 from ujjwala.models import UjjwalaApplicationDocumentsEnum
-from ujjwala.ujjwala_functions import __get_ref_no__, id_generator, valid_file_uploaded
+from ujjwala.ujjwala_functions import __get_ref_no__, id_generator, valid_file_uploaded, send_otp_using_channel
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -924,6 +924,10 @@ class ConnectionDisbursementSocialMediaUpdatesForm(forms.Form):
 		# 	by=get_current_user()
 		# )
 		obj.save()
+		send_otp_using_channel('connection_disbursement_dac', self.connection_disbursement.parent.contact_mobile,
+		                       f'connectiondisbursement:{self.connection_disbursement.id}:Material-Delivery',
+		                       self.connection_disbursement.id
+		                       )
 
 
 class ConnectionDisbursementMaterialDeliveryForm(forms.Form):
