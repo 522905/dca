@@ -185,27 +185,27 @@
                              style="width:200px">{{ name }}</div>
                         <div class="label">आधार नंबर :</div>
                         <div class="text border-dotted" style="width:200px; font-size: 12px">{{ uid_no }}</div>
-                        <div class="label">। मैं तहसील लुधिआना जिला लुधिआना की रहने वाली हूँ।</div>
+                         <div class="label">1. मैं तहसील लुधिआना जिला लुधिआना की रहने वाली हूँ।</div>
                     </div>
                 </td>
             </tr>
             <tr class="mt-3">
                 <td>
-                    <p>2. मैंने अरुण इंडने, चीमा चौक में उज्ज्वला गैस कनेक्शन लेने के लिए फॉर्म भरा था।
+                    <p>2. मैंने अरुण इंडेन, चीमा चौक में उज्ज्वला गैस कनेक्शन लेने के लिए फॉर्म भरा था।
                         <!-- <span class="float-right">हॉं</span> -->
                     </p>
                 </td>
             </tr>
             <tr>
                 <td>
-                    <p>3. मुझे मेरा गैस कनेक्शन मिल चूका है।
+                    <p>3.  मेरा गैस कनेक्शन मिल चूका है।मुझे दिए गए सिलिंडर का वजन एवं लीकेज मेरे सामने चेक किया गया हैं।
                         <!-- <span class="float-right">नही</span> -->
                     </p>
                 </td>
             </tr>
             <tr>
                 <td>
-                    <p>4. उज्ज्वला कनेक्शन मुझे बिल्कुल मुफ्त दिया गया है और मुझसे कोई राशि नहीं ली गई है।
+                    <p>4. मुझे उज्ज्वला कनेक्शन मिल चूका है और मुझसे कोई राशि नहीं ली गई है।
                         <!-- <span class="float-right">हॉं</span> -->
                     </p>
                 </td>
@@ -219,7 +219,7 @@
             </tr>
             <tr>
                 <td>
-                    <p>6. गैस एजेंसी मैकेनिक द्वारा रसोई में स्टोव रेगुलेटर आदि इनस्टॉल किया गय। और मुझे गैस कनेक्शन चलाकर दिखाया गया।
+                    <p>6. गैस एजेंसी मैकेनिक द्वारा रसोई में स्टोव रेगुलेटर आदि इनस्टॉल किया गया और मुझे गैस कनेक्शन चलाकर दिखाया गया।
                         <!-- <span class="float-right">हॉं</span> -->
                     </p>
                 </td>
@@ -293,12 +293,7 @@
                         <td class="float-left">
                             <div class="label">हस्ताक्षर:</div>
                         </td>
-                        <td class="float-right" style="width: 200px;">
-                            <div class="text border-dotted">
-                                <!-- <img src="{{ customer_signature_file }}"
-                                     style="max-width: 200px; width: 60px; object-fit: contain; "/> -->
-                            </div>
-                        </td>
+
                     </tr>
                 </table>
             </div>
@@ -345,6 +340,8 @@
 {#            </tr>#}
 {#        </table>#}-->
     </div>
+                                                <img style="object-fit: cover; height: 150px; object-position: top"
+                                         src="{{ obj.parent.document_self|resize:"1000x200" }}">
 </div>
 </body>
 </html>

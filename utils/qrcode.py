@@ -23,7 +23,7 @@ def get_text_block(str_to_find, text_blocks):
 				return text_block
 
 
-def append_qr_code_to_sv(content, pdf_bytes):
+def append_qr_code_to_sv(content, booking_id, pdf_bytes):
 	# SV Arun Indane Signature Rectangle Co-ordinates
 	# https://www.arungas.com/public/arun_indane_stamp_sign.png
 
@@ -48,6 +48,16 @@ def append_qr_code_to_sv(content, pdf_bytes):
 		# add the image
 		first_page.insertImage(image_rectangle, stream=file)
 
+	x = 60
+	y = y + 45
+
+	with io.BytesIO() as file:
+		image_rectangle = fitz.Rect(x, y, x + 48, y + 48)
+		url = pyqrcode.create(booking_id)
+		url.png(file)
+		# add the image
+		first_page.insertImage(image_rectangle, stream=file)
+
 	text_block = get_text_block("ON BEHALF OF INDIAN OIL CORP. LTD.", first_page.getTextBlocks())
 	x, y = 150, text_block[1] - 39
 	image_rectangle = fitz.Rect(x, y, x+75, y+50)
@@ -55,3 +65,13 @@ def append_qr_code_to_sv(content, pdf_bytes):
 
 	file_handle.deletePage(1)
 	return file_handle.write()
+
+
+if __name__ == '__main__':
+	pdf_file = open("/tmp/sv_12368.pdf", "rb")
+	pdf_file_bytes = io.BytesIO(pdf_file.read())
+	bytes_stream = append_qr_code_to_sv("12334,SV", "2-1547851542", pdf_file_bytes)
+	with open("/tmp/converted.pdf", "wb") as t:
+		t.write(bytes_stream)
+
+	pdf_file.close()

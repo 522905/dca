@@ -729,7 +729,11 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
              return HttpResponse('Connection Disbursement Not Found')
         file = request.FILES.get('file')
         pdf_file_bytes = io.BytesIO(file.read())
-        bytes_stream = append_qr_code_to_sv("{},SV".format(obj.parent_id), pdf_file_bytes)
+        bytes_stream = append_qr_code_to_sv(
+            "{},SV".format(obj.parent_id),
+            request.POST.get('booking_id', None),
+            pdf_file_bytes
+        )
         # Bucket Name: ujjwaladocuments
         doc_file_bytes = io.BytesIO(bytes_stream)
         sv_upload_link = upload_file_type_obj_to_minio_bucket(
