@@ -21,6 +21,8 @@ from ujjwala.enums import UjjwalaV2ApplicationStatus, ConnectionDisbursementStat
 	PrintDocumentsTypeEnum, InstallationTypeEnum, UjjwalaProductEnum, product_quantity_map
 from ujjwala.models import UjjwalaApplicationDocumentsEnum
 from ujjwala.ujjwala_functions import __get_ref_no__, id_generator, valid_file_uploaded, send_otp_using_channel
+from django.utils.timezone import now
+
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -1079,7 +1081,8 @@ class UjjwalaApplicationGenerateOtpForm(forms.Form):
 			mobile=self.data.get('mobile'), content_type=content_type, object_id=pk, transition=transition
 		).first()
 
-		if otp_obj and datetime.datetime.now().replace(tzinfo=pytz.UTC) < otp_obj.valid_till.replace(tzinfo=pytz.UTC):
+#		if otp_obj and datetime.datetime.now().astimezone(pytz.timezone("Asia/Kolkata")) < otp_obj.valid_till.astimezone(pytz.timezone("Asia/Kolkata")):
+		if otp_obj and now() < otp_obj.valid_till:
 			otp = otp_obj.otp
 		else:
 			ref_no = None

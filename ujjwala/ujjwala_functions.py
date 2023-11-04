@@ -30,7 +30,7 @@ from ujjwala.enums import UjjwalaApplicationDocumentsEnum, FamilyMemberRelationE
     MaritalStatusEnum, UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, RoboSdmsDedeupStatusEnum, \
     PrintDocumentsTypeEnum, DisbursementDriveStatusEnum
 from datetime import datetime
-
+from django.utils.timezone import now
 
 from utils.global_functions import upload_file_to_minio_bucket, sign_data_base64
 from utils.qrcode import generate_base64_qr_code
@@ -1585,8 +1585,8 @@ def send_otp_using_channel(template, mobile, otp_generated_for, application_id, 
         mobile=mobile, content_type=content_type, object_id=application_id, transition=transition
     ).first()
 
-    if otp_obj and datetime.now().replace(tzinfo=pytz.UTC) < otp_obj.valid_till.replace(
-            tzinfo=pytz.UTC):
+#    if otp_obj and datetime.now().astimezone(pytz.timezone("Asia/Kolkata")) < otp_obj.valid_till.astimezone(pytz.timezone("Asia/Kolkata")):
+    if otp_obj and now() < otp_obj.valid_till:
         otp = otp_obj.otp
     else:
         ref_no = None

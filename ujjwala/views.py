@@ -1069,10 +1069,10 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
                 send_ujjwala_share_on_social_media_link(self.request, connection_disbursement.parent.contact_mobile,
                                                         connection_disbursement.parent
                                                         )
-                send_otp_using_channel('connection_disbursement_dac', connection_disbursement.parent.contact_mobile,
-                                       f'connectiondisbursement:{connection_disbursement.id}:Material-Delivery',
-                                       connection_disbursement.id
-                                       )
+#                send_otp_using_channel('connection_disbursement_dac', connection_disbursement.parent.contact_mobile,
+#                                       f'connectiondisbursement:{connection_disbursement.id}:Material-Delivery',
+#                                       connection_disbursement.id
+#                                       )
                 return HttpResponseRedirect('.')
 
     def get_template_names(self):
