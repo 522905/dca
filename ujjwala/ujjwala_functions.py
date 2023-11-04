@@ -519,7 +519,8 @@ def download_installation_form(obj):
         'app_id': obj.id,
         'name': obj.name,
         'uid_no': self_doc.uid_no,
-        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "INSTALLATION_DOCUMENT"))
+        'qr_code': generate_base64_qr_code("{},{}".format(obj.id, "INSTALLATION_DOCUMENT")),
+        'obj': obj
     })
 
     installation_form_pdf = requests.post(
