@@ -34,6 +34,7 @@ class UjjwalaApplicationNicViewSet(viewsets.ViewSet):
 		from ujjwala.models import UjjwalaV2Application
 
 		application: UjjwalaV2Application = UjjwalaV2Application.objects.get(pk=kwargs.get('pk'))
+		application.consumer_id = request.data.get('consumer_id')
 		application.transition_sdms_relation_cancelled_to_legal_documents_upload()
 		application.save()
 
