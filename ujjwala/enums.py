@@ -110,6 +110,7 @@ class RoboSdmsDedeupStatusEnum(models.TextChoices):
 class UjjwalaV2ApplicationAvailabilityStatus(models.TextChoices):
 	NOT_INTERESTED = 'NOT_INTERESTED', 'Not Interested'
 	INTERESTED = 'INTERESTED', 'Interested'
+	INTERESTED_ADDRESS_CHANGE = 'INTERESTED_ADDRESS_CHANGE', 'Interested Address Change'
 
 
 class UjjwalaV2ApplicationAvailabilityChannel(models.TextChoices):

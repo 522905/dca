@@ -37,7 +37,7 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
     PreInspectionConvertForm, LegalDocumentsReviewAdminForm, SetPrimaryPhoneNumberForm, \
     UpdateBankDetailsForm, NicClearedCustomerRemarksForm, PrintDocumentsForm, \
     InstallationReviewAdminForm, FirstCylinderMaterialDeliveryForm, SecondCylinderMaterialDeliveryForm, \
-    PreInspectionReviewAdminForm, CancelInvitationForm
+    PreInspectionReviewAdminForm, CancelInvitationForm, UpdateAddressForm
 from ujjwala.global_functions import login_required_if_mech_inspection
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
     FamilyMembers, DisbursementDrive
@@ -2391,6 +2391,46 @@ class NicErrorUpdateAddress(FormView):
         data = form.clean()
         old_address_json = obj.address_json or obj.address
         obj.transition_nic_address_updated(
+            description=old_address_json,
+            address_json=data['address_json']
+        )
+        obj.save()
+        return HttpResponse("<b>Address Updated Successfully</b>")
+
+
+class UpdateAddressView(FormView):
+    form_class = UpdateAddressForm
+    template_name = "ujjwala/update_address.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        application = self.get_object()
+        if application:
+            if application.address_updated:
+                return HttpResponse("Address already submitted by you and is under review.")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        try:
+            obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
+        except:
+            raise Http404(
+                "No application with id: {} found.".format(self.kwargs.get('pk'))
+            )
+        return obj
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        obj = self.get_object()
+        context.update({
+            "obj": obj
+        })
+        return context
+
+    def form_valid(self, form):
+        obj = self.get_object()
+        data = form.clean()
+        old_address_json = obj.address_json or obj.address
+        obj.transition_updated_address(
             description=old_address_json,
             address_json=data['address_json']
         )

@@ -165,7 +165,6 @@ def do_primary_omc_dedupe_check_v2(id):
                 )
             else:
                 invalid_result = invalid_result + "{} <br>".format(fm.relation)
-            skip_record = False
             print(resp)
         elif resp.get('DEDUP_RESULT', '') == 'Clear':
             print(resp)

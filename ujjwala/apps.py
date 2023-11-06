@@ -1,7 +1,4 @@
 from django.apps import AppConfig
-from django.template import TemplateDoesNotExist, Template
-from django.template.loader import get_template
-
 from django_fsm import post_transition
 from material.frontend.apps import ModuleMixin
 

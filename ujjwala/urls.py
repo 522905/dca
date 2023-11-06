@@ -16,6 +16,7 @@ from .extra_viewsets import UjjwalaApplicationExtraViewSet
 from .robos.nic_error_robo import UjjwalaApplicationNicErrorRobotAPIViewSet
 from .robos.robo_error_viewsets import UjjwalaApplicationRoboExecutionErrorAPIViewSet
 from .robos.sdms_relationship_robo import UjjwalaApplicationSdmsRelationshipViewSet
+from .robos.viewsets import UjjwalaApplicationNicViewSet
 from .views import UjjwalaApplicationWebFormView, WebFormOldView, UjjwalaApplicationIframeWebFormView, \
     LegalDocumentsAcceptedToPendingView, ShareOnSocialMediaView, CancelInvitationView
 from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet, UjjwalaApplicationOtpViewSet
@@ -24,6 +25,7 @@ from .robos.sv_cancellation import SvCancellationViewSet
 router = routers.DefaultRouter()
 router.register(r'ujjwala-application', UjjwalaApplicationViewSet)
 router.register(r'ujjwala-bot', UjjwalaApplicationAPIViewSet)
+router.register(r'ujjwala-nic', UjjwalaApplicationNicViewSet, basename='ujjwala_nic')
 router.register(
     r'ujjwala-bot-failed-count', UjjwalaApplicationRoboExecutionErrorAPIViewSet, basename='ujjwala_bot_failed_count'
 )
@@ -34,6 +36,7 @@ router.register(
 router.register(r'ujjwala-otp', UjjwalaApplicationOtpViewSet, basename='ujjwala_otp')
 router.register(r'ujjwala-extra', UjjwalaApplicationExtraViewSet, basename='ujjwala_extra')
 router.register(r'sv-cancellation', SvCancellationViewSet, basename='sv_cancellation')
+
 
 urlpatterns = [
     path('', views.index),
@@ -218,6 +221,11 @@ urlpatterns = [
     url(
         '^portal/nic_error_update_address/(?P<pk>[^/.]+)/$',
         views.NicErrorUpdateAddress.as_view(),
+        name="nic_error_update_address"
+    ),
+    url(
+        '^portal/update_address/(?P<pk>[^/.]+)/$',
+        views.UpdateAddressView.as_view(),
         name="nic_error_update_address"
     ),
     url(

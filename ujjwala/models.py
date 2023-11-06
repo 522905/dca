@@ -106,7 +106,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	availability_channel = models.CharField(
 		max_length=128, choices=UjjwalaV2ApplicationAvailabilityChannel.choices, blank=True, null=True
 	)
-	address_updated = models.BooleanField(default=False)
+	address_updated = models.BooleanField(default=False, blank=True, null=True)
 	# form_fill_area = models.ForeignKey(
 	# 	FormFillArea, on_delete=models.CASCADE, related_name='form_fill_area', null=True, blank=True
 	# )
@@ -662,7 +662,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		permission='ujjwala.can_approve_connection',
 	)
 	def transition_address_change(self, *args, **kwargs):
-		self.event_whatsapp_nic_error_update_address()
+		self.event_whatsapp_update_address()
 
 	@old_address_to_description
 	@fsm_log_description
@@ -704,7 +704,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			self.address_json = kwargs['address_json']
 
 		else:
-			self.transition_nic_error_insufficient_address(
+			self.transition_address_change(
 				error_code='', description="User Entered In-correct Address"
 			)
 	# Address Change Code
@@ -722,7 +722,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		target=UjjwalaV2ApplicationStatus.NIC_CLEARED_SDMS_RELATION_CANCELLED,
 		custom=dict(short_description='SDMS Relation Cancelled', admin=False),
 	)
-	def transition_sdms_relation_cancelled(self, *args, **kwargs):
+	def transition_nic_cleared_sdms_relation_cancelled(self, *args, **kwargs):
 		pass
 
 
