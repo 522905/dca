@@ -139,10 +139,13 @@ class UjjwalaV2ApplicationStatus(models.TextChoices):
 	READY_FOR_DISBURSEMENT = 'READY_FOR_DISBURSEMENT', 'Ready For Disbursement'
 	NIC_ERROR_INSUFFICIENT_ADDRESS = 'NIC_ERROR_INSUFFICIENT_ADDRESS', 'Nic Error Insufficient Address'
 	NIC_ERROR_UPDATE_ADDRESS = 'NIC_ERROR_UPDATE_ADDRESS', 'Nic Error Update Address'
+	ADDRESS_CHANGE = 'ADDRESS_CHANGE', 'Address Change'
+	UPDATE_ADDRESS = 'UPDATE_ADDRESS', 'Update Address'
 	NIC_ERROR_ADDRESS_ACCEPTED = 'NIC_ERROR_ADDRESS_ACCEPTED', 'Nic Error Address Accepted'
 	NIC_ERROR_APPROVED = 'NIC_ERROR_APPROVED', 'Nic Error Approved'
 	ON_HOLD = 'ON_HOLD', 'On Hold'
 	NOT_INTERESTED = 'NOT_INTERESTED', 'Not Interested'
+	NIC_CLEARED_SDMS_RELATION_CANCELLED = 'NIC_CLEARED_SDMS_RELATION_CANCELLED', 'Nic Cleared SDMS Relation Cancelled'
 
 
 class RejectionTypeEnum(models.TextChoices):

@@ -30,7 +30,7 @@ from ujjwala.forms import ConnectionStatusApproved, ApplicationRejected, \
 	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm, NewRelationCreated, \
 	CancelWalkInForm, MoveForManualOperationForm, MaterialDeliveryOtpOverrideForm, OnHoldForm, \
 	ReleaseApplicationForm, CompleteDisbursementDriveForm, \
-	InstallationReviewAdminForm, LegalDocumentsAcceptedToPendingAdminForm
+	InstallationReviewAdminForm, LegalDocumentsAcceptedToPendingAdminForm, UpdateAddressForm, ReviewUpdatedAddressForm
 from ujjwala.ujjwala_functions import download_ujjwala_physical_legal_docs, \
 	fsm_custom_audit_points_description
 from utils.global_functions import upload_file_to_minio_bucket, old_address_to_description, \
@@ -106,6 +106,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	availability_channel = models.CharField(
 		max_length=128, choices=UjjwalaV2ApplicationAvailabilityChannel.choices, blank=True, null=True
 	)
+	address_updated = models.BooleanField(default=False)
 	# form_fill_area = models.ForeignKey(
 	# 	FormFillArea, on_delete=models.CASCADE, related_name='form_fill_area', null=True, blank=True
 	# )
@@ -528,7 +529,9 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=UjjwalaV2ApplicationStatus.OMC_CLEARED,
+		source=[
+			UjjwalaV2ApplicationStatus.OMC_CLEARED,
+		],
 		target=UjjwalaV2ApplicationStatus.NIC_ERROR,
 		custom=dict(
 			short_description='Set As NIC Error', admin=True, form=ConnectionStatusApproved
@@ -644,6 +647,84 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 				error_code='', description="User Entered In-correct Address"
 			)
 
+	# Address Change
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=[
+			UjjwalaV2ApplicationStatus.NIC_CLEARED,
+		],
+		target=UjjwalaV2ApplicationStatus.ADDRESS_CHANGE,
+		custom=dict(
+			short_description='User Selected To Address Change', admin=False
+		),
+		permission='ujjwala.can_approve_connection',
+	)
+	def transition_address_change(self, *args, **kwargs):
+		self.event_whatsapp_nic_error_update_address()
+
+	@old_address_to_description
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=UjjwalaV2ApplicationStatus.ADDRESS_CHANGE,
+		target=UjjwalaV2ApplicationStatus.UPDATE_ADDRESS,
+		custom=dict(
+			short_description='Update Address', admin=True, form=UpdateAddressForm
+		),
+		permission='ujjwala.can_approve_connection',
+	)
+	def transition_updated_address(self, *args, **kwargs):
+		self.address_json = kwargs['address_json']
+
+	@old_address_to_description
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=UjjwalaV2ApplicationStatus.UPDATE_ADDRESS,
+		target=GET_STATE(
+			lambda self, **kwargs: \
+					UjjwalaV2ApplicationStatus.NIC_CLEARED \
+							if kwargs.get("review_status") == 'ACCEPTED' \
+							else UjjwalaV2ApplicationStatus.ADDRESS_CHANGE,
+			states=[
+				UjjwalaV2ApplicationStatus.NIC_CLEARED,
+				UjjwalaV2ApplicationStatus.ADDRESS_CHANGE
+			]
+		),
+		custom=dict(
+			short_description='Review Updated Address', admin=True, form=ReviewUpdatedAddressForm
+		),
+	)
+	def transition_review_address_updated(self, *args, **kwargs):
+		if kwargs.get('review_status') == 'ACCEPTED':
+			self.address_json = kwargs['address_json']
+
+		else:
+			self.transition_nic_error_insufficient_address(
+				error_code='', description="User Entered In-correct Address"
+			)
+	# Address Change Code
+
+	# SDMS Relation Canceclled
+	@old_address_to_description
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=[
+			UjjwalaV2ApplicationStatus.NIC_CLEARED,
+			UjjwalaV2ApplicationStatus.OMC_CLEARED,
+		],
+		target=UjjwalaV2ApplicationStatus.NIC_CLEARED_SDMS_RELATION_CANCELLED,
+		custom=dict(short_description='SDMS Relation Cancelled', admin=False),
+	)
+	def transition_sdms_relation_cancelled(self, *args, **kwargs):
+		pass
+
 
 	@fsm_log_description
 	@fsm_log_by
@@ -658,7 +739,6 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	)
 	def transition_ready_for_disbursement(self, *args, **kwargs):
 		pass
-
 
 	@fsm_log_description
 	@fsm_log_by

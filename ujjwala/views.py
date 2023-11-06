@@ -163,9 +163,10 @@ class UjjwalaApplicationSharedLinkView(View):
         data = eval(signer.unsign(data.decode('ascii')))
         application = UjjwalaV2Application.objects.filter(contact_mobile=data['contact_mobile']).first()
         if application:
-            return HttpResponse(
-                content="An application already exist with id: {}".format(application.id)
-            )
+            if not application.status == UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD:
+                return HttpResponse(
+                    content="An application already exist with id: {}".format(application.id)
+                )
         user = User.objects.filter(id=data['user']).first()
         data.update({
             "source": "link_share",
@@ -981,7 +982,8 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
                 )
             elif connection_disbursement.parent.status in (
                     UjjwalaV2ApplicationStatus.NIC_CLEARED,
-                    UjjwalaV2ApplicationStatus.READY_FOR_DISBURSEMENT
+                    UjjwalaV2ApplicationStatus.READY_FOR_DISBURSEMENT,
+                    UjjwalaV2ApplicationStatus.NIC_CLEARED_SDMS_RELATION_CANCELLED
             ):
                 if not connection_disbursement.walk_in_date or \
                         (connection_disbursement.walk_in_date.date() != datetime.datetime.today().date()):
@@ -1069,10 +1071,6 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
                 send_ujjwala_share_on_social_media_link(self.request, connection_disbursement.parent.contact_mobile,
                                                         connection_disbursement.parent
                                                         )
-#                send_otp_using_channel('connection_disbursement_dac', connection_disbursement.parent.contact_mobile,
-#                                       f'connectiondisbursement:{connection_disbursement.id}:Material-Delivery',
-#                                       connection_disbursement.id
-#                                       )
                 return HttpResponseRedirect('.')
 
     def get_template_names(self):
