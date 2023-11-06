@@ -82,6 +82,54 @@ class NicUpdateAddressForm(forms.Form):
 		return data
 
 
+class UpdateAddressForm(forms.Form):
+	house_no = forms.CharField(
+		widget=forms.TextInput, label='House No. (मकान नंबर)', required=True
+	)
+	room_no = forms.CharField(
+		widget=forms.TextInput, label='Room No. (कमरा सं.)', required=True
+	)
+	floor = forms.CharField(
+		widget=forms.TextInput, label='Floor (मंजिल)', required=True
+	)
+	street_no = forms.CharField(
+		widget=forms.TextInput, label='Street No (गली नंबर)', required=True
+	)
+	landmark = forms.CharField(
+		widget=forms.TextInput, label='Landmark (नजदीकी स्थान)', required=True
+	)
+	village = forms.CharField(
+		widget=forms.TextInput, label='Village (रोड/गांव/मोहल्ला/इलाका)', required=True
+	)
+	ward_no = forms.CharField(
+		widget=forms.TextInput, label='Ward No.(वार्ड नंबर)', required=True
+	)
+	post_office = forms.CharField(
+		widget=forms.TextInput, label='Post Office (डाकख़ाना )', required=True
+	)
+	pincode = forms.CharField(
+		widget=forms.TextInput, label='Pin Code (पिन कोड)', required=True
+	)
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+
+	def clean(self):
+		data = self.cleaned_data
+		data['address_json'] = {
+			"house_no": data.get('house_no', ''),
+			"room_no": data.get('room_no', ''),
+			"floor": data.get('floor', ''),
+			"street_no": data.get('street_no', ''),
+			"landmark": data.get('landmark', ''),
+			"village": data.get('village', ''),
+			"ward_no": data.get('ward_no', ''),
+			"post_office": data.get('post_office', ''),
+			"pincode": data.get('pincode', '')
+		}
+		return data
+
+
 class OnHoldForm(forms.Form):
 	description = forms.CharField(
 		widget=forms.TextInput, label='Remarks', required=True
@@ -561,6 +609,36 @@ class ReviewNicErrorUpdatedAddressForm(NicUpdateAddressForm):
 
 	def clean(self):
 		data = super(ReviewNicErrorUpdatedAddressForm, self).clean()
+		if data.get('review_status', '') == 'REJECTED' and not data['rejected_reason']:
+			raise forms.ValidationError("Please enter a reason for rejection.")
+		data.update({
+			'description': '{} - {}: {}'.format(
+				data.get('review_status'), data.get('rejected_reason'), data.get('description', '')
+			)
+		})
+		return data
+
+
+class ReviewUpdatedAddressForm(UpdateAddressForm):
+	review_status = forms.ChoiceField(
+		label="Select Review Status ?",
+		required=True,
+		help_text="",
+		choices=[
+			('', '-- Select Review Status --'),
+			('ACCEPTED', 'Accepted'),
+			('REJECTED', 'Rejected')
+		]
+	)
+	rejected_reason = forms.CharField(
+		widget=forms.TextInput, max_length=255, label='Rejected Reason', required=False
+	)
+	description = forms.CharField(
+		widget=forms.Textarea, label='Remarks', required=False
+	)
+
+	def clean(self):
+		data = super(UpdateAddressForm, self).clean()
 		if data.get('review_status', '') == 'REJECTED' and not data['rejected_reason']:
 			raise forms.ValidationError("Please enter a reason for rejection.")
 		data.update({
