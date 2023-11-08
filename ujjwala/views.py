@@ -3049,8 +3049,12 @@ class ShareOnSocialMediaView(View):
 
         if connection_disbursement.social_media_update_done:
             return render(
-                self.request, "ujjwala/response.html",
-                {"heading": "Share On Social Media", "message": "Page Will Be Here !!!"}
+                self.request, "ujjwala_share/ujjwala.html",
+                {
+                    "name": connection_disbursement.parent.name,
+                    "social_media_url": connection_disbursement.documents.filter(
+                        type=UjjwalaApplicationDocumentsEnum.SOCIAL_MEDIA_PHOTO).first().link
+                }
             )
         else:
             return render(
