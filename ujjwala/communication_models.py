@@ -374,7 +374,7 @@ class UjjwalaWhatsappCommunication(object):
 				],
 				"buttonValues": {
 					"0": [
-						"ujjwala/portal/nic_error_update_address/{}/".format(self.id)
+						"ujjwala/portal/update_address/{}/".format(self.id)
 					]
 				}
 			}
@@ -529,7 +529,7 @@ class UjjwalaWhatsappCommunication(object):
 				"name": "pre_inspection_type_self_rejected_20072022",
 				"languageCode": "hi",
 				"headerValues": [
-					# "Alert",  #
+		            "https://www.arungas.com/public/ujwalla/pamplate.pdf"
 				],
 				"bodyValues": [
 					self.name,
