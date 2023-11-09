@@ -239,6 +239,12 @@ class NicClearedCustomerRemarksEnum(models.TextChoices):
 	SCHEDULED_DELIVERY = 'SCHEDULED_DELIVERY', 'Scheduled Delivery'
 
 
+class SDMSMobileNumberEnum(models.TextChoices):
+	NOT_REQUIRED = 'NOT_REQUIRED', 'Not Required'
+	REQUIRED = 'REQUIRED', 'Required'
+	UPDATED = 'UPDATED', 'Updated'
+
+
 class PrintDocumentsTypeEnum(models.TextChoices):
 	BANK_DETAILS = 'BANK_DETAILS', 'Bank Details'
 	FORM_ABC = 'FORM_ABC', 'Form A B C'
