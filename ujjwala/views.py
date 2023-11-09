@@ -824,10 +824,10 @@ class UjjwalaApplicationLegalDocumentsUpload(FormView):
 class UjjwalaApplicationStatusView(TemplateView):
     template_name = "ujjwala/application_status/application_search_status.html"
 
-    def post(self, request, *args, **kwargs):
-        contact_mobile = request.POST.get('contact_mobile', '')
+    def get(self, request, *args, **kwargs):
+        contact_mobile = request.GET.get('contact_mobile', '')
         uid = request.POST.get('uid', '')
-        application_id = request.POST.get('application_id', '')
+        application_id = request.GET.get('application_id', '')
         application = {}
 
         if contact_mobile:

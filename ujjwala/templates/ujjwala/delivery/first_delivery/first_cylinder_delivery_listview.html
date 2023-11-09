@@ -24,7 +24,7 @@
 {#    {% include 'ujjwala/disbursement/custom-template/disbursement-card-detail.html' %}#}
     {% for obj in object_list %}
     <div class="card mb-2 app_card">
-        <a href="{% url 'ujjwala:first_cylinder_delivery_view' pk=obj.id %}" data-turbolinks="false">
+        <a href="{% url 'ujjwala:connection_disbursement_material_delivery_view' pk=obj.id %}" data-turbolinks="false">
             <div class="card-header">
                 <p class="text-center"><b>{{ obj.status }}</b> <br>
                     Updated On <b>{{ obj.updated_on }}</b></p>

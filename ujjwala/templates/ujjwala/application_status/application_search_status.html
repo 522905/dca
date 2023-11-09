@@ -6,8 +6,8 @@
 <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
 <div class="p-2 pt-0 form_label application_form" style="width: 100%;">
-    <form method="post">
-    {% csrf_token %}
+    <form method="get">
+{#    {% csrf_token %}#}
         <div class="card p-0">
             <div class="card-body search_form">
                 <div class="form-group mb-0">
@@ -35,7 +35,7 @@
                 <div class="status_block">
                     <div class="main-header">
                         <span class="text-black">Application Id: </span>
-                        <span class="float-right"><b><a href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">{{ obj.id }}</a></b></span>
+                        <span class="float-right" data-turbolinks="false"><b><a href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">{{ obj.id }}</a></b></span>
                     </div>
                 </div>
                 <div class="card-body pb-0 p-0 list_block">
@@ -77,7 +77,7 @@
                             <th>Pre-Inspection Status: </th>
                             <td>
                                 {% if obj.pre_inspection %}
-                                    <a href="{% url 'admin:ujjwala_preinspection_change' object_id=obj.pre_inspection.id %}">
+                                    <a  data-turbolinks="false" href="{% url 'admin:ujjwala_preinspection_change' object_id=obj.pre_inspection.id %}">
                                         {{obj.pre_inspection.get_status_display}}
                                     </a>
                                     {% if obj.pre_inspection.status != 'ACCEPTED' %}
@@ -95,7 +95,7 @@
                         <tr>
                             <th>Connection Disbursement Status: </th>
                             <td> {% if obj.connection_disbursement %}
-                                <a href="{% url 'admin:ujjwala_connectiondisbursement_change' object_id=obj.connection_disbursement.id %}">
+                                <a  data-turbolinks="false" href="{% url 'admin:ujjwala_connectiondisbursement_change' object_id=obj.connection_disbursement.id %}">
                                     {{obj.connection_disbursement.get_status_display}}
                                 </a>
                                     {% if obj.connection_disbursement.status == 'LEGAL_DOCUMENTS_PENDING' %}
