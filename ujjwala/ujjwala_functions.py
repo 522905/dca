@@ -834,20 +834,26 @@ def send_whatsapp_contact_otp(request, contact_mobile):
         except Otp.DoesNotExist:
             break
 
-    otp = id_generator(4, chars=string.digits)
-    valid_till = datetime.now() + timedelta(minutes=30)
-    closed = False
+    otp_obj = Otp.objects.filter(transition='{}-New-Form'.format(contact_mobile)).first()
 
-    otp_obj = Otp.objects.create(
-        reference_number=ref_no,
-        mobile=contact_mobile,
-        otp=otp,
-        valid_till=valid_till,
-        closed=closed,
-        extra={
-            "contact_mobile": contact_mobile
-        }
-    )
+    if otp_obj and now() < otp_obj.valid_till:
+        otp = otp_obj.otp
+    else:
+        otp = id_generator(4, chars=string.digits)
+        valid_till = datetime.now() + timedelta(minutes=30)
+        closed = False
+
+        otp_obj = Otp.objects.create(
+            reference_number=ref_no,
+            mobile=contact_mobile,
+            otp=otp,
+            valid_till=valid_till,
+            closed=closed,
+            extra={
+                "contact_mobile": contact_mobile
+            },
+            transition='{}-New-Form'.format(contact_mobile)
+        )
 
     body_text = {
         "countryCode": "+91",
