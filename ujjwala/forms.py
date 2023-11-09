@@ -4,6 +4,7 @@ import logging
 import string
 from datetime import timedelta
 
+import django
 import pytz
 import track
 from django import forms
@@ -1188,6 +1189,9 @@ class UjjwalaApplicationGenerateOtpForm(forms.Form):
 				}
 			)
 
+		diff = otp_obj.valid_till - django.utils.timezone.now()
+		diff_minutes = round(diff.seconds / 60)
+
 		message_id = None
 		channel = ''
 
@@ -1201,8 +1205,9 @@ class UjjwalaApplicationGenerateOtpForm(forms.Form):
 		elif '_send_sms' in self.data:
 			channel = "sms"
 			context = {
-				"otp_for": self.data.get('otp_generated_for').upper(),
+				# "otp_for": self.data.get('otp_generated_for').upper(),
 				"otp": otp,
+				"otp_expire": diff_minutes
 			}
 
 			message = settings.GENERIC_SMS_OTP_TEMPLATE.format(**context)

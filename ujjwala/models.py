@@ -24,7 +24,8 @@ from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMo
 	RejectionTypeEnum, RoboSdmsDedeupStatusEnum, UserDocumentsEnum, PreInspectionStatusEnum, \
 	ConnectionDisbursementStatusEnum, PreInspectionTypeEnum, SchemeOnboardingStatusEnum, NicClearedCustomerRemarksEnum, \
 	DisbursementDriveStatusEnum, InstallationTypeEnum, product_quantity_map, UjjwalaV2ApplicationAvailabilityStatus, \
-	UjjwalaV2ApplicationAvailabilityChannel, UjjwalaProductEnum, ConnectionDisbursementInvitationEnum
+	UjjwalaV2ApplicationAvailabilityChannel, UjjwalaProductEnum, ConnectionDisbursementInvitationEnum, \
+	SDMSMobileNumberEnum
 from ujjwala.forms import ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
 	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm, NewRelationCreated, \
@@ -110,6 +111,10 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	# form_fill_area = models.ForeignKey(
 	# 	FormFillArea, on_delete=models.CASCADE, related_name='form_fill_area', null=True, blank=True
 	# )
+	sdms_relation_cancelled = models.BooleanField(default=False, blank=True, null=True)
+	# sdms_mobile_number_update = models.CharField(max_length=64, choices=SDMSMobileNumberEnum.choices,
+	#                                              null=True, blank=True, default=SDMSMobileNumberEnum.NOT_REQUIRED
+	#                                              )
 
 	class Meta:
 		permissions = (
@@ -397,7 +402,10 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
 			UjjwalaV2ApplicationStatus.AUDIT_APPLICATION,
 			UjjwalaV2ApplicationStatus.NIC_CLEARED,
-			UjjwalaV2ApplicationStatus.READY_FOR_DISBURSEMENT
+			UjjwalaV2ApplicationStatus.READY_FOR_DISBURSEMENT,
+			UjjwalaV2ApplicationStatus.NIC_CLEARED_SDMS_RELATION_CANCELLED,
+			UjjwalaV2ApplicationStatus.NIC_ERROR,
+			UjjwalaV2ApplicationStatus.ON_HOLD,
 		],
 		# target=UjjwalaV2ApplicationStatus.APPLICATION_REJECTED,
 		target=GET_STATE(
@@ -478,7 +486,10 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD,
+		source=[
+			UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD,
+			UjjwalaV2ApplicationStatus.NIC_CLEARED_SDMS_RELATION_CANCELLED,
+		],
 		target=UjjwalaV2ApplicationStatus.OMC_CLEARED,
 		custom=dict(
 			short_description='Set As OMC Cleared', admin=True, form=ConnectionStatusApproved
@@ -508,7 +519,10 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=UjjwalaV2ApplicationStatus.OMC_CLEARED,
+		source=[
+			UjjwalaV2ApplicationStatus.OMC_CLEARED,
+			UjjwalaV2ApplicationStatus.NIC_CLEARED_SDMS_RELATION_CANCELLED
+		],
 		target=UjjwalaV2ApplicationStatus.NIC_CLEARED,
 		custom=dict(
 			short_description='Set As NIC Cleared', admin=True, form=ConnectionStatusApproved
@@ -725,6 +739,20 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	def transition_nic_cleared_sdms_relation_cancelled(self, *args, **kwargs):
 		pass
 
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=[
+			UjjwalaV2ApplicationStatus.NIC_CLEARED_SDMS_RELATION_CANCELLED,
+		],
+		target=UjjwalaV2ApplicationStatus.LEGAL_DOCUMENTS_UPLOAD,
+		custom=dict(
+			short_description='Legal Documents Upload', admin=False
+		),
+	)
+	def transition_sdms_relation_cancelled_to_legal_documents_upload(self, *args, **kwargs):
+		pass
 
 	@fsm_log_description
 	@fsm_log_by

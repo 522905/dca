@@ -204,9 +204,9 @@ def do_primary_omc_dedupe_check_v2(id):
             })
             form.is_valid()
             application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE
-            if application.status == 'DOCUMENTS_UPLOADED':
-                application.application_rejected(**form.cleaned_data)
-                application.event_ioc_dedupe_reject_channel_whatsapp()
+            # if application.status == 'DOCUMENTS_UPLOADED':
+            application.application_rejected(**form.cleaned_data)
+            application.event_ioc_dedupe_reject_channel_whatsapp()
     application.save()
     print(application)
 
