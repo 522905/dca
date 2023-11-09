@@ -1,3 +1,4 @@
+
     <!DOCTYPE html>
     <html>
     <head>
@@ -19,6 +20,7 @@
         <link href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,600,800&display=swap" rel="stylesheet">
     </head>
     <body style="margin: 0;padding: 0;" >
+    {% load static %}
         <table align="center" width="100%" cellpadding="0" cellspacing="0" style="background: #bcbcbc; height: calc(100vh);" >
             <tr>
                 <td>
@@ -26,13 +28,13 @@
                         <tr>
                             <td width="100%">
                                 <a target="_blank" href="#" style="display: block">
-                                    <img src="https://www.arungas.com/social-share/img/1.jpg" style="display:block;width: 100%">
+                                    <img src="{% static 'img/3.jpg' %}" style="display:block;width: 100%">
                                 </a>
                             </td>
                         </tr>
                         <tr>
                             <td width="100%">
-                                <img style="display:block;width: 100%; height: 10px;" src="https://www.arungas.com/social-share/img/line.jpg">
+                                <img style="display:block;width: 100%; height: 10px;" src="{% static 'img/line.jpg' %}">
                             </td>
                         </tr>
                         <tr>
@@ -41,7 +43,7 @@
                                     <tbody>
                                         <tr>
                                             <td style="background: #fff; text-align: center;">
-                                                <img src="https://www.arungas.com/social-share/img/2_01.jpg" style="display:block;width: 100%">
+                                                <img src="{% static 'img/2_01.jpg' %}" style="display:block;width: 100%">
                                             </td>
                                             <td style=" text-align: center;background-color: #fef1d2;">
                                                 <span style="border: solid 5px #9e0000; display: block; padding: 0px; background-color: #fff; ">
@@ -52,10 +54,12 @@
                                                 </span>
                                             </td>
                                             <td style="background: #fff; text-align: center;">
-                                                <img src="https://www.arungas.com/social-share/img/2_03.jpg" style="display:block;width: 100%">
+
+                                                <img  src="{% static 'img/2_03.jpg' %}" style="display:block;width: 100%">
                                             </td>
                                             <td style="background: #fff; text-align: center;">
-                                                <img src="/img/2_04.png" style="display:block;width: 100%">
+{#                                                <img src="img/2_04.png" style="display:block;width: 100%">#}
+                                                <img src="{% static 'img/2_04.jpg' %}" style="display:block;width: 100%">
                                             </td>
                                         </tr>
                                     </tbody>
@@ -66,10 +70,10 @@
                             <td><div style="background: #bcbcbc;text-align: center; text-decoration: none !important; font-size: 17px !important; color: #000; font-weight: 400; margin: 0px; line-height: 1.2; font-family: Roboto,RobotoDraft,Helvetica,Arial,sans-serif; text-transform: capitalize; vertical-align: top;">
                             <p style="background: #fff;padding: 14px 0;width: 600px;margin: 0 auto;">
                                 <a id="share_button" href="" style="display: inline-block;vertical-align: middle; margin-left: 5px; margin-right: 5px;">
-                                    <img src="https://www.arungas.com/social-share/img/FB.png" style="display: block;width: 135px; height: 42px;">
+                                    <img src="{% static 'img/FB.png' %}" style="display: block;width: 135px; height: 42px;">
                                 </a>
                                 <a style="display: inline-block;vertical-align: middle; margin-left: 5px; margin-right: 5px;" onclick="openWhatsApp()">
-                                    <img src="https://www.arungas.com/social-share/img/WHATSAPP.png" style="width: 135px; display: block; height: 42px;">
+                                    <img src="{% static 'img/WHATSAPP.png' %}" style="width: 135px; display: block; height: 42px;">
                                 </a>
                                 <a style="display: inline-block;vertical-align: middle;margin-left: 5px;margin-right: 5px;background: #b11014;color: #fff;padding: 10px 20px;border-radius: 5px;" id="download_banner">
                                     Download Banner
@@ -79,7 +83,7 @@
                         </tr>
                         <tr>
                             <td width="100%">
-                                <img src="https://www.arungas.com/social-share/img/3.jpg" style="display:block;width: 100%">
+                                <img src="{% static 'img/3.jpg' %}" style="display:block;width: 100%">
                             </td>
                         </tr>
                         <tr>
