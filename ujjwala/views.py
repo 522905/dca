@@ -223,6 +223,32 @@ class ShareSelfPreInspectionLink(View):
                 )
 
 
+@method_decorator(login_required, 'dispatch')
+class UserDashboardView(TemplateView):
+
+    template_name = "ujjwala/user_dashboard.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = get_current_user()
+
+        context.update({
+            "user": user,
+            "ujjwala_queryset": UjjwalaV2Application.objects.filter(filled_by=user),
+            "ujjwala_rejected": UjjwalaV2Application.objects.filter(filled_by=user,
+                                                                    status=UjjwalaV2ApplicationStatus.APPLICATION_REJECTED),
+            "ujjwala_material_delivered": UjjwalaV2Application.objects.filter(filled_by=user, status__in=[
+                UjjwalaV2ApplicationStatus.MATERIAL_DELIVERED, UjjwalaV2ApplicationStatus.INSTALLED
+                                                                              ]),
+            "preinspection_queryset": PreInspection.objects.filter(mechanic=user),
+            "preinspection_accepted": PreInspection.objects.filter(mechanic=user,
+                                                                   status=PreInspectionStatusEnum.ACCEPTED),
+            "preinspection_rejected": PreInspection.objects.filter(mechanic=user,
+                                                                   status=PreInspectionStatusEnum.REJECTED),
+        })
+        return context
+
+
 class SharedSelfPreInspectionLinkView(View):
 
     def get(self, request, *args, **kwargs):

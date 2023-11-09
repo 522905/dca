@@ -1,0 +1,81 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<div class="p-2 pt-0 form_label application_form" style="width: 100%;">
+    <div class="card p-0" style="display: flex">
+        <div class="card-header">
+            Welcome <b>{{ user.first_name }} {{ user.last_name }}</b> To Arun Gas Service
+        </div>
+        <div class="card-body">
+            <div class="card p-0">
+                <div class="card-header">
+                    Ujjwala Application(s)
+                </div>
+                <div class="card-body">
+                    <table>
+                        <tr>
+                            <td>Total Filled</td>
+                            <td>{{ ujjwala_queryset.count }}</td>
+                        </tr>
+                        <tr>
+                            <td>Rejected</td>
+                            <td>{{ ujjwala_rejected.count }}</td>
+                        </tr>
+                        <tr>
+                            <td>Delivered</td>
+                            <td>{{ ujjwala_material_delivered.count }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="card-footer">
+                </div>
+            </div>
+            <div class="card p-1">
+                <div class="card-header">
+                    Pre-Inspection(s)
+                </div>
+                <div class="card-body">
+                    <table>
+                        <tr>
+                            <td>Total</td>
+                            <td>{{ preinspection_queryset.count }}</td>
+                        </tr>
+                        <tr>
+                            <td>Accepted</td>
+                            <td>{{ preinspection_accepted.count }}</td>
+                        </tr>
+                        <tr>
+                            <td>Rejected</td>
+                            <td>{{ preinspection_rejected.count }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="card-footer">
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+
+        </div>
+    </div>
+</div>
+<style>
+    .status_block .main-header{     
+        border-top: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+        border-radius: 0;
+        background-color: #efefef;
+        font-weight: bold;
+        font-size: 14px;
+    }
+    .text_link{ text-decoration: underline; font-weight: bold !important;}
+    .application_form .list_block th, .application_form .list_block td, .status_block th,.application_form .list_block td { font-size: 0.9rem;}
+    .table.table-bordred:last-child tr{ border-bottom: transparent;}
+    .search_form input{ padding: 0 10px !important; width: 96% !important;  }
+    .link_wh:hover{ text-decoration: underline !important;}
+</style>
+{% endblock %}

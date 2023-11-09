@@ -18,7 +18,7 @@ from .robos.robo_error_viewsets import UjjwalaApplicationRoboExecutionErrorAPIVi
 from .robos.sdms_relationship_robo import UjjwalaApplicationSdmsRelationshipViewSet
 from .robos.viewsets import UjjwalaApplicationNicViewSet
 from .views import UjjwalaApplicationWebFormView, WebFormOldView, UjjwalaApplicationIframeWebFormView, \
-    LegalDocumentsAcceptedToPendingView, ShareOnSocialMediaView, CancelInvitationView
+    LegalDocumentsAcceptedToPendingView, ShareOnSocialMediaView, CancelInvitationView, UserDashboardView
 from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet, UjjwalaApplicationOtpViewSet
 from .robos.sv_cancellation import SvCancellationViewSet
 
@@ -339,5 +339,10 @@ urlpatterns = [
         'portal/cancel_invitaion/',
         CancelInvitationView.as_view(),
         name="cancel_invitation"
+    ),
+    path(
+        'portal/user_dashboard/',
+        UserDashboardView.as_view(),
+        name="user_dashboard"
     ),
 ]
