@@ -11,8 +11,15 @@ class UjjwalaApplicationRoboExecutionErrorAPIViewSet(viewsets.ModelViewSet):
     serializer_class = UjjwalaV2ApplicationSerializer
 
     @action(methods=['post'], detail=True, url_path='update_robo_execution_failed_count')
-    def update_robo_execution_failed_count(self, request: HttpRequest, *args, **kwargs):
+    def update_robo_execution_failed_count(self, request, *args, **kwargs):
         application: UjjwalaV2Application = self.get_object()
-        application.robo_execution_failed_count = application.robo_execution_failed_count + 1
+
+        if request.POST.get('error_message', ''):
+            application.error_message = request.POST.get('error_message', '')
+            application.robo_execution_failed_count = 100
+        else:
+            application.error_message = ''
+            application.robo_execution_failed_count = application.robo_execution_failed_count + 1
+
         application.save()
         return HttpResponse('OK')
