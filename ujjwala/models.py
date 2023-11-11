@@ -112,9 +112,10 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	# 	FormFillArea, on_delete=models.CASCADE, related_name='form_fill_area', null=True, blank=True
 	# )
 	sdms_relation_cancelled = models.BooleanField(default=False, blank=True, null=True)
-	# sdms_mobile_number_update = models.CharField(max_length=64, choices=SDMSMobileNumberEnum.choices,
-	#                                              null=True, blank=True, default=SDMSMobileNumberEnum.NOT_REQUIRED
-	#                                              )
+	sdms_mobile_number_update = models.CharField(max_length=64, choices=SDMSMobileNumberEnum.choices,
+	                                             null=True, blank=True, default=SDMSMobileNumberEnum.NOT_REQUIRED
+	                                             )
+	error_message = models.TextField(null=True, blank=True)
 
 	class Meta:
 		permissions = (
