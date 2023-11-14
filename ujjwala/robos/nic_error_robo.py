@@ -45,10 +45,12 @@ class UjjwalaApplicationNicErrorRobotAPIViewSet(viewsets.ModelViewSet):
 
         consumer_id = request.data.get('consumer_id')
         description = 'Bot Processed: old consumer id {}'.format(application.consumer_id)
-        application.transition_create_new_relation_after_nic_error_insufficent_address(consumer_id=consumer_id, description=description)
+        application.transition_create_new_relation_after_nic_error_insufficent_address(consumer_id=consumer_id,
+                                                                                       description=description)
         application.save()
 
         return HttpResponse('OK')
+
 
     @action(methods=['get'], detail=False, url_path='get_consumer_records_for_dist_approval')
     def get_consumer_records_for_dist_approval(self, request: HttpRequest, *args, **kwargs):

@@ -1738,6 +1738,7 @@ class ConnectionDisbursementInvitation(models.Model):
 	booking_id = models.CharField(max_length=16, null=True, blank=True)
 	product = models.CharField(max_length=128, choices=UjjwalaProductEnum.choices, null=True, blank=True)
 	canceled_reason = models.CharField(max_length=256, null=True, blank=True)
+	sv_generated_not_downloaded = models.BooleanField(null=True, blank=True)
 	status = models.CharField(max_length=32, default='VALID')
 
 	def download_links(self):

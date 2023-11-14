@@ -733,18 +733,23 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         obj = ConnectionDisbursement.objects.filter(id=consumer_disbursement_id).first()
         if not obj:
              return HttpResponse('Connection Disbursement Not Found')
-        file = request.FILES.get('file')
-        pdf_file_bytes = io.BytesIO(file.read())
-        bytes_stream = append_qr_code_to_sv(
-            "{},SV".format(obj.parent_id),
-            request.POST.get('booking_id', None),
-            pdf_file_bytes
-        )
-        # Bucket Name: ujjwaladocuments
-        doc_file_bytes = io.BytesIO(bytes_stream)
-        sv_upload_link = upload_file_type_obj_to_minio_bucket(
-            doc_file_bytes, 'ujjwaladocuments', "sv_{}".format(obj.parent_id), "application/pdf"
-        )
+
+        sv_upload_link = None
+        booking_id = request.POST.get('booking_id', None)
+
+        if not request.POST.get('sv_generated_not_downloaded'):
+            file = request.FILES.get('file')
+            pdf_file_bytes = io.BytesIO(file.read())
+            bytes_stream = append_qr_code_to_sv(
+                "{},SV".format(obj.parent_id),
+                booking_id,
+                pdf_file_bytes
+            )
+            # Bucket Name: ujjwaladocuments
+            doc_file_bytes = io.BytesIO(bytes_stream)
+            sv_upload_link = upload_file_type_obj_to_minio_bucket(
+                doc_file_bytes, 'ujjwaladocuments', "sv_{}".format(obj.parent_id), "application/pdf"
+            )
 
         # Installation Form Upload
         installation_document = download_installation_form(obj.parent)
@@ -759,9 +764,9 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         )
 
         obj.invitation.create(
-            sv_link=sv_upload_link,
-            booking_id=request.POST.get('booking_id', ''),
-            sv_uploaded_on=datetime.datetime.now()
+            sv_link=sv_upload_link if sv_upload_link else '',
+            booking_id=booking_id,
+            sv_uploaded_on=datetime.datetime.now() if sv_upload_link else ''
         )
         return HttpResponse('OK')
 
