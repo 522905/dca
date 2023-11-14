@@ -1380,6 +1380,10 @@ class ConnectionDisbursement(models.Model):
 		if valid_invitation:
 			return valid_invitation.sv_link
 
+	def sv_generated_and_not_downloaded(self):
+		if self.invitation.exists():
+			return self.invitation.first().sv_generated_not_downloaded
+
 	def form_d_link(self):
 		if not self.documents.filter(type=UjjwalaApplicationDocumentsEnum.INSTALLATION_DOCUMENT).exists():
 			from .ujjwala_functions import download_installation_form

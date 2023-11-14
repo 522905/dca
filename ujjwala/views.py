@@ -1359,8 +1359,9 @@ class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
                 ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
             ],
             walk_in_date__date=datetime.datetime.today().date(),
-            disbursement_drive=disbursement_drive
-        ).prefetch_related('invitation').order_by('updated_on')
+            disbursement_drive=disbursement_drive,
+        ).prefetch_related('invitation').order_by(
+            'invitation__sv_generated_not_downloaded', 'invitation__sv_link', 'updated_on')
         return qs
 
     def get_template_names(self):
