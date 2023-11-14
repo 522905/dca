@@ -192,6 +192,15 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		return mark_safe(html)
 
 
+	def update_consumer_number(self):
+		# WhatsappUploadLegalForms
+		url = reverse('ujjwala:update_relationship_number', kwargs={'pk': self.pk})
+		html = '''
+		<a href="{}">Update Consumer Id</a>
+		'''.format(url)
+		return mark_safe(html)
+
+
 	def whatsapp_update_bank_details(self):
 		if not self.bank_account_number:
 			url = reverse('ujjwala:whatsapp_update_bank_details', kwargs={'pk': self.pk})

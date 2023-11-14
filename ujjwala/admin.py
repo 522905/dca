@@ -231,7 +231,7 @@ class UjjwalaV2Admin(ImportMixin, ExportActionMixin, FSMTransitionCustomMixin, a
                 'audit_points'
             ]
         readonly_fields = readonly_fields + [
-            'set_primary_phone_number', 'whatsapp_pre_inspection_type_self',
+            'set_primary_phone_number', 'update_consumer_number', 'whatsapp_pre_inspection_type_self',
             'whatsapp_form_a_b_c', 'whatsapp_update_bank_details', 'reset_robo_execution_failed_count',
         ]
         return readonly_fields
