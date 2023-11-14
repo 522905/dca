@@ -50,8 +50,8 @@
                         <p class="float-right">
                         {% if obj.valid_sv_link %}
                             <b style="background-color: darkgreen; color: white">SV Generated</b>
-                        {% elif obj.sv_generated_not_downloaded %}
-                            <b style="background-color: darkorange; color: white">SV Not Generated</b>
+                        {% elif obj.sv_generated_and_not_downloaded %}
+                            <b style="background-color: darkorange; color: white">SV Generated Not Downloaded</b>
                         {% else %}
                             <b style="background-color: darkred; color: white">SV Not Generated</b>
                         {% endif %}
