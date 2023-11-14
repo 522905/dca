@@ -433,15 +433,18 @@ class PreInspectionReviewView(FormView, ApplicationView):
         context = super().get_context_data(**kwargs)
         obj = self.get_object()
 
+        kitchen_photo = obj.documents.filter(
+                type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO
+            ).first().link
+
+        main_gate = obj.documents.filter(
+                type=UjjwalaApplicationDocumentsEnum.MAIN_GATE
+            ).first().link
+
         context.update({
             "obj": obj,
-            "kitchen_photo": obj.documents.get(
-                type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO
-            ).link,
-
-            "main_gate": obj.documents.get(
-                type=UjjwalaApplicationDocumentsEnum.MAIN_GATE
-            ).link,
+            "kitchen_photo": kitchen_photo,
+            "main_gate": main_gate,
         })
 
         if obj.type == PreInspectionTypeEnum.MECHANIC:
