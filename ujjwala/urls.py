@@ -219,6 +219,11 @@ urlpatterns = [
         name="set_primary_phone_number"
     ),
     url(
+        '^portal/update_relationship_number/(?P<pk>[^/.]+)/$',
+        views.UpdateRelationshipNumberView.as_view(),
+        name="update_relationship_number"
+    ),
+    url(
         '^portal/nic_error_update_address/(?P<pk>[^/.]+)/$',
         views.NicErrorUpdateAddress.as_view(),
         name="nic_error_update_address"

@@ -37,7 +37,8 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
     PreInspectionConvertForm, LegalDocumentsReviewAdminForm, SetPrimaryPhoneNumberForm, \
     UpdateBankDetailsForm, NicClearedCustomerRemarksForm, PrintDocumentsForm, \
     InstallationReviewAdminForm, FirstCylinderMaterialDeliveryForm, SecondCylinderMaterialDeliveryForm, \
-    PreInspectionReviewAdminForm, CancelInvitationForm, UpdateAddressForm
+    PreInspectionReviewAdminForm, CancelInvitationForm, UpdateAddressForm, \
+    NewRelationCreated
 from ujjwala.global_functions import login_required_if_mech_inspection
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
     FamilyMembers, DisbursementDrive
@@ -3127,3 +3128,28 @@ class CancelInvitationView(FormView):
         invitation.save()
         messages.add_message(self.request, messages.ERROR, "Invitation Canceled")
         return redirect(".")
+
+
+# @method_decorator(login_required, 'dispatch')
+class UpdateRelationshipNumberView(FormView):
+    form_class = NewRelationCreated
+    template_name = "ujjwala/extra/update_relationship_number.html"
+
+    def get_object(self, queryset=None):
+        try:
+            obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
+        except:
+            raise Http404(
+                "No application with id: {} found.".format(self.kwargs.get('pk'))
+            )
+        return obj
+
+
+    def form_valid(self, form):
+        data = form.clean()
+        application = self.get_object()
+        application.consumer_id = data['consumer_id']
+        application.save()
+        messages.add_message(self.request, messages.INFO, "New Consumer Id Updated")
+        return redirect(".")
+

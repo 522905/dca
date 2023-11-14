@@ -19,7 +19,7 @@ from otp.models import Otp
 from ujjwala.communication_functions import send_whatsapp_message, send_sms
 from ujjwala.enums import UjjwalaV2ApplicationStatus, ConnectionDisbursementStatusEnum, \
 	RejectionTypeEnum, PreInspectionTypeEnum, RoboSdmsDedeupStatusEnum, NicClearedCustomerRemarksEnum, \
-	PrintDocumentsTypeEnum, InstallationTypeEnum, UjjwalaProductEnum, product_quantity_map
+	PrintDocumentsTypeEnum, InstallationTypeEnum, UjjwalaProductEnum, product_quantity_map, SDMSMobileNumberEnum
 from ujjwala.models import UjjwalaApplicationDocumentsEnum
 from ujjwala.ujjwala_functions import __get_ref_no__, id_generator, valid_file_uploaded, send_otp_using_channel
 from django.utils.timezone import now
@@ -1008,7 +1008,7 @@ class ConnectionDisbursementSocialMediaUpdatesForm(forms.Form):
 		send_otp_using_channel('connection_disbursement_dac', self.connection_disbursement.parent.contact_mobile,
 		                       f'connectiondisbursement:{self.connection_disbursement.id}:Material-Delivery',
 		                       self.connection_disbursement.id
-		                       )
+	                       )
 
 
 class ConnectionDisbursementMaterialDeliveryForm(forms.Form):
@@ -1017,6 +1017,11 @@ class ConnectionDisbursementMaterialDeliveryForm(forms.Form):
 	)
 	disbursement_photo = forms.CharField(
 		widget=forms.HiddenInput, label='Connection Disbursement', required=True
+	)
+	sdms_mobile_number_update = forms.CharField(
+		widget=forms.ChoiceField(
+			choices=SDMSMobileNumberEnum.choices
+		), label='Update SDMS Mobile ?', required=True
 	)
 
 	def __init__(self, connection_disbursement=None, *args, **kwargs):

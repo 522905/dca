@@ -271,7 +271,7 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
         obj.contact_number = contact_number
         obj.save()
         res = requests.post(
-         	"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+         	"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
          	"&function=add_lead&phone_number={}&list_id=1000&first_name={}&address1={}&kyc_date={}".format(
          		obj.contact_number, obj.name, obj.address, obj.kyc_date
          	)
@@ -322,8 +322,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         response_code = request.data.get('response_code')
 
         application = UjjwalaV2Application.objects.get(id=application_id)
-        application.availability_channel = UjjwalaV2ApplicationAvailabilityChannel.IVR
-        application.availability_updated_on = datetime.datetime.now()
+
 
         if response_code == 1:
             application.availability_status = UjjwalaV2ApplicationAvailabilityStatus.INTERESTED
@@ -331,15 +330,16 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             application.availability_status = UjjwalaV2ApplicationAvailabilityStatus.INTERESTED_ADDRESS_CHANGE
         elif response_code == 9:
             application.availability_status = UjjwalaV2ApplicationAvailabilityStatus.NOT_INTERESTED
-
+        else:
+            return JsonResponse({"status": "Invalid Response Code"})
+        application.availability_channel = UjjwalaV2ApplicationAvailabilityChannel.IVR
+        application.availability_updated_on = datetime.datetime.now()
         application.save()
         if response_code == 5:
             application.transition_address_change()
             application.save()
 
-        return JsonResponse({
-            "status": "Updated"
-        })
+        return JsonResponse({"status": "Updated"})
 
     @action(methods=['post'], detail=False, url_path='legal_documents_reupload')
     def legal_documents_reupload(self, request, *args, **kwargs):
@@ -833,7 +833,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 # result = django_rq.enqueue(do_primary_omc_dedupe_check, args=(application.id,))
                 # Add lead to vicicial
                 requests.post(
-                    "http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+                    "http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101101"
                     "&function=add_lead&phone_number={}&phone_code=1&list_id=1001&first_name={}&last_name={} ".format(
                         application.contact_mobile, application.name, application.id)
                     )
