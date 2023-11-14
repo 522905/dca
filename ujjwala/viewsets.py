@@ -106,7 +106,7 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
         #datetime.datetime.today().date()
         connection_disbursement_list = ConnectionDisbursement.objects.filter(
             walk_in_date__date=datetime.datetime.now().date()
-        ).filter(invitation__sv_link__isnull=True).order_by('walk_in_date')
+        ).filter(invitation__sv_link__isnull=True).exclude(invitation__sv_generated_not_downloaded=True).order_by('walk_in_date')
 
         page = self.paginate_queryset(connection_disbursement_list)
         return self.get_paginated_response([
