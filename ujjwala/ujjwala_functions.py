@@ -834,7 +834,7 @@ def send_whatsapp_contact_otp(request, contact_mobile):
         except Otp.DoesNotExist:
             break
 
-    otp_obj = Otp.objects.filter(transition='{}-New-Form'.format(contact_mobile)).first()
+    otp_obj = Otp.objects.filter(transition='{}-New-Form'.format(contact_mobile)).first().order_by('-created_on')
 
     if otp_obj and now() < otp_obj.valid_till:
         otp = otp_obj.otp
