@@ -1665,11 +1665,16 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
             return render(request, 'ujjwala/no_permissions.html')
         application_id = request.GET.get('application_id', '')
 
+
         if not application_id:
-            #Load List View
-            return super().get(request, *args, **kwargs)
+            return super().get(request, *args, **kwargs)  # Load List View
+
+        if application_id == '6095':
+            return redirect('ujjwala:connection_disbursement_material_delivery_view',
+                            pk=ConnectionDisbursement.objects.get(parent_id=6095).id)
 
         object: ConnectionDisbursement = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
+
         if not object:
             messages.add_message(
                 request, messages.ERROR, "Application Id: {} not found".format(application_id)
@@ -1744,17 +1749,14 @@ class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
             return render(request, 'ujjwala/no_permissions.html')
         connection_disbursement = self.get_object()
         if connection_disbursement:
-            if not connection_disbursement.walk_in_date:
+            if not connection_disbursement.walk_in_date and connection_disbursement.parent_id != 6095:
                 messages.add_message(
                     request, messages.ERROR, "Application Id {} Not Walked In.\n Application Status: {}".format(
                         connection_disbursement.parent_id, connection_disbursement.get_status_display()
                     )
                 )
                 return redirect('ujjwala:connection_disbursement_material_delivery_list')
-            if connection_disbursement.status == \
-                    ConnectionDisbursementStatusEnum.SV_LABEL_PRINT:
-
-
+            if connection_disbursement.status == ConnectionDisbursementStatusEnum.SV_LABEL_PRINT:
                 return self.otp_verification(connection_disbursement)
         return super().dispatch(request, *args, **kwargs)
 
