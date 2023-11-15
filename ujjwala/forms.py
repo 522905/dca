@@ -1018,11 +1018,11 @@ class ConnectionDisbursementMaterialDeliveryForm(forms.Form):
 	disbursement_photo = forms.CharField(
 		widget=forms.HiddenInput, label='Connection Disbursement', required=True
 	)
-	sdms_mobile_number_update = forms.CharField(
-		widget=forms.ChoiceField(
-			choices=SDMSMobileNumberEnum.choices
-		), label='Update SDMS Mobile ?', required=True
-	)
+	# sdms_mobile_number_update = forms.CharField(
+	# 	widget=forms.ChoiceField(
+	# 		choices=SDMSMobileNumberEnum.choices
+	# 	), label='Update SDMS Mobile ?', required=True
+	# )
 
 	def __init__(self, connection_disbursement=None, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -1163,9 +1163,8 @@ class UjjwalaApplicationGenerateOtpForm(forms.Form):
 
 		otp_obj = Otp.objects.filter(
 			mobile=self.data.get('mobile'), content_type=content_type, object_id=pk, transition=transition
-		).first()
+		).order_by('-created_on').first()
 
-#		if otp_obj and datetime.datetime.now().astimezone(pytz.timezone("Asia/Kolkata")) < otp_obj.valid_till.astimezone(pytz.timezone("Asia/Kolkata")):
 		if otp_obj and now() < otp_obj.valid_till:
 			otp = otp_obj.otp
 		else:
