@@ -38,7 +38,7 @@
 	</div>
     <div class="card card_body_form">
         <form action="" method="post" id="upload_sign_and_submit_form">
-            {% csrf_token %}
+{#            {% csrf_token %}#}
             <table>
                 {{ wizard.management_form }}
                     {% if wizard.form.forms %}

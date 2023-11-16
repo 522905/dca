@@ -18,6 +18,7 @@ from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.clickjacking import xframe_options_exempt
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 from django_currentuser.middleware import get_current_user
 
@@ -487,6 +488,7 @@ class UjjwalaApplicationReuploadFormView(FormView):
 
 
 @method_decorator(login_required_if_mech_inspection, 'dispatch')
+@method_decorator(csrf_exempt)
 class PreInspectionView(FormView):
     model = PreInspection
     pre_inspection_step0_template = 'ujjwala/pre-inspection/steps/step0.html'
