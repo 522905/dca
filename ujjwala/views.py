@@ -488,7 +488,7 @@ class UjjwalaApplicationReuploadFormView(FormView):
 
 
 @method_decorator(login_required_if_mech_inspection, 'dispatch')
-@method_decorator(csrf_exempt)
+@method_decorator(csrf_exempt, 'dispatch')
 class PreInspectionView(FormView):
     model = PreInspection
     pre_inspection_step0_template = 'ujjwala/pre-inspection/steps/step0.html'
