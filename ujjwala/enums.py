@@ -18,6 +18,12 @@ class DisbursementDriveStatusEnum(models.TextChoices):
 	CANCELED = 'CANCELED', 'Canceled'
 
 
+class FilledByFilterEnum(models.TextChoices):
+	ALLOWED = 'ALLOWED', 'Allowed'
+	REJECT = 'REJECT', 'Rejected'
+	DISABLED = 'DISABLED', 'Disabled'
+
+
 class UjjwalaApplicationDocumentsEnum(models.TextChoices):
 	CUSTOMER_PHOTO = 'CUSTOMER_PHOTO', 'Customer Photo'
 	BANK_DETAIL = 'BANK_DETAIL', 'Bank Detail'

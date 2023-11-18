@@ -25,7 +25,7 @@ from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMo
 	ConnectionDisbursementStatusEnum, PreInspectionTypeEnum, SchemeOnboardingStatusEnum, NicClearedCustomerRemarksEnum, \
 	DisbursementDriveStatusEnum, InstallationTypeEnum, product_quantity_map, UjjwalaV2ApplicationAvailabilityStatus, \
 	UjjwalaV2ApplicationAvailabilityChannel, UjjwalaProductEnum, ConnectionDisbursementInvitationEnum, \
-	SDMSMobileNumberEnum
+	SDMSMobileNumberEnum, FilledByFilterEnum
 from ujjwala.forms import ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
 	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm, NewRelationCreated, \
@@ -1277,6 +1277,9 @@ class DisbursementDrive(models.Model):
 	updated_on = models.DateTimeField(auto_now=True)
 	manager = models.ForeignKey(User, on_delete=models.PROTECT, related_name="owned_disbursement_drives")
 	team_members = models.ManyToManyField(User)
+	filled_by_filter = models.CharField(max_length=32, choices=FilledByFilterEnum.choices,
+	                                    default=FilledByFilterEnum.DISABLED)
+	filled_by = models.ManyToManyField(User, related_name="allowed_filled_by")
 	description = models.TextField()
 	date = models.DateField()
 	max_walk_ins = models.IntegerField()
