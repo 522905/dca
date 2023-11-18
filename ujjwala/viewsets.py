@@ -766,8 +766,15 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         obj.invitation.create(
             sv_link=sv_upload_link if sv_upload_link else '',
             booking_id=booking_id,
-            sv_uploaded_on=datetime.datetime.now() if sv_upload_link else ''
+            sv_uploaded_on=datetime.datetime.now() if sv_upload_link else None
         )
+        return HttpResponse('OK')
+
+    @action(methods=['post'], detail=False, url_path='update_consumer_id_for_application')
+    def update_consumer_id_for_application(self, request, *args, **kwargs):
+        application = UjjwalaV2Application.objects.get(pk=request.data.get('id'))
+        application.consumer_id = request.data.get('consumer_id')
+        application.save()
         return HttpResponse('OK')
 
     @action(methods=['post'], detail=False, url_path='update_consumer_id')
