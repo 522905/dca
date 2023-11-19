@@ -101,25 +101,6 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
         application.save()
         return JsonResponse({"status": "OK"})
 
-    @action(methods=['get'], detail=False, url_path='get_walk_in_no_sv_list')
-    def get_walk_in_no_sv_list(self, request, *args, **kwargs):
-        #datetime.datetime.today().date()
-        connection_disbursement_list = ConnectionDisbursement.objects.filter(
-            walk_in_date__date=datetime.datetime.now().date()
-        ).filter(invitation__sv_link__isnull=True).exclude(invitation__sv_generated_not_downloaded=True).order_by('walk_in_date')
-
-        page = self.paginate_queryset(connection_disbursement_list)
-        return self.get_paginated_response([
-            {
-                "payload": {
-                    'connection_disbursement_id': record.id,
-                    'application_id': record.parent_id,
-                    'consumer_id': record.parent.consumer_id,
-                    'name': record.parent.name,
-                    'product': record.parent.product
-                }
-            } for record in page
-        ])
 
     @action(methods=['get'], detail=True, url_path='get_printing_urls')
     def get_printing_urls(self, request: HttpRequest, *args, **kwargs):
