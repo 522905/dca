@@ -15,10 +15,12 @@ from . import views
 from .extra_viewsets import UjjwalaApplicationExtraViewSet
 from .robos.nic_error_robo import UjjwalaApplicationNicErrorRobotAPIViewSet
 from .robos.robo_error_viewsets import UjjwalaApplicationRoboExecutionErrorAPIViewSet
+from .robos.robo_sv_viewsets import UjjwalaApplicationSVViewSet
 from .robos.sdms_relationship_robo import UjjwalaApplicationSdmsRelationshipViewSet
 from .robos.viewsets import UjjwalaApplicationNicViewSet
 from .views import UjjwalaApplicationWebFormView, WebFormOldView, UjjwalaApplicationIframeWebFormView, \
-    LegalDocumentsAcceptedToPendingView, ShareOnSocialMediaView, CancelInvitationView, UserDashboardView
+    LegalDocumentsAcceptedToPendingView, ShareOnSocialMediaView, CancelInvitationView, UserDashboardView, \
+    UjjwalaApplicationTermsWebFormView
 from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet, UjjwalaApplicationOtpViewSet
 from .robos.sv_cancellation import SvCancellationViewSet
 
@@ -36,6 +38,7 @@ router.register(
 router.register(r'ujjwala-otp', UjjwalaApplicationOtpViewSet, basename='ujjwala_otp')
 router.register(r'ujjwala-extra', UjjwalaApplicationExtraViewSet, basename='ujjwala_extra')
 router.register(r'sv-cancellation', SvCancellationViewSet, basename='sv_cancellation')
+router.register(r'sv-bot', UjjwalaApplicationSVViewSet, basename='sv_bot')
 
 
 urlpatterns = [
@@ -50,6 +53,7 @@ urlpatterns = [
 
     path('portal/web-form/', UjjwalaApplicationWebFormView.as_view(), name="web_form"),
     path('portal/i-web-form/', UjjwalaApplicationIframeWebFormView.as_view(), name="i_web_form"),
+    path('portal/i-terms-form/', UjjwalaApplicationTermsWebFormView.as_view(), name="i_terms_form"),
     path('portal/pre-inspection/', views.UjjwalaPreInspectionListView.as_view(), name="index"),
     path('portal/web-form-share/', views.ShareWebFormLink.as_view(), name="share_web_form_link"),
     url(
