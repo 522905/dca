@@ -101,17 +101,16 @@ class UjjwalaApplicationSVViewSet(viewsets.ModelViewSet):
 	@action(methods=['get'], detail=False, url_path='get_pending_sv_records')
 	def get_pending_sv_records(self, request, *args, **kwargs):
 		sv_status = request.GET.get('sv_status')
-		cdid = request.GET.get('cdid', '')
+		filters = {}
 
-		if cdid:
-			disbursement_drive_list = DisbursementDrive.objects.filter(pk=cdid)
-		else:
-			disbursement_drive_list = DisbursementDrive.objects.filter(status=DisbursementDriveStatusEnum.ACTIVE)
+		if request.GET.get('cdid', ''):
+			filters['disbursement_drive__in'] = request.GET.get('cdid').split(',')
 
 		connection_disbursement_list = ConnectionDisbursement.objects.filter(
-			disbursement_drive__in=disbursement_drive_list
+			**filters
 		).filter(
-			invitation__sv_sdms_status__in=[sv_status]
+			invitation__sv_sdms_status__in=sv_status.split(','),
+			disbursement_drive__status=DisbursementDriveStatusEnum.ACTIVE
 		).order_by('walk_in_date')
 
 		page = self.paginate_queryset(connection_disbursement_list)
