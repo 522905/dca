@@ -35,11 +35,14 @@ class UjjwalaApplicationSVViewSet(viewsets.ModelViewSet):
 		from ujjwala.models import UjjwalaV2Application, ConnectionDisbursementInvitation, ConnectionDisbursement
 
 		application: UjjwalaV2Application = UjjwalaV2Application.objects.get(pk=kwargs.get('pk'))
-		invitation: ConnectionDisbursementInvitation = application.connection_disbursement.invitation.filter(
-			status='VALID').first()
+		consumer_disbursement_id = request.POST.get('connection_disbursement_id')
+		ci_obj = ConnectionDisbursement.objects.filter(id=consumer_disbursement_id).first()
+
+		invitation: ConnectionDisbursementInvitation = ci_obj.invitation.filter(status='VALID').first()
+
 		if not invitation:
-			consumer_disbursement_id = request.POST.get('connection_disbursement_id')
-			obj = ConnectionDisbursement.objects.filter(id=consumer_disbursement_id).first()
+			obj = ci_obj
+
 			if not obj:
 				return HttpResponse('Connection Disbursement Not Found')
 
@@ -98,7 +101,12 @@ class UjjwalaApplicationSVViewSet(viewsets.ModelViewSet):
 	@action(methods=['get'], detail=False, url_path='get_pending_sv_records')
 	def get_pending_sv_records(self, request, *args, **kwargs):
 		sv_status = request.GET.get('sv_status')
-		disbursement_drive_list = DisbursementDrive.objects.filter(status=DisbursementDriveStatusEnum.ACTIVE)
+		cdid = request.GET.get('cdid', '')
+
+		if cdid:
+			disbursement_drive_list = DisbursementDrive.objects.filter(pk=cdid)
+		else:
+			disbursement_drive_list = DisbursementDrive.objects.filter(status=DisbursementDriveStatusEnum.ACTIVE)
 
 		connection_disbursement_list = ConnectionDisbursement.objects.filter(
 			disbursement_drive__in=disbursement_drive_list
