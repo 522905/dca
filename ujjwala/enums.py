@@ -25,9 +25,11 @@ class FilledByFilterEnum(models.TextChoices):
 
 
 class SVSDMSStatusEnum(models.TextChoices):
-	GENERATED_DOWNLOADED = 'GENERATED_DOWNLOADED', 'Generated Downloaded'
-	GENERATED_NOT_DOWNLOADED_NOT_PRINTED = 'GENERATED_NOT_DOWNLOADED_NOT_PRINTED', 'Generated Not Downloaded Not Printed'
-	GENERATED_NOT_DOWNLOADED_PRINTED = 'GENERATED_NOT_DOWNLOADED_PRINTED', 'Generated Not Downloaded Printed'
+	NOT_GENERATED = 'NOT_GENERATED', 'Not Generated'
+	GENERATED = 'GENERATED', 'Generated'
+	DOWNLOAD_QUEUED = 'DOWNLOAD_QUEUED', 'Download Queued'
+	DOWNLOADED = 'DOWNLOADED', 'Downloaded'
+	FAILED = 'FAILED', 'Failed'
 
 
 class UjjwalaApplicationDocumentsEnum(models.TextChoices):

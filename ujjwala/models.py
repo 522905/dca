@@ -1746,7 +1746,10 @@ class ConnectionDisbursementInvitation(models.Model):
 	product = models.CharField(max_length=128, choices=UjjwalaProductEnum.choices, null=True, blank=True)
 	canceled_reason = models.CharField(max_length=256, null=True, blank=True)
 	sv_generated_not_downloaded = models.BooleanField(null=True, blank=True)
-	sv_sdms_status = models.CharField(max_length=128, choices=SVSDMSStatusEnum.choices, null=True, blank=True)
+	sv_sdms_status = models.CharField(
+		max_length=128, choices=SVSDMSStatusEnum.choices, null=True, blank=True, default=SVSDMSStatusEnum.NOT_GENERATED
+	)
+	robo_error_message = models.TextField(null=True, blank=True)
 	status = models.CharField(max_length=32, default='VALID')
 
 	def download_links(self):
