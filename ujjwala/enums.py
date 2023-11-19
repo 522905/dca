@@ -24,6 +24,12 @@ class FilledByFilterEnum(models.TextChoices):
 	DISABLED = 'DISABLED', 'Disabled'
 
 
+class SVSDMSStatusEnum(models.TextChoices):
+	GENERATED_DOWNLOADED = 'GENERATED_DOWNLOADED', 'Generated Downloaded'
+	GENERATED_NOT_DOWNLOADED_NOT_PRINTED = 'GENERATED_NOT_DOWNLOADED_NOT_PRINTED', 'Generated Not Downloaded Not Printed'
+	GENERATED_NOT_DOWNLOADED_PRINTED = 'GENERATED_NOT_DOWNLOADED_PRINTED', 'Generated Not Downloaded Printed'
+
+
 class UjjwalaApplicationDocumentsEnum(models.TextChoices):
 	CUSTOMER_PHOTO = 'CUSTOMER_PHOTO', 'Customer Photo'
 	BANK_DETAIL = 'BANK_DETAIL', 'Bank Detail'
