@@ -9,7 +9,7 @@ from ujjwala.ujjwala_functions import omc_nic_status_update
 
 class UjjwalaApplicationSVViewSet(viewsets.ViewSet):
 	@action(methods=['post'], detail=True, url_path='sv_document_status')
-	def sdms_relation_recreated(self, request: HttpRequest, *args, **kwargs):
+	def sv_document_status(self, request: HttpRequest, *args, **kwargs):
 		from ujjwala.models import UjjwalaV2Application, ConnectionDisbursementInvitation
 
 		application: UjjwalaV2Application = UjjwalaV2Application.objects.get(pk=kwargs.get('pk'))
