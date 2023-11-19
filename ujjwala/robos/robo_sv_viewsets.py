@@ -91,9 +91,10 @@ class UjjwalaApplicationSVViewSet(viewsets.ModelViewSet):
 		elif sv_status == 'Generated':
 			invitation.sv_sdms_status = SVSDMSStatusEnum.GENERATED
 			invitation.robo_error_message = None
-		else:
+		elif sv_status == 'Failed':
 			invitation.sv_sdms_status = SVSDMSStatusEnum.FAILED
 			invitation.robo_error_message = request.POST.get('error_message', '')
+
 		invitation.save()
 		return HttpResponse('OK')
 
