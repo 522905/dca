@@ -89,8 +89,9 @@ class UjjwalaApplicationSVViewSet(viewsets.ModelViewSet):
 		elif sv_status == 'Failed':
 			invitation.sv_sdms_status = SVSDMSStatusEnum.FAILED
 			invitation.robo_error_message = request.POST.get('error_message', '')
-
+		invitation.sv_sdms_updated_on = datetime.datetime.now()
 		invitation.save()
+
 		return HttpResponse('OK')
 
 
@@ -117,7 +118,12 @@ class UjjwalaApplicationSVViewSet(viewsets.ModelViewSet):
 					'application_id': record.parent_id,
 					'consumer_id': record.parent.consumer_id,
 					'name': record.parent.name,
-					'product': record.parent.product
+					'product': record.parent.product,
+					'sv_sdms_updated_on': record.invitation.filter(status='VALID').order_by(
+						                                 '-id').first().sv_sdms_updated_on,
+					'report_name': "{}DCA_{}".format(record.parent.id,
+					                                 record.invitation.filter(status='VALID').order_by(
+						                                 '-id').first().booking_id)
 				}
 			} for record in page
 		])

@@ -1749,6 +1749,7 @@ class ConnectionDisbursementInvitation(models.Model):
 	sv_sdms_status = models.CharField(
 		max_length=128, choices=SVSDMSStatusEnum.choices, null=True, blank=True, default=SVSDMSStatusEnum.NOT_GENERATED
 	)
+	sv_sdms_updated_on = models.DateTimeField(null=True, blank=True)
 	robo_error_message = models.TextField(null=True, blank=True)
 	status = models.CharField(max_length=32, default='VALID')
 
