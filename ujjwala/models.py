@@ -1355,6 +1355,8 @@ class ConnectionDisbursement(models.Model):
 		choices=ConnectionDisbursementStatusEnum.choices
 	)
 	disbursement_drive = models.ForeignKey(DisbursementDrive, on_delete=models.SET_NULL, blank=True, null=True)
+	camunda_process_id = models.CharField(max_length=128, null=True, blank=True)
+	camunda_error = models.TextField(null=True, blank=True)
 
 	def invite(self):
 		invite_url = reverse('admin:ujjwala_connectiondisbursement_invite', kwargs={'pk': self.pk})

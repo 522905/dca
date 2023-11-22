@@ -7,6 +7,7 @@ from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.db.models import F
 from django.urls import reverse
+from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django_admin_listfilter_dropdown.filters import DropdownFilter
 from django_fsm_log.admin import StateLogInline
@@ -15,6 +16,7 @@ from import_export import resources
 from import_export.admin import ExportActionMixin, ImportMixin
 from rangefilter.filters import DateRangeFilter
 
+from domestic_app.settings import CAMUNDA_WEB_ROOT_URL
 from fsm_admin2_custom.admin import FSMTransitionCustomMixin
 from ujjwala.admin_forms import DisbursementDriveAdminForm
 from .enums import PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, DisbursementDriveStatusEnum
@@ -375,6 +377,7 @@ class ConnectionDisbursementAdmin(ExportActionMixin, FSMTransitionCustomMixin, a
         'updated_on',
         'social_media_update_done',
         'status',
+        'cockpit_link',
     )
     list_filter = ('status', WalkInFilter, DisbursementDriveFilter, DisbursementDriveIdInputFilter,)
     inlines = (ConnectionDisbursementDocumentsAdmin, ConnectionDisbursementInvitationAdmin, StateLogInline,)
@@ -385,6 +388,23 @@ class ConnectionDisbursementAdmin(ExportActionMixin, FSMTransitionCustomMixin, a
     def has_change_permission(self, request, obj=None):
         if not obj:
             return True
+
+    def get_fields(self, request, obj=None):
+        fields = super().get_fields(request, obj=obj)
+        fields = fields + ['cockpit_link']
+        return fields
+
+    def cockpit_link(self, obj: ConnectionDisbursement = None):
+        if not obj:
+            return
+        if not obj.camunda_process_id:
+            return
+
+        camunda_url = "{}/camunda/app/cockpit/default/#/process-instance/{}".format(
+            CAMUNDA_WEB_ROOT_URL, obj.camunda_process_id
+        )
+
+        return format_html('<a target="blank" href="{}">View Process</a>'.format(camunda_url))
 
     def get_urls(self):
         urls = super().get_urls()

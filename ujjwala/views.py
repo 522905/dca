@@ -24,6 +24,7 @@ from django_currentuser.middleware import get_current_user
 
 from communication_log.models import CommunicationLog
 from otp.models import Otp
+from ujjwala.camunda_functions import start_ujjwala_sv_process_in_camunda
 from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
 	PreInspectionTypeEnum, DisbursementDriveStatusEnum, UjjwalaApplicationDocumentsEnum, NicClearedCustomerRemarksEnum, \
 	UjjwalaV2ApplicationAvailabilityChannel, ConnectionDisbursementInvitationEnum, FilledByFilterEnum
@@ -43,6 +44,7 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
 from ujjwala.global_functions import login_required_if_mech_inspection
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
 	FamilyMembers, DisbursementDrive
+from ujjwala.sv_functions import create_installation_document
 from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_pre_inspection_applicable, \
 	send_ujjwala_application_whatsapp_link_v2, download_audit_documents_for_ids, is_member_of_disbursement_drive, \
 	get_current_user_disbursement_drive, is_member_of_second_cylinder_delivery, \
@@ -1107,8 +1109,24 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
 
 				connection_disbursement.walk_in_date = datetime.datetime.now()
 				connection_disbursement.disbursement_drive = disbursement_drive
+
+				# Start Camunda Process For Ujjwala SV Creation
+				result, message = start_ujjwala_sv_process_in_camunda(connection_disbursement.id)
+
+				if result:
+					connection_disbursement.camunda_process_id = message
+					messages.add_message(self.request, messages.INFO,
+					                     "SV Creation Process Started In Camunda: Process Id = {}".format(message))
+				else:
+					connection_disbursement.camunda_error = message
+					messages.add_message(self.request, messages.ERROR, message)
+
 				connection_disbursement.save()
 
+				# Enqueue Form D Creation
+				django_rq.enqueue(create_installation_document, args=(connection_disbursement.id,),)
+
+				# Send Share On Social Media Link
 				send_ujjwala_share_on_social_media_link(self.request, connection_disbursement.parent.contact_mobile,
 				                                        connection_disbursement.parent
 				                                        )
