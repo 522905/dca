@@ -304,16 +304,21 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		return ''
 
 	def get_form_abc(self):
-		return {
-			"form_a_link": self.connection_disbursement.documents.filter(
+		form_a_attachment = self.connection_disbursement.documents.filter(
 				type=UjjwalaApplicationDocumentsEnum.LEGAL_DOC_PRE_INSPECTION
-			).order_by('-id').first().link,
-			"form_b_link": self.connection_disbursement.documents.filter(
+			).order_by('-id').first()
+
+		form_b_attachment = self.connection_disbursement.documents.filter(
 				type=UjjwalaApplicationDocumentsEnum.LEGAL_DOC_FAMILY_OCCUPANCY
-			).order_by('-id').first().link,
-			"form_c_link": self.connection_disbursement.documents.filter(
+			).order_by('-id').first()
+
+		form_c_attachment = self.connection_disbursement.documents.filter(
 				type=UjjwalaApplicationDocumentsEnum.LEGAL_DOC_ANNEXURE_14_POINTS
-			).order_by('-id').first().link
+			).order_by('-id').first()
+		return {
+			"form_a_link": form_a_attachment.link if form_a_attachment else '',
+			"form_b_link": form_b_attachment.link if form_b_attachment else '',
+			"form_c_link": form_c_attachment.link if form_c_attachment else ''
 		}
 
 	def is_sv_uploaded(self):
