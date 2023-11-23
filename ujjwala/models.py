@@ -1288,6 +1288,7 @@ class DisbursementDrive(models.Model):
 	description = models.TextField()
 	date = models.DateField()
 	max_walk_ins = models.IntegerField()
+	priority = models.IntegerField(default=1000)
 	status = FSMField(
 		default=DisbursementDriveStatusEnum.ACTIVE,
 		choices=DisbursementDriveStatusEnum.choices
