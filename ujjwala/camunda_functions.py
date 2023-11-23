@@ -1,11 +1,15 @@
 import datetime
-import json
 
+import pandas as pd
 import requests
 
-from domestic_app import settings
-import pandas as pd
+# Camunda Production URL
+# CAMUNDA_WEB_ROOT_URL = "https://process.arungas.com"
+# Camunda Development URL
+CAMUNDA_WEB_ROOT_URL = "http://192.168.168.4:25252"
 
+# Camunda Base URL
+CAMUNDA_BASE_URL = f"{CAMUNDA_WEB_ROOT_URL}/engine-rest"
 UJJWALA_SV_GENERATION_PROCESS = 'ujjwala_sv_generation'
 
 
@@ -14,12 +18,12 @@ def start_ujjwala_sv_process_in_camunda(connection_disbursement_id):
 
 	ci_obj = ConnectionDisbursement.objects.get(pk=connection_disbursement_id)
 
-	url = "{}/process-definition/key/{}/start".format(settings.CAMUNDA_BASE_URL, UJJWALA_SV_GENERATION_PROCESS)
+	url = "{}/process-definition/key/{}/start".format(CAMUNDA_BASE_URL, UJJWALA_SV_GENERATION_PROCESS)
 	res = requests.post(url, json={
 		"variables": {
-			"connection_disbursement_id": {"value": ci_obj.id, "type": "long"},
-			"consumer_id": {"value": ci_obj.parent_id, "type": "long"},
-			"application_id": {"value": ci_obj.parent_id, "type": "long"},
+			"connection_disbursement_id": {"value": ci_obj.id, "type": "string"},
+			"consumer_id": {"value": ci_obj.parent.consumer_id, "type": "string"},
+			"application_id": {"value": ci_obj.parent_id, "type": "string"},
 			"name": {"value": ci_obj.parent.name, "type": "string"},
 			"product": {"value": ci_obj.parent.product, "type": "string"},
 		}
@@ -31,16 +35,16 @@ def start_ujjwala_sv_process_in_camunda(connection_disbursement_id):
 
 
 def download_file_variable_data(process_instance_id, variable_name):
-	url = f"{settings.CAMUNDA_BASE_URL}/process-instance/{process_instance_id}/variables/{variable_name}/data"
+	url = f"{CAMUNDA_BASE_URL}/process-instance/{process_instance_id}/variables/{variable_name}/data"
 
 	res = requests.get(url)
 	res.raise_for_status()
 	return res.content
 
 
-def calculate_download_sv_wait_timing(download_sv_retry_count):
+def calculate_download_sv_wait_timing(download_sv_retry_count, task_start_time):
 	wait_time = 0
-	url = f"{settings.CAMUNDA_BASE_URL}/history/process-instance/"
+	url = f"{CAMUNDA_BASE_URL}/history/process-instance/"
 
 	finished_after = datetime.datetime.today() - datetime.timedelta(hours=0, minutes=5)
 	res = requests.get(
@@ -52,7 +56,7 @@ def calculate_download_sv_wait_timing(download_sv_retry_count):
 	)
 	process_list = res.json()
 
-	url = f"{settings.CAMUNDA_BASE_URL}/history/variable-instance"
+	url = f"{CAMUNDA_BASE_URL}/history/variable-instance"
 
 	report_list = []
 
@@ -61,17 +65,17 @@ def calculate_download_sv_wait_timing(download_sv_retry_count):
 		res = requests.get(url=url, params={"processInstanceId": process['id']})
 		variable_list = res.json()
 		for variable in variable_list:
-			if variable['name'] in ['started_on', 'completed_on']:
+			if variable['name'] in ['report_start_time', 'report_end_time']:
 				row[variable['name']] = variable['value']
 		report_list.append(row)
-
-	wait_time = 3  # Default Time For Waiting 3 Minutes PT3M
 
 	if report_list:
 		df = pd.DataFrame.from_dict(report_list)
 		df['report_start_time'] = pd.to_datetime(df['report_start_time'])
 		df['report_end_time'] = pd.to_datetime(df['report_end_time'])
-		df['report_time'] = (df['report_start_time'] - df['report_end_time']).dt.seconds / 60
+		df['report_time'] = (df['report_start_time'] - df['report_end_time']).dt.seconds
+
+		df = df['report_time'].dropna()
 
 		if download_sv_retry_count == 1:
 			wait_time = df['report_time'].quantile(0.55)
@@ -81,6 +85,16 @@ def calculate_download_sv_wait_timing(download_sv_retry_count):
 			wait_time = df['report_time'].quantile(0.90)
 		elif download_sv_retry_count == 4:
 			wait_time = df['report_time'].quantile(0.99)
-		wait_time = int(wait_time)
+		wait_time = wait_time
 
-	return f"PT{wait_time}M"
+	new_wait_time = task_start_time + datetime.timedelta(seconds=wait_time)
+
+	if new_wait_time < datetime.datetime.now():
+		new_wait_time = datetime.datetime.now() + datetime.timedelta(seconds=150)
+
+	return new_wait_time
+
+
+if __name__ == '__main__':
+	connection_disbursement_id = 12735
+	start_ujjwala_sv_process_in_camunda(connection_disbursement_id)
