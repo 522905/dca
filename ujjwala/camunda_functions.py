@@ -13,13 +13,13 @@ CAMUNDA_BASE_URL = f"{CAMUNDA_WEB_ROOT_URL}/engine-rest"
 UJJWALA_SV_GENERATION_PROCESS = 'ujjwala_sv_generation'
 
 
-def start_ujjwala_sv_process_in_camunda(connection_disbursement_id):
+def start_ujjwala_sv_process_in_camunda(connection_disbursement_id, disbursement_drive):
 	from ujjwala.models import ConnectionDisbursement, DisbursementDrive
 
 	ci_obj = ConnectionDisbursement.objects.get(pk=connection_disbursement_id)
 
-	sv_priority = ci_obj.disbursement_drive.priority - ConnectionDisbursement.objects.filter(
-		disbursement_drive_id=ci_obj.disbursement_drive_id).order_by('-walk_in_date').count()
+	sv_priority = disbursement_drive.priority - ConnectionDisbursement.objects.filter(
+		disbursement_drive_id=disbursement_drive.id).order_by('-walk_in_date').count()
 	url = "{}/process-definition/key/{}/start".format(CAMUNDA_BASE_URL, UJJWALA_SV_GENERATION_PROCESS)
 	res = requests.post(url, json={
 		"variables": {
@@ -28,7 +28,7 @@ def start_ujjwala_sv_process_in_camunda(connection_disbursement_id):
 			"application_id": {"value": ci_obj.parent_id, "type": "string"},
 			"name": {"value": ci_obj.parent.name, "type": "string"},
 			"product": {"value": ci_obj.parent.product, "type": "string"},
-			"sv_priority": {"value": sv_priority, "type": "string"},
+			"sv_priority": {"value": sv_priority, "type": "integer"},
 		}
 	})
 

@@ -1118,7 +1118,7 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
 				connection_disbursement.disbursement_drive = disbursement_drive
 
 				# Start Camunda Process For Ujjwala SV Creation
-				result, message = start_ujjwala_sv_process_in_camunda(connection_disbursement.id)
+				result, message = start_ujjwala_sv_process_in_camunda(connection_disbursement.id, disbursement_drive)
 
 				if result:
 					connection_disbursement.camunda_process_id = message
