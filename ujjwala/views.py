@@ -859,7 +859,7 @@ class UjjwalaApplicationStatusView(TemplateView):
 
 	def get(self, request, *args, **kwargs):
 		contact_mobile = request.GET.get('contact_mobile', '')
-		uid = request.POST.get('uid', '')
+		uid = request.GET.get('uid', '')
 		application_id = request.GET.get('application_id', '')
 		application = {}
 
@@ -901,7 +901,7 @@ class UjjwalaConnectionDisbursementListView(ListView):
 				ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
 				ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
 			],
-			walk_in_date__date=datetime.datetime.today().date(),
+			#walk_in_date__date=datetime.datetime.today().date(),
 			disbursement_drive=disbursement_drive
 		).order_by('updated_on')
 
@@ -944,24 +944,31 @@ class UjjwalaConnectionDisbursementListView(ListView):
 			else:
 				obj = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
 				if obj:
+					allowed = True
 					if obj.status not in disbursement_drive.legal_documents_conditions:
 						messages.add_message(
 							request, messages.ERROR, "Application Id: {} - {}".format(
 								application_id, obj.status
 							)
 						)
-					else:
-						if not disbursement_drive.filled_by_filter == FilledByFilterEnum.DISABLED \
-								and obj.parent.filled_by == disbursement_drive.filled_by.filter(
-							username=obj.parent.filled_by.username).exists():
-							return redirect('ujjwala:connection_disbursement_form_view', pk=obj.pk)
-						else:
+						allowed = False
+
+					if allowed and obj.parent.filled_by and not disbursement_drive.filled_by_filter == FilledByFilterEnum.DISABLED:
+						filter_allowed = disbursement_drive.filled_by_filter == FilledByFilterEnum.ALLOWED
+						in_list = disbursement_drive.filled_by.filter(username=obj.parent.filled_by.username).exists()
+						if filter_allowed and not in_list:
+							allowed = False
+						if not filter_allowed and in_list:
+							allowed = False
+						if not allowed:
 							messages.add_message(
 								request, messages.ERROR,
 								"Not Allowed In This Disbursement Drive. Application Id: {} - {}".format(
 									application_id, obj.status
 								)
 							)
+					if allowed:
+						return redirect('ujjwala:connection_disbursement_form_view', pk=obj.pk)
 				else:
 					messages.add_message(
 						request, messages.ERROR, "Application Id: {} not found".format(application_id)
@@ -994,12 +1001,12 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
 				f"No Active Disbursement Drive. For Help Contact Manager - {disbursement_drive.manager.first_name} {disbursement_drive.manager.last_name}."
 			)
 			return redirect('ujjwala:connection_disbursement_list')
-		if not datetime.datetime.today().date() == disbursement_drive.date:
-			messages.add_message(
-				request, messages.INFO,
-				f"Please Close Existing Disbursement Drive. For Help Contact Manager - {disbursement_drive.manager.first_name} {disbursement_drive.manager.last_name}."
-			)
-			return redirect('ujjwala:connection_disbursement_list')
+		#if not datetime.datetime.today().date() == disbursement_drive.date:
+		#	messages.add_message(
+		#		request, messages.INFO,
+		#		f"Please Close Existing Disbursement Drive. For Help Contact Manager - {disbursement_drive.manager.first_name} {disbursement_drive.manager.last_name}."
+		#	)
+		#	return redirect('ujjwala:connection_disbursement_list')
 
 		connection_disbursement_count = ConnectionDisbursement.objects.filter(
 			disbursement_drive=disbursement_drive
@@ -1256,7 +1263,7 @@ class ConnectionDisbursementReviewFormAbcListView(ListView):
 			status__in=[
 				ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
 			],
-			walk_in_date__date=datetime.datetime.today().date(),
+			#walk_in_date__date=datetime.datetime.today().date(),
 			disbursement_drive=disbursement_drive
 		).order_by('updated_on')
 
@@ -1387,7 +1394,7 @@ class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
 			status__in=[
 				ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
 			],
-			walk_in_date__date=datetime.datetime.today().date(),
+			#walk_in_date__date=datetime.datetime.today().date(),
 			disbursement_drive=disbursement_drive,
 		).prefetch_related('invitation').order_by(
 			'invitation__sv_generated_not_downloaded', 'invitation__sv_link', 'updated_on')
@@ -1531,7 +1538,7 @@ class UjjwalaConnectionDisbursementSocialMediaUpdatesListView(ListView):
 			#     ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
 			# ],
 			social_media_update_done=False,
-			walk_in_date__date=datetime.datetime.today().date(),
+			#walk_in_date__date=datetime.datetime.today().date(),
 			disbursement_drive=disbursement_drive
 		).order_by('updated_on')
 
@@ -1671,7 +1678,7 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
 					ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
 					ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
 				],
-				walk_in_date__date=datetime.datetime.today().date(),
+				#walk_in_date__date=datetime.datetime.today().date(),
 				disbursement_drive=disbursement_drive
 			).order_by('updated_on')
 		else:
@@ -1681,7 +1688,7 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
 					ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
 					ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
 				],
-				walk_in_date__date=datetime.datetime.today().date(),
+				#walk_in_date__date=datetime.datetime.today().date(),
 				disbursement_drive=disbursement_drive
 			).order_by('updated_on')
 
@@ -2205,7 +2212,7 @@ class ReviewFormAbcListView(ListView):
 			status__in=[
 				ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
 			],
-			walk_in_date__date=datetime.datetime.today().date(),
+			#walk_in_date__date=datetime.datetime.today().date(),
 			disbursement_drive=disbursement_drive
 		).order_by('updated_on')
 
