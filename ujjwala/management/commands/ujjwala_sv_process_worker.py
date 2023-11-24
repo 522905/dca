@@ -1,3 +1,4 @@
+import datetime
 import traceback
 
 import requests
@@ -11,7 +12,7 @@ from ujjwala.sv_functions import update_sv_document, update_in_dca
 
 EXTERNAL_TASK_TO_SUBSCRIBE = [
 	'calculate_wait_time',
-	'process_sv',
+	# 'process_sv',
 	'upload_sv_to_dca',
 ]
 
@@ -39,11 +40,15 @@ def handle_task(task: ExternalTask) -> TaskResult:
 	try:
 		topic = task.get_topic_name()
 		if topic == "calculate_wait_time":
-			download_sv_retry_count = task.get_variable('download_sv_retry_count')
-			download_sv_retry_count = download_sv_retry_count + 1 if download_sv_retry_count else 1
-			sv_wait_timing = calculate_download_sv_wait_timing(download_sv_retry_count)
+			download_sv_retry_count = task.get_variable('download_sv_retry_count') or 0
+			task_start_time = task.get_variable('task_start_time') or datetime.datetime.now()
+
+			download_sv_retry_count = download_sv_retry_count + 1
+			sv_new_wait_timing = calculate_download_sv_wait_timing(download_sv_retry_count, task_start_time)
 			result = {
-				"sv_generation_wait_timer": {"value": sv_wait_timing, "type": "duration"},
+				"task_start_time": {"value": task_start_time.strftime('%Y-%m-%d %H:%M:%S'), "type": "string"},
+				"sv_generation_check_date": {"value": sv_new_wait_timing.strftime('%Y-%m-%dT%H:%M:%S'), "type": "string"},
+				"download_sv_retry_count": {"value": download_sv_retry_count, "type": "string"}
 			}
 			return task.complete(global_variables=result)
 		elif topic == "process_sv":
@@ -57,9 +62,10 @@ def handle_task(task: ExternalTask) -> TaskResult:
 			return task.complete(global_variables=result)
 		elif topic == "upload_sv_to_dca":
 			connection_disbursement_id = task.get_variable('connection_disbursement_id')
+			consumer_id = task.get_variable('consumer_id')
 			booking_id = task.get_variable('booking_id')
 			sv_file_link = task.get_variable('sv_file_link')
-			update_in_dca(connection_disbursement_id, booking_id, sv_file_link)
+			update_in_dca(connection_disbursement_id, booking_id, sv_file_link, consumer_id)
 			return task.complete()
 	except Exception as e:
 		return task.failure(

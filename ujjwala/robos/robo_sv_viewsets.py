@@ -3,7 +3,7 @@ import io
 
 import django_filters
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -156,3 +156,35 @@ class UjjwalaApplicationSVViewSet(viewsets.ModelViewSet):
 				}
 			} for record in page
 		])
+
+	@action(methods=['post'], detail=False, url_path='invitation_update')
+	def invitation_update(self, request, *args, **kwargs):
+		from ujjwala.models import UjjwalaV2Application, ConnectionDisbursementInvitation, ConnectionDisbursement
+
+		connection_disbursement_id = request.data.get('connection_disbursement_id')
+		booking_id = request.data.get('booking_id')
+		sv_upload_link = request.data.get('sv_upload_link')
+		consumer_id = request.data.get('consumer_id')
+
+		ci_obj = ConnectionDisbursement.objects.get(id=connection_disbursement_id)
+
+		if ci_obj.parent.consumer_id != consumer_id:
+			ci_obj.parent.consumer_id = consumer_id
+			ci_obj.parent.save()
+
+		invitation = ci_obj.invitation.filter(status='VALID').order_by('-id').first()
+		if not invitation:
+			invitation = ConnectionDisbursementInvitation.objects.create(
+				parent=ci_obj,
+				booking_id=booking_id,
+				sv_link=sv_upload_link
+			)
+		else:
+			invitation.booking_id = booking_id
+			invitation.sv_link = sv_upload_link
+			invitation.save()
+
+		return JsonResponse({
+			"status": "Updated",
+			"invitation_id": invitation.id
+		}, safe='False')

@@ -1,5 +1,7 @@
 import io
 
+import requests
+
 from ujjwala.ujjwala_functions import download_installation_form
 from utils.global_functions import upload_file_to_minio_bucket, upload_file_type_obj_to_minio_bucket
 from utils.qrcode import append_qr_code_to_sv
@@ -43,14 +45,34 @@ def update_sv_document(connection_disbursement_id, booking_id, content):
 	return sv_upload_link
 
 
-def update_in_dca(connection_disbursement_id, booking_id, sv_upload_link):
-	from ujjwala.models import ConnectionDisbursement
+def update_in_dca(connection_disbursement_id, booking_id, sv_upload_link, consumer_id):
 
-	ci_obj = ConnectionDisbursement.objects.get(id=connection_disbursement_id)
-	invitation = ci_obj.invitation.filter(status='VALID').order_by('-id').first()
-	invitation.booking_id = booking_id
-	invitation.sv_link = sv_upload_link
-	invitation.save()
-
-	return invitation
+	data = {
+		"connection_disbursement_id": connection_disbursement_id,
+		"booking_id": booking_id,
+		"sv_upload_link": sv_upload_link,
+		"consumer_id": consumer_id
+	}
+	url = "https://dca.arungas.com/ujjwala/sv-bot/invitation_update/"
+	# url = "http://192.168.168.4:60610/ujjwala/sv-bot/invitation_update/"
+	res = requests.post(f"{url}", json=data)
+	res.raise_for_status()
+	return res.json()
+	# from ujjwala.models import ConnectionDisbursement, ConnectionDisbursementInvitation
+	#
+	# ci_obj = ConnectionDisbursement.objects.get(id=connection_disbursement_id)
+	#
+	# invitation = ci_obj.invitation.filter(status='VALID').order_by('-id').first()
+	# if not invitation:
+	# 	invitation = ConnectionDisbursementInvitation.objects.create(
+	# 		parent=ci_obj,
+	# 		booking_id=booking_id,
+	# 		sv_link=sv_upload_link
+	# 	)
+	# else:
+	# 	invitation.booking_id = booking_id
+	# 	invitation.sv_link = sv_upload_link
+	# 	invitation.save()
+	#
+	# return invitation
 
