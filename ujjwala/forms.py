@@ -1018,11 +1018,11 @@ class ConnectionDisbursementMaterialDeliveryForm(forms.Form):
 	disbursement_photo = forms.CharField(
 		widget=forms.HiddenInput, label='Connection Disbursement', required=True
 	)
-	# sdms_mobile_number_update = forms.CharField(
-	# 	widget=forms.ChoiceField(
-	# 		choices=SDMSMobileNumberEnum.choices
-	# 	), label='Update SDMS Mobile ?', required=True
-	# )
+	#sdms_mobile_number_update = forms.CharField(
+	#	widget=forms.ChoiceField(
+	#		choices=SDMSMobileNumberEnum.choices
+	#	), label='Update SDMS Mobile ?', required=True
+	#)
 
 	def __init__(self, connection_disbursement=None, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -1205,7 +1205,7 @@ class UjjwalaApplicationGenerateOtpForm(forms.Form):
 				message_id = response.get('id')
 		elif '_send_sms' in self.data:
 			channel = "sms"
-			diff = otp_obj.valid_till - django.utils.timezone.now()
+			diff = otp_obj.valid_till.replace(tzinfo=pytz.timezone("Asia/Kolkata")) - now()
 			diff_minutes = round(diff.seconds / 60)
 
 			context = {

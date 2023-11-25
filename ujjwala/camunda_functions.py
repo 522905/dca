@@ -4,9 +4,9 @@ import pandas as pd
 import requests
 
 # Camunda Production URL
-# CAMUNDA_WEB_ROOT_URL = "https://process.arungas.com"
+CAMUNDA_WEB_ROOT_URL = "https://process.arungas.com"
 # Camunda Development URL
-CAMUNDA_WEB_ROOT_URL = "http://192.168.168.4:25252"
+#CAMUNDA_WEB_ROOT_URL = "http://192.168.168.4:25252"
 
 # Camunda Base URL
 CAMUNDA_BASE_URL = f"{CAMUNDA_WEB_ROOT_URL}/engine-rest"

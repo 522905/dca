@@ -63,6 +63,7 @@ PDF_COMPRESSION_OPTIONS = {
 
 VALID_CHARS_IN_NAME_PATTERN = r'^[A-Za-z. ]+$'
 RELATION_VALIDATION_PATTERN = r'.(fathe|moth|husba|government|india).'
+GOV_OF_INDIA_FUZZY_REGEX = r'.*g.*of*.i.*'
 
 
 def valid_file_uploaded(url):
@@ -1321,6 +1322,9 @@ def is_valid_name(name, gender):
 
         if not re.match(VALID_CHARS_IN_NAME_PATTERN, token):
             return False, "Wrong Character In Name: {}".format(token)
+
+    if re.match(GOV_OF_INDIA_FUZZY_REGEX, name, flags=re.IGNORECASE):
+       return False, "Name Might Be Gov Of India"
 
     return True, "No Error In Name"
 

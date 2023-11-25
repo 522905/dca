@@ -14,8 +14,8 @@ class UjjwalaApplicationRoboExecutionErrorAPIViewSet(viewsets.ModelViewSet):
     def update_robo_execution_failed_count(self, request, *args, **kwargs):
         application: UjjwalaV2Application = self.get_object()
 
-        if request.POST.get('error_message', ''):
-            application.error_message = request.POST.get('error_message', '')
+        if request.data.get('error_message', ''):
+            application.error_message = request.data.get('error_message')
             application.robo_execution_failed_count = 100
         else:
             application.error_message = ''

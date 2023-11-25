@@ -11,8 +11,8 @@ from ujjwala.camunda_functions import download_file_variable_data, calculate_dow
 from ujjwala.sv_functions import update_sv_document, update_in_dca
 
 EXTERNAL_TASK_TO_SUBSCRIBE = [
-	'calculate_wait_time',
-	# 'process_sv',
+#	'calculate_wait_time',
+	'process_sv',
 	'upload_sv_to_dca',
 ]
 

@@ -1,0 +1,1 @@
+rq info --url redis://localhost:56379

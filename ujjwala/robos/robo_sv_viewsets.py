@@ -102,12 +102,13 @@ class UjjwalaApplicationSVViewSet(viewsets.ModelViewSet):
 
 		if request.GET.get('cdid', ''):
 			filters['disbursement_drive__in'] = request.GET.get('cdid').split(',')
+		else:
+			filters['disbursement_drive__status'] = DisbursementDriveStatusEnum.ACTIVE
 
 		connection_disbursement_list = ConnectionDisbursement.objects.filter(
 			**filters
 		).filter(
 			invitation__sv_sdms_status__in=sv_status.split(','),
-			disbursement_drive__status=DisbursementDriveStatusEnum.ACTIVE
 		).order_by('walk_in_date')
 
 		page = self.paginate_queryset(connection_disbursement_list)

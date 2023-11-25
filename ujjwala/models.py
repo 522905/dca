@@ -745,8 +745,10 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	@transition(
 		field=status,
 		source=[
+			UjjwalaV2ApplicationStatus.ON_HOLD,
 			UjjwalaV2ApplicationStatus.NIC_CLEARED,
 			UjjwalaV2ApplicationStatus.OMC_CLEARED,
+			UjjwalaV2ApplicationStatus.READY_FOR_DISBURSEMENT
 		],
 		target=UjjwalaV2ApplicationStatus.NIC_CLEARED_SDMS_RELATION_CANCELLED,
 		custom=dict(short_description='SDMS Relation Cancelled', admin=False),

@@ -67,7 +67,7 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
     def check_if_already_uploaded_sv(self, request, *args, **kwargs):
         sv_uploaded = ConnectionDisbursement.objects.get(
             pk=request.GET.get('cid')
-        ).invitation.filter(status='VALID').count() > 0
+        ).invitation.filter(status='VALID').exclude(sv_link='').count() > 0
         return JsonResponse({
              "uploaded": sv_uploaded
         })
@@ -215,7 +215,7 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
             Q(status=UjjwalaV2ApplicationStatus.OMC_CLEARED) |
             Q(status=UjjwalaV2ApplicationStatus.NIC_ERROR_APPROVED)
         ).exclude(consumer_id__isnull=True).filter(
-            Q(sdms_last_updated_on__lte=datetime.datetime.today()-datetime.timedelta(hours=2)) |
+            Q(sdms_last_updated_on__lte=datetime.datetime.today()-datetime.timedelta(hours=1)) |
             Q(sdms_last_updated_on__isnull=True)
         ).order_by('updated_on')
 #.exclude(version='V1')
@@ -719,6 +719,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         booking_id = request.POST.get('booking_id', None)
 
         if not request.POST.get('sv_generated_not_downloaded'):
+            sv_generated_not_downloaded = False
             file = request.FILES.get('file')
             pdf_file_bytes = io.BytesIO(file.read())
             bytes_stream = append_qr_code_to_sv(
@@ -731,6 +732,8 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             sv_upload_link = upload_file_type_obj_to_minio_bucket(
                 doc_file_bytes, 'ujjwaladocuments', "sv_{}".format(obj.parent_id), "application/pdf"
             )
+        else:
+            sv_generated_not_downloaded = True
 
         # Installation Form Upload
         installation_document = download_installation_form(obj.parent)
@@ -744,16 +747,19 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             link=upload_url
         )
 
-        obj.invitation.create(
+        invitation_obj = obj.invitation.create(
             sv_link=sv_upload_link if sv_upload_link else '',
             booking_id=booking_id,
             sv_uploaded_on=datetime.datetime.now() if sv_upload_link else None
         )
+        invitation_obj.sv_generated_not_downloaded = sv_generated_not_downloaded
+        invitation_obj.save()
         return HttpResponse('OK')
 
-    @action(methods=['post'], detail=False, url_path='update_consumer_id_for_application')
+    @action(methods=['post'], detail=True, url_path='update_consumer_id_for_application')
     def update_consumer_id_for_application(self, request, *args, **kwargs):
-        application = UjjwalaV2Application.objects.get(pk=request.data.get('id'))
+        application = self.get_object()
+        #application = UjjwalaV2Application.objects.get(pk=request.data.get('id'))
         application.consumer_id = request.data.get('consumer_id')
         application.save()
         return HttpResponse('OK')
@@ -823,17 +829,17 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
                 # commented for development
                 application.event_submit_channel_whatsapp()
-                # result = django_rq.enqueue(do_primary_omc_dedupe_check, args=(application.id,))
+                result = django_rq.enqueue(do_primary_omc_dedupe_check, args=(application.id,))
                 # Add lead to vicicial
                 requests.post(
                     "http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
-                    "&function=add_lead&phone_number={}&phone_code=1&list_id=1001&first_name={}&last_name={} ".format(
+                    "&function=add_lead&phone_number={}&phone_code=1&list_id=1001&first_name={}&last_name={}".format(
                         application.contact_mobile, application.name, application.id)
                     )
 
-                # django_rq.enqueue(add_lead_to_vicidial, args=(
-                #     application.id, application.name, application.contact_mobile
-                # ))
+                django_rq.enqueue(add_lead_to_vicidial, args=(
+                     application.id, application.name, application.contact_mobile
+                ))
             except:
                 pass
         return application

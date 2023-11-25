@@ -13,7 +13,6 @@ from django_currentuser.middleware import get_current_user
 from django_fsm import transition, FSMField, GET_STATE
 from django_fsm_log.decorators import fsm_log_description, fsm_log_by
 from minio import Minio
-
 from communication_log.jobs import move_sv_doc_file_tus_to_minio, move_files_to_minio_processing
 from communication_log.models import CommunicationLog
 from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTypeEnum, \

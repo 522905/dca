@@ -26,7 +26,7 @@
                 </span>
             </div>
             <div class="d-flex flex-row mt-2">
-              <input type="text" name="otp" class="form-control text-center input_otp" autofocus="" style="border: 1px solid #ccc;" />
+              <input type="text" inputmode="numeric" pattern="[0-9]*" name="otp" class="form-control text-center input_otp" autofocus="" style="border: 1px solid #ccc;" />
             </div>
             <div class="text-center mt-2">
               <span class="d-block mobile-text text-red fw-600" id="countdown"></span>
@@ -45,6 +45,6 @@
     </script>
 </div>
 <script>
-  document.getElementById("id_reference_number").readOnly = true
+  document.getElementById("id_reference_number").readOnly 1= true
 </script>
 {% endblock %}

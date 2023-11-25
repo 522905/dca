@@ -20,7 +20,7 @@ minio_api_client = Minio(
 def compress_connection_app_minio_docs():
 	from connection_app.models import ConnectionApplication
 
-	for connection_application in ConnectionApplication.objects.exclude(status='NOT_INTERESTED').order_by("id"):
+	for connection_application in ConnectionApplication.objects.exclude(status='NOT_INTERESTED').filter(id__gte=2157).order_by("id"):
 		print("Processing Application Id: {}".format(connection_application.id))
 		move_files_to_minio_processing(connection_application.id)
 

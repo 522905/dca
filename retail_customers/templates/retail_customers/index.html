@@ -111,43 +111,23 @@
                 </div>
 
                 <div class="p-2">
-                    <div class="row border-bottom mb-2">
-                        <div class="location_field col-sm-8">
-                            <span>{{ wizard.form.latitude }}</span>
-                            <span>{{ wizard.form.longitude }}</span>
-                            <span>{{ wizard.form.accuracy }}</span>
-                            <p id="map_error_msg"></p>
-                        </div>
-                        <div class="col-sm-4 photo_block pl-lg-0 mb-3">
-                            <div class="allowLocationNav">
-                                <button class="btn btn-primary" onClick="allowLocationNav();">
-                                    Capture Location
-                                </button>
-                            </div>
-                            {{ wizard.form.latitude.errors }} {{ wizard.form.longitude.errors }} {{ wizard.form.accuracy.errors }}
-                        </div>
-                    </div>
+                    
                     <div class="row p-2">
                         <div class="col-sm-6">
                             <div class="form-group">
-                                <label>Shop Name<strong style="color:red">*</strong></label>
-                                <input type="text" class="form-control" value="" name="shop_name"
+                                <label>Unit Name<strong style="color:red">*</strong></label>
+                                <input type="text" class="form-control" value="" name="unit_name"
                                     required />
                                 <div class="row m-0">
-                                    <span id="shop_name"></span>
+                                    <span id="unit_name"></span>
                                 </div>
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="form-group ">
                                 <label>Shop Type<strong style="color:red">*</strong></label>
-                                <select required class="selectpicker form-control" name="shop_type">
-                                    <option value="" id="status" disabled>
-                                        --- Select Shop Type ---
-                                    </option>
-                                    <option value="rent">Rent</option>
-                                    <option value="own">Own</option>
-                                </select>
+                                <input type="text" class="form-control" value="" name="shop_type"
+                                    required />
                             </div>
                         </div>
                     </div>
@@ -269,7 +249,31 @@
                             </div>
                         </div>
                     </div>
-                    
+                    <div class="row">
+                        <div class="location_field col-sm-8">
+                            <div class="row">
+                                <div class="col-sm-4 photo_block pl-lg-0 mb-3">
+                                    <input id="id_preview_pre_inspection_form-latitude" name="latitude" style="margin: 0 auto; max-width: 150px;" type="tel"
+                                    class="form-control" id="latitude" required />
+                                </div>
+                                <div class="col-sm-4 photo_block pl-lg-0 mb-3">
+                                    <input id="id_preview_pre_inspection_form-longitude" name="longitude" style="margin: 0 auto; max-width: 150px;" type="tel"
+                            class="form-control" id="longitude" required />
+                                </div>
+                                <div class="col-sm-4 photo_block pl-lg-0 mb-3">
+                                    <input id="id_preview_pre_inspection_form-accuracy" name="accuracy" style="margin: 0 auto; max-width: 150px;" type="tel"
+                                    class="form-control" id="accuracy" required />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 photo_block pl-lg-0 mb-3">
+                            <div class="allowLocationNav">
+                                <button class="btn btn-primary" onClick="allowLocationNav();">
+                                    Capture Location
+                                </button>
+                            </div>
+                        </div>
+                    </div>    
                 </div>
             </div>
 
@@ -299,8 +303,8 @@
                     </div>
                     <div class="col-sm-3 col">
                         <label>Shop Photo</label>
-                        <span class="custom-file-input" name="shopphoto" id="shopphoto"></span><br>
-                        <span id="shopphoto" class="text-danger"></span>
+                        <span class="custom-file-input" name="shop_photo" id="shop_photo"></span><br>
+                        <span id="shop_photo" class="text-danger"></span>
                     </div>
                 </div>
             </div>
@@ -552,7 +556,7 @@ function allowLocationNav() {
     });
 
     // bankdetailuppy
-    window.shophotouppy = new Uppy.Core({
+    window.shopphotouppy = new Uppy.Core({
         debug: true,
         autoProceed: true,
         restrictions: {
@@ -563,14 +567,14 @@ function allowLocationNav() {
         }
     })
         .use(Uppy.Dashboard, {
-            trigger: '#shopphoto',
+            trigger: '#shop_photo',
             inline: true,
-            target: '#shopphoto',
+            target: '#shop_photo',
             showProgressDetails: true,
             note: 'Images only, 1 file, up to 10 MB',
             height: 250,
             metaFields: [],
-            id: 'shopphoto',
+            id: 'shop_photo',
             browserBackButtonClose: false
         })
         .use(Uppy.Compressor, {
@@ -585,7 +589,7 @@ function allowLocationNav() {
             endpoint: 'https://tus.dca.arungas.com/files/',
         })
 
-    shophotouppy.on('complete', result => {
+    shopphotouppy.on('complete', result => {
         console.log('successful files:', result.successful)
         console.log('failed files:', result.failed)
     });
@@ -1158,29 +1162,28 @@ function allowLocationNav() {
             if (fm.uid_no.length == 0) return Promise.resolve(true);
 
             // Run Dedup Over Api
-            // return new Promise((resolve, reject) => {
-            //     jQuery.ajax({
-            //         url: '/ujjwala/ujjwala-application/check_uid/',
-            //         type: "GET",
-            //         data: { 'uid': fm.uid_no }
-            //     }).then(response => {
-            //         if (response.status === true) return resolve({});
+            return new Promise((resolve, reject) => {
+                jQuery.ajax({
+                    url: '/ujjwala/ujjwala-application/check_uid/',
+                    type: "GET",
+                    data: { 'uid': fm.uid_no }
+                }).then(response => {
+                    if (response.status === true) return resolve({});
 
-            //         var app = response.data.applications[0];
-            //         return reject([{
-            //             uid_no: {
-            //                 msg: `Application alreay exists DCA ${app.id} ${app.name} ${app.status}`
-            //             }
-            //         }]);
-            //     }).fail((e) => {
-            //         return reject([{
-            //             uid_no: {
-            //                 msg: e
-            //             }
-            //         }]);
-            //     })
-            // });
-
+                    var app = response.data.applications[0];
+                    return reject([{
+                        uid_no: {
+                            msg: `Application alreay exists DCA ${app.id} ${app.name} ${app.status}`
+                        }
+                    }]);
+                }).fail((e) => {
+                    return reject([{
+                        uid_no: {
+                            msg: e
+                        }
+                    }]);
+                })
+            });
         }
 
         this.add_fm = (relation) => {

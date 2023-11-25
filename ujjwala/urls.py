@@ -19,8 +19,7 @@ from .robos.robo_sv_viewsets import UjjwalaApplicationSVViewSet
 from .robos.sdms_relationship_robo import UjjwalaApplicationSdmsRelationshipViewSet
 from .robos.viewsets import UjjwalaApplicationNicViewSet
 from .views import UjjwalaApplicationWebFormView, WebFormOldView, UjjwalaApplicationIframeWebFormView, \
-    LegalDocumentsAcceptedToPendingView, ShareOnSocialMediaView, CancelInvitationView, UserDashboardView, \
-    UjjwalaApplicationTermsWebFormView
+    LegalDocumentsAcceptedToPendingView, ShareOnSocialMediaView, CancelInvitationView, UserDashboardView
 from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet, UjjwalaApplicationOtpViewSet
 from .robos.sv_cancellation import SvCancellationViewSet
 
@@ -53,7 +52,7 @@ urlpatterns = [
 
     path('portal/web-form/', UjjwalaApplicationWebFormView.as_view(), name="web_form"),
     path('portal/i-web-form/', UjjwalaApplicationIframeWebFormView.as_view(), name="i_web_form"),
-    path('portal/i-terms-form/', UjjwalaApplicationTermsWebFormView.as_view(), name="i_terms_form"),
+#    path('portal/i-terms-form/', UjjwalaApplicationTermsWebFormView.as_view(), name="i_terms_form"),
     path('portal/pre-inspection/', views.UjjwalaPreInspectionListView.as_view(), name="index"),
     path('portal/web-form-share/', views.ShareWebFormLink.as_view(), name="share_web_form_link"),
     url(

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from pathlib import Path
 import os # new
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -58,16 +59,22 @@ INSTALLED_APPS = [
 
     'connection_app',
     'inactive_customers',
-
+    'treenode',
 
     'rangefilter',
     'django_admin_listfilter_dropdown',
-    'referral',
     'teams',
     'formtools',
-    'otp',
+
     'ujjwala.apps.UjjwalaAppConfig',
-    'sdms'
+    'sdms',
+    'otp',
+    'app_utilities',
+    'scheduler',
+    'djgeojson',
+    'leaflet',
+    'reference_data.apps.ReferenceDataConfig',
+    'retail_customers',
 ]
 
 MIDDLEWARE = [
@@ -97,6 +104,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'domestic_app.context_processors.bridge_context'
             ],
         },
     },
@@ -108,9 +116,18 @@ WSGI_APPLICATION = 'domestic_app.wsgi.application'
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = {
+    #'default': {
+    #    'ENGINE': 'django.db.backends.sqlite3',
+    #    'NAME': BASE_DIR / 'db.sqlite3',
+    #},
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3'
+        'ATOMIC_REQUESTS': True,
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'domestic_connection_app',
+        'USER': 'process_mobile_application',
+        'PASSWORD': '3ty5JS8sJlqtk3bQ',
+        'HOST': 'localhost',
+        'PORT': '',
     }
 }
 
@@ -140,7 +157,7 @@ LOGIN_REDIRECT_URL = '/'
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 
 USE_I18N = True
@@ -162,46 +179,61 @@ INTERAKT_API_KEY = "HmtU2CH6poGN_TU-XqCtwuvef8utPNRJRlamfbWXTwg"
 #DataFlair #Django #Static files
 STATIC_URL = '/static/'
 #--------------------------------------------------
-STATIC_ROOT = os.path.join(BASE_DIR, 'root')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
 #-----------------------------------------------------
 STATICFILES_DIRS = [
         os.path.join(BASE_DIR, 'static'),
 ]
-
 RQ_QUEUES = {
     'default': {
-        'HOST': 'dca.arungas.com',
+        'HOST': 'localhost',
         'PORT': 56379,
         'DB': 0,
         # 'PASSWORD': 'some-password',
         'DEFAULT_TIMEOUT': 360,
-        'ASYNC': False
+        'ASYNC': True
     }
 }
 
 # If you need custom exception handlers
-RQ_EXCEPTION_HANDLERS = ['path.to.my.handler']
+#RQ_EXCEPTION_HANDLERS = ['path.to.my.handler']
 
 BASE_URL = 'https://dca.arungas.com'
 
-# MINIO_UPLOAD_URL = "http://files.dca.arungas.com"
-MINIO_PUBLIC_URL = "http://localhost:59000"
+MINIO_UPLOAD_URL = "http://files.dca.arungas.com"
+MINIO_PUBLIC_URL = "https://files.dca.arungas.com"
+#MINIO_UPLOAD_URL = "http://localhost:59000"
 
-# MINIO_ENDPOINT = "files.dca.arungas.com"
+#MINIO_ENDPOINT = "files.dca.arungas.com"
+MINIO_ENDPOINT = "localhost:59000"
 MINIO_API_ENDPOINT = "localhost:59000"
 
 MINIO_BUCKET_NAME = "domesticconnectionapplicationdocs"
+MINIO_UJJWALA_BUCKET_NAME = "ujjwaladocuments"
 
 MINIO_CREDENTIAL = {
-    "access_key": "A105SYTFQ5D152QNMM4G",
-    "secret_key": "i4ETnrqIWHdOABwhOP8xnWcnlZQdLPRbi0T2dCDF"
+    "access_key": "NS4WU7OHJ9I6TBJSMI0B",
+    "secret_key": "JDiZVteYAB0sMD9QM5koKPXT8Xa8w+X2xukaM76O"
 }
 
-HTML_TO_PDF_SERVER_URL = "http://localhost:58080".format(BASE_URL)
 
-THUMBOR_URL = "http://dca.arungas.com:6988/unsafe/fit-in/1920x1080/filters:quality(75)/"
 
-THUMBOR_URL_INTERNAL = "http://dca.arungas.com:6988/unsafe/fit-in/1520x2688/filters:quality(80)/"
+# Camunda Production URL
+CAMUNDA_WEB_ROOT_URL = "https://process.arungas.com"
+# Camunda Development URL
+#CAMUNDA_WEB_ROOT_URL = "http://192.168.168.4:25252"
+
+# Camunda Base URL
+CAMUNDA_BASE_URL = f"{CAMUNDA_WEB_ROOT_URL}/engine-rest"
+
+
+HTML_TO_PDF_SERVER_URL = "http://localhost:58080"
+
+THUMBOR_URL = "http://dca.arungas.com:6988/unsafe/fit-in/1920x1080/filters:quality(75):format(jpeg)/"
+
+THUMBOR_URL_INTERNAL = "http://dca.arungas.com:6988/unsafe/fit-in/1520x2688/filters:format(webp)/"
+THUMBOR_URL_INTERNAL_WEBP_COMPRESSED = "http://dca.arungas.com:6988/unsafe/fit-in/1520x2688/filters:quality(80):format(webp)/"
+THUMBOR_URL_INTERNAL_WEBP_UNCOMPRESSED = "http://dca.arungas.com:6988/unsafe/fit-in/1520x2688/filters:quality(100):format(webp)/"
 
 INFOBIP_URL = "https://4r198.api.infobip.com/sms/2/text/advanced"
 INFOBIP_NOTIFY_URL = "https://dca.arungas.com/commlog/infobip/webhook/"
@@ -213,11 +245,24 @@ SUBMIT_SMS_TEMPLATE = \
     "Your application with Id {id} submitted for connection type  {application_details}. " \
     "We will get back to you within {working_days} working days."
 
-GENERIC_SMS_OTP_TEMPLATE = \
-    "Dear Customer,"\
-    "Your verification code for {otp_for} is {otp} -Arun Gas"
 
-GENERIC_SMS_OTP_TEMPLATE_ID = "1107165976858894486"
+#GENERIC_SMS_OTP_TEMPLATE = \
+#    "Dear Customer,"\
+#    "Your verification code for {otp_for} is {otp} -Arun Gas"
+
+#GENERIC_SMS_OTP_TEMPLATE_ID = "1107165976858894486"
+
+
+# GENERIC_SMS_OTP_TEMPLATE = \
+#     "Dear Customer,"\
+#     "Your verification code for {otp_for} is {otp} -Arun Gas"
+
+GENERIC_SMS_OTP_TEMPLATE = \
+    "{otp} is your verification OTP. This OTP will expire in {otp_expire} mins. Do not share it with anyone   -Arun Gas"
+
+# Old Template ID
+# GENERIC_SMS_OTP_TEMPLATE_ID = "1107165976858894486"
+GENERIC_SMS_OTP_TEMPLATE_ID = "1107169822213183469"
 
 VERIFIED_SMS_TEMPLATE = \
     ""
@@ -225,3 +270,17 @@ VERIFIED_SMS_TEMPLATE = \
 UJJWALA_PRE_INSPECTION_OTP = 'ujjwala_pre_inspection_otp'
 
 X_FRAME_OPTIONS = 'ALLOWALL'
+
+
+import sentry_sdk
+
+sentry_sdk.init(
+    dsn="https://3a6bc49af5e0461af09f8818d01e79b0@o4506076265906176.ingest.sentry.io/4506076268331008",
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    traces_sample_rate=1.0,
+    # Set profiles_sample_rate to 1.0 to profile 100%
+    # of sampled transactions.
+    # We recommend adjusting this value in production.
+    profiles_sample_rate=1.0,
+)
