@@ -15,12 +15,15 @@ services:
       - /opt/bitnami/scripts/minio/run.sh
     entrypoint:
       - /opt/bitnami/scripts/minio/entrypoint.sh
-    image: bitnami/minio:latest
+    image: bitnami/minio:2022.2.16
     ports:
       - 59000:9000/tcp
       - 59001:9001/tcp
     restart: unless-stopped
     working_dir: /opt/bitnami/minio-client
+    environment:
+      - MINIO_ROOT_USER=minio-root-user
+      - MINIO_ROOT_PASSWORD=minio-toor-password
     volumes:
         - ./data/minio-persistence:/data
 
@@ -40,9 +43,10 @@ services:
 
   dca-tus:
     container_name: dca-tus
-    image: tusproject/tusd:sha-2c8fe24
+#    image: tusproject/tusd:sha-2c8fe24
+    image: tusproject/tusd:sha-7970961
     ports:
-      - 51080:1080/tcp
+      - 51080:8080/tcp
     restart: unless-stopped
     volumes:
       - ./data/tus-data:/srv/tusd-data
@@ -50,7 +54,7 @@ services:
 
   thumbor:
     container_name: thumbor
-    image: minimalcompact/thumbor
+    image: ghcr.io/minimalcompact/thumbor:7.5.0-simd-avx2
     ports:
       - 6988:80/tcp
     restart: unless-stopped

@@ -26,13 +26,13 @@ from django.utils.timezone import now
 
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(
-	level=logging.DEBUG,
-	format="%(asctime)s [%(levelname)s] %(message)s",
-	handlers=[
-		logging.FileHandler("/tmp/debug.log"),
-	]
-)
+#logging.basicConfig(
+#	level=logging.DEBUG,
+#	format="%(asctime)s [%(levelname)s] %(message)s",
+#	handlers=[
+#		logging.FileHandler("/tmp/debug.log"),
+#	]
+#)
 
 
 class NicUpdateAddressForm(forms.Form):
