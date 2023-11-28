@@ -178,11 +178,13 @@ class UjjwalaApplicationSVViewSet(viewsets.ModelViewSet):
 			invitation = ConnectionDisbursementInvitation.objects.create(
 				parent=ci_obj,
 				booking_id=booking_id,
-				sv_link=sv_upload_link
+				sv_link=sv_upload_link,
+				sv_uploaded_on=datetime.datetime.now()
 			)
 		else:
 			invitation.booking_id = booking_id
 			invitation.sv_link = sv_upload_link
+			invitation.sv_uploaded_on = datetime.datetime.now()
 			invitation.save()
 
 		return JsonResponse({

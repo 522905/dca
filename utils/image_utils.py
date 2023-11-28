@@ -8,9 +8,10 @@ import requests
 from PyPDF2 import PdfFileMerger
 
 # THUMBOR_URL = "http://dca.arungas.com:6988/unsafe/fit-in/1520x2688/filters:quality(80)/"
+from domestic_app.settings import THUMBOR_WEB_URL
 from ujjwala.management.commands.ujjwala_file_worker import tus_client
 
-THUMBOR_URL = "http://dca.arungas.com:6988/unsafe/fit-in/{}x{}/filters:quality({})/"
+THUMBOR_URL = "{}/unsafe/fit-in/{}x{}/filters:quality({})/"
 
 
 def compress_file(file_url, target_size=500):
@@ -29,7 +30,7 @@ def compress_file(file_url, target_size=500):
 
     while True:
         response = requests.get("{}{}".format(
-            THUMBOR_URL.format(resolution_x, resolution_y, quality),
+            THUMBOR_URL.format(THUMBOR_WEB_URL, resolution_x, resolution_y, quality),
             file_url)
         )
 
