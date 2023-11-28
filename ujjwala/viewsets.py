@@ -832,15 +832,8 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 # commented for development
                 application.event_submit_channel_whatsapp()
                 result = django_rq.enqueue(do_primary_omc_dedupe_check, args=(application.id,))
-                # # Add lead to vicidial
-                # requests.post(
-                #     "http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
-                #     "&function=add_lead&phone_number={}&phone_code=1&list_id=1001&first_name={}&last_name={}".format(
-                #         application.contact_mobile, application.name, application.id)
-                #     )
-
                 django_rq.enqueue(add_lead_to_vicidial, args=(
-                     application.id, application.name, application.contact_mobile
+                    application.contact_mobile, application.name, application.id,
                 ))
             except:
                 pass
