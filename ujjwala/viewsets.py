@@ -223,10 +223,11 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
 #.exclude(version='V1')
 #.order_by('-id')
 #        aadhar_list = UjjwalaV2Application.objects.filter(id__in=["1273","2120","2534","32","1265","323","76","601","2148","37"]).exclude(consumer_id__isnull=True).order_by('id')
-        return JsonResponse([
-            {
+        return JsonResponse([{
+            "payload": {
                 'id': record.id,
                 'consumer_id': record.consumer_id
+                }
             } for record in aadhar_list
         ], safe=False)
 
@@ -835,6 +836,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 django_rq.enqueue(add_lead_to_vicidial, args=(
                     application.contact_mobile, application.name, application.id,
                 ))
+
             except:
                 pass
         return application
