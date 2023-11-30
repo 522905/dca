@@ -131,13 +131,13 @@
                                     <b style="color:cornflowerblue"><i>Update Bank Details</i></b></a>
                             </th>
                         </tr>
-                        <tr>
-                            <th>Consumer Id: {{ obj.consumer_id }}</th>
-                            <th>
-                                <a class="text_link" href="{% url 'ujjwala:update_relationship_number' pk=obj.id %}">
-                                <b style="color:cornflowerblue"><i>Update Relationship Number</i></b></a>
-                            </th>
-                        </tr>
+{#                        <tr>#}
+{#                            <th>Consumer Id: {{ obj.consumer_id }}</th>#}
+{#                            <th>#}
+{#                                <a class="text_link" href="{% url 'ujjwala:update_relationship_number' pk=obj.id %}">#}
+{#                                <b style="color:cornflowerblue"><i>Update Relationship Number</i></b></a>#}
+{#                            </th>#}
+{#                        </tr>#}
                         {% endif %}
                         {% if obj.status == 'NIC_CLEARED' %}
                         <tr>
