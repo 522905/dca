@@ -1176,7 +1176,7 @@ class UjjwalaApplicationGenerateOtpForm(forms.Form):
 				except Otp.DoesNotExist:
 					break
 			otp = id_generator(4, chars=string.digits)
-			valid_till = datetime.datetime.now() + timedelta(minutes=30)
+			valid_till = datetime.datetime.now() + timedelta(hours=6)
 			closed = False
 
 			otp_obj = Otp.objects.create(
