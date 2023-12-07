@@ -80,15 +80,22 @@
                                     <a  data-turbolinks="false" href="{% url 'admin:ujjwala_preinspection_change' object_id=obj.pre_inspection.id %}">
                                         {{obj.pre_inspection.get_status_display}}
                                     </a>
-                                    {% if obj.pre_inspection.status != 'ACCEPTED' %}
+                                    {% if obj.pre_inspection.status == 'ACCEPTED' %}
+                                        {% if obj.connection_disbursement.status == 'LEGAL_DOCUMENTS_PENDING' %}
+                                            <a class="link_wh" style="color:#007bff !important" href="{% url 'ujjwala:whatsapp_form_abc' pk=obj.id %}">
+                                                <b class="link"> (Whatsapp Form A B C)</b>
+                                            </a>
+                                        {% endif %}
+                                    {% else %}
+{#                                    {% if obj.pre_inspection.status != 'ACCEPTED' %}#}
                                         {% if obj.pre_inspection.status != 'SUBMITTED' %}
                                             <!--<a href="{% url 'ujjwala:whatsapp_pre_inspection_type_self' pk=obj.id %}">
                                                 <b> (Whatsapp Pre-Inspection Type Self)</b>
                                             </a>-->
                                         {% endif %}
                                     {% endif %}
-                                    {% else %}
-                                        {{obj.pre_inspection.get_status_display}}
+                                {% else %}
+                                    {{ obj.pre_inspection.get_status_display }}
                                 {% endif %}
                             </td>
                         </tr>
@@ -99,8 +106,8 @@
                                     {{obj.connection_disbursement.get_status_display}}
                                 </a>
                                     {% if obj.connection_disbursement.status == 'LEGAL_DOCUMENTS_PENDING' %}
-                                        <a class="link_wh" style="color:#007bff !important" href="{% url 'ujjwala:whatsapp_form_abc' pk=obj.id %}">
-                                            <b class="link"> (Whatsapp Form A B C)</b>
+                                        <a class="link_wh" style="color:#007bff !important" data-turbolinks="false" href="{% url 'ujjwala:legal_documents_upload' pk=obj.connection_disbursement.id %}">
+                                            <br><b class="link"> (Upload Form A B C)</b>
                                         </a>
                                     {% endif %}
                                 {% else %}

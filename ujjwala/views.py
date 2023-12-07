@@ -1,7 +1,7 @@
 import base64
 import datetime
 import textwrap
-
+from django.db.models import Case, Value, When
 import django_rq
 from dateutil.relativedelta import relativedelta
 from django import forms
@@ -898,7 +898,7 @@ class UjjwalaConnectionDisbursementListView(ListView):
 				ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
 				ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
 				ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
-				ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
+				# ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
 				ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
 			],
 			#walk_in_date__date=datetime.datetime.today().date(),
@@ -917,6 +917,54 @@ class UjjwalaConnectionDisbursementListView(ListView):
 			team_members=user, status=DisbursementDriveStatusEnum.ACTIVE
 		).first()
 
+		cd_grouped_status_list = []
+
+		qs = ConnectionDisbursement.objects.filter(
+			disbursement_drive=disbursement_drive,
+			status=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING).order_by('walk_in_date')
+
+		cd_grouped_status_list.append({
+			"status": 'Legal Documents Not Uploaded (Upload Pending)',
+			"object_list": qs,
+			"total_records": qs.count(),
+			"background_color": 'lightpink'
+		})
+
+		qs = ConnectionDisbursement.objects.filter(
+			disbursement_drive=disbursement_drive,
+			social_media_update_done=False).order_by('-walk_in_date')
+		cd_grouped_status_list.append({
+			"status": "Social Media Photo Pending",
+			"object_list": qs,
+			"total_records": qs.count(),
+			"background_color": "lightsalmon"
+		})
+
+		qs = ConnectionDisbursement.objects.filter(
+			disbursement_drive=disbursement_drive,
+			status__in=[
+				ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
+				ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED
+			]).order_by('-walk_in_date')
+
+		cd_grouped_status_list.append({
+			"status": 'Material Delivery Pending',
+			"object_list": qs,
+			"total_records": qs.count(),
+			"background_color": 'lightblue'
+		})
+
+		qs = ConnectionDisbursement.objects.filter(
+			disbursement_drive=disbursement_drive,
+			status=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED).order_by('-walk_in_date')
+
+		cd_grouped_status_list.append({
+			"status": 'Material Delivered',
+			"object_list": qs,
+			"total_records": qs.count(),
+			"background_color": 'lightgreen'
+		})
+
 		connection_disbursement_count = ConnectionDisbursement.objects.filter(
 			disbursement_drive=disbursement_drive
 		).exclude(walk_in_date=None).count()
@@ -924,7 +972,8 @@ class UjjwalaConnectionDisbursementListView(ListView):
 		context.update({
 			"current_disbursement_index": connection_disbursement_count,
 			"max_walkins": disbursement_drive.max_walk_ins,
-			"disbursement_drive": disbursement_drive
+			"disbursement_drive": disbursement_drive,
+			"cd_grouped_status_list": cd_grouped_status_list
 		})
 		return context
 

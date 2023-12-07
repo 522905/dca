@@ -1509,19 +1509,19 @@ class ConnectionDisbursement(models.Model):
 	def transition_material_delivery_otp_verified(self, *args, **kwargs):
 		pass
 
-	@fsm_log_description
-	@fsm_log_by
-	@transition(
-		field=status,
-		source=ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
-		target=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
-		custom=dict(
-			short_description='Material Delivery OTP Override',
-		    admin=True, form=MaterialDeliveryOtpOverrideForm
-		),
-	)
-	def transition_material_delivery_otp_override(self, *args, **kwargs):
-		pass
+	# @fsm_log_description
+	# @fsm_log_by
+	# @transition(
+	# 	field=status,
+	# 	source=ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
+	# 	target=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
+	# 	custom=dict(
+	# 		short_description='Material Delivery OTP Override',
+	# 	    admin=True, form=MaterialDeliveryOtpOverrideForm
+	# 	),
+	# )
+	# def transition_material_delivery_otp_override(self, *args, **kwargs):
+	# 	pass
 
 
 	@fsm_log_description
@@ -1700,7 +1700,7 @@ class ConnectionDisbursement(models.Model):
 			ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
 			ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
 			ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
-			ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
+			# ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
 			ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
 		],
 		target=GET_STATE(
