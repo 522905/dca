@@ -400,7 +400,7 @@ class ConnectionDisbursementAdmin(ExportActionMixin, FSMTransitionCustomMixin, a
         if not obj.camunda_process_id:
             return
 
-        camunda_url = "{}/camunda/app/cockpit/default/#/process-instance/{}".format(
+        camunda_url = "{}/camunda/app/cockpit/default/#/history/process-instance/{}".format(
             CAMUNDA_WEB_ROOT_URL, obj.camunda_process_id
         )
 
