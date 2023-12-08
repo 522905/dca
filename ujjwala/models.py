@@ -1220,7 +1220,7 @@ class PreInspection(models.Model):
 			create_job_function = partial(
 				django_rq.enqueue,
 				"ujjwala.jobs.is_application_ready_for_disbursement",
-				parent_id=self.parent.id
+				self.parent.id
 			)
 			transaction.on_commit(create_job_function)
 		else:
