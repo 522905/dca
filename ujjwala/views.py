@@ -54,6 +54,14 @@ from utils.enums import RoboSdmsDedeupStatusEnum
 from utils.global_functions import unsign_data_base64, sign_data_base64
 
 
+### Form to avoid circular import ###
+class BackendDriveSelectionForm(forms.Form):
+	drive = forms.ModelChoiceField(queryset=DisbursementDrive.objects.filter(
+		status=DisbursementDriveStatusEnum.ACTIVE
+	))
+### END ###
+
+
 def index(request):
 	return redirect('ujjwala:web_form')
 
@@ -1306,8 +1314,15 @@ class ConnectionDisbursementReviewFormAbcListView(ListView):
 	paginate_by = 100
 	permission = 'has_view_permission'
 
+	def get_disbursement_drive_for_backend_ops(self):
+		disbursement_drive = self.request.COOKIES.get('drive_id', None)
+		if disbursement_drive:
+			return DisbursementDrive.objects.get(pk=disbursement_drive)
+		return get_current_user_disbursement_drive(get_current_user())
+
 	def get_queryset(self):
-		disbursement_drive = get_current_user_disbursement_drive(get_current_user())
+		disbursement_drive = self.get_disbursement_drive_for_backend_ops()
+
 		return ConnectionDisbursement.objects.filter(
 			status__in=[
 				ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW,
@@ -1346,9 +1361,7 @@ class ConnectionDisbursementReviewFormAbcListView(ListView):
 
 	def get_context_data(self, *, object_list=None, **kwargs):
 		context = super().get_context_data(object_list=object_list, **kwargs)
-		disbursement_drive = DisbursementDrive.objects.filter(
-			team_members=get_current_user(), status=DisbursementDriveStatusEnum.ACTIVE
-		).first()
+		disbursement_drive = self.get_disbursement_drive_for_backend_ops()
 
 		connection_disbursement_count = ConnectionDisbursement.objects.filter(
 			disbursement_drive=disbursement_drive
@@ -1357,7 +1370,8 @@ class ConnectionDisbursementReviewFormAbcListView(ListView):
 		context.update({
 			"current_disbursement_index": connection_disbursement_count,
 			"max_walkins": disbursement_drive.max_walk_ins,
-			"disbursement_drive": disbursement_drive
+			"disbursement_drive": disbursement_drive,
+			"drive_selection_form": BackendDriveSelectionForm()
 		})
 		return context
 
@@ -1436,8 +1450,14 @@ class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
 	paginate_by = 20
 	permission = 'has_view_permission'
 
+	def get_disbursement_drive_for_backend_ops(self):
+		disbursement_drive = self.request.COOKIES.get('drive_id', None)
+		if disbursement_drive:
+			return DisbursementDrive.objects.get(pk=disbursement_drive)
+		return get_current_user_disbursement_drive(get_current_user())
+
 	def get_queryset(self):
-		disbursement_drive = get_current_user_disbursement_drive(get_current_user())
+		disbursement_drive = self.get_disbursement_drive_for_backend_ops()
 
 		qs = ConnectionDisbursement.objects.filter(
 			status__in=[
@@ -1446,7 +1466,8 @@ class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
 			#walk_in_date__date=datetime.datetime.today().date(),
 			disbursement_drive=disbursement_drive,
 		).prefetch_related('invitation').order_by(
-			'invitation__sv_generated_not_downloaded', 'invitation__sv_link', 'updated_on')
+			'invitation__sv_generated_not_downloaded', 'invitation__sv_link', 'updated_on'
+		)
 		return qs
 
 	def get_template_names(self):
@@ -1486,9 +1507,7 @@ class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
 
 	def get_context_data(self, *, object_list=None, **kwargs):
 		context = super().get_context_data(object_list=object_list, **kwargs)
-		disbursement_drive = DisbursementDrive.objects.filter(
-			team_members=get_current_user(), status=DisbursementDriveStatusEnum.ACTIVE
-		).first()
+		disbursement_drive = self.get_disbursement_drive_for_backend_ops()
 
 		connection_disbursement_count = ConnectionDisbursement.objects.filter(
 			disbursement_drive=disbursement_drive
@@ -1497,7 +1516,8 @@ class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
 		context.update({
 			"current_disbursement_index": connection_disbursement_count,
 			"max_walkins": disbursement_drive.max_walk_ins,
-			"disbursement_drive": disbursement_drive
+			"disbursement_drive": disbursement_drive,
+			"drive_selection_form": BackendDriveSelectionForm()
 		})
 		return context
 

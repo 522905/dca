@@ -1,9 +1,22 @@
+<style>
+    #id_drive {
+        display: inline;
+    }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
 {%  if disbursement_drive.manager %}
 <div class="card card-profile pt-0 mt-0 " style="width: 100%;" >
     <div class="row justify-content-center m-0" style="margin: 0 auto !important; padding: 10px; border-bottom: 1px solid #ccc; margin-bottom: 5px !important;">
         <div class="text-center">
             <h7 class="h7"><b>Disbursement Manager:</b> {{ disbursement_drive.manager }}<span class="font-weight-light"></span></h7>
+            {{ drive_selection_form.drive }}
         </div>
     </div>
 </div>
 {%  endif %}
+<script>
+    $('select#id_drive').on('change', function() {
+      $.cookie('drive_id', this.value, { expires: 1, path:'/' });
+      window.location.reload();
+    });
+</script>
