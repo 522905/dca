@@ -499,6 +499,10 @@ def download_ujjwala_physical_legal_docs(obj):
     return resp
 
 
+def download_ujjwala_legal_docs_to_upload(obj, signature=True):
+    return download_ujjwala_physical_legal_docs(obj)
+
+
 def re_create_legal_docs(application):
     physical_legal_document = download_ujjwala_physical_legal_docs(application)
     upload_url = upload_file_to_minio_bucket(
