@@ -14,67 +14,61 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300&display=swap" rel="stylesheet">
 </head>
+<style>
+  .block1 td{ font-size: 15px;}
+  .block1 td:first-child{font-weight: bold;}
+  .img-fit{object-fit: cover; height: 140px; object-position: top; float:right;}
+</style>
 <body>
   <div class="main p-2">
     <div class="container" style="max-width: 800px;">
-      <div class="top_banner pt-3">
-        <img src="https://arungas.com/public/ujwalla/banner.png" style="width: 100%;">
-      </div>
-      <h2 style="text-align: center; font-weight: 600; line-height: 30px;">Form B ({{obj.id}})</h2>
-      <h5 class="pt-3 mb-5" style="text-align: center; font-weight: 500; line-height: 40px;">पारिवारिक संरचना के लिए स्व.घोषणा और रिहाई के लिए पता <br> पीएमयूवाई के तहत नए कनेक्शन का (केवल प्रवासी के लिए) </h5>
-      <div class="form_block">
+      <table>
+        <tr>
+          <td style="width:200px;"><img style="width:100%;" src="https://arungas.com/public/ujwalla/ujj_banner_l.png"></td>
+          <td style="width:400px;">
+            <div class="mb-2" style="text-align: center; font-size: 14px; font-weight: 500;">पारिवारिक संरचना के लिए स्व.घोषणा और रिहाई के लिए पता <br> पीएमयूवाई के तहत नए कनेक्शन का (केवल प्रवासी के लिए) </div>
+              <h4 style="text-align: center; font-weight: 600; line-height: 30px;">Form B ({{obj.id}})<br>
+              </h4>
+          </td>
+          <td style="width:150px;">
+            <img src="https://arungas.com/public/ujwalla/ujj_banner_r.png" style="width:100%;">
+          </td>
+        </tr>
+      </table>
+      <div style="margin-top:30px">
         <table>
           <tr>
-            <table>
-              <tr>
-                <td>
-                  <table>
-                    <tr>
-                      <td style="width: 550px; display: inline-block;">
-                        <div class="row">
-                          <div class="label">1. नाम:</div>
-                          <div class="text border-dotted">{{obj.name}}</div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="width: 550px; display: inline-block;">
-                        <div class="row">
-                          <div class="label">2. आधार संख्या:</div>
-                          <div class="text border-dotted">{{obj.self.uid_no}}</div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="width: 550px; display: inline-block;">
-                        <div class="row">
-                          <div class="label">3. पता:</div>
-                          <div class="text border-dotted">{{obj.parent.get_address_for_sdms_upload.addr_str}}</div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="width: 550px; display: inline-block;">
-                        <div class="row">
-                          <div class="label">4. मोबाईल नः</div>
-                          <div class="text border-dotted">{{obj.contact_mobile}}</div>
-                        </div>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-                <td style="float:right; width:200px; margin-left: 20px;">
-                  <ul class="img_block">
-                    <li class="float-right">
-                      <img style="object-fit: cover; height: 140px; object-position: top" src="{{obj.document_self|resize:"1000x140"}}">
-                    </li>
-                  </ul>
-                </td>
-              </tr>
-            </table>
+            <td style="width:580px;">
+              <table class="block1">
+                <tr>
+                  <td style="width:150px;">आवेदन की तिथि:</td>
+                  <td style="width:450px; ">{{obj.created_on | date:"d/m/Y"}}</td>
+                </tr>
+                <tr>
+                  <td style="width:150px; "> नाम:</td>
+                  <td style="width:450px; ">{{obj.name}}</td>
+                </tr>
+                <tr>
+                  <td style="width:150px; ">आधार संख्या:</td>
+                  <td style="width:450px; ">{{obj.uid_no}}</td>
+                </tr>
+                <tr>
+                  <td style="width:150px; ">पता:</td>
+                  <td style="width:450px; ">{{obj.get_address_for_sdms_upload.addr_str}}</td>
+                </tr>
+                <tr>
+                  <td style="width:150px; ">मोबाईल नः</td>
+                  <td style="width:450px; ">{{obj.contact_mobile}}</td>
+                </tr>
+              </table>
+            </td>
+            <td style="width:200px;">
+              <img class="img-fit" src="{{obj.document_self|resize:'1000x140'}}">
+            </td>
           </tr>
         </table>
-        <table class="border table-bordered p-2 text-center" style="width: 100%;">
+        <br>
+        <table class="borderheading table-bordered p-2 text-center" style="width: 100%;">
           <tr>
             <th>क्र</th>
             <th>लाभार्थी/परिवार के सदस्यो का नाम:</th>
@@ -96,9 +90,11 @@
         </table>
       </div>
       <div>
-        <p class="pt-5 " style="text-align: left;">मैं घोषणा करती हूँ कि उपर वर्णित परिवार के सदस्य मेरे साथ उपरोक्त पते पर रह रहे है और
-          हमारे पास यहां उल्लेखित पते पर कोई एलपीजी कनेक्शन नही है।</p>
-        <p class="pt-2 text-left"> मैं घोषणा करता हूँ कि मेरा मूल निवास स्थान  और वर्तमान पता अलग है।</p>
+        <p class="pt-5 " style="text-align: left;">मैं घोषणा करती हूँ कि उपर वर्णित परिवार के सदस्य के अलावा मेरे परिवार में और कोई वयस्क /
+          18 वर्ष की आयु का नही है <br>
+          मेरे एवंम मेरे परिवार के किसी भी सदस्य पास कोई राशन कार्ड नही है <br>
+          मेरे साथ उपरोक्त पते पर रह रहे है हमारे परिवार के किसी भी सदस्य पास  कोई एलपीजी कनेक्शन नही है।</p>
+        <p class="pt-2 text-left"> मैं घोषणा करती हूँ कि मेरा मूल निवास स्थान और वर्तमान पता अलग है। उपरोकत जानकारी पूर्ण सत्य हैं</p>
       </div>
     <div class="row">
         <div class="col">
@@ -149,6 +145,8 @@
 </body>
 </html>
 <style>
+  .borderheading th{ font-size: 13px; padding: 5px 10px;}
+  .borderheading td{ font-size: 12px; padding: 5px;}
   table tr td{ font-size: 13px;}
   .form_block ul{ float: left; width: 100%; padding: 0;}
   .form_block ul li{
@@ -162,7 +160,7 @@
 
 .row {
   display:flex;
-  margin: 0 0 15px 0;
+  margin: 0 0 5px 0;
 }
 .text {
   flex: 1 1 auto;
