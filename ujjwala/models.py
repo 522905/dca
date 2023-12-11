@@ -1354,6 +1354,8 @@ class ConnectionDisbursement(models.Model):
 	# sv_uploaded_on = models.DateTimeField(null=True, blank=True)
 	location_data = models.JSONField(null=True, blank=True)
 	walk_in_date = models.DateTimeField(null=True, blank=True)
+	walk_in_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True,
+	                               related_name="walk_in_by_user")
 	document_printed = models.BooleanField(default=False, null=True, blank=True)
 	sequence = models.CharField(max_length=16, null=True, blank=True)
 	mechanic = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)

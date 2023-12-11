@@ -1184,6 +1184,7 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
 
 				connection_disbursement.walk_in_date = datetime.datetime.now()
 				connection_disbursement.disbursement_drive = disbursement_drive
+				connection_disbursement.walk_in_by = get_current_user()
 
 				# Start Camunda Process For Ujjwala SV Creation
 				result, message = start_ujjwala_sv_process_in_camunda(connection_disbursement.id, disbursement_drive)
