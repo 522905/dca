@@ -866,19 +866,27 @@ class UjjwalaApplicationStatusView(TemplateView):
 	template_name = "ujjwala/application_status/application_search_status.html"
 
 	def get(self, request, *args, **kwargs):
+		current_user: User = get_current_user()
+
+		if current_user.is_staff or DisbursementDrive.objects.filter(status='ACTIVE',
+		                                                             team_members=current_user).exists():
+			qs = UjjwalaV2Application.objects.all()
+		else:
+			qs = UjjwalaV2Application.objects.filter(filled_by=current_user)
+
 		contact_mobile = request.GET.get('contact_mobile', '')
 		uid = request.GET.get('uid', '')
 		application_id = request.GET.get('application_id', '')
-		application = {}
+		application = None
 
 		if contact_mobile:
-			application = UjjwalaV2Application.objects.filter(contact_mobile=contact_mobile).first()
+			application = qs.filter(contact_mobile=contact_mobile, filled_by=current_user).first()
 		elif uid:
 			family_member = FamilyMembers.objects.filter(uid_no=uid).first()
 			if family_member:
 				application = family_member.parent
 		elif application_id:
-			application = UjjwalaV2Application.objects.filter(id=application_id).first()
+			application = qs.objects.filter(id=application_id).first()
 
 		if application:
 			reject_reason = ujjwala_application_reject_reason_log(application.id)
@@ -909,7 +917,6 @@ class UjjwalaConnectionDisbursementListView(ListView):
 				# ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
 				ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
 			],
-			#walk_in_date__date=datetime.datetime.today().date(),
 			disbursement_drive=disbursement_drive
 		).order_by('updated_on')
 
@@ -933,6 +940,7 @@ class UjjwalaConnectionDisbursementListView(ListView):
 
 		cd_grouped_status_list.append({
 			"status": 'Legal Documents Not Uploaded (Upload Pending)',
+			"id": 'legal_documents_not_uploaded_upload_pending',
 			"object_list": qs,
 			"total_records": qs.count(),
 			"background_color": 'lightpink'
@@ -940,9 +948,10 @@ class UjjwalaConnectionDisbursementListView(ListView):
 
 		qs = ConnectionDisbursement.objects.filter(
 			disbursement_drive=disbursement_drive,
-			social_media_update_done=False).order_by('-walk_in_date')
+			social_media_update_done=False).order_by('walk_in_date')
 		cd_grouped_status_list.append({
 			"status": "Social Media Photo Pending",
+			"id": 'social_media_photo_pending',
 			"object_list": qs,
 			"total_records": qs.count(),
 			"background_color": "lightsalmon"
@@ -953,10 +962,11 @@ class UjjwalaConnectionDisbursementListView(ListView):
 			status__in=[
 				ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
 				ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED
-			]).order_by('-walk_in_date')
+			]).order_by('walk_in_date')
 
 		cd_grouped_status_list.append({
 			"status": 'Material Delivery Pending',
+			"id": 'material_delivery_pending',
 			"object_list": qs,
 			"total_records": qs.count(),
 			"background_color": 'lightblue'
@@ -968,6 +978,7 @@ class UjjwalaConnectionDisbursementListView(ListView):
 
 		cd_grouped_status_list.append({
 			"status": 'Material Delivered',
+			"id": 'material_delivered',
 			"object_list": qs,
 			"total_records": qs.count(),
 			"background_color": 'lightgreen'
@@ -1417,12 +1428,19 @@ class ConnectionDisbursementReviewFormAbcView(FormView, ApplicationView):
 	def form_valid(self, form):
 		obj = self.get_object()
 		data = form.cleaned_data
-		obj.transition_legal_documents_reviewed(
-			review_status=data['review_status'],
-			by=get_current_user(),
-			description='{} - {}'.format(data.get('review_status'), data.get('rejected_reason' ''))
-		)
-		obj.save()
+		if obj.document_printed:
+			obj.transition_sv_label_printed(
+				by=get_current_user(),
+				description='Document Already Printed'
+			)
+			obj.save()
+		else:
+			obj.transition_legal_documents_reviewed(
+				review_status=data['review_status'],
+				by=get_current_user(),
+				description='{} - {}'.format(data.get('review_status'), data.get('rejected_reason' ''))
+			)
+			obj.save()
 		return redirect(self.get_success_url())
 
 	def get_form_kwargs(self):
@@ -1446,6 +1464,8 @@ class ConnectionDisbursementReviewFormAbcView(FormView, ApplicationView):
 @method_decorator(login_required, 'dispatch')
 class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
 	model = ConnectionDisbursement
+	from django_fsm_log.models import StateLog
+
 
 	paginate_by = 20
 	permission = 'has_view_permission'
@@ -1859,7 +1879,9 @@ class ConnectionDisbursementMaterialDeliveryView(FormView, ApplicationView):
 					)
 				)
 				return redirect('ujjwala:connection_disbursement_material_delivery_list')
-			if connection_disbursement.status == ConnectionDisbursementStatusEnum.SV_LABEL_PRINT:
+			if connection_disbursement.status in (
+					ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
+			):
 				return self.otp_verification(connection_disbursement)
 		return super().dispatch(request, *args, **kwargs)
 

@@ -276,6 +276,10 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		sd = self.documents.filter(type=UjjwalaApplicationDocumentsEnum.CUSTOMER_PHOTO).first()
 		return sd.link if sd else ''
 
+	def self_uid_no(self):
+		self_fm = self.family_members.get(relation=FamilyMemberRelationEnum.SELF)
+		return self_fm.uid_no
+
 	def document_kitchen_photo(self):
 		return self.documents.filter(
 			type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO
@@ -994,12 +998,14 @@ class PreInspection(models.Model):
 		default=PreInspectionStatusEnum.ALLOCATED,
 		choices=PreInspectionStatusEnum.choices
 	)
+	camunda_process_id = models.CharField(max_length=128, null=True, blank=True)
+	camunda_error_message = models.TextField(null=True, blank=True)
 
 	def mechanic_name(self):
 		if self.mechanic:
 			return self.mechanic.get_full_name()
 		else:
-			self.parent.name
+			return self.parent.name
 
 	def document_kitchen_photo(self):
 		return self.documents.filter(type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO).first().link
@@ -1220,7 +1226,7 @@ class PreInspection(models.Model):
 			create_job_function = partial(
 				django_rq.enqueue,
 				"ujjwala.jobs.is_application_ready_for_disbursement",
-				self.parent.id
+				args=(self.parent.id,)
 			)
 			transaction.on_commit(create_job_function)
 		else:
@@ -1348,6 +1354,7 @@ class ConnectionDisbursement(models.Model):
 	# sv_uploaded_on = models.DateTimeField(null=True, blank=True)
 	location_data = models.JSONField(null=True, blank=True)
 	walk_in_date = models.DateTimeField(null=True, blank=True)
+	document_printed = models.BooleanField(default=False, null=True, blank=True)
 	sequence = models.CharField(max_length=16, null=True, blank=True)
 	mechanic = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
 	material_delivered_on = models.DateTimeField(null=True, blank=True)
@@ -1461,13 +1468,14 @@ class ConnectionDisbursement(models.Model):
 			self.documents.all().delete()
 			self.parent.event_legal_documents_reupload_channel_whatsapp(kwargs.get('description'))
 
-
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=[ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
-		        ConnectionDisbursementStatusEnum.SV_LABEL_PRINT],
+		source=[
+			ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
+	        ConnectionDisbursementStatusEnum.SV_LABEL_PRINT
+		],
 		target=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING,
 		custom=dict(
 			short_description='Legal Documents Pending', admin=True, form=LegalDocumentsAcceptedToPendingAdminForm
@@ -1482,12 +1490,16 @@ class ConnectionDisbursement(models.Model):
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
+		source=[
+			ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
+			ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_REVIEW
+		],
 		target=ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
 		custom=dict(short_description='SV & Label Print', admin=False),
 	)
 	def transition_sv_label_printed(self, *args, **kwargs):
-		pass
+		self.document_printed = True
+		self.save()
 
 	# @fsm_log_description
 	# @fsm_log_by
@@ -1504,7 +1516,9 @@ class ConnectionDisbursement(models.Model):
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
+		source=[
+			ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
+		],
 		# target=ConnectionDisbursementStatusEnum.DISBURSEMENT_PHOTO_UPLOAD,
 		target=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERY_OTP_VERIFIED,
 		custom=dict(short_description='Material Delivery OTP Verification', admin=False),
