@@ -886,7 +886,7 @@ class UjjwalaApplicationStatusView(TemplateView):
 			if family_member:
 				application = family_member.parent
 		elif application_id:
-			application = qs.objects.filter(id=application_id).first()
+			application = qs.filter(id=application_id).first()
 
 		if application:
 			reject_reason = ujjwala_application_reject_reason_log(application.id)
