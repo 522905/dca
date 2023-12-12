@@ -84,14 +84,14 @@ def get_compressed_file_link_jpeg(url):
     header_info = res.headers
 
     if 'Upload-Length' not in header_info:
-        return f'{settings.THUMBOR_WEB_URL}/unsafe/fit-in/1920x1080/filters:format(jpeg)/{url}'
+        return f'{settings.THUMBOR_LOCAL_URL}/unsafe/fit-in/1920x1080/filters:format(jpeg)/{url}'
 
     if int(header_info.get('Upload-Length', 0)) <= 499000:
         file_type = header_info['Upload-Metadata'].split(',')[0].split(' ')[1]
         if 'webp' not in base64.b64decode(file_type).decode():
             return url
 
-    return f'{settings.THUMBOR_WEB_URL}/unsafe/fit-in/1920x1080/filters:format(jpeg)/{url}'
+    return f'{settings.THUMBOR_LOCAL_URL}/unsafe/fit-in/1920x1080/filters:format(jpeg)/{url}'
 
 
 def valid_file_size(file):
