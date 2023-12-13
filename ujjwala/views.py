@@ -1,7 +1,8 @@
 import base64
 import datetime
+import json
 import textwrap
-from django.db.models import Case, Value, When
+from django.db.models import Case, Value, When, Q
 import django_rq
 from dateutil.relativedelta import relativedelta
 from django import forms
@@ -872,7 +873,7 @@ class UjjwalaApplicationStatusView(TemplateView):
 		                                                             team_members=current_user).exists():
 			qs = UjjwalaV2Application.objects.all()
 		else:
-			qs = UjjwalaV2Application.objects.filter(filled_by=current_user)
+			qs = UjjwalaV2Application.objects.filter(Q(filled_by__isnull=True) | Q(filled_by=current_user))
 
 		contact_mobile = request.GET.get('contact_mobile', '')
 		uid = request.GET.get('uid', '')
@@ -880,7 +881,7 @@ class UjjwalaApplicationStatusView(TemplateView):
 		application = None
 
 		if contact_mobile:
-			application = qs.filter(contact_mobile=contact_mobile, filled_by=current_user).first()
+			application = qs.filter(Q(contact_mobile=contact_mobile) | Q(sdms_mobile_number=contact_mobile)) .first()
 		elif uid:
 			family_member = FamilyMembers.objects.filter(uid_no=uid).first()
 			if family_member:
