@@ -1067,9 +1067,12 @@ def send_ujjwala_application_whatsapp_link_v1(contact_mobile, user_id):
 
 
 def send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id):
-	data = get_signed_share_data(contact_mobile, user_id)
-	url = reverse('ujjwala:ujjwala_application_link', kwargs={'data': data})
-	url = url[1:]
+	"""
+	Function Working Changed Due To Closure of Public Form Filling
+	"""
+	# data = get_signed_share_data(contact_mobile, user_id)
+	# url = reverse('ujjwala:ujjwala_application_link', kwargs={'data': data})
+	# url = url[1:]
 
 	body_text = {
 		"countryCode": "+91",
@@ -1079,17 +1082,18 @@ def send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id):
 			"name": contact_mobile,
 		},
 		"template": {
-			"name": "ujjwala_application_shared_link_20082022",
+			# "name": "ujjwala_application_shared_link_20082022",
+			"name": "ujjwala_form_fill_areas",
 			#"name": "votercard3122022",
 			"languageCode": "hi",
 			"headerValues": [
 			],
 			"bodyValues": [],
-			"buttonValues": {
-				"0": [
-					url
-				]
-			}
+			# "buttonValues": {
+			# 	"0": [
+			# 		url
+			# 	]
+			# }
 		}
 	}
 
