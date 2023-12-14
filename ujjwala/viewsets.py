@@ -1,26 +1,20 @@
 import datetime
 import io
-import random
 from functools import partial
 
 import django_filters
 import django_rq
-import pytz
 import requests
-from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ValidationError
-from django.db import connection, transaction
+from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse, HttpRequest
+from django.urls import reverse
 from django.utils import timezone
 from django_currentuser.middleware import get_current_user
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from django.core.signing import Signer
-from scheduler.models import ScheduledJob
 
-from domestic_app import settings
 from sdms.models import SdmsCustomerRecord
 from utils.global_functions import upload_file_to_minio_bucket, upload_file_type_obj_to_minio_bucket
 from utils.qrcode import append_qr_code_to_sv
@@ -30,19 +24,16 @@ from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, FamilyM
     UjjwalaApplicationDocumentsEnum, UjjwalaV2ApplicationAvailabilityStatus, UjjwalaV2ApplicationAvailabilityChannel
 from .forms import ApplicationRejected
 from .global_functions import get_sdms_mismatched_records
-from .jobs import do_primary_omc_dedupe_check, compress_connection_disbursement_documents, enqueue_dedupe_and_audit_jobs
+from .jobs import do_primary_omc_dedupe_check, enqueue_dedupe_and_audit_jobs
 from .models import UjjwalaV2Application, FamilyMembers, ConnectionDisbursement, ConnectionDisbursementDocuments, \
     PreInspection
 from .serializers import UjjwalaV2ApplicationSerializer
 from .ujjwala_functions import download_ujjwala_documents, get_salutation, \
     download_pre_installation_documents, get_existing_duplicate_applications_detail, \
-    download_ujjwala_legal_docs_to_upload, download_ujjwala_physical_legal_docs, \
+    download_ujjwala_physical_legal_docs, \
     process_family_uid_result, process_omc_dedupe_result, send_whatsapp_contact_otp, verify_whatsapp_contact_otp, \
-    send_sms_contact_otp, verify_sms_contact_otp, application_needs_to_be_audited, send_ujjwala_welcome_whatsapp_link, \
-    time_in_range, get_signed_share_data, \
-    send_ujjwala_application_whatsapp_link_v1, send_ujjwala_application_whatsapp_link_v2, download_installation_form
-from django.urls import reverse
-
+    send_sms_contact_otp, verify_sms_contact_otp, send_ujjwala_application_whatsapp_link_v2, download_installation_form, \
+    download_ujjwala_legal_docs_to_upload, send_upload_uid_for_ekyc_whatsapp_link
 from .vici_functions import add_lead_to_vicidial
 
 
@@ -102,7 +93,6 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
         application.uid_uploaded = True
         application.save()
         return JsonResponse({"status": "OK"})
-
 
     @action(methods=['get'], detail=True, url_path='get_printing_urls')
     def get_printing_urls(self, request: HttpRequest, *args, **kwargs):
@@ -260,6 +250,13 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
          		obj.contact_number, obj.name, obj.address, obj.kyc_date
          	)
         )
+        return HttpResponse("Contact Number Updated Successfully")
+
+    @action(methods=['post'], detail=True, url_path='update_ujjwala_application_mobile_number')
+    def update_ujjwala_application_mobile_number(self, request: HttpRequest, *args, **kwargs):
+        obj = self.get_object()
+        obj.contact_mobile = request.data.get('phone_number')
+        obj.save()
         return HttpResponse("Contact Number Updated Successfully")
 
 
@@ -1276,6 +1273,15 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             ).first().link
         }
         return JsonResponse(response, safe=False)
+
+    @action(methods=['post'], detail=False, url_path='whatsapp_link_upload_uid_for_ekyc')
+    def send_link_upload_uid_for_ekyc(self, request, *args, **kwargs):
+        application = UjjwalaV2Application.objects.get(pk=kwargs['pk'])
+
+        result = send_upload_uid_for_ekyc_whatsapp_link(application.contact_mobile, application.id)
+        if not result:
+            return JsonResponse({"status": False}, safe=False)
+        return JsonResponse({"status": True}, safe=False)
 
 
 class UjjwalaApplicationOtpViewSet(viewsets.ViewSet):
