@@ -98,6 +98,82 @@ def calculate_download_sv_wait_timing(download_sv_retry_count, task_start_time):
 	return new_wait_time
 
 
+# Pre Inspection Process Start In Camunda
+def start_pre_inspection_review_process_in_camunda(pre_inspection_id):
+	# url = "{}/process-definition/key/{}/start".format(CAMUNDA_BASE_URL, "process_review_pre_inspection")
+	url = "{}/process-definition/key/{}/start".format("http://192.168.168.4:25252", "process_review_pre_inspection")
+	res = requests.post(url, json={
+		"variables": {
+			"pre_inspection_id": {"value": pre_inspection_id, "type": "long"},
+		}
+	})
+
+	if res.status_code == 200:
+		return True, res.json()['id']
+	return False, res.text
+
+
+def start_process_in_camunda(process_definition_key, variables):
+	url = "{}/process-definition/key/{}/start".format(CAMUNDA_BASE_URL, process_definition_key)
+	res = requests.post(url, json=variables)
+
+	if res.status_code == 200:
+		return True, res.json()['id']
+	return False, res.text
+
+
+def num_there(s):
+	return any(i.isdigit() for i in s)
+
+
+def fetch_payment_profile_variables(application_id):
+	res = requests.get("http://192.168.168.4:60611/ujjwala/ujjwala-extra/get_payment_variables/",
+	                   params={"application_id": application_id})
+	res.raise_for_status()
+	return res.json()
+	# from ujjwala.models import UjjwalaV2Application
+	# from reference_data.models import IFSCodeList, RTGSList
+	#
+	# application = UjjwalaV2Application.objects.get(pk=application_id)
+	#
+	# old_ifscode = application.ifsc_code.strip().replace(" ", "")
+	#
+	# bank_code = old_ifscode[:4]
+	#
+	# new_ifscode = None
+	#
+	# if num_there(bank_code):
+	# 	raise Exception(f"Invalid IFSCode: {old_ifscode}. Manually Correct.")
+	#
+	# res = requests.get(f"https://ifsc.razorpay.com/{old_ifscode}")
+	# if res.status_code == 200:
+	# 	new_ifscode = old_ifscode
+	# else:
+	# 	ifscodelist_obj: IFSCodeList = IFSCodeList.objects.filter(old_ifscode=old_ifscode).first()
+	# 	if ifscodelist_obj:
+	# 		new_ifscode = ifscodelist_obj.new_ifscode
+	# 	else:
+	# 		merged_bank_code = IFSCodeList.objects.filter(
+	# 			old_ifscode__istartswith=old_ifscode[:4]).first()
+	# 		if merged_bank_code:
+	# 			rtgs_ifscode = RTGSList.objects.filter(ifscode__istartswith=merged_bank_code.new_ifscode[:4]).first()
+	# 			new_ifscode = rtgs_ifscode.ifscode if rtgs_ifscode else None
+	#
+	# if not new_ifscode:
+	# 	raise Exception(f"No Matching IFSCode Found Against Existing IFSCode: {old_ifscode}")
+	#
+	# return {
+	# 	"bank_account": application.bank_account_number,
+	# 	"ifscode": new_ifscode,
+	# 	"first_name": application.name
+	# }
+
+
+
 if __name__ == '__main__':
-	connection_disbursement_id = 12735
-	start_ujjwala_sv_process_in_camunda(connection_disbursement_id)
+	# connection_disbursement_id = 12735
+	# start_ujjwala_sv_process_in_camunda(connection_disbursement_id)
+	l = [13627, 14941, 15500]
+
+	for i in l:
+		re_push_task_in_camunda_process(i)
