@@ -1,16 +1,22 @@
 import datetime
 
+import arrow
 import pandas as pd
 import requests
 
 # Camunda Production URL
-CAMUNDA_WEB_ROOT_URL = "https://camunda.dca.arungas.com"
+# CAMUNDA_WEB_ROOT_URL = "https://camunda.dca.arungas.com"
+from domestic_app import settings
+
+# CAMUNDA_WEB_ROOT_URL = "http://192.168.171.15:38080"
 # Camunda Development URL
 #CAMUNDA_WEB_ROOT_URL = "http://192.168.168.4:25252"
 
+from domestic_app.settings import CAMUNDA_BASE_URL
 # Camunda Base URL
-CAMUNDA_BASE_URL = f"{CAMUNDA_WEB_ROOT_URL}/engine-rest"
+# CAMUNDA_BASE_URL = f"{settings.CAMUNDA_BASE_URL}/engine-rest"
 UJJWALA_SV_GENERATION_PROCESS = 'ujjwala_sv_generation'
+PROCESS_CLDP_DEDUP = "Process_CLDP_DEDUP"
 
 
 def start_ujjwala_sv_process_in_camunda(connection_disbursement_id, disbursement_drive):
@@ -35,6 +41,70 @@ def start_ujjwala_sv_process_in_camunda(connection_disbursement_id, disbursement
 	if res.status_code == 200:
 		return True, res.json()['id']
 	return False, res.text
+
+
+def start_ujjwala_sv_process_in_camunda_v2(connection_disbursement_id):
+	from ujjwala.models import ConnectionDisbursement
+
+	ci_obj = ConnectionDisbursement.objects.get(pk=connection_disbursement_id)
+
+	sv_priority = ci_obj.disbursement_drive.priority - ConnectionDisbursement.objects.filter(
+		disbursement_drive_id=ci_obj.disbursement_drive.id).order_by('-walk_in_date').count()
+	url = "{}/process-definition/key/{}/start".format(CAMUNDA_BASE_URL, UJJWALA_SV_GENERATION_PROCESS)
+	res = requests.post(url, json={
+		"variables": {
+			"connection_disbursement_id": {"value": ci_obj.id, "type": "string"},
+			"consumer_id": {"value": ci_obj.parent.consumer_id, "type": "string"},
+			"application_id": {"value": ci_obj.parent_id, "type": "string"},
+			"name": {"value": ci_obj.parent.name, "type": "string"},
+			"product": {"value": ci_obj.parent.product, "type": "string"},
+			"sv_priority": {"value": sv_priority, "type": "integer"},
+		}
+	})
+
+	if res.status_code == 200:
+		return True, res.json()['id']
+	return False, res.text
+
+
+def re_push_task_in_camunda_process(connection_disbursement_id):
+	from ujjwala.models import ConnectionDisbursement, DisbursementDrive
+
+	cd_obj = ConnectionDisbursement.objects.get(id=connection_disbursement_id)
+
+	print("Connection Disbursement Id: ", cd_obj.id, "Camunda Task Id: ", cd_obj.camunda_process_id)
+	if not cd_obj.camunda_process_id:
+		result, msg = start_ujjwala_sv_process_in_camunda_v2(connection_disbursement_id)
+		return result, msg
+	elif cd_obj.invitation.exists():
+		if cd_obj.invitation.first().sv_link:
+			return True, cd_obj.camunda_process_id
+	else:
+		url = "{}/process-instance".format(CAMUNDA_BASE_URL)
+		res = requests.post(url, json={
+			"processInstanceIds": [f"{cd_obj.camunda_process_id}"]
+		})
+		if not res.json():
+			start_ujjwala_sv_process_in_camunda_v2(connection_disbursement_id)
+
+
+def start_ujjwala_cld_dedup_in_camunda(consumer_id, application_id):
+	url = "{}/process-definition/key/{}/start".format(CAMUNDA_BASE_URL, PROCESS_CLDP_DEDUP)
+	#
+	# data = requests.get("https://dca.arungas.com/ujjwala/ujjwala-bot//get_list_to_fetch_omc_nic_status/&quot;).json()
+	#
+	# for i in data:
+	# record = i['payload']
+	# if record['id'] in existing:
+	# continue
+	res = requests.post(url, json={
+		"variables": {
+			"consumer_id": {"value": consumer_id, "type": "string"},
+			"id": {"value": application_id, "type": "string"},
+		}
+	})
+	res.raise_for_status()
+	return res.json()
 
 
 def download_file_variable_data(process_instance_id, variable_name):
@@ -90,7 +160,8 @@ def calculate_download_sv_wait_timing(download_sv_retry_count, task_start_time):
 			wait_time = df['report_time'].quantile(0.99)
 		wait_time = wait_time
 
-	new_wait_time = task_start_time + datetime.timedelta(seconds=wait_time)
+	new_wait_time = datetime.datetime.strptime(task_start_time, "%Y-%m-%d %H:%M:%S") + datetime.timedelta(seconds=wait_time)
+	# new_wait_time = task_start_time + datetime.timedelta(seconds=wait_time)
 
 	if new_wait_time < datetime.datetime.now():
 		new_wait_time = datetime.datetime.now() + datetime.timedelta(seconds=150)
