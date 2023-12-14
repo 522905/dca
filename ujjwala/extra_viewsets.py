@@ -9,7 +9,8 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 
 from ujjwala.models import UjjwalaV2Application
-from ujjwala.ujjwala_functions import time_in_range, send_ujjwala_application_whatsapp_link_v2, send_offer_whatsapp_link
+from ujjwala.ujjwala_functions import time_in_range, send_ujjwala_application_whatsapp_link_v2, \
+    send_offer_whatsapp_link, fetch_payment_profile_variables
 from ujjwala.vici_functions import update_lead_in_out1005_campaign, update_lead_in_ujjwala_welcome, \
     update_lead_in_ujjwala_enquiry_list
 
@@ -63,3 +64,9 @@ class UjjwalaApplicationExtraViewSet(viewsets.ViewSet):
         update_lead_in_out1005_campaign(contact_mobile)
         send_offer_whatsapp_link(contact_mobile)
         return HttpResponse("ok")
+
+    @action(methods=['get'], detail=False, url_path='get_payment_variables')
+    def get_payment_variables(self, request, *args, **kwargs):
+        application_id = request.GET.get('application_id')
+        result = fetch_payment_profile_variables(application_id)
+        return JsonResponse({'result': result}, safe=False)

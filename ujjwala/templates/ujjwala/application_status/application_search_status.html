@@ -124,20 +124,20 @@
                             <th colspan="2"><b>Rejected For: </b> {{ rejected_reason }}</th>
                         </tr>
                         {% else %}
-                        <tr>
-                            <th></th>
-                            <th>
-                                <a class="text_link" href="{% url 'ujjwala:set_primary_phone_number' pk=obj.id %}">
-                                    <b style="color:cornflowerblue"><i>Set Primary Phone Number</i></b></a>
-                            </th>
-                        </tr>
-                        <tr>
-                            <th></th>
-                            <th>
-                                <a class="text_link" href="{% url 'ujjwala:update_bank_details' pk=obj.id %}">
-                                    <b style="color:cornflowerblue"><i>Update Bank Details</i></b></a>
-                            </th>
-                        </tr>
+                            <tr>
+                                <th></th>
+                                <th>
+                                    <a class="text_link" href="{% url 'ujjwala:change_phone_number' pk=obj.id %}">
+                                        <b style="color:cornflowerblue"><i>Change Phone Number</i></b></a>
+                                </th>
+                            </tr>
+                            <tr>
+                                <th></th>
+                                <th>
+                                    <a class="text_link" href="{% url 'ujjwala:update_bank_details' pk=obj.id %}">
+                                        <b style="color:cornflowerblue"><i>Update Bank Details</i></b></a>
+                                </th>
+                            </tr>
 {#                        <tr>#}
 {#                            <th>Consumer Id: {{ obj.consumer_id }}</th>#}
 {#                            <th>#}

@@ -35,6 +35,24 @@ logger = logging.getLogger(__name__)
 #)
 
 
+class ChangePhoneNumberForm(forms.Form):
+	request_video_url = forms.CharField(
+		widget=forms.TextInput, label='Request Video', required=True
+	)
+	phone_number = forms.CharField(
+		widget=forms.TextInput, label='Phone Number', required=True
+	)
+
+
+class UploadUIDForEKYCForm(forms.Form):
+	uid_front_url = forms.CharField(
+		widget=forms.TextInput, label='UID Front', required=True
+	)
+	uid_back_url = forms.CharField(
+		widget=forms.TextInput, label='UID Back', required=True
+	)
+
+
 class NicUpdateAddressForm(forms.Form):
 	house_no = forms.CharField(
 		widget=forms.TextInput, label='House No. (मकान नंबर)', required=True
@@ -830,6 +848,9 @@ class UjjwalaDocumentsReuploadForm(forms.Form):
 		if data.get('documents_required_for_reupload', []):
 			data['documents_required_for_reupload'] = json.dumps(data['documents_required_for_reupload'])
 		return data
+#
+# class EditApplicationForm(forms.Form):
+
 
 
 class PreInspectionReviewAdminForm(forms.Form):

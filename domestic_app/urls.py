@@ -28,6 +28,7 @@ urlpatterns = [
     path(r'advanced_filters/', include('advanced_filters.urls')),
     path(r'app_utilities/', include('app_utilities.urls')),
     path(r'retail-customers/', include('retail_customers.urls')),
+    path(r'teams/', include('teams.urls')),
     path(r'sdms/', include('sdms.urls')),
     # path(r'', RedirectView.as_view(url='https://www.arungas.com/info', permanent=False)),
     # path(r'ujjwala/', include('ujjwala.urls')),

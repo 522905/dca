@@ -1,15 +1,8 @@
 # Routers provide an easy way of automatically determining the URL conf.
 from django.conf.urls import url
-from django.contrib.auth.decorators import permission_required
 from django.urls import path, include
-from django.contrib import admin
-from email.mime import application
-
 from django.views import generic
-from django.views.generic import TemplateView
 from rest_framework import routers
-
-from connection_app.viewsets import ConnectionApplicationViewSet
 
 from . import views
 from .extra_viewsets import UjjwalaApplicationExtraViewSet
@@ -17,11 +10,11 @@ from .robos.nic_error_robo import UjjwalaApplicationNicErrorRobotAPIViewSet
 from .robos.robo_error_viewsets import UjjwalaApplicationRoboExecutionErrorAPIViewSet
 from .robos.robo_sv_viewsets import UjjwalaApplicationSVViewSet
 from .robos.sdms_relationship_robo import UjjwalaApplicationSdmsRelationshipViewSet
+from .robos.sv_cancellation import SvCancellationViewSet
 from .robos.viewsets import UjjwalaApplicationNicViewSet
 from .views import UjjwalaApplicationWebFormView, WebFormOldView, UjjwalaApplicationIframeWebFormView, \
     LegalDocumentsAcceptedToPendingView, ShareOnSocialMediaView, CancelInvitationView, UserDashboardView
 from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet, UjjwalaApplicationOtpViewSet
-from .robos.sv_cancellation import SvCancellationViewSet
 
 router = routers.DefaultRouter()
 router.register(r'ujjwala-application', UjjwalaApplicationViewSet)
@@ -52,7 +45,6 @@ urlpatterns = [
 
     path('portal/web-form/', UjjwalaApplicationWebFormView.as_view(), name="web_form"),
     path('portal/i-web-form/', UjjwalaApplicationIframeWebFormView.as_view(), name="i_web_form"),
-#    path('portal/i-terms-form/', UjjwalaApplicationTermsWebFormView.as_view(), name="i_terms_form"),
     path('portal/pre-inspection/', views.UjjwalaPreInspectionListView.as_view(), name="index"),
     path('portal/web-form-share/', views.ShareWebFormLink.as_view(), name="share_web_form_link"),
     url(
@@ -235,6 +227,16 @@ urlpatterns = [
         '^portal/update_address/(?P<pk>[^/.]+)/$',
         views.UpdateAddressView.as_view(),
         name="nic_error_update_address"
+    ),
+    url(
+        '^portal/change_phone_number/(?P<pk>[^/.]+)/$',
+        views.ChangePhoneNumberView.as_view(),
+        name="change_phone_number"
+    ),
+    url(
+        '^portal/upload_uid_for_kyc/(?P<pk>[^/.]+)/$',
+        views.UploadUIDForEKYCView.as_view(),
+        name="upload_uid_for_kyc"
     ),
     url(
         '^portal/update_bank_details/(?P<pk>[^/.]+)/$',

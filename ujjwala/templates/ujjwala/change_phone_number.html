@@ -1,0 +1,101 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css">
+<script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
+<style>
+
+    .hidden-field{ display: none;}
+    .form_label .card{ width: 100%;  }
+    .address_form label{ margin-bottom: 5px; }
+    #address_form .form_block input{ padding-left:5px; border-radius: 3px; border: 1px solid #ccc; width: 100%; line-height: 40px; }
+    .form_block label{ float: left; width: 100%; }
+    #id_request_video_url {display: none;}
+    #id_phone_number{ border: 1px solid #ccc;}
+</style>
+<div id="address_form" class="row m-0 form_label p-2">
+    <div class="card card-profile pt-0 mt-0 " style="width: 100%;" >
+		<div class="row justify-content-center m-0" style="width: 100%; margin: 0 auto !important; padding: 10px;">
+			<div style="width: 30%; float:left">
+				<div class="card-profile-image">
+					<a href="#">
+						<img style="width:100%; max-height: 150px;" src="{{obj.document_self}}">
+					</a>
+				</div>
+			</div>
+			<div style="width: 70%; float:right">
+				<div class="card-body pt-0">
+					<div class="text-center">
+						<h5 class="h3">{{ obj.name }}({{ obj.id }})<span class="font-weight-light"></span></h5>
+						<div class="h5 font-weight-300">
+							<i class="ni location_pin mr-2"></i>{{ obj.contact_mobile }}
+						</div>
+						<div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
+							{{ obj.formatted_address }}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+    <div class="card address_form">
+        <form id="form" method="POST" class="p-2">
+            {% csrf_token %}
+            {{ form }}
+            <div id="uppy"></div>
+            <div class="card-footer">
+                <input class="btn btn-success rounded-3" type="submit" value="Submit">
+            </div>
+           
+        </form>
+
+    </div>
+</div>
+<style>ef
+    #id_mobile input{
+        position: relative ;
+        opacity: 1;
+    }
+</style>
+<script>
+     window.mobileChangeVideouppy = new Uppy.Core({
+        debug: true,
+        autoProceed: true,
+        restrictions: {
+            maxFileSize: 50000000,
+            maxNumberOfFiles: 1,
+            minNumberOfFiles: 1,
+            allowedFileTypes: ['video/*'],
+        }
+    })
+        .use(Uppy.Dashboard, {
+            // trigger: '#uppy',
+            inline: true,
+            target: '#uppy',
+            // showProgressDetails: true,
+            // note: 'upload video',
+            // height: 250,
+            // metaFields: [],
+            // id: 'uppy',
+            // browserBackButtonClose: false
+        })
+        .use(Uppy.Tus, {
+            endpoint: 'https://tus.dca.arungas.com/files/',
+        })
+        .use(Uppy.Webcam, { target: Uppy.Dashboard, mobileNativeCamera: true });
+
+    mobileChangeVideouppy.on('complete', result => {
+        console.log('successful files:', result.successful)
+        console.log('failed files:', result.failed);
+        $('[name="request_video_url"]').val(result.successful[0].uploadURL);
+    });
+
+
+
+
+
+    
+</script>
+{% endblock %}

@@ -25,7 +25,9 @@ from django_currentuser.middleware import get_current_user
 
 from communication_log.models import CommunicationLog
 from otp.models import Otp
-from ujjwala.camunda_functions import start_ujjwala_sv_process_in_camunda
+from service_request.enums import ServiceRequestTypeEnum
+from service_request.models import ServiceRequest
+from ujjwala.camunda_functions import start_ujjwala_sv_process_in_camunda, start_process_in_camunda
 from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
 	PreInspectionTypeEnum, DisbursementDriveStatusEnum, UjjwalaApplicationDocumentsEnum, NicClearedCustomerRemarksEnum, \
 	UjjwalaV2ApplicationAvailabilityChannel, ConnectionDisbursementInvitationEnum, FilledByFilterEnum
@@ -41,7 +43,7 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
 	UpdateBankDetailsForm, NicClearedCustomerRemarksForm, PrintDocumentsForm, \
 	InstallationReviewAdminForm, FirstCylinderMaterialDeliveryForm, SecondCylinderMaterialDeliveryForm, \
 	PreInspectionReviewAdminForm, CancelInvitationForm, UpdateAddressForm, \
-	NewRelationCreated
+	NewRelationCreated, ChangePhoneNumberForm, UploadUIDForEKYCForm
 from ujjwala.global_functions import login_required_if_mech_inspection
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
 	FamilyMembers, DisbursementDrive
@@ -3280,3 +3282,114 @@ class UpdateRelationshipNumberView(FormView):
 		application.save()
 		messages.add_message(self.request, messages.INFO, "New Consumer Id Updated")
 		return redirect(".")
+
+
+@method_decorator(login_required, 'dispatch')
+class ChangePhoneNumberView(FormView):
+	form_class = ChangePhoneNumberForm
+	template_name = "ujjwala/change_phone_number.html"
+
+	def get_object(self, queryset=None):
+		try:
+			obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No application with id: {} found.".format(self.kwargs.get('pk'))
+			)
+		return obj
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		obj = self.get_object()
+		context.update({
+			"obj": obj
+		})
+		return context
+
+	def form_valid(self, form):
+		obj = self.get_object()
+		data = form.clean()
+
+		result, msg = start_process_in_camunda(
+			"process_dca_change_phone_number",
+			{
+				"variables": {
+					"request_video_url": {"value": data['request_video_url'], "type": "string"},
+					"phone_number": {"value": data['phone_number'], "type": "string"},
+					"application_id": {"value": obj.id, "type": "long"},
+					"name": {"value": obj.name, "type": "string"},
+					"status": {"value": obj.status, "type": "string"},
+					"old_phone_numbers": {"value": json.dumps(obj.all_contacts), "type": "string"},
+				}
+			}
+		)
+		if result:
+			service_request = ServiceRequest.objects.create(
+				service_request_type=ServiceRequestTypeEnum.CHANGE_PHONE_NUMBER,
+				camunda_process_id=msg
+			)
+			message = f"Service Request For Change Phone Number Started With Id {service_request.id}. Please Wait For Some Time."
+		else:
+			message = f"Service Request For Change Phone Number Could Not Be Started. Please Contact Ujjwala Team."
+
+		return render(
+			self.request, "ujjwala/response.html", {"heading": "Change Phone Number Request Form", "message": message}
+		)
+
+
+class UploadUIDForEKYCView(FormView):
+	form_class = UploadUIDForEKYCForm
+	template_name = "ujjwala/upload_uid_for_ekyc.html"
+
+	def get_object(self, queryset=None):
+		try:
+			obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No application with id: {} found.".format(self.kwargs.get('pk'))
+			)
+		return obj
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		obj = self.get_object()
+		context.update({
+			"obj": obj
+		})
+		return context
+
+	def form_valid(self, form):
+		obj = self.get_object()
+		data = form.clean()
+
+		result, msg = start_process_in_camunda(
+			"process_dca_change_phone_number",
+			{
+				"variables": {
+					"request_video_url": {"value": data['request_video_url'], "type": "string"},
+					"phone_number": {"value": data['phone_number'], "type": "string"},
+					"application_id": {"value": obj.id, "type": "long"},
+					"name": {"value": obj.name, "type": "string"},
+					"status": {"value": json.dumps(obj.all_contacts.__str__()), "type": "string"},
+				}
+			}
+		)
+		if result:
+			service_request = ServiceRequest.objects.create(
+				service_request_type=ServiceRequestTypeEnum.UID_UPLOAD_FOR_EKYC,
+				camunda_process_id=msg
+			)
+			messages.add_message(
+				self.request,
+				messages.INFO,
+				f"Service Request For Change Phone Number Started With Id {service_request.id}. Please Wait For Some Time."
+			)
+		else:
+			messages.add_message(
+				self.request,
+				messages.ERROR,
+				f"Service Request For Change Phone Number Could Not Be Started. Please Contact Ujjwala Team."
+			)
+
+		response = redirect(reverse('ujjwala:application_status_search'))
+		return response

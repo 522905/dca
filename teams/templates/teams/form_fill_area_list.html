@@ -1,0 +1,42 @@
+{#{% extends "material/frontend/base_module.html" %}#}
+{% load static %}
+{#{% block page_title %}Pre-Suraksha-Drill Allocated List{% endblock %}#}
+{% block content %}
+
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+
+<div class="p-2 pt-0 form_label" style="width: 100%;">
+    <div class="main-header bg-heading" style="background-color: #2957A4;">
+        <span class="text-white">Form Fill Areas List</span>
+    </div>
+
+{#        <a href="{% url 'ujjwala:pre_inspection_form_view' type='mech' pk=obj.id %}" data-turbolinks="false">#}
+{#            <div class="card-header">#}
+{#                <p class="text-center"><b>{{ obj.status }}</b> <br>#}
+{#                    Submitted On <b>{{ obj.submitted_on }}</b></p>#}
+{#            </div>#}
+        <div class="card-body pb-0 p-2">
+                <table>
+                <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Address</th>
+                    <th>Working Hours</th>
+{#                    <th>Location</th>#}
+                </tr>
+                {% for formfillarea in formfillarea_list %}
+                    <tr>
+                        <td>{{ formfillarea.id }}</td>
+                        <td>{{ formfillarea.name }}</td>
+                        <td>{{ formfillarea.service_location.address }}</td>
+                        <td>{{ formfillarea.service_location.start_working_hours }} - {{ formfillarea.service_location.end_working_hours }}</td>
+{#                        <td>{{ formfillarea.service_location.location_polygon }}</td>#}
+
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+</div>
+{% endblock %}
