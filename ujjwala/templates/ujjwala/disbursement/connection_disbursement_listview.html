@@ -2,102 +2,155 @@
 {% load static %}
 {% block page_title %}CD Walk In List{% endblock %}
 {% block content %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/xzoom.css' %}" media="all" /> 
-<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" type="text/css" href="{% static 'css/xzoom.css' %}" media="all" />
+<link rel="stylesheet" href="{% static '/css/style.css' %}">
 <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
-<div class="p-2 pt-0 form_label" style="width: 100%;">
+<style>
+    .material_delivery_pending,.social_media_photo_pending,.legal_documents_not_uploaded_upload_pending{ display: none;}
+    .btn2 {
+        border: none;
+        position: absolute;
+        right:20px;
+        top: 1px;
+        font-size: 25px;
+        padding: 0px;
+        background-color: transparent;
+        color: #000;
+        border: 1px solid transparent;
+        font-weight: bold;
+        line-height: 0;
+        box-shadow: none;
+    }
+    .btn2:hover,.btn2:focus{ background-color: transparent; box-shadow: transparent !important;}
+    .item_list{ margin: 4px 0;}
+    .item_list p{ font-size: 12px;}
+    .list_block_heading{ margin: 10px 0;border-bottom:1px solid rgba(0,0,0,.125); padding: 0 0 8px 0;}
+    .list_block_heading th{ margin: 10px 0; }
+</style>
+<div class="p-2 pt-0 page-desk">
     {% if messages %}
-      {% for msg in messages %}
-        <div class="alert alert-info alert-dismissable">
-          <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-          {{msg.message}}
-        </div>
-      {% endfor %}
+    {% for msg in messages %}
+    <div class="alert alert-info alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        {{msg.message}}
+    </div>
+    {% endfor %}
     {% endif %}
     {% include 'ujjwala/disbursement/custom-template/disbursement_drive_detail.html' %}
     {% include 'ujjwala/disbursement/forms/application_search.html' %}
     <div class="main-header bg-heading" style="background-color: #2957A4;">
         <span class="text-white">List of Walk Ins ({{ current_disbursement_index }}/{{ max_walkins }})</span>
     </div>
-{#    {% include 'ujjwala/disbursement/custom-template/disbursement-card-detail.html' %}#}
+    {# {% include 'ujjwala/disbursement/custom-template/disbursement-card-detail.html' %}#}
     {% for cd_grouped_status in cd_grouped_status_list %}
-        <div class="card mb-2 app_card" style="background-color: {{ cd_grouped_status.background_color }}">
-            <div class="card-header">
-                <p class="text-center text-dark"><b>{{ cd_grouped_status.status }}</b>
-            </div>
-            <div class="card-body pb-0 p-2">
-                <table>
-                    <tr>
-                        <th>Id</th>
-                        <th>Name</th>
-                        <th>Walk In</th>
-                        <th>Status Time</th>
-                    </tr>
-                    {% for obj in cd_grouped_status.object_list %}
-                        <tr>
-                            <td><a class="text-under-n" href="{% url 'ujjwala:connection_disbursement_form_view' pk=obj.id %}" data-turbolinks="false">{{ obj.id }}</a></td>
-                            <td><a href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">{{ obj.parent.name }} ({{ obj.parent_id }})</a></td>
-                            <td>{{ obj.walk_in_date }}</td>
-                            <td>{{ obj.updated_on }}</td>
-                        </tr>
-                    {% endfor %}
-                </table>
-            </div>
-            <div class="card-footer p-2">
-                <p><b>Total Records: </b>{{ cd_grouped_status.total_records }}</p>
+    <div class="card mb-2 app_card" style="background-color: {{ cd_grouped_status.background_color }}">
+        <div class="card-header">
+            <p class="text-center text-dark"><b>{{ cd_grouped_status.status }} ({{ cd_grouped_status.total_records }}) </b>
+            <div class="{{ cd_grouped_status.id }}">
+                <button class="btn btn2" id="toggleButton" onclick="toggleContent()"> <span id="toggleIcon">+</span></button>
             </div>
         </div>
+        <div class="card-body pb-0 p-0">
+            <div class="row  list_block_heading">
+                <div class="col-sm-1">
+                    <p>SNo.</p>
+                </div>
+                <div class="col-sm-2">
+                    <p>Id</p>
+                </div>
+                <div class="col-sm-3">
+                    <p>Name</p>
+                </div>
+                <div class="col-sm-3">
+                    <p>Walk In</p>
+                </div>
+                <div class="col-sm-3">
+                    <p>Status Time</p>
+                </div>
+            </div>
+            
+            <div id="{{ cd_grouped_status.id }}">
+                {% for obj in cd_grouped_status.object_list %}
+                <div class="row item_list">
+                    <div class="col-sm-1">
+                        <p>{{ loop.index }}</p>
+                    </div>
+                    <div class="col-sm-2">
+                        <p><a class="text-under-n" href="{% url 'ujjwala:connection_disbursement_form_view' pk=obj.id %}"
+                            data-turbolinks="false">{{ obj.id }}</a></p>
+                    </div>
+                    <div class="col-sm-3">
+                        <p><a href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">
+                            {{ obj.parent.name }} ({{ obj.parent_id }})</a></p>
+                    </div>
+                    <div class="col-sm-3">
+                        <p>{{ obj.walk_in_date }}</p>
+                    </div>
+                    <div class="col-sm-3">
+                        <p>{{ obj.updated_on }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
     {% endfor %}
-
-{#    {% for obj in object_list %}#}
-{#        <div class="card mb-2 app_card">#}
-{#            <a class="text-under-n" href="{% url 'ujjwala:connection_disbursement_form_view' pk=obj.id %}" data-turbolinks="false">#}
-{#                <div class="card-header">#}
-{#                    <p class="text-center text-dark"><b>{{ obj.status }}</b>#}
-{#                         <br>#}
-{#                        <span>Updated On <b>{{ obj.updated_on }}</b> </span>#}
-{#                    </p>#}
-{#                </div>#}
-{#                <div class="card-body pb-0 p-2 list_block">#}
-{#                    <ul class="m-0">#}
-{#                        <li>#}
-{#                            <p class="float-left">Application Id</p>#}
-{#                            <p class="float-right"><b>({{ obj.parent_id }})</b></p>#}
-{#                        </li>#}
-{#                        <li>#}
-{#                            <p class="float-left">Connection Disbursement Id</p>#}
-{#                            <p class="float-right"><b>({{obj.id}})</b></p>#}
-{#                        </li>#}
-{#                        <li>#}
-{#                            <p class="float-left">Name</p>#}
-{#                            <p class="float-right"><b>{{ obj.parent.name }}</b></p>#}
-{#                        </li>#}
-{#                        {% for contact in  obj.parent.all_contacts %}#}
-{#                        <li class="contact_link">#}
-{#                            <p class="float-left">Phone  {{ forloop.counter }}</p>#}
-{#                            <p class="float-right">#}
-{#                                <b> <a href="tel:{{ contact}}" onclick="return true;">{{contact}}</a></b>#}
-{#                            </p>#}
-{#                        </li>#}
-{#                        {% endfor %}#}
-{#                    </ul>#}
-{#                </div>#}
-{#            </a>#}
-{#            <div class="card-footer p-2">#}
-{#                <p><b>Address: </b>{{ obj.parent.formatted_address }}</p>#}
-{#            </div>#}
-{#        </div>#}
-{#    {% endfor %}#}
 </div>
 <script type="text/javascript" src="{% static '/js/setup.js' %}"></script>
 <script type="text/javascript" src="{% static '/js/xzoom.min.js' %}"></script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+
+    function toggleContent() {
+        var content = document.getElementById("material_delivered");
+
+        if (content.style.display === "none" || content.style.display === "") {
+            content.style.display = "block";
+            icon.textContent = "-";
+        } else { 
+            content.style.display = "none";
+            icon.textContent = "+";
+        }
+    }
+   
+</script>
 <style>
-	/* #xzoom-default{ width: 500px !important;} */
-	.xzoom{ max-height: 500px !important;}
-    .xzoom-thumbs a{ display: inline-block;}
-  </style>
-    <!-- <script>
+    #material_delivered {
+      display: none;
+    }
+    /* #xzoom-default{ width: 500px !important;} */
+    .xzoom {
+        max-height: 500px !important;
+    }
+
+    .xzoom-thumbs a {
+        display: inline-block;
+    }
+
+    .page-desk {
+        width: 800px;
+    }
+
+    .page-desk a {
+        color: #000;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .page-desk th {
+        padding: 5px;
+        font-weight: 700;
+        font-size: 12px !important;
+    }
+
+    .page-desk td {
+        padding: 8px 5px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+</style>
+<!-- <script>
         window.onload=function(){
 
         const input = document.getElementById("input");
