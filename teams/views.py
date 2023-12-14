@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 # Create your views here.
 from django.views.generic import ListView
@@ -15,3 +15,6 @@ class FormFillAreaListView(ListView):
 
 	def get_queryset(self):
 		return FormFillArea.objects.all()
+
+	def dispatch(self, request, *args, **kwargs):
+		return redirect("https://www.arungas.com/csc-locations/index.html")
