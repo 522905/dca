@@ -179,8 +179,9 @@ def do_primary_omc_dedupe_check_v2(id):
         else:
             raise Exception("Technical Error")
 
-        if fm.relation == 'SELF' and counterpart.get('DISTR_CODE') == '305948':
-            iocl_investigation_required = True
+        if fm.relation == 'SELF':
+            if counterpart and counterpart.get('DISTR_CODE') == '305948':
+                iocl_investigation_required = True
 
     if omc_dedupe_check_passed:
         application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE
