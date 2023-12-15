@@ -1066,7 +1066,7 @@ def send_ujjwala_application_whatsapp_link_v1(contact_mobile, user_id):
 	return False
 
 
-def send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id):
+def send_ujjwala_application_pos_list(contact_mobile):
 	"""
 	Function Working Changed Due To Closure of Public Form Filling
 	"""
@@ -1094,6 +1094,53 @@ def send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id):
 			# 		url
 			# 	]
 			# }
+		}
+	}
+
+	data = track.client.post(
+		api_key=settings.INTERAKT_API_KEY,
+		path="/v1/public/message/",
+		body=body_text
+	).json()
+
+	if data.get('result', ''):
+		CommunicationLog.objects.create(
+			channel_subscriber=contact_mobile,
+			event="ujjwala_pos_list_link", channel="whatsapp",
+			message_id=data.get('id')
+		)
+		return True
+	return False
+
+
+def send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id, share_link=False):
+	"""
+	Function Working Changed Due To Closure of Public Form Filling
+	"""
+	if not share_link:
+		send_ujjwala_application_pos_list(contact_mobile)
+	data = get_signed_share_data(contact_mobile, user_id)
+	url = reverse('ujjwala:ujjwala_application_link', kwargs={'data': data})
+	url = url[1:]
+
+	body_text = {
+		"countryCode": "+91",
+		"phoneNumber": contact_mobile,
+		"type": "Template",
+		"traits": {
+			"name": contact_mobile,
+		},
+		"template": {
+			"name": "ujjwala_application_shared_link_20082022",
+			"languageCode": "hi",
+			"headerValues": [
+			],
+			"bodyValues": [],
+			"buttonValues": {
+				"0": [
+					url
+				]
+			}
 		}
 	}
 

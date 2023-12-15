@@ -159,7 +159,7 @@ class ShareWebFormLink(TemplateView):
 				)
 			else:
 				user = get_current_user()
-				res = send_ujjwala_application_whatsapp_link_v2(contact_mobile, user.id)
+				res = send_ujjwala_application_whatsapp_link_v2(contact_mobile, user.id, share_link=True)
 				if res:
 					messages.add_message(
 						request, messages.INFO,
