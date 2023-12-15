@@ -1118,7 +1118,8 @@ def send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id, share_lin
 	Function Working Changed Due To Closure of Public Form Filling
 	"""
 	if not share_link:
-		send_ujjwala_application_pos_list(contact_mobile)
+		return send_ujjwala_application_pos_list(contact_mobile)
+
 	data = get_signed_share_data(contact_mobile, user_id)
 	url = reverse('ujjwala:ujjwala_application_link', kwargs={'data': data})
 	url = url[1:]
