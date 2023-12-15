@@ -81,8 +81,8 @@
                             data-turbolinks="false">{{ obj.id }}</a></p>
                     </div>
                     <div class="col-sm-3">
-                        <p><a href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">
-                            {{ obj.parent.name }} ({{ obj.parent_id }})</a></p>
+                        <p><a href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.parent_id %}"
+                            data-turbolinks="false">{{ obj.parent.name }} ({{ obj.parent_id }})</a></p>
                     </div>
                     <div class="col-sm-3">
                         <p>{{ obj.walk_in_date }}</p>

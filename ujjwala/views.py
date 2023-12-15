@@ -977,8 +977,7 @@ class UjjwalaConnectionDisbursementListView(ListView):
 
 		qs = ConnectionDisbursement.objects.filter(
 			disbursement_drive=disbursement_drive,
-			status=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED).order_by('-walk_in_date')
-
+			status=ConnectionDisbursementStatusEnum.MATERIAL_DELIVERED).order_by('-updated_on')
 		cd_grouped_status_list.append({
 			"status": 'Material Delivered',
 			"id": 'material_delivered',
