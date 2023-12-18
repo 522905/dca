@@ -121,10 +121,10 @@
                             <th>E-Kyc Cleared Status: </th>
                             <td> {{ obj.ekyc_cleared }}</td>
                         </tr>
-                        {% if obj.status == 'APPLICATION_REJECTED' %}
-                        <tr>
-                            <th colspan="2"><b>Rejected For: </b> {{ rejected_reason }}</th>
-                        </tr>
+                        {% if obj.status == 'APPLICATION_REJECTED' or obj.status == 'OMC_REJECTED' %}
+                            <tr>
+                                <th colspan="2"><b>Rejected For: </b> {{ rejected_reason }}</th>
+                            </tr>
                         {% else %}
                             <tr>
                                 <th></th>
