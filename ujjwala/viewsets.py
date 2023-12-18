@@ -16,6 +16,8 @@ from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 
 from sdms.models import SdmsCustomerRecord
+from service_request.enums import ServiceRequestTypeStatusEnum
+from service_request.models import ServiceRequest
 from utils.global_functions import upload_file_to_minio_bucket, upload_file_type_obj_to_minio_bucket
 from utils.qrcode import append_qr_code_to_sv
 from . import models
@@ -256,9 +258,14 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
     def update_ujjwala_application_mobile_number(self, request: HttpRequest, *args, **kwargs):
         obj = self.get_object()
         phone_number = request.data.get('phone_number')
+        service_request_id = request.data.get('service_request_id')
+
         if phone_number:
             obj.contact_mobile = phone_number
             obj.save()
+            service_request = ServiceRequest.objects.get(pk=service_request_id)
+            service_request.status = ServiceRequestTypeStatusEnum.SUCCESS
+            ServiceRequest.save()
             return HttpResponse("Contact Number Updated Successfully")
         else:
             return HttpResponse("Phone Number Missing")
