@@ -255,9 +255,13 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
     @action(methods=['post'], detail=True, url_path='update_ujjwala_application_mobile_number')
     def update_ujjwala_application_mobile_number(self, request: HttpRequest, *args, **kwargs):
         obj = self.get_object()
-        obj.contact_mobile = request.data.get('phone_number')
-        obj.save()
-        return HttpResponse("Contact Number Updated Successfully")
+        phone_number = request.data.get('phone_number')
+        if phone_number:
+            obj.contact_mobile = phone_number
+            obj.save()
+            return HttpResponse("Contact Number Updated Successfully")
+        else:
+            return HttpResponse("Phone Number Missing")
 
 
 class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
