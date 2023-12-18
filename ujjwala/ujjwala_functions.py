@@ -1310,7 +1310,7 @@ def send_ujjwala_self_pre_inspection_share_link(contact_mobile, user_id, usernam
 	return False
 
 
-def send_ujjwala_share_on_social_media_link(request, contact_mobile, application):
+def send_ujjwala_share_on_social_media_link(contact_mobile, application):
 	url = reverse('ujjwala:share_on_social_media', kwargs={'pk': application.connection_disbursement.id})
 	url = url[1:]
 	#url = request.build_absolute_uri(url)
