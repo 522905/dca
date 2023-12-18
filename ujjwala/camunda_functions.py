@@ -43,14 +43,15 @@ def start_ujjwala_sv_process_in_camunda(connection_disbursement_id, disbursement
 	return False, res.text
 
 
-def start_ujjwala_sv_process_in_camunda_v2(connection_disbursement_id, sv_priority=None):
+def start_ujjwala_sv_process_in_camunda_v2(connection_disbursement_id, disbursement_drive, sv_priority=None):
 	from ujjwala.models import ConnectionDisbursement
 
 	ci_obj = ConnectionDisbursement.objects.get(pk=connection_disbursement_id)
 
 	if not sv_priority:
-		sv_priority = ci_obj.disbursement_drive.priority - ConnectionDisbursement.objects.filter(
-			disbursement_drive_id=ci_obj.disbursement_drive.id).order_by('-walk_in_date').count()
+		dd_obj = ci_obj.disbursement_drive if ci_obj.disbursement_drive else disbursement_drive
+		sv_priority = dd_obj.priority - ConnectionDisbursement.objects.filter(
+			disbursement_drive_id=dd_obj.id).order_by('-walk_in_date').count()
 	url = "{}/process-definition/key/{}/start".format(CAMUNDA_BASE_URL, UJJWALA_SV_GENERATION_PROCESS)
 	res = requests.post(url, json={
 		"variables": {
@@ -68,12 +69,12 @@ def start_ujjwala_sv_process_in_camunda_v2(connection_disbursement_id, sv_priori
 	return False, res.text
 
 
-def evaluate_and_start_ujjwala_sv_process_in_camunda(connection_disbursement_id, sv_priority=None):
+def evaluate_and_start_ujjwala_sv_process_in_camunda(connection_disbursement_id, disbursement_drive, sv_priority=None):
 	from ujjwala.models import ConnectionDisbursement, ConnectionDisbursementInvitation
 
 	ci = ConnectionDisbursement.objects.get(pk=connection_disbursement_id)
 
-	res = requests.post(f"{CAMUNDA_BASE_URL}/engine-rest/process-instance", json={
+	res = requests.post(f"{CAMUNDA_BASE_URL}/process-instance", json={
 		"variables": [{"operator": "eq", "name": "connection_disbursement_id", "value": f"{ci.pk}"}]})
 	if res.json():
 		for process_instance in res.json():
@@ -85,7 +86,8 @@ def evaluate_and_start_ujjwala_sv_process_in_camunda(connection_disbursement_id,
 		if invitation.sv_link:
 			return True, 'sv_exist'
 
-	return start_ujjwala_sv_process_in_camunda_v2(ci.pk, sv_priority=sv_priority)
+	res, msg = start_ujjwala_sv_process_in_camunda_v2(ci.pk, disbursement_drive, sv_priority=sv_priority)
+	return res, msg
 
 
 def re_push_task_in_camunda_process(connection_disbursement_id):
