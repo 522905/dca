@@ -43,13 +43,14 @@ def start_ujjwala_sv_process_in_camunda(connection_disbursement_id, disbursement
 	return False, res.text
 
 
-def start_ujjwala_sv_process_in_camunda_v2(connection_disbursement_id):
+def start_ujjwala_sv_process_in_camunda_v2(connection_disbursement_id, sv_priority=None):
 	from ujjwala.models import ConnectionDisbursement
 
 	ci_obj = ConnectionDisbursement.objects.get(pk=connection_disbursement_id)
 
-	sv_priority = ci_obj.disbursement_drive.priority - ConnectionDisbursement.objects.filter(
-		disbursement_drive_id=ci_obj.disbursement_drive.id).order_by('-walk_in_date').count()
+	if not sv_priority:
+		sv_priority = ci_obj.disbursement_drive.priority - ConnectionDisbursement.objects.filter(
+			disbursement_drive_id=ci_obj.disbursement_drive.id).order_by('-walk_in_date').count()
 	url = "{}/process-definition/key/{}/start".format(CAMUNDA_BASE_URL, UJJWALA_SV_GENERATION_PROCESS)
 	res = requests.post(url, json={
 		"variables": {
@@ -65,6 +66,26 @@ def start_ujjwala_sv_process_in_camunda_v2(connection_disbursement_id):
 	if res.status_code == 200:
 		return True, res.json()['id']
 	return False, res.text
+
+
+def evaluate_and_start_ujjwala_sv_process_in_camunda(connection_disbursement_id, sv_priority=None):
+	from ujjwala.models import ConnectionDisbursement, ConnectionDisbursementInvitation
+
+	ci = ConnectionDisbursement.objects.get(pk=connection_disbursement_id)
+
+	res = requests.post(f"{CAMUNDA_BASE_URL}/engine-rest/process-instance", json={
+		"variables": [{"operator": "eq", "name": "connection_disbursement_id", "value": f"{ci.pk}"}]})
+	if res.json():
+		for process_instance in res.json():
+			res = requests.delete(f"{CAMUNDA_BASE_URL}/engine-rest/process-instance/{process_instance['id']}")
+			print(res.text)
+
+	if ci.invitation.first():
+		invitation: ConnectionDisbursementInvitation = ci.invitation.first()
+		if invitation.sv_link:
+			return True, 'sv_exist'
+
+	return start_ujjwala_sv_process_in_camunda_v2(ci.pk, sv_priority=sv_priority)
 
 
 def re_push_task_in_camunda_process(connection_disbursement_id):
@@ -197,9 +218,11 @@ def num_there(s):
 	return any(i.isdigit() for i in s)
 
 
-def fetch_payment_profile_variables(application_id):
-	res = requests.get("http://192.168.168.4:60611/ujjwala/ujjwala-extra/get_payment_variables/",
-	                   params={"application_id": application_id})
+def fetch_payment_profile_variables(application_id, force_main_branch=False):
+	res = requests.get(
+		"http://192.168.168.4:60612/ujjwala/ujjwala-extra/get_payment_variables/",
+        params={"application_id": application_id, 'force_main_branch': force_main_branch}
+	)
 	res.raise_for_status()
 	return res.json()
 	# from ujjwala.models import UjjwalaV2Application

@@ -2,6 +2,9 @@ import base64
 import datetime
 import json
 import textwrap
+from functools import partial
+
+from django.db import transaction
 from django.db.models import Case, Value, When, Q
 import django_rq
 from dateutil.relativedelta import relativedelta
@@ -27,7 +30,8 @@ from communication_log.models import CommunicationLog
 from otp.models import Otp
 from service_request.enums import ServiceRequestTypeEnum
 from service_request.models import ServiceRequest
-from ujjwala.camunda_functions import start_ujjwala_sv_process_in_camunda, start_process_in_camunda
+from ujjwala.camunda_functions import start_ujjwala_sv_process_in_camunda, start_process_in_camunda, \
+	evaluate_and_start_ujjwala_sv_process_in_camunda
 from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
 	PreInspectionTypeEnum, DisbursementDriveStatusEnum, UjjwalaApplicationDocumentsEnum, NicClearedCustomerRemarksEnum, \
 	UjjwalaV2ApplicationAvailabilityChannel, ConnectionDisbursementInvitationEnum, FilledByFilterEnum
@@ -1203,7 +1207,9 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
 				connection_disbursement.walk_in_by = get_current_user()
 
 				# Start Camunda Process For Ujjwala SV Creation
-				result, message = start_ujjwala_sv_process_in_camunda(connection_disbursement.id, disbursement_drive)
+				# result, message = start_ujjwala_sv_process_in_camunda(connection_disbursement.id, disbursement_drive)
+				result, message = evaluate_and_start_ujjwala_sv_process_in_camunda(connection_disbursement.id,
+				                                                                   disbursement_drive)
 
 				if result:
 					connection_disbursement.camunda_process_id = message
@@ -1219,9 +1225,14 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
 				django_rq.enqueue(create_installation_document, args=(connection_disbursement.id,),)
 
 				# Send Share On Social Media Link
-				send_ujjwala_share_on_social_media_link(self.request, connection_disbursement.parent.contact_mobile,
-				                                        connection_disbursement.parent
-				                                        )
+				create_social_media_link_function = partial(
+					django_rq.enqueue,
+					send_ujjwala_share_on_social_media_link,
+					contact_mobile=connection_disbursement.parent.contact_mobile,
+					application=connection_disbursement.parent
+				)
+				transaction.on_commit(create_social_media_link_function)
+
 				return HttpResponseRedirect('.')
 
 	def get_template_names(self):
