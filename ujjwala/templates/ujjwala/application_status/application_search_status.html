@@ -8,27 +8,29 @@
 <div class="p-2 pt-0 form_label application_form" style="width: 100%;">
     <form method="get">
 {#    {% csrf_token %}#}
-        <div class="card p-0">
-            <div class="card-body search_form">
-                <div class="form-group mb-0">
-                    <label>Enter Contact Mobile: </label>
-                    <input autocomplete="off" type="tel" name="contact_mobile" />
+        {% if disbursement_user %}
+            <div class="card p-0">
+                <div class="card-body search_form">
+                    <div class="form-group mb-0">
+                        <label>Enter Contact Mobile: </label>
+                        <input autocomplete="off" type="tel" name="contact_mobile" />
+                    </div>
+                    <p class="text-center"><b style="font-size: 15px;">OR</b></p>
+                    <div class="form-group mb-0">
+                        <label>Enter Aadhar Number: </label>
+                        <input autocomplete="off" type="tel" name="uid" />
+                    </div>
+                    <p class="text-center"><b style="font-size: 15px;">OR</b></p>
+                    <div class="form-group mb-0">
+                        <label>Application Id:</label>
+                        <input autocomplete="off" type="tel" name="application_id" />
+                    </div>
                 </div>
-                <p class="text-center"><b style="font-size: 15px;">OR</b></p>
-                <div class="form-group mb-0">
-                    <label>Enter Aadhar Number: </label>
-                    <input autocomplete="off" type="tel" name="uid" />
-                </div>
-                <p class="text-center"><b style="font-size: 15px;">OR</b></p>
-                <div class="form-group mb-0">
-                    <label>Application Id:</label>
-                    <input autocomplete="off" type="tel" name="application_id" />
+                <div class="card-footer">
+                    <button style="width: 100%;" class="btn btn-primary bg-heading">Get Application Status</button>
                 </div>
             </div>
-            <div class="card-footer">
-                <button style="width: 100%;" class="btn btn-primary bg-heading">Get Application Status</button>
-            </div>
-        </div>
+        {% endif %}
     </form>
         {% if obj %}
             <div class="card">

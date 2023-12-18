@@ -171,6 +171,7 @@ class ShareWebFormLink(TemplateView):
 
 
 class UjjwalaApplicationSharedLinkView(View):
+
 	def get(self, request, *args, **kwargs):
 		data = kwargs.get('data', '')
 		signer = Signer()
@@ -900,6 +901,17 @@ class UjjwalaApplicationStatusView(TemplateView):
 			)
 		return super().get(request, *args, **kwargs)
 
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		user = get_current_user()
+		if not is_member_of_disbursement_drive(user):
+			return render(self.request, 'ujjwala/no_permissions.html')
+
+		context.update({
+			"disbursement_user": True
+		})
+		return context
+
 
 @method_decorator(login_required, 'dispatch')
 class UjjwalaConnectionDisbursementListView(ListView):
@@ -931,6 +943,7 @@ class UjjwalaConnectionDisbursementListView(ListView):
 		user = get_current_user()
 		if not is_member_of_disbursement_drive(user):
 			return render(self.request, 'ujjwala/no_permissions.html')
+
 		disbursement_drive = DisbursementDrive.objects.filter(
 			team_members=user, status=DisbursementDriveStatusEnum.ACTIVE
 		).first()
@@ -991,6 +1004,7 @@ class UjjwalaConnectionDisbursementListView(ListView):
 		).exclude(walk_in_date=None).count()
 
 		context.update({
+			"disbursement_user": True,
 			"current_disbursement_index": connection_disbursement_count,
 			"max_walkins": disbursement_drive.max_walk_ins,
 			"disbursement_drive": disbursement_drive,
