@@ -14,6 +14,27 @@
     .form_block label{ float: left; width: 100%; }
     #id_request_video_url {display: none;}
     #id_phone_number{ border: 1px solid #ccc;}
+    #videoContainer {
+      width: 100%; /* Set your desired width */
+      height: 400px; /* Set your desired height */
+    }
+    .uppy-Webcam-footer{ 
+        padding: 5px !important; 
+        min-height: 20px;
+    }
+    .uppy-Webcam-buttonContainer {
+        margin-left: 0%;
+        text-align: center;
+        width: 100%;
+    }
+    .uppy-Webcam-recordingLength {
+        position: absolute;
+        /* top: 0; */
+        bottom: 19px;
+        right: 11px;
+    }
+    .uppy-DashboardContent-bar{     height: 25px;}
+    .uppy-DashboardContent-title{ left:25px; font-size: 10px; top: -7px;}
 </style>
 <div id="address_form" class="row m-0 form_label p-2">
     <div class="card card-profile pt-0 mt-0 " style="width: 100%;" >
@@ -58,6 +79,15 @@
         position: relative ;
         opacity: 1;
     }
+    .uppy-Dashboard-inner {
+        position: relative;
+        max-width: 100%; /* no !important */
+        max-height: 100%; /* no !important */
+        min-height: 400px;
+        outline: none;
+        border-radius: 5px;
+    }
+    .uppy-Dashboard{ height: 400px !important;}
 </style>
 <script>
      window.mobileChangeVideouppy = new Uppy.Core({
@@ -66,36 +96,47 @@
         restrictions: {
             maxFileSize: 50000000,
             maxNumberOfFiles: 1,
-            minNumberOfFiles: 1,
-            allowedFileTypes: ['video/*'],
+            minNumberOfFiles: 1
         }
     })
-        .use(Uppy.Dashboard, {
-            // trigger: '#uppy',
-            inline: true,
-            target: '#uppy',
-            // showProgressDetails: true,
-            // note: 'upload video',
-            // height: 250,
-            // metaFields: [],
-            // id: 'uppy',
-            // browserBackButtonClose: false
-        })
-        .use(Uppy.Tus, {
-            endpoint: 'https://tus.dca.arungas.com/files/',
-        })
-        .use(Uppy.Webcam, { target: Uppy.Dashboard, mobileNativeCamera: true });
-
+    .use(Uppy.Dashboard, {
+        // trigger: '#uppy',
+        inline: true,
+        target: '#uppy',
+        // showProgressDetails: true,
+        // note: 'upload video',
+        height: 200,
+        maxHeight: 200
+        // metaFields: [],
+        // id: 'uppy',
+        // browserBackButtonClose: false
+    })
+    .use(Uppy.Tus, {
+        endpoint: 'https://tus.dca.arungas.com/files/',
+    })
+    .use(Uppy.Webcam, {  
+        modes: ['video-audio'],
+        facingMode: 'environment',
+        mirror: false,
+        target: Uppy.Dashboard,
+        mobileNativeCamera: true,
+        countdown: true,
+        videoConstraints: {
+            // height: { min: 720, max: 1920, ideal: 720 }
+            width: { min: 640, ideal: 1920, max: 1920 },
+            height: { min: 360, ideal: 1080, max: 1080 },
+        },
+        showRecordingLength: true,
+        countdown: true,
+        videoConstraints: {
+            facingMode: 'user',
+        },
+    });  
+          
     mobileChangeVideouppy.on('complete', result => {
         console.log('successful files:', result.successful)
         console.log('failed files:', result.failed);
         $('[name="request_video_url"]').val(result.successful[0].uploadURL);
     });
-
-
-
-
-
-    
 </script>
 {% endblock %}
