@@ -258,6 +258,7 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
     def update_ujjwala_application_mobile_number(self, request: HttpRequest, *args, **kwargs):
         obj = self.get_object()
         phone_number = request.data.get('phone_number')
+
         service_request_id = request.data.get('service_request_id')
 
         if phone_number:
@@ -265,10 +266,10 @@ class UjjwalaApplicationAPIViewSet(viewsets.ModelViewSet):
             obj.save()
             service_request = ServiceRequest.objects.get(pk=service_request_id)
             service_request.status = ServiceRequestTypeStatusEnum.SUCCESS
-            ServiceRequest.save()
+            service_request.save()
             return HttpResponse("Contact Number Updated Successfully")
         else:
-            return HttpResponse("Phone Number Missing")
+            raise Exception("Phone Number Missing")
 
 
 class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
