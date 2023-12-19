@@ -3345,7 +3345,9 @@ class ChangePhoneNumberView(FormView):
 			status=ServiceRequestTypeStatusEnum.PENDING
 		).first()
 
-		if not sr_obj:
+		if sr_obj:
+			message = f"Service Request For Change Phone Number Already Submitted. Service Request Id: {sr_obj.id} Status: {sr_obj.status}"
+		else:
 			service_request = ServiceRequest.objects.create(
 				service_request_type=ServiceRequestTypeEnum.CHANGE_PHONE_NUMBER,
 				content_type=ujjwala_v2_application_content_type,
@@ -3356,11 +3358,13 @@ class ChangePhoneNumberView(FormView):
 					"phone_number": data['phone_number']
 				}
 			)
+			from service_request.functions import start_service_request_process_in_camunda
 
-			result, msg = start_process_in_camunda(
-				"process_dca_change_phone_number",
-				{
-					"variables": {
+			create_job_function = partial(
+				django_rq.enqueue,
+				start_service_request_process_in_camunda,
+				service_request_id=service_request.id,
+				variables={
 						"request_video_url": {"value": data['request_video_url'], "type": "string"},
 						"phone_number": {"value": data['phone_number'], "type": "string"},
 						"application_id": {"value": obj.id, "type": "long"},
@@ -3370,17 +3374,25 @@ class ChangePhoneNumberView(FormView):
 						"request_by": {"value": f"{user.first_name} {user.last_name}"},
 						"service_request_id": {"value": service_request.id, "type": "long"},
 					}
-				}
 			)
-			if result:
-				service_request.camunda_process_id = msg['id']
-				service_request.save()
-				message = f"Service Request For Change Phone Number Started With Id {service_request.id}. Please Wait For Some Time."
-			else:
-				service_request.camunda_process_id = 'Error'
-				message = f"Service Request For Change Phone Number Could Not Be Started. Please Contact Ujjwala Team."
-		else:
-			message = f"Request already submitted with Id {sr_obj.id}. Please wait for sometime."
+			transaction.on_commit(create_job_function)
+			message = "Service Request For Change Phone Number Initiate. Please Wait For Some Time."
+
+			# result, msg = start_process_in_camunda(
+			# 	"process_dca_change_phone_number",
+			# 	{
+			# 		"variables": {
+			# 			"request_video_url": {"value": data['request_video_url'], "type": "string"},
+			# 			"phone_number": {"value": data['phone_number'], "type": "string"},
+			# 			"application_id": {"value": obj.id, "type": "long"},
+			# 			"name": {"value": obj.name, "type": "string"},
+			# 			"status": {"value": obj.status, "type": "string"},
+			# 			"old_phone_numbers": {"value": json.dumps(obj.all_contacts), "type": "string"},
+			# 			"request_by": {"value": f"{user.first_name} {user.last_name}"},
+			# 			"service_request_id": {"value": service_request.id, "type": "long"},
+			# 		}
+			# 	}
+			# )
 
 		return render(
 			self.request, "ujjwala/response.html", {"heading": "Change Phone Number Request Form", "message": message}
