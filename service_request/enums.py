@@ -9,3 +9,4 @@ class ServiceRequestTypeEnum(models.TextChoices):
 class ServiceRequestTypeStatusEnum(models.TextChoices):
 	PENDING = 'PENDING', 'Pending'
 	SUCCESS = 'SUCCESS', 'Success'
+	REJECTED = 'REJECTED', 'Rejected'
