@@ -880,6 +880,42 @@ class PreInspectionReviewAdminForm(forms.Form):
 		return data
 
 
+class UjjwalaApplicationAuditAdminForm(forms.Form):
+	audit_action = forms.ChoiceField(
+		label="Audit Action ?",
+		required=True,
+		help_text="",
+		choices=[
+			('', '-- Select Audit Action --'),
+			('REUPLOAD', 'REUPLOAD'),
+			('REJECTED', 'Rejected')
+		]
+	)
+	audit_remarks = forms.CharField(
+		widget=forms.TextInput, max_length=255, label='Audit Remarks', required=False
+	)
+
+	def clean(self):
+		data = self.cleaned_data
+		# if data:
+		# 	if data.get('review_status', '') == 'REJECTED' and not data['rejected_reason']:
+		# 		raise forms.ValidationError("Please enter a reason for rejection.")
+		# 	data.update({'description': '{}: {}'.format(
+		# 			data.get('review_status'), data.get('rejected_reason')
+		# 		)
+		# 	})
+		# return data
+
+		if data:
+			if not data['audit_remarks']:
+				raise forms.ValidationError("Please enter audit remarks")
+			data.update({'description': '{}: {}'.format(
+				data.get('audit_action'), data.get('audit_remarks')
+			)
+			})
+		return data
+
+
 class LegalDocumentsReviewAdminForm(forms.Form):
 	review_status = forms.ChoiceField(
 		label="Select Review Status ?",
@@ -1422,6 +1458,9 @@ class NicClearedCustomerRemarksForm(forms.Form):
 
 
 class CancelWalkInForm(forms.Form):
+	delete_invitation = forms.BooleanField(
+		widget=forms.CheckboxInput, label='Delete Invitation', required=False
+	)
 	description = forms.CharField(
 		widget=forms.Textarea, label='Reason To Cancel Walk-In', required=True
 	)
