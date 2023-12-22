@@ -1,8 +1,11 @@
 import io
+from functools import wraps
 
 import arrow
 import requests
 from django.conf import settings
+from django.db import close_old_connections
+
 from communication_log.models import CommunicationLog
 
 import magic
@@ -149,10 +152,10 @@ def move_files_to_minio_processing(application_id):
         if file_extension not in ('pdf',):
             if not len(doc_file.content) <= 512000:
                 print("File To Be Compressed: {} Original Size: {}".format(doc.link, len(doc_file.content)))
-                response = requests.get("{}{}".format(settings.THUMBOR_URL_INTERNAL_WEBP_COMPRESSED, doc.link))
+                response = requests.get("{}{}".format(settings.THUMBOR_URL_LOCAL_INTERNAL_WEBP_COMPRESSED, doc.link))
             else:
                 print("File To Be Converted To Webp Format {}".format(doc.link))
-                response = requests.get("{}{}".format(settings.THUMBOR_URL_INTERNAL_WEBP_UNCOMPRESSED, doc.link))
+                response = requests.get("{}{}".format(settings.THUMBOR_URL_LOCAL_INTERNAL_WEBP_COMPRESSED, doc.link))
 
             if response.status_code != 200:
                 raise Exception("Could not compress file: {}".format(doc.link))
