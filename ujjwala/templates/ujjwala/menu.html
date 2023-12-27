@@ -117,9 +117,24 @@
             <i class='bx bxs-chevron-down arrow' ></i>
             </div>
             <ul class="sub-menu">
+{#                <li><a href="{% url 'ujjwala:ujjwala_application_audit_list' %}" data-turbolinks="false">Audit Application </a></li>#}
                 <li><a href="{% url 'ujjwala:pre_inspection_review_list' %}" data-turbolinks="false">Pre-Inspection </a></li>
                 <li><a href="{% url 'ujjwala:review_form_abc_list' %}" data-turbolinks="false">Form A B C </a></li>
                 <li><a href="{% url 'ujjwala:installation_review_list' %}" data-turbolinks="false">Installation </a></li>
+            </ul>
+        </li>
+        {% endif %}
+        {% if user|has_service_request_resolve_permission %}
+        <li>
+            <div class="iocn-link">
+            <a href="#" data-turbolinks="false">
+                <i class='bx bx-collection' ></i>
+                <span class="link_name">Service Request</span>
+            </a>
+            <i class='bx bxs-chevron-down arrow' ></i>
+            </div>
+            <ul class="sub-menu">
+                <li><a href="{% url 'ujjwala:service_request_list' %}" data-turbolinks="false">Service Request </a></li>
             </ul>
         </li>
         {% endif %}
