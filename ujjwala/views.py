@@ -32,7 +32,7 @@ from otp.models import Otp
 from service_request.enums import ServiceRequestTypeEnum, ServiceRequestTypeStatusEnum
 from service_request.models import ServiceRequest
 from ujjwala.camunda_functions import start_ujjwala_sv_process_in_camunda, start_process_in_camunda, \
-	evaluate_and_start_ujjwala_sv_process_in_camunda
+	evaluate_and_start_ujjwala_sv_process_in_camunda, start_process_in_camunda_v2, is_process_exist_in_camunda
 from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
 	PreInspectionTypeEnum, DisbursementDriveStatusEnum, UjjwalaApplicationDocumentsEnum, NicClearedCustomerRemarksEnum, \
 	UjjwalaV2ApplicationAvailabilityChannel, ConnectionDisbursementInvitationEnum, FilledByFilterEnum
@@ -3219,6 +3219,28 @@ class LegalDocumentsAcceptedToPendingView(View):
 		return JsonResponse({
 			"status": "Updated"
 		})
+
+
+class GetEKYCStatusFromSDMS(View):
+
+	def dispatch(self, request, *args, **kwargs):
+		application = UjjwalaV2Application.objects.get(pk=kwargs.get('pk'))
+		result = is_process_exist_in_camunda('process_get_ekyc_status_from_sdms', 'dca_id', application.id)
+		if result == 0:
+			variables = {
+				"variables":
+					{
+						"dca_id": {"value": application.id, "type": "String"},
+						"consumer_id": {"value": application.consumer_id, "type": "String"}
+					}
+			}
+			res, process_id = start_process_in_camunda_v2('process_get_ekyc_status_from_sdms', variables)
+			message = "Request Generated With Camunda Process Id: {}".format(process_id)
+		else:
+			message = "Already Request Generated For Update E-KYC"
+		return render(
+			self.request, "ujjwala/response.html", {"heading": "Update E-KYC Request", "message": message}
+		)
 
 
 class ShareOnSocialMediaView(View):

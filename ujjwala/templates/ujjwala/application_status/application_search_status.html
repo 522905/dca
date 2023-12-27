@@ -79,7 +79,15 @@
                                 </tr>
                                 <tr>
                                     {% if not obj.ekyc_cleared %}
-                                        <td><p style="font-size: 12pt">Aadhar No. : <b>{{ obj.self_uid_no_formatted }}</b></p></td>
+                                        <td>
+                                            <p style="font-size: 12pt">Aadhar No. : <b>{{ obj.self_uid_no_formatted }}</b>
+                                            </p>
+                                        </td>
+                                        <td>
+                                            <p>
+                                                <a href="{% url 'ujjwala:get_ekyc_status_from_sdms' pk=obj.id %}" class="btn btn-success float-left">Update E-KYC</a>
+                                            </p>
+                                        </td>
                                     {% endif %}
                                 </tr>
 
@@ -108,6 +116,7 @@
                                         {{obj.pre_inspection.get_status_display}}
                                     </a>
                                     {% if obj.pre_inspection.status == 'ACCEPTED' %}
+                                        <b>{{ obj.pre_inspection.updated_on }}</b>
                                         {% if obj.connection_disbursement.status == 'LEGAL_DOCUMENTS_PENDING' %}
                                             <a class="link_wh" style="color:#007bff !important" href="{% url 'ujjwala:whatsapp_form_abc' pk=obj.id %}">
                                                 <b class="link"> (Whatsapp Form A B C)</b>

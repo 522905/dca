@@ -213,7 +213,32 @@ def start_process_in_camunda(process_definition_key, variables):
 
 	if res.status_code == 200:
 		return True, res.json()['id']
-	return False, res.text
+	return res.status_code, res.text
+
+
+def is_process_exist_in_camunda(process_definition_key, variable_name, value):
+	existing = requests.post(
+		f'{CAMUNDA_BASE_URL}/process-instance',
+		json={
+			"variables": [
+				{
+				    "name": variable_name,
+					"operator": "eq",
+					"value": str(value)
+				}
+			],
+			"processDefinitionKey": process_definition_key
+		}).json()
+	return len(existing)
+
+
+def start_process_in_camunda_v2(process_definition_key, variables):
+	url = "{}/process-definition/key/{}/start".format(CAMUNDA_BASE_URL, process_definition_key)
+	res = requests.post(url, json=variables)
+
+	if res.status_code == 200:
+		return res.status_code, res.json()['id']
+	return res.status_code, res.text
 
 
 def num_there(s):

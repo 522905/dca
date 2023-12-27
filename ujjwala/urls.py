@@ -359,6 +359,11 @@ urlpatterns = [
         name="legal_documents_pending"
     ),
     url(
+        '^ujjwala-application/(?P<pk>[^/.]+)/get_ekyc_status_from_sdms$',
+        views.GetEKYCStatusFromSDMS.as_view(),
+        name="get_ekyc_status_from_sdms"
+    ),
+    url(
         '^ujjwala-application/share_on_social_media/(?P<pk>[^/.]+)/$',
         ShareOnSocialMediaView.as_view(),
         name="share_on_social_media"
