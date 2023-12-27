@@ -116,6 +116,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	                                             null=True, blank=True, default=SDMSMobileNumberEnum.NOT_REQUIRED
 	                                             )
 	error_message = models.TextField(null=True, blank=True)
+	flag = models.TextField(null=True, blank=True)
 
 	class Meta:
 		permissions = (
@@ -279,6 +280,10 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	def self_uid_no(self):
 		self_fm = self.family_members.get(relation=FamilyMemberRelationEnum.SELF)
 		return self_fm.uid_no
+
+	def self_uid_no_formatted(self):
+		self_fm = self.family_members.get(relation=FamilyMemberRelationEnum.SELF)
+		return "{}-{}-{}".format(self_fm.uid_no[:4], self_fm.uid_no[4:8], self_fm.uid_no[8:12])
 
 	def document_kitchen_photo(self):
 		return self.documents.filter(
