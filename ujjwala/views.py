@@ -3600,12 +3600,14 @@ class UjjwalaApplicationServiceRequestView(FormView):
 			f"http://192.168.171.15:38080/engine-rest/process-instance/{obj.camunda_process_id}/variables")
 		res.raise_for_status()
 
+		application = UjjwalaV2Application.objects.get(pk=obj.form_data.get('application_id'))
 		process_vars = res.json()
 		context.update({
 			"obj": obj,
 			"request_video_url": process_vars['request_video_url']['value'],
 			"phone_number": process_vars['phone_number']['value'],
 			"request_by": process_vars['request_by']['value'],
+			"application": application
 		})
 		return context
 
