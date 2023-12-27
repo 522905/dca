@@ -287,3 +287,9 @@ main .content{ display: block;
 .sidebar .nav-links li.active{ background-color: #1d1b31;}
 .sidebar .nav-links li.active .sub-menu { display: block }
 .sidebar .nav-links li.active .sub-menu li.active a { opacity: 1 }
+#family_members_tree p{ font-size: 12px;}
+.add_member { margin:10px;}
+.addmember { float: right;}
+#addOtherfm ul { padding: 0;}
+#addOtherfm ul li{ list-style: none;}
+#id_request_action{ display: block !important; }
