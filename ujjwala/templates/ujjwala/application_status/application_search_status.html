@@ -58,8 +58,11 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td><p style="font-size: 12pt">Aadhar No. : <b>{{ obj.self_uid_no_formatted }}</b></p></td>
+                                    {% if not obj.ekyc_cleared %}
+                                        <td><p style="font-size: 12pt">Aadhar No. : <b>{{ obj.self_uid_no_formatted }}</b></p></td>
+                                    {% endif %}
                                 </tr>
+
                             </table>
                         </div>
                         <div class="col-4 p-0">
@@ -104,11 +107,15 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Connection Disbursement Status: </th>
-                            <td> {% if obj.connection_disbursement %}
-                                <a  data-turbolinks="false" href="{% url 'admin:ujjwala_connectiondisbursement_change' object_id=obj.connection_disbursement.id %}">
-                                    {{obj.connection_disbursement.get_status_display}}
-                                </a>
+                            <td>Connection Disbursement Status: </td>
+                            <td>
+                                {% if obj.connection_disbursement %}
+                                    <a  data-turbolinks="false" href="{% url 'admin:ujjwala_connectiondisbursement_change' object_id=obj.connection_disbursement.id %}" >
+                                        {{obj.connection_disbursement.get_status_display}}
+                                        {% if obj.connection_disbursement.status == 'LEGAL_DOCUMENTS_ACCEPTED' %}
+                                            <a href="{% url 'ujjwala:legal_documents_pending' pk=obj.id %}" class="btn btn-danger float-center rounded-0"><b>Lost Legal Documents</b></a>
+                                        {% endif %}
+                                    </a>
                                     {% if obj.connection_disbursement.status == 'LEGAL_DOCUMENTS_PENDING' %}
                                         <a class="link_wh" style="color:#007bff !important" data-turbolinks="false" href="{% url 'ujjwala:legal_documents_upload' pk=obj.connection_disbursement.id %}">
                                             <br><b class="link"> (Upload Form A B C)</b>
@@ -121,7 +128,11 @@
                         </tr>
                         <tr>
                             <th>E-Kyc Cleared Status: </th>
-                            <td> {{ obj.ekyc_cleared }}</td>
+                            {% if  obj.ekyc_cleared %}
+                                <td> <b style="background-color: green; color: white">{{ obj.ekyc_cleared }}</b></td>
+                            {% else %}
+                                <td> <b style="background-color: red; color: white">{{ obj.ekyc_cleared }}</b></td>
+                            {% endif %}
                         </tr>
                         {% if obj.status == 'APPLICATION_REJECTED' or obj.status == 'OMC_REJECTED' %}
                             <tr>
@@ -129,14 +140,10 @@
                             </tr>
                         {% else %}
                             <tr>
-                                <th></th>
                                 <th>
                                     <a class="text_link" href="{% url 'ujjwala:change_phone_number' pk=obj.id %}">
                                         <b style="color:cornflowerblue"><i>Change Phone Number</i></b></a>
                                 </th>
-                            </tr>
-                            <tr>
-                                <th></th>
                                 <th>
                                     <a class="text_link" href="{% url 'ujjwala:update_bank_details' pk=obj.id %}">
                                         <b style="color:cornflowerblue"><i>Update Bank Details</i></b></a>
