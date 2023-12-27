@@ -7,12 +7,15 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
     <div class="p-2 pt-0 form_label" style="width: 100%;">
         <div class="card p-0">
-            <div class="card-header">
-                <p><b style="font-size: 15px;">{{ heading }}</b></p>
-            <div>
+            <div class="card-header text-center">
+                <p><b style="font-size: 15px">{{ heading }}</b></p>
+            </div>
             <div class="card-body">
                 <p class="text-center">{{ message }}</p>
             </div>
+            <div class="card-footer" style="background-color: lightcyan">
+                <p class="text-center"><input type="button" value="Back" onclick="history.back()"/></p>
+            </div>
         </div>
     </div>
-{% endblock %}
+{% endblock content %}
