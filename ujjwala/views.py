@@ -4,6 +4,7 @@ import json
 import textwrap
 from functools import partial
 
+import requests
 from django.db import transaction
 from django.db.models import Case, Value, When, Q
 import django_rq
@@ -15,7 +16,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.signing import Signer
-from django.forms import formset_factory
+from django.forms import formset_factory, inlineformset_factory
 from django.http import HttpResponse, Http404, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -23,7 +24,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import DetailView, FormView, ListView, TemplateView
+from django.views.generic import DetailView, FormView, ListView, TemplateView, UpdateView
 from django_currentuser.middleware import get_current_user
 
 from communication_log.models import CommunicationLog
@@ -47,7 +48,7 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
 	UpdateBankDetailsForm, NicClearedCustomerRemarksForm, PrintDocumentsForm, \
 	InstallationReviewAdminForm, FirstCylinderMaterialDeliveryForm, SecondCylinderMaterialDeliveryForm, \
 	PreInspectionReviewAdminForm, CancelInvitationForm, UpdateAddressForm, \
-	NewRelationCreated, ChangePhoneNumberForm, UploadUIDForEKYCForm
+	NewRelationCreated, ChangePhoneNumberForm, UploadUIDForEKYCForm, UjjwalaApplicationServiceRequestForm
 from ujjwala.global_functions import login_required_if_mech_inspection
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
 	FamilyMembers, DisbursementDrive
@@ -56,7 +57,7 @@ from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_
 	send_ujjwala_application_whatsapp_link_v2, download_audit_documents_for_ids, is_member_of_disbursement_drive, \
 	get_current_user_disbursement_drive, is_member_of_second_cylinder_delivery, \
 	send_ujjwala_self_pre_inspection_share_link, is_member_of_reviewer_group, send_ujjwala_share_on_social_media_link, \
-	send_otp_using_channel
+	send_otp_using_channel, can_resolve_service_request
 from utils.enums import RoboSdmsDedeupStatusEnum
 from utils.global_functions import unsign_data_base64, sign_data_base64
 
@@ -3455,3 +3456,178 @@ class UploadUIDForEKYCView(FormView):
 
 		response = redirect(reverse('ujjwala:application_status_search'))
 		return response
+
+
+@method_decorator(login_required, 'dispatch')
+class UjjwalaApplicationAuditListView(ListView):
+	model = PreInspection
+
+	paginate_by = 20
+	permission = 'has_view_permission'
+
+	def get_queryset(self):
+		return UjjwalaV2Application.objects.filter(
+			status=UjjwalaV2ApplicationStatus.AUDIT_APPLICATION
+		)
+
+	def get_template_names(self):
+		return 'ujjwala/review/ujjwala_application_audit_listview.html'
+
+
+class UjjwalaApplicationAuditFamilyMembersForm(forms.ModelForm):
+	class Meta:
+		model = FamilyMembers
+		fields = "__all__"
+
+
+class UjjwalaApplicationAuditForm(forms.ModelForm):
+	class Meta:
+		model = UjjwalaV2Application
+		fields = "__all__"
+
+
+@method_decorator(login_required, 'dispatch')
+class UjjwalaApplicationAuditView(FormView):
+	model = UjjwalaV2Application
+	template_name = 'ujjwala/review/ujjwala_application_audit_new.html'
+	form_class = UjjwalaApplicationAuditForm
+	FamilyMembersInlineFormSet = inlineformset_factory(
+		UjjwalaV2Application, FamilyMembers, fields="__all__",
+		form=UjjwalaApplicationAuditFamilyMembersForm, extra=0,
+	)
+
+	def get_success_url(self):
+		return reverse('ujjwala:ujjwala_application_audit_list')
+
+	def dispatch(self, request, *args, **kwargs):
+		user = get_current_user()
+		if not is_member_of_reviewer_group(user):
+			return render(request, 'ujjwala/no_permissions.html')
+
+		application_id = request.GET.get('application_id', '')
+		if application_id:
+			application = self.get_object()
+			if application.status != UjjwalaV2ApplicationStatus.AUDIT_APPLICATION:
+				messages.add_message(self.request, messages.ERROR, f"Application Id: {application_id} Not In Audit Status")
+				return redirect('ujjwala:ujjwala_application_audit_list')
+		return super().dispatch(request, *args, **kwargs)
+
+	def get_object(self, queryset=None):
+		try:
+			obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No Application Exist For Given Application Id"
+			)
+		return obj
+
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		obj = self.get_object()
+		context.update({
+			"obj": obj,
+			"form": UjjwalaApplicationAuditForm(instance=obj),
+			"formset": self.FamilyMembersInlineFormSet(instance=obj, prefix='family_members')
+		})
+		return context
+
+	def post(self, request, *args, **kwargs):
+		# obj = self.get_object()
+		form_class = self.get_form_class()
+		form = self.get_form(form_class)
+		fm_formset = self.FamilyMembersInlineFormSet(self.request.POST)
+		if form.is_valid() and fm_formset.is_valid():
+			return self.form_valid(form, fm_formset)
+		else:
+			return self.form_invalid(form, fm_formset)
+
+	def form_valid(self, form, fm_formset):
+		obj = form.save()
+		fm_formset.instance = obj
+		fm_formset.save()
+		return HttpResponseRedirect(self.get_success_url())
+
+	def form_invalid(self, form, fm_formset):
+		return self.render_to_response(
+			self.get_context_data(form=form, fm_formset=fm_formset,))
+
+
+@method_decorator(login_required, 'dispatch')
+class UjjwalaApplicationServiceRequestListView(ListView):
+	model = PreInspection
+
+	paginate_by = 20
+	permission = 'has_view_permission'
+
+	def get_queryset(self):
+		# return ServiceRequest.objects.filter(
+		# 	status=ServiceRequestTypeStatusEnum.PENDING
+		# )
+		return ServiceRequest.objects.all().order_by('-id')
+
+	def get_template_names(self):
+		return 'ujjwala/service_request/ujjwala_application_service_request_listview.html'
+
+
+@method_decorator(login_required, 'dispatch')
+class UjjwalaApplicationServiceRequestView(FormView):
+	template_name = 'ujjwala/service_request/ujjwala_application_service_request.html'
+	form_class = UjjwalaApplicationServiceRequestForm
+
+	def get_success_url(self):
+		return reverse('ujjwala:service_request_list')
+
+	def dispatch(self, request, *args, **kwargs):
+		user = get_current_user()
+		if not can_resolve_service_request(user):
+			return render(request, 'ujjwala/no_permissions.html')
+		return super().dispatch(request, *args, **kwargs)
+
+	def get_object(self, queryset=None):
+		try:
+			obj = ServiceRequest.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No Application Exist For Given Application Id"
+			)
+		return obj
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		obj = self.get_object()
+		res = requests.get(
+			f"http://192.168.171.15:38080/engine-rest/process-instance/{obj.camunda_process_id}/variables")
+		res.raise_for_status()
+
+		process_vars = res.json()
+		context.update({
+			"obj": obj,
+			"request_video_url": process_vars['request_video_url']['value'],
+			"phone_number": process_vars['phone_number']['value'],
+			"request_by": process_vars['request_by']['value'],
+		})
+		return context
+
+	def form_valid(self, form):
+		obj = self.get_object()
+		data = form.cleaned_data
+		if data['request_action'] == 'REJECTED':
+			obj.status = ServiceRequestTypeStatusEnum.REJECTED
+			obj.remarks = data['request_remarks']
+		elif data['request_action'] == 'APPROVED':
+			obj.status = ServiceRequestTypeStatusEnum.SUCCESS
+
+		res = requests.get('http://192.168.171.15:38080/engine-rest/task',
+		                   params={'processInstanceId': f'{obj.camunda_process_id}',
+		                           'taskDefinitionKey': 'Activity_dca_change_phone_number_verify_request'})
+		res.raise_for_status()
+
+		res = requests.post(
+			f"http://192.168.171.15:38080/engine-rest/task/{res.json()[0]['id']}/submit-form",
+            json={'variables': {}}
+		)
+		res.raise_for_status()
+
+		obj.save()
+		return redirect(self.get_success_url())

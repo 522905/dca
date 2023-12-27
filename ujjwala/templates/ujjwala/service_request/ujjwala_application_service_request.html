@@ -1,0 +1,67 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block content %}
+{% load material_form %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<div class="form_label p-2 full_width">
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-2 app_card">
+            <div class="card-header float-left" style="width:100%">
+                <p class="float-left text-dark">Service Request Id <b>({{ obj.id }})</b></p>
+                <p class="float-right text-dark">User: <b>({{ obj.request_by }})</b></p>
+            </div>
+            <div class="card-header float-left" style="width:100%">
+                <p class="float-left">Created On {{ obj.created_on }} For {{ obj.service_request_type }}</p>
+            </div>
+            <div class="card-body pb-0 p-2 list_block">
+                <ul class="m-0">
+                    <li>
+{#                        <iframe width="320" height="240" src="{{ request_video_url }}" allowfullscreen></iframe>#}
+                        <video width="320" height="240" controls>
+                            <source src="{{ request_video_url }}" type="video/mp4">
+{#                            <source src="{{ request_video_url }}">#}
+                        </video>
+{#                        <p class="float-right"><b>{{ request_video_url }}</b></p>#}
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body pb-0 p-2 list_block">
+                <ul class="m-0">
+                    <li>
+                        <p class="float-left">Phone Number: </p>
+                        <p class="float-right"><b>{{ phone_number }}</b></p>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body pb-0 p-2 list_block">
+                <ul class="m-0">
+                    <li>
+                        <p class="float-left">Application Id: </p>
+                        <p class="float-right"><b>{{ obj.form_data }}</b></p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="mb-2 app_card">
+            <div class="card-header float-left" style="width:100%;background-color: lightblue">
+                <p class="float-left" ><b>Select Action On Service Request</b></p>
+            </div>
+            <div class="card-body pb-0 p-2 list_block">
+                <ul class="m-0">
+                    <li>
+                        {% form form=form %}{% endform %}
+                    </li>
+                </ul>
+            </div>
+            <div class="card-footer p-2">
+                <input type="submit" value="Submit" />
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

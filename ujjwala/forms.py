@@ -880,38 +880,29 @@ class PreInspectionReviewAdminForm(forms.Form):
 		return data
 
 
-class UjjwalaApplicationAuditAdminForm(forms.Form):
-	audit_action = forms.ChoiceField(
-		label="Audit Action ?",
+class UjjwalaApplicationServiceRequestForm(forms.Form):
+	request_action = forms.ChoiceField(
+		label="Request ?",
 		required=True,
 		help_text="",
 		choices=[
-			('', '-- Select Audit Action --'),
-			('REUPLOAD', 'REUPLOAD'),
-			('REJECTED', 'Rejected')
+			('', '-- Select Request Action --'),
+			('APPROVED', 'Approved'),
+			('REJECTED', 'Rejected'),
 		]
 	)
-	audit_remarks = forms.CharField(
-		widget=forms.TextInput, max_length=255, label='Audit Remarks', required=False
+	request_remarks = forms.CharField(
+		widget=forms.TextInput, max_length=255, label='Remarks', required=False
 	)
 
 	def clean(self):
 		data = self.cleaned_data
-		# if data:
-		# 	if data.get('review_status', '') == 'REJECTED' and not data['rejected_reason']:
-		# 		raise forms.ValidationError("Please enter a reason for rejection.")
-		# 	data.update({'description': '{}: {}'.format(
-		# 			data.get('review_status'), data.get('rejected_reason')
-		# 		)
-		# 	})
-		# return data
 
 		if data:
-			if not data['audit_remarks']:
-				raise forms.ValidationError("Please enter audit remarks")
+			if data['request_action'] == 'REJECTED' and not data['request_remarks']:
+				raise forms.ValidationError("Please enter request remarks")
 			data.update({'description': '{}: {}'.format(
-				data.get('audit_action'), data.get('audit_remarks')
-			)
+				data.get('request_action'), data.get('request_remarks'))
 			})
 		return data
 

@@ -16,3 +16,9 @@ class ServiceRequest(models.Model):
 	form_data = models.JSONField(null=True, blank=True)
 	status = models.CharField(max_length=128, choices=ServiceRequestTypeStatusEnum.choices,
 	                          default=ServiceRequestTypeStatusEnum.PENDING)
+	remarks = models.TextField(null=True, blank=True)
+
+	class Meta:
+		permissions = (
+			("can_resolve_service_request", "Can Resolve Service Request"),
+		)

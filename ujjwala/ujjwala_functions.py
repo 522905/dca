@@ -1587,6 +1587,12 @@ def download_audit_document(application, documents_type):
 					'alt_text': "Uid Front",
 					'file_name': 'uid_front_{}'.format(fm.uid_no)
 				})
+				documents_list.append({
+					'info': "{} {}".format(fm.name, fm.relation),
+					'img_url': fm.uid_back_link,
+					'alt_text': "Uid Back",
+					'file_name': 'uid_back_{}'.format(fm.uid_no)
+				})
 
 		if document_type == PrintDocumentsTypeEnum.BANK_DETAILS:
 			documents_list.append({
@@ -1663,6 +1669,10 @@ def is_member_of_second_cylinder_delivery(user):
 
 def is_member_of_reviewer_group(user):
 	return user.has_perm('ujjwala.is_part_of_reviewer_group')
+
+
+def can_resolve_service_request(user):
+	return user.has_perm('service_request.can_resolve_service_request')
 
 
 def is_member_of_disbursement_drive(user):
@@ -1819,7 +1829,7 @@ def num_there(s):
 	return any(i.isdigit() for i in s)
 
 
-def fetch_payment_profile_variables(application_id):
+def fetch_payment_profile_variables(application_id, force_main_branch=False):
 	from ujjwala.models import UjjwalaV2Application
 	from reference_data.models import IFSCodeList, RTGSList
 
@@ -1837,19 +1847,24 @@ def fetch_payment_profile_variables(application_id):
 			"reason": f"Invalid IFSCode: {old_ifscode}. Manually Correct."
 		}
 
-	res = requests.get(f"https://ifsc.razorpay.com/{old_ifscode}")
-	if res.status_code == 200:
-		new_ifscode = old_ifscode
-	else:
+	if not force_main_branch:
+		res = requests.get(f"https://ifsc.razorpay.com/{old_ifscode}")
+		if res.status_code == 200:
+			new_ifscode = old_ifscode
+
+	if not new_ifscode:
 		ifscodelist_obj: IFSCodeList = IFSCodeList.objects.filter(old_ifscode=old_ifscode).first()
 		if ifscodelist_obj:
 			new_ifscode = ifscodelist_obj.new_ifscode
 		else:
 			merged_bank_code = IFSCodeList.objects.filter(
-				old_ifscode__istartswith=old_ifscode[:4]).first()
-			if merged_bank_code:
-				rtgs_ifscode = RTGSList.objects.filter(ifscode__istartswith=merged_bank_code.new_ifscode[:4]).first()
-				new_ifscode = rtgs_ifscode.ifscode if rtgs_ifscode else None
+				old_ifscode__istartswith=old_ifscode[:4]
+			).first()
+
+			rtgs_ifscode = RTGSList.objects.filter(
+				ifscode__istartswith=merged_bank_code.new_ifscode[:4] if merged_bank_code else old_ifscode[:4]
+			).first()
+			new_ifscode = rtgs_ifscode.ifscode if rtgs_ifscode else None
 
 	if not new_ifscode:
 		return {

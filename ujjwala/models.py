@@ -219,12 +219,15 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			return self.address
 		self.address_json['city'] = 'Ludhiana'
 		return ' '.join([self.address_json.get(r, '') for r in [
-			'room_no', 'floor', 'street_no', 'landmark', 'village', 'post_office', 'pincode'
+			'room_no', 'floor', 'street_no', 'landmark', 'village', 'ward_no', 'post_office', 'pincode'
 		]])
 
 	def get_address_for_sdms_upload(self):
 		if not self.address_json:
-			return self.address
+			return {
+				'addr_str': self.address,
+				'pincode': ''
+			}
 
 		# addr_str = 'hNo {house_no} '\
 		# 'StNo {street_no} {village}'.format(
@@ -233,6 +236,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		addr_str = 'hNo {} StNo {} {} '.format(
 			self.address_json.get('house_no', ''),
 			self.address_json.get('street_no', ''),
+			self.address_json.get('ward_no', ''),
 			self.address_json.get('village', '') or self.address_json.get('mohalla', ''),
 		)
 

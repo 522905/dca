@@ -179,6 +179,28 @@ urlpatterns = [
         name="application_status_search"
     ),
 
+    # path('portal/review/audit_application/',
+    #      views.UjjwalaApplicationAuditListView.as_view(),
+    #      name="ujjwala_application_audit_list"
+    # ),
+    #
+    # url(
+    #     '^portal/ujjwala-audit-application/(?P<pk>[^/.]+)/$',
+    #     views.UjjwalaApplicationAuditView.as_view(),
+    #     name="ujjwala_application_audit"
+    # ),
+
+    path('portal/service_request/list_view/',
+         views.UjjwalaApplicationServiceRequestListView.as_view(),
+         name="service_request_list"
+    ),
+
+    url(
+        '^portal/service-request-view/(?P<pk>[^/.]+)/$',
+        views.UjjwalaApplicationServiceRequestView.as_view(),
+        name="service_request_view"
+    ),
+
     url(
         '^portal/pre-inspection/(?P<type>(self|mech))/(?P<pk>[^/.]+)/$',
         views.PreInspectionView.as_view(),
@@ -315,21 +337,17 @@ urlpatterns = [
         views.PreInspectionView.as_view(),
         name="pre_inspection_form_view"
     ),
-
     url(
         '^ujjwala-application/(?P<pk>[^/.]+)/status/$',
         views.ApplicationStatusView.as_view(),
         name="application_status"
     ),
-
     path(
          'portal/disbursement_photo_upload/', generic.TemplateView.as_view(
             template_name="ujjwala/disbursement/disbursement_photo_upload.html"
          ), name="disbursement_photo_upload"
      ),
-
      path('portal/installation/', views.InstallationListView.as_view(), name="installation_list"),
-     
      url(
         '^portal/installation/(?P<pk>[^/.]+)/$',
         views.InstallationView.as_view(),
