@@ -1,11 +1,31 @@
+
+
+
 {% extends "material/frontend/base_module.html" %}
 {% load static %}
 {% block page_title %}Application Status Search {% endblock %}
+
+
 {% block content %}
 <link rel="stylesheet" href="{% static '/css/style.css' %}" >
 <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
 <div class="p-2 pt-0 form_label application_form" style="width: 100%;">
+<style>
+    body .application_form{ max-width: 700px;}
+    html body .application_form .legal-button {
+    color: #fff;
+    font-size: 12px;
+    border-radius: 3px !important;
+    border: none;
+    /* background: transparent; */
+    margin-left: 5px;
+    height: 30px !important;
+    line-height: 19px !important;
+}
+.ekyc_status{ color: red; font-weight: bold; text-transform: uppercase; font-size: 14px;}
+</style>
+
     <form method="get">
 {#    {% csrf_token %}#}
         {% if disbursement_user %}
@@ -96,9 +116,6 @@
                                     {% else %}
 {#                                    {% if obj.pre_inspection.status != 'ACCEPTED' %}#}
                                         {% if obj.pre_inspection.status != 'SUBMITTED' %}
-                                            <!--<a href="{% url 'ujjwala:whatsapp_pre_inspection_type_self' pk=obj.id %}">
-                                                <b> (Whatsapp Pre-Inspection Type Self)</b>
-                                            </a>-->
                                         {% endif %}
                                     {% endif %}
                                 {% else %}
@@ -110,12 +127,12 @@
                             <td>Connection Disbursement Status: </td>
                             <td>
                                 {% if obj.connection_disbursement %}
-                                    <a  data-turbolinks="false" href="{% url 'admin:ujjwala_connectiondisbursement_change' object_id=obj.connection_disbursement.id %}" >
+                                    <a class="float-left"  data-turbolinks="false" href="{% url 'admin:ujjwala_connectiondisbursement_change' object_id=obj.connection_disbursement.id %}" >
                                         {{obj.connection_disbursement.get_status_display}}
-                                        {% if obj.connection_disbursement.status == 'LEGAL_DOCUMENTS_ACCEPTED' %}
-                                            <a href="{% url 'ujjwala:legal_documents_pending' pk=obj.id %}" class="btn btn-danger float-center rounded-0"><b>Lost Legal Documents</b></a>
-                                        {% endif %}
                                     </a>
+                                    {% if obj.connection_disbursement.status == 'LEGAL_DOCUMENTS_ACCEPTED' %}
+                                        <a href="{% url 'ujjwala:legal_documents_pending' pk=obj.id %}" class="float-left btn rounded-0 legal-button">Lost Legal Documents</a>
+                                    {% endif %}
                                     {% if obj.connection_disbursement.status == 'LEGAL_DOCUMENTS_PENDING' %}
                                         <a class="link_wh" style="color:#007bff !important" data-turbolinks="false" href="{% url 'ujjwala:legal_documents_upload' pk=obj.connection_disbursement.id %}">
                                             <br><b class="link"> (Upload Form A B C)</b>
@@ -129,9 +146,9 @@
                         <tr>
                             <th>E-Kyc Cleared Status: </th>
                             {% if  obj.ekyc_cleared %}
-                                <td> <b style="background-color: green; color: white">{{ obj.ekyc_cleared }}</b></td>
+                                <td> <span class="ekyc_status" style="color: green;">{{ obj.ekyc_cleared }}</span></td>
                             {% else %}
-                                <td> <b style="background-color: red; color: white">{{ obj.ekyc_cleared }}</b></td>
+                                <td> <span class="ekyc_status"  style="color: red;">{{ obj.ekyc_cleared }}</span></td>
                             {% endif %}
                         </tr>
                         {% if obj.status == 'APPLICATION_REJECTED' or obj.status == 'OMC_REJECTED' %}
@@ -199,3 +216,4 @@
     .link_wh:hover{ text-decoration: underline !important;}
 </style>
 {% endblock %}
+
