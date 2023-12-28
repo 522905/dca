@@ -84,9 +84,11 @@
                                             </p>
                                         </td>
                                         <td>
-                                            <p>
-                                                <a href="{% url 'ujjwala:get_ekyc_status_from_sdms' pk=obj.id %}" class="btn btn-success float-left">Update E-KYC</a>
-                                            </p>
+                                            {% if obj.consumer_id %}
+                                                <p>
+                                                    <a href="{% url 'ujjwala:get_ekyc_status_from_sdms' pk=obj.id %}" class="btn btn-success float-left">Update E-KYC</a>
+                                                </p>
+                                            {% endif %}
                                         </td>
                                     {% endif %}
                                 </tr>
