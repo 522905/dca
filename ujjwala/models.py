@@ -117,6 +117,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	                                             )
 	error_message = models.TextField(null=True, blank=True)
 	flag = models.TextField(null=True, blank=True)
+	ekyc_date = models.DateTimeField(null=True)
 
 	class Meta:
 		permissions = (
