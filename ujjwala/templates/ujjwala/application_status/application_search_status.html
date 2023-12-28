@@ -114,9 +114,10 @@
                             <th>Pre-Inspection Status: </th>
                             <td>
                                 {% if obj.pre_inspection %}
-                                    <a  data-turbolinks="false" href="{% url 'admin:ujjwala_preinspection_change' object_id=obj.pre_inspection.id %}">
-                                        {{obj.pre_inspection.get_status_display}}
-                                    </a>
+{#                                    <a  data-turbolinks="false" href="{% url 'admin:ujjwala_preinspection_change' object_id=obj.pre_inspection.id %}">#}
+{#                                        {{obj.pre_inspection.get_status_display}}#}
+{#                                    </a>#}
+                                    {{obj.pre_inspection.get_status_display}}
                                     {% if obj.pre_inspection.status == 'ACCEPTED' %}
                                         <b>{{ obj.pre_inspection.updated_on }}</b>
                                         {% if obj.connection_disbursement.status == 'LEGAL_DOCUMENTS_PENDING' %}
@@ -125,8 +126,12 @@
                                             </a>
                                         {% endif %}
                                     {% else %}
-{#                                    {% if obj.pre_inspection.status != 'ACCEPTED' %}#}
-                                        {% if obj.pre_inspection.status != 'SUBMITTED' %}
+                                        {% if obj.pre_inspection.status != 'ACCEPTED' or obj.pre_inspection.status != 'SUBMITTED' %}
+                                            <a href="{% url 'ujjwala:whatsapp_pre_inspection_type_self' pk=obj.id %}" class="btn btn-success" >
+                                                <b> (Whatsapp Pre-Inspection Type Self)</b>
+                                            </a>
+                                        {% else %}
+                                            {{obj.pre_inspection.get_status_display}}
                                         {% endif %}
                                     {% endif %}
                                 {% else %}

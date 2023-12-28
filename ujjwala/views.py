@@ -117,10 +117,16 @@ class WhatsappPreInspectionTypeSelf(View):
 		application = UjjwalaV2Application.objects.filter(id=kwargs.get('pk')).first()
 
 		if not application:
-			return HttpResponse("Application Id {} does not exist".format(kwargs.get('pk')))
+			return render(
+				self.request, "ujjwala/response.html",
+				{"heading": "Pre-Inspection", "message": "Application Id {} does not exist".format(kwargs.get('pk'))}
+			)
 
 		if not is_pre_inspection_applicable(application.id):
-			return HttpResponse("Application Id {} not valid for Pre-Inspection".format(kwargs.get('pk')))
+			return render(
+				self.request, "ujjwala/response.html",
+				{"heading": "Pre-Inspection", "message": "Application Id {} not valid for Pre-Inspection".format(kwargs.get('pk'))}
+			)
 
 		pi_obj = PreInspection.objects.filter(parent_id=kwargs.get('pk')).first()
 		if not pi_obj:
@@ -129,18 +135,16 @@ class WhatsappPreInspectionTypeSelf(View):
 				status=PreInspectionStatusEnum.KITCHEN_PHOTO,
 				type=PreInspectionTypeEnum.SELF
 			)
-		if pi_obj.status not in (
-				PreInspectionStatusEnum.SUBMITTED, PreInspectionStatusEnum.ACCEPTED
-		):
-			pi_obj.parent.event_whatsapp_pre_inspection_type_self_admin(pi_obj.id)
-			return HttpResponse(
-				"Application Id {} Whatsapp Message Sent.".format(kwargs.get('pk'))
-			)
 
+		if pi_obj.status not in (PreInspectionStatusEnum.SUBMITTED, PreInspectionStatusEnum.ACCEPTED):
+			pi_obj.parent.event_whatsapp_pre_inspection_type_self_admin(pi_obj.id)
+			message = "Application Id {} Whatsapp Message Sent.".format(kwargs.get('pk'))
 		else:
-			return HttpResponse(
-				"Application Id {} not authorised for self inspection.".format(kwargs.get('pk'))
-			)
+			message = "Application Id {} not authorised for self inspection.".format(kwargs.get('pk'))
+
+		return render(
+			self.request, "ujjwala/response.html", {"heading": "Pre-Inspection", "message": message}
+		)
 
 
 # This View Shares Web Form Link To The Given Contact Number
