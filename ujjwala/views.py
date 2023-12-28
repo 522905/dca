@@ -189,8 +189,10 @@ class UjjwalaApplicationSharedLinkView(View):
 		application = UjjwalaV2Application.objects.filter(contact_mobile=data['contact_mobile']).first()
 		if application:
 			if not application.status == UjjwalaV2ApplicationStatus.DOCUMENTS_REUPLOAD:
-				return HttpResponse(
-					content="An application already exist with id: {}".format(application.id)
+				return render(
+					self.request, "ujjwala/response.html",
+					{"heading": "Ujjwala Application",
+					 "message": "An application already exist with id: {}".format(application.id)}
 				)
 		user = User.objects.filter(id=data['user']).first()
 		data.update({
@@ -234,8 +236,10 @@ class ShareSelfPreInspectionLink(View):
 		if application.pre_inspection.status in (
 				PreInspectionStatusEnum.SUBMITTED, PreInspectionStatusEnum.ACCEPTED
 		):
-			return HttpResponse(
-				"Pre-Inspection Status: {}".format(application.pre_inspection.status)
+			return render(
+				self.request, "ujjwala/response.html",
+				{"heading": "Pre Inspection",
+				 "message": "Pre-Inspection Status: {}".format(application.pre_inspection.status)}
 			)
 		else:
 			user = get_current_user()
@@ -243,9 +247,10 @@ class ShareSelfPreInspectionLink(View):
 				application.contact_mobile, user.id, user.username, application
 			)
 			if res:
-				return HttpResponse(
-					"Self Pre-Inspection Link Shared For Application Id: {}".format(id)
-				)
+				message = "Self Pre-Inspection Link Shared For Application Id: {}".format(id)
+			else:
+				message = "Self Pre-Inspection Link Could Not Be Shared For Application Id: {}".format(id)
+		return render(self.request, "ujjwala/response.html", {"heading": "Pre Inspection", "message": message})
 
 
 @method_decorator(login_required, 'dispatch')
@@ -307,16 +312,31 @@ class WhatsappUploadLegalForms(View):
 		if connection_disbursement:
 			if connection_disbursement.status == ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_PENDING:
 				application.event_legal_documents_upload_channel_whatsapp()
-				return HttpResponse(
-					"Application Id {} Form A B C sent.".format(kwargs.get('pk'))
+				return render(
+					self.request,
+					"ujjwala/response.html",
+					{
+						"heading": "Legal Documents",
+				        "message": "Application Id {} Form A B C sent.".format(kwargs.get('pk'))
+					}
 				)
 			else:
-				return HttpResponse(
-					"Application Id {} Form A B C Uploaded.".format(kwargs.get('pk'))
+				return render(
+					self.request,
+					"ujjwala/response.html",
+					{
+						"heading": "Legal Documents",
+				        "message": "Application Id {} Form A B C Uploaded.".format(kwargs.get('pk'))
+					}
 				)
 		else:
-			return HttpResponse(
-				"Application Id {} not valid state. Connection Disbursement not created.".format(kwargs.get('pk'))
+			return render(
+				self.request,
+				"ujjwala/response.html",
+				{
+					"heading": "Legal Documents",
+			        "message": "Application Id {} not valid state. Connection Disbursement not created.".format(kwargs.get('pk'))
+				}
 			)
 
 
