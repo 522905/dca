@@ -3249,6 +3249,15 @@ class GetEKYCStatusFromSDMS(View):
 
 	def dispatch(self, request, *args, **kwargs):
 		application = UjjwalaV2Application.objects.get(pk=kwargs.get('pk'))
+		if not application.consumer_id:
+			return render(
+				self.request,
+				"ujjwala/response.html",
+				{
+					"heading": "Update E-KYC Request",
+					"message": "Consumer Id Does Not Exist. Please Retry After Few Days (Pre-Suraksha Accepted)"
+				}
+			)
 		result = is_process_exist_in_camunda('process_get_ekyc_status_from_sdms', 'dca_id', application.id)
 		user = get_current_user()
 		if result == 0:
@@ -3257,7 +3266,8 @@ class GetEKYCStatusFromSDMS(View):
 					{
 						"dca_id": {"value": application.id, "type": "String"},
 						"consumer_id": {"value": application.consumer_id, "type": "String"},
-						"requested_by": {"value": f"{user.first_name} {user.last_name}", "type": "String"}
+						"requested_by": {"value": f"{user.first_name} {user.last_name}", "type": "String"},
+						"requested_by_id": {"value": f"{user.id}", "type": "String"},
 					}
 			}
 			res, process_id = start_process_in_camunda_v2('process_get_ekyc_status_from_sdms', variables)
