@@ -3226,12 +3226,14 @@ class GetEKYCStatusFromSDMS(View):
 	def dispatch(self, request, *args, **kwargs):
 		application = UjjwalaV2Application.objects.get(pk=kwargs.get('pk'))
 		result = is_process_exist_in_camunda('process_get_ekyc_status_from_sdms', 'dca_id', application.id)
+		user = get_current_user()
 		if result == 0:
 			variables = {
 				"variables":
 					{
 						"dca_id": {"value": application.id, "type": "String"},
-						"consumer_id": {"value": application.consumer_id, "type": "String"}
+						"consumer_id": {"value": application.consumer_id, "type": "String"},
+						"requested_by": {"value": f"{user.first_name} {user.last_name}", "type": "String"}
 					}
 			}
 			res, process_id = start_process_in_camunda_v2('process_get_ekyc_status_from_sdms', variables)
@@ -3641,6 +3643,7 @@ class UjjwalaApplicationServiceRequestView(FormView):
 			obj.remarks = data['request_remarks']
 		elif data['request_action'] == 'APPROVED':
 			obj.status = ServiceRequestTypeStatusEnum.SUCCESS
+		obj.save()
 
 		res = requests.get('http://192.168.171.15:38080/engine-rest/task',
 		                   params={'processInstanceId': f'{obj.camunda_process_id}',
@@ -3653,5 +3656,4 @@ class UjjwalaApplicationServiceRequestView(FormView):
 		)
 		res.raise_for_status()
 
-		obj.save()
 		return redirect(self.get_success_url())
