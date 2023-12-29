@@ -19,7 +19,8 @@ from otp.models import Otp
 from ujjwala.communication_functions import send_whatsapp_message, send_sms
 from ujjwala.enums import UjjwalaV2ApplicationStatus, ConnectionDisbursementStatusEnum, \
 	RejectionTypeEnum, PreInspectionTypeEnum, RoboSdmsDedeupStatusEnum, NicClearedCustomerRemarksEnum, \
-	PrintDocumentsTypeEnum, InstallationTypeEnum, UjjwalaProductEnum, product_quantity_map, SDMSMobileNumberEnum
+	PrintDocumentsTypeEnum, InstallationTypeEnum, UjjwalaProductEnum, product_quantity_map, SDMSMobileNumberEnum, \
+	PreInspectionRejectionReasonsEnum
 from ujjwala.models import UjjwalaApplicationDocumentsEnum
 from ujjwala.ujjwala_functions import __get_ref_no__, id_generator, valid_file_uploaded, send_otp_using_channel
 from django.utils.timezone import now
@@ -864,17 +865,26 @@ class PreInspectionReviewAdminForm(forms.Form):
 			('REJECTED', 'Rejected')
 		]
 	)
-	rejected_reason = forms.CharField(
-		widget=forms.TextInput, max_length=255, label='Rejected Reason', required=False
-	)
+	rejected_reasons = forms.MultipleChoiceField(
+			choices=PreInspectionRejectionReasonsEnum.choices,
+			widget=forms.CheckboxSelectMultiple,
+		)
+	# rejected_reason = forms.CharField(
+	# 	widget=forms.TextInput, max_length=255, label='Rejected Reason', required=False
+	# )
 
 	def clean(self):
 		data = self.cleaned_data
 		if data:
-			if data.get('review_status', '') == 'REJECTED' and not data['rejected_reason']:
-				raise forms.ValidationError("Please enter a reason for rejection.")
+			if data.get('review_status', '') == 'REJECTED' and not data['rejected_reasons']:
+				raise forms.ValidationError("Please select reasons for rejection.")
 			data.update({'description': '{}: {}'.format(
-					data.get('review_status'), data.get('rejected_reason')
+					data.get('review_status'),
+					",".join(
+						[
+							PreInspectionRejectionReasonsEnum.__dict__.get('_value2label_map_').get(i) for i in data.get('rejected_reasons')
+						]
+					)
 				)
 			})
 		return data
