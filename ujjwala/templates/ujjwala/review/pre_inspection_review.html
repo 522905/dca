@@ -61,8 +61,10 @@
     <form method="post" id="form" >
         {% csrf_token %}
         <div class="card">
-			<div class="p-2">
+            <div class="card-header">
                 <p>Review Pre-Inspection</p>
+            </div>
+			<div class="card-body">
                 {% form form=form %}{% endform %}
             </div>
 			<div class="card-footer p-1">
@@ -87,5 +89,8 @@
     .desktop_review .xzoom-thumbs img{ margin:0 !important; float: left; width: 100%; }
     .desktop_review .xzoom-thumbs{ float: left; width: 100%;}
     .desktop_review .xzoom-thumbs .form_lable{  font-size: 12px !important; height: 32px !important; line-height: 22px !important;}
+    #id_review_status {
+        display: none;
+    }
   </style>
 {% endblock %}
