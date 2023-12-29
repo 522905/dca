@@ -22,7 +22,7 @@ from ujjwala.admin_forms import DisbursementDriveAdminForm
 from .enums import PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, DisbursementDriveStatusEnum
 from .models import UjjwalaV2Application, FamilyMembers, UjjwalaApplicationDocuments, UjjwalaV2ApplicationStatus, \
     UserDocuments, PreInspectionDocuments, PreInspection, ConnectionDisbursementDocuments, ConnectionDisbursement, \
-    ConnectionDisbursementInvitation, DisbursementDrive
+    ConnectionDisbursementInvitation, DisbursementDrive, EkycLogs
 from .ujjwala_functions import download_ujjwala_documents, download_ujjwala_physical_legal_docs, \
     re_create_legal_docs_pdf
 from .views import SendInvitationView
@@ -463,6 +463,21 @@ class StateLogAdmin(ExportActionMixin, admin.ModelAdmin):
         return super().get_queryset(
             request
         ).order_by(F('timestamp').desc())
+
+
+@admin.register(EkycLogs)
+class EkycLogsAdmin(ExportActionMixin, admin.ModelAdmin):
+    list_display = [
+        'get_name', 'requested_by', 'ekyc_date'
+    ]
+
+    list_filter = [
+        'requested_by', 'ekyc_date'
+    ]
+
+    @admin.display(ordering='parent__name', description='Name')
+    def get_name(self, obj):
+        return obj.parent.name
 
 
 @admin.register(DisbursementDrive)
