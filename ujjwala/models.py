@@ -25,7 +25,7 @@ from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMo
 	ConnectionDisbursementStatusEnum, PreInspectionTypeEnum, SchemeOnboardingStatusEnum, NicClearedCustomerRemarksEnum, \
 	DisbursementDriveStatusEnum, InstallationTypeEnum, product_quantity_map, UjjwalaV2ApplicationAvailabilityStatus, \
 	UjjwalaV2ApplicationAvailabilityChannel, UjjwalaProductEnum, ConnectionDisbursementInvitationEnum, \
-	SDMSMobileNumberEnum, FilledByFilterEnum, SVSDMSStatusEnum
+	SDMSMobileNumberEnum, FilledByFilterEnum, SVSDMSStatusEnum, PreInspectionRejectionReasonsEnum
 from ujjwala.forms import ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
 	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm, NewRelationCreated, \
@@ -1010,6 +1010,7 @@ class PreInspection(models.Model):
 	)
 	camunda_process_id = models.CharField(max_length=128, null=True, blank=True)
 	camunda_error_message = models.TextField(null=True, blank=True)
+	rejected_reasons = models.JSONField(null=True, blank=True)
 
 	def mechanic_name(self):
 		if self.mechanic:
@@ -1240,7 +1241,10 @@ class PreInspection(models.Model):
 			)
 			transaction.on_commit(create_job_function)
 		else:
-			self.parent.event_whatsapp_pre_inspection_reject(self.id, kwargs.get('rejected_reason'))
+			rejected_reasons = ",".join(
+				[PreInspectionRejectionReasonsEnum.__dict__.get('_value2label_map_').get(i) for i in
+				 kwargs.get('rejected_reasons')])
+			self.parent.event_whatsapp_pre_inspection_reject(self.id, rejected_reasons)
 
 
 	# for doc in j.documents.filter(link__contains="tus."):
@@ -1798,6 +1802,15 @@ class ConnectionDisbursementInvitation(models.Model):
 		<a href="{}" target="blank">View File</a>
 		'''.format(self.sv_link)
 		return mark_safe(html)
+
+
+class EkycLogs(models.Model):
+	parent = models.ForeignKey(
+		UjjwalaV2Application, on_delete=models.CASCADE, related_name='ujjwala_ekyc_log'
+	)
+	requested_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
+	ekyc_date = models.DateTimeField(null=True)
+
 
 def dummy():
 	from ujjwala.models import FamilyMembers

@@ -1,15 +1,53 @@
 {% extends "material/frontend/base_module.html" %}
 {% load static %}
-{% block content %}
 {% load material_form %}
+{% block content %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/xzoom.css' %}" media="all" />
 <link rel="stylesheet" href="{% static '/css/style.css' %}" >
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <style>
     .hidden-field{ display: none;}
 </style>
 <div class="form_label p-2">
     {% include 'ujjwala/disbursement/custom-template/application_detail_template.html' %}
+    <div id="accordion">
+        <div class="card">
+          <div class="card-header" id="headingOne">
+            <h5 class="mb-0">
+              <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    Family Members Aadhar Details</b>
+              </button>
+            </h5>
+          </div>
+      
+          <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+              <div class="card-body">
+                  <div class="row m-0">
+                        {% for fm in obj.parent.family_members.all %}
+                            <div class="col pr-0 pl-1">
+                                <p>{{ fm.relation }} <b>{{ fm.name }}</b></p>
+            {#                    <img src=" {{obj.parent.uid_front_link}}">#}
+                                <img src="{{ fm.uid_front_link }}" style="max-height: 100px;object-fit: contain; "/>
+                                <img src="{{ fm.uid_back_link }}" style="max-height: 100px;object-fit: contain; "/>
+            {#                    <p>{{obj.parent.uid_front_link}}</p>#}
+                            </div>
+                        {% endfor %}
+                    </div>
+              </div>
+          </div>
+        </div>
+{#        <div class="card">#}
+{#          <div class="card-header" id="headingTwo">#}
+{#            <h5 class="mb-0">#}
+{#              <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">#}
+{#               Family Member AAdhaar detail#}
+{#              </button>#}
+{#            </h5>#}
+{#          </div>#}
+{#        </div>#}
+    </div>
     <div class="mobile_review form_abc">
         <div class="row m-0">
             <div class="col-4 pl-1 pr-1">
@@ -61,8 +99,10 @@
     <form method="post" id="form" >
         {% csrf_token %}
         <div class="card">
-			<div class="p-2">
+            <div class="card-header">
                 <p>Review Pre-Inspection</p>
+            </div>
+            <div class="card-body">
                 {% form form=form %}{% endform %}
             </div>
 			<div class="card-footer p-1">

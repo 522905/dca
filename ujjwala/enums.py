@@ -132,6 +132,32 @@ class UjjwalaV2ApplicationAvailabilityChannel(models.TextChoices):
 	USER = 'USER', 'User'
 
 
+class PreInspectionRejectionReasonsEnum(models.TextChoices):
+	CONDITION_HAS_VEHICLE = 'CONDITION_HAS_VEHICLE', 'आपके पास मोटर चालित 2/3/4 व्हिलर वाहन है'
+	CONDITION_HAS_REFRIGERATOR = 'CONDITION_HAS_REFRIGERATOR', 'आप एक रेफ़्रिजरेटर के मालिक है'
+	CONDITION_HAS_14KG_CYLINDER = 'CONDITION_HAS_14KG_CYLINDER', 'आपके पास पहले से 14.2 KG का एलपीजी सिलिंडर है'
+	CONDITION_HAS_TWO_BURNER_STOVE = 'CONDITION_HAS_TWO_BURNER_STOVE', 'आपके पास पहले से 2 बर्नर वाला चूल्हा है'
+	CONDITION_NO_KITCHEN_PHOTO = 'CONDITION_NO_KITCHEN_PHOTO', 'आपने रसोई घर की फोटो अपलोड नही की है'
+	CONDITION_NO_MAIN_GATE_PHOTO = 'CONDITION_NO_MAIN_GATE_PHOTO', 'आपने मेन गेट की फोटो अपलोड नही की है'
+	CONDITION_MAIN_GATE_BLURRY_PHOTO = 'CONDITION_MAIN_GATE_BLURRY_PHOTO', 'आपकी रसोई घर और मेन गेट की फोटो क्लियर नही है'
+	CONDITION_NO_STOVE_PLATFORM = 'CONDITION_NO_STOVE_PLATFORM', 'आपके पास चूल्हा रखने के लिए उपयुक्त स्थान नही है'
+	CONDITION_NO_KITCHEN_MAIN_GATE_PHOTO = 'CONDITION_NO_KITCHEN_MAIN_GATE_PHOTO', 'आपने अपनी फोटो अपलोड की है कृपया रसोई घर ओर मेन गेट की फोटो अपलोड करे'
+	CONDITION_NO_SAFETY_GUIDE = 'CONDITION_NO_SAFETY_GUIDE', 'आपके पास सेफ्टी गाइड नहीं लगाया है'
+
+
+PreInspectionRejectionReasons = (
+	('CONDITION_HAS_VEHICLE', 'आपके पास मोटर चालित 2/3/4 व्हिलर वाहन है'),
+	('CONDITION_HAS_REFRIGERATOR', 'आप एक रेफ़्रिजरेटर के मालिक है'),
+	('CONDITION_HAS_14KG_CYLINDER', 'आपके पास पहले से 14.2 KG का एलपीजी सिलिंडर है'),
+	('CONDITION_HAS_TWO_BURNER_STOVE', 'आपके पास पहले से 2 बर्नर वाला चूल्हा है'),
+	('CONDITION_NO_KITCHEN_PHOTO', 'आपने रसोई घर की फोटो अपलोड नही की है'),
+	('CONDITION_NO_MAIN_GATE_PHOTO', 'आपने मेन गेट की फोटो अपलोड नही की है'),
+	('CONDITION_MAIN_GATE_BLURRY_PHOTO', 'आपकी रसोई घर और मेन गेट की फोटो क्लियर नही है'),
+	('CONDITION_NO_STOVE_PLATFORM', 'आपके पास चूल्हा रखने के लिए उपयुक्त स्थान नही है'),
+	('CONDITION_NO_KITCHEN_MAIN_GATE_PHOTO', 'आपने अपनी फोटो अपलोड की है कृपया रसोई घर ओर मेन गेट की फोटो अपलोड करे'),
+	('CONDITION_NO_SAFETY_GUIDE', 'आपके पास सेफ्टी गाइड नहीं लगाया है'),
+)
+
 class UjjwalaV2ApplicationStatus(models.TextChoices):
 	DOCUMENTS_UPLOADED = 'DOCUMENTS_UPLOADED', 'Documents Uploaded'
 	DOCUMENTS_REUPLOAD = 'DOCUMENTS_REUPLOAD', 'Documents Reupload'

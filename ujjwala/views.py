@@ -35,7 +35,8 @@ from ujjwala.camunda_functions import start_ujjwala_sv_process_in_camunda, start
 	evaluate_and_start_ujjwala_sv_process_in_camunda, start_process_in_camunda_v2, is_process_exist_in_camunda
 from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
 	PreInspectionTypeEnum, DisbursementDriveStatusEnum, UjjwalaApplicationDocumentsEnum, NicClearedCustomerRemarksEnum, \
-	UjjwalaV2ApplicationAvailabilityChannel, ConnectionDisbursementInvitationEnum, FilledByFilterEnum
+	UjjwalaV2ApplicationAvailabilityChannel, ConnectionDisbursementInvitationEnum, FilledByFilterEnum, \
+	PreInspectionRejectionReasonsEnum
 from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm, \
 	PreInspectionGenerateOtpForm, PreInspectionValidateOtpForm, \
 	KitchenPreInspectionForm, AudioOnSafetyForm, PreviewPreInspectionForm, PreInspectionAllocatedGenerateOtpForm, \
@@ -460,9 +461,10 @@ class PreInspectionReviewView(FormView, ApplicationView):
 		data = form.cleaned_data
 		obj.pre_inspection_review(
 			review_status=data['review_status'],
-			rejected_reason=data['rejected_reason'],
+			# rejected_reason=data['rejected_reason'],
 			by=get_current_user(),
-			description='{} - {}'.format(data.get('review_status'), data.get('rejected_reason' ''))
+			description=data['description'],
+			rejected_reasons=data['rejected_reasons']
 		)
 		obj.save()
 		return redirect(self.get_success_url())
