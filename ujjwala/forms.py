@@ -867,7 +867,7 @@ class PreInspectionReviewAdminForm(forms.Form):
 	)
 	rejected_reasons = forms.MultipleChoiceField(
 			choices=PreInspectionRejectionReasonsEnum.choices,
-			widget=forms.CheckboxSelectMultiple,
+			widget=forms.CheckboxSelectMultiple, required=False
 		)
 	# rejected_reason = forms.CharField(
 	# 	widget=forms.TextInput, max_length=255, label='Rejected Reason', required=False
@@ -878,15 +878,16 @@ class PreInspectionReviewAdminForm(forms.Form):
 		if data:
 			if data.get('review_status', '') == 'REJECTED' and not data['rejected_reasons']:
 				raise forms.ValidationError("Please select reasons for rejection.")
-			data.update({'description': '{}: {}'.format(
-					data.get('review_status'),
-					",".join(
-						[
-							PreInspectionRejectionReasonsEnum.__dict__.get('_value2label_map_').get(i) for i in data.get('rejected_reasons')
-						]
-					)
-				)
-			})
+
+			rejected_reasons = data.get('rejected_reasons')
+
+			if rejected_reasons:
+				rejected_reasons = ",".join(
+							[
+								PreInspectionRejectionReasonsEnum.__dict__.get('_value2label_map_').get(i) for i in data.get('rejected_reasons')
+							]
+						)
+			data.update({'description': '{}: {}'.format(data.get('review_status'), rejected_reasons)})
 		return data
 
 
