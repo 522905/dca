@@ -1485,6 +1485,14 @@ def ujjwala_application_reject_reason_log(application_id):
 		return description.description
 
 
+def ujjwala_application_state_logs(application_id, content_type_id):
+	from django_fsm_log.models import StateLog
+
+	return StateLog.objects.filter(
+		object_id=application_id, content_type_id=content_type_id
+	).order_by('-id')
+
+
 def is_pre_inspection_applicable(application_id):
 	from ujjwala.models import UjjwalaV2Application
 

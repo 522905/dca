@@ -5,13 +5,14 @@
 <link rel="stylesheet" href="{% static '/css/style.css' %}" >
 <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
-<div class="p-2 pt-0 form_label application_form" style="width: 100%;">
-    {% if obj %}
+{% if obj %}
+    <div class="p-2 pt-0 form_label application_form" style="width: 100%;">
         <div class="card">
             <div class="status_block">
                 <div class="main-header">
                     <span class="text-black">Application Id: </span>
-                    <span class="float-right"><b><a data-turbolinks="false" href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">{{ obj.id }}</a></b></span>
+                    <span class="float-right"><b><a data-turbolinks="false" href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">{{ obj.id }}</a></b>
+                    <input type="button" value="Back" onclick="history.back()" /></span>
                 </div>
             </div>
             <div class="card-body pb-0 p-0 list_block">
@@ -97,16 +98,28 @@
                             </div>
                         </td>
                     </tr>
-                    {% if obj.status == 'APPLICATION_REJECTED' %}
-                        <tr>
-                            <th colspan="2"><b>Rejected For: </b> {{ rejected_reason }}</th>
-                        </tr>
-                    {% endif %}
                 </table>
             </div>
         </div>
-    {% endif %}
-</div>
+        <div class="card">
+            <div class="card-header">
+                <p>Logs :</p>
+            </div>
+            <div>
+                <table>
+                    {% for state_log in state_logs %}
+                        <tr>
+                            <td width="25%">{{ state_log.state }}</td><td>{{ state_log.description }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <div class="card-footer" style="background-color: lightgray">
+                <p class="text-right"><input type="button" value="Back" onclick="history.back()"/></p>
+            </div>
+        </div>
+    </div>
+{% endif %}
 <style>
     .status_block .main-header{
         border-top: 1px solid #ccc;

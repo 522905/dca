@@ -58,7 +58,7 @@ from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_
 	send_ujjwala_application_whatsapp_link_v2, download_audit_documents_for_ids, is_member_of_disbursement_drive, \
 	get_current_user_disbursement_drive, is_member_of_second_cylinder_delivery, \
 	send_ujjwala_self_pre_inspection_share_link, is_member_of_reviewer_group, send_ujjwala_share_on_social_media_link, \
-	send_otp_using_channel, can_resolve_service_request
+	send_otp_using_channel, can_resolve_service_request, ujjwala_application_state_logs
 from utils.enums import RoboSdmsDedeupStatusEnum
 from utils.global_functions import unsign_data_base64, sign_data_base64
 
@@ -461,7 +461,6 @@ class PreInspectionReviewView(FormView, ApplicationView):
 		data = form.cleaned_data
 		obj.pre_inspection_review(
 			review_status=data['review_status'],
-			# rejected_reason=data['rejected_reason'],
 			by=get_current_user(),
 			description=data['description'],
 			rejected_reasons=data['rejected_reasons']
@@ -1366,8 +1365,10 @@ class UjjwalaApplicationCustomerProfileView(TemplateView):
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
+		obj = self.get_object()
 		context.update({
-			"obj": self.get_object()
+			"obj": obj,
+			"state_logs": ujjwala_application_state_logs(obj.id, 13)
 		})
 		return context
 

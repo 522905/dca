@@ -57,7 +57,9 @@
                 <div class="status_block">
                     <div class="main-header">
                         <span class="text-black">Application Id: </span>
-                        <span class="float-right" data-turbolinks="false"><b><a href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">{{ obj.id }}</a></b></span>
+                        <span class="float-right" data-turbolinks="false"><b><a href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">{{ obj.id }}</a></b>
+                        <input type="button" value="Back" onclick="history.back()"/>
+                        </span>
                     </div>
                 </div>
                 <div class="card-body pb-0 p-0 list_block">
@@ -102,8 +104,7 @@
                 <div class="status_block">
                     <div class="main-header">
                         <span class="text-black">Status:</span>
-                        <span class="float-right"><b>{{obj.get_status_display}} </b></span>
-
+                        <span class="float-right"><b>{{obj.get_status_display}} </b><a href="{% url 'ujjwala:ujjwala_customer_profile' pk=obj.id %}" style="font-size: 13pt"><b>(View Details)</b></a></span>
                     </div>
                     <table class="table table-bordred" style="margin-bottom: 0;">
                         <tr>
@@ -178,8 +179,11 @@
                                         <b style="color:cornflowerblue"><i>Change Phone Number</i></b></a>
                                 </th>
                                 <th>
-                                    <a class="text_link" href="{% url 'ujjwala:update_bank_details' pk=obj.id %}">
+                                    <a class="text_link" href="{% url 'ujjwala:update_bank_details' pk=obj.id %}" >
                                         <b style="color:cornflowerblue"><i>Update Bank Details</i></b></a>
+                                    {% if obj.status == 'READY_FOR_DISBURSEMENT' %}
+                                        <a href="https://dca.arungas.com/ujjwala/portal/disbursement/list/?application_id={{ obj.id }}" class="btn btn-success float-right">Create Walk-In</a>
+                                    {% endif %}
                                 </th>
                             </tr>
 {#                        <tr>#}
@@ -196,11 +200,6 @@
                                 <b style="color:cornflowerblue"><i>Customer Remarks Update</i></b></a></th>
                         </tr>
                         {% endif %}
-                        <tr>
-                            <td colspan="2">
-                                <a href="{% url 'ujjwala:ujjwala_customer_profile' pk=obj.id %}"><b>View Ujjwala Customer Profile</b></a>
-                            </td>
-                        </tr>
 
                         {% if obj.pre_inspection.status != 'ACCEPTED' and obj.status != 'APPLICATION_REJECTED' %}
                             {% if obj.pre_inspection.status != 'SUBMITTED' %}
@@ -211,16 +210,14 @@
                                 </tr>
                             {% endif %}
                         {% endif %}
-                        {% if obj.status == 'READY_FOR_DISBURSEMENT' %}
-                            <tr>
-                                <td>
-
-                                </td>
-                                <td>
-                                    <a href="https://dca.arungas.com/ujjwala/portal/disbursement/list/?application_id={{ obj.id }}" class="btn btn-success float-right">Create Walk-In</a>
-                                </td>
-                            </tr>
-                        {% endif %}
+                        <tr>
+                            <td>
+                                <span style="font-size: 10pt; font-weight: bold;">For More Info: Click View Details In Status</span>
+                            </td>
+                            <td>
+                                <p class="text-right"><input type="button" value="Back" onclick="history.back()"/></p>
+                            </td>
+                        </tr>
                     </table>
                 </div>
             </div>
