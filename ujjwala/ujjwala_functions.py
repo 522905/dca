@@ -1679,6 +1679,10 @@ def is_member_of_reviewer_group(user):
 	return user.has_perm('ujjwala.is_part_of_reviewer_group')
 
 
+def is_front_end_staff(user):
+	return user.has_perm('ujjwala.is_front_end_staff')
+
+
 def can_resolve_service_request(user):
 	return user.has_perm('service_request.can_resolve_service_request')
 

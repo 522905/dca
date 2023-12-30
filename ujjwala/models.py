@@ -137,6 +137,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			("second_cylinder_delivery", "Second Cylinder Delivery"),
 			("post_installation", "Post Installation"),
 			("is_part_of_reviewer_group", "Is Part of Reviewer Group"),
+			("is_front_end_staff", "Is Part of Front End Staff"),
 		)
 
 	def pre_inspection_accepted(self):

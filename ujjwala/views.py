@@ -58,7 +58,7 @@ from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_
 	send_ujjwala_application_whatsapp_link_v2, download_audit_documents_for_ids, is_member_of_disbursement_drive, \
 	get_current_user_disbursement_drive, is_member_of_second_cylinder_delivery, \
 	send_ujjwala_self_pre_inspection_share_link, is_member_of_reviewer_group, send_ujjwala_share_on_social_media_link, \
-	send_otp_using_channel, can_resolve_service_request, ujjwala_application_state_logs
+	send_otp_using_channel, can_resolve_service_request, ujjwala_application_state_logs, is_front_end_staff
 from utils.enums import RoboSdmsDedeupStatusEnum
 from utils.global_functions import unsign_data_base64, sign_data_base64
 
@@ -902,8 +902,10 @@ class UjjwalaApplicationStatusView(TemplateView):
 	def get(self, request, *args, **kwargs):
 		current_user: User = get_current_user()
 
+		front_end_staff = is_front_end_staff(current_user)
+
 		if current_user.is_staff or DisbursementDrive.objects.filter(status='ACTIVE',
-		                                                             team_members=current_user).exists():
+		                                                             team_members=current_user).exists() or front_end_staff:
 			qs = UjjwalaV2Application.objects.all()
 		else:
 			qs = UjjwalaV2Application.objects.filter(Q(filled_by__isnull=True) | Q(filled_by=current_user))
