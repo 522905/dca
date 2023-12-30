@@ -1,11 +1,7 @@
-
-
-
 {% extends "material/frontend/base_module.html" %}
 {% load static %}
+{% load comments %}
 {% block page_title %}Application Status Search {% endblock %}
-
-
 {% block content %}
 <link rel="stylesheet" href="{% static '/css/style.css' %}" >
 <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
@@ -219,10 +215,12 @@
                             </td>
                         </tr>
                     </table>
+                    {% render_comment_list for obj %}
                 </div>
             </div>
+            {% render_comment_form for obj %}
         {% endif %}
-</div>
+    </div>
 <style>
     .status_block .main-header{     
         border-top: 1px solid #ccc;

@@ -30,6 +30,7 @@ urlpatterns = [
     path(r'retail-customers/', include('retail_customers.urls')),
     path(r'teams/', include('teams.urls')),
     path(r'sdms/', include('sdms.urls')),
+    path(r'comments/', include('django_comments.urls')),
     # path(r'', RedirectView.as_view(url='https://www.arungas.com/info', permanent=False)),
     # path(r'ujjwala/', include('ujjwala.urls')),
     # path(r'', RedirectView.as_view(url='/ujjwala/portal/application-status-search/', permanent=False)),
