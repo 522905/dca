@@ -2,7 +2,7 @@
 {% load static %}
 {% block page_title %}Ujjwala Customer Profile{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="{% static '/css/style.css' %}" >git
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
 <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
 {% if obj %}
@@ -36,7 +36,7 @@
                         </table>
                     </div>
                     <div class="col-4 p-0">
-                        <img class="p-1" src="{{ obj.document_self }}" style="height: 150px; object-fit:contain; width: 100%;">
+                        <img class="p-1" src="{{ obj.document_self }}" style="height: 125px; object-fit:contain; width: 100%;">
                     </div>
                 </div>
             </div>
@@ -46,6 +46,42 @@
                     <span class="float-right"><b>{{obj.get_status_display}}</b></span>
                 </div>
                 <table class="table table-bordred" style="margin-bottom: 0;">
+                    <tr><td colspan="2">Documents: </td></tr>
+                    <tr>
+                        <td colspan="2">
+                            <div style="overflow: scroll; display: flex;">
+                                {% for doc in obj.documents.all %}
+                                    <div>
+                                        <a href="{{ doc.link }}">
+                                            <img class="p-1" src="{{ doc.link }}" style="height: 100px; object-fit:contain; width: 100%;" alt="{{ doc.type }}">
+                                        </a>
+                                        <p style="text-align: center">{{ doc.get_type_display }}</p>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% for fm in obj.family_members.all %}
+                        <tr><td colspan="2">Family Members {{ fm.name }} {{ fm.dob }} {{ fm.relation }}: </td></tr>
+                        <tr>
+                            <td colspan="2">
+                                <div style="overflow: scroll; display: flex;">
+                                    <div>
+                                        <a href="{{ fm.uid_front_link }}">
+                                            <img class="p-1" src="{{ fm.uid_front_link }}" style="height: 100px; object-fit:contain; width: 100%;" alt="{{ doc.type }}">
+                                        </a>
+                                        <p style="text-align: center">Front UID</p>
+                                    </div>
+                                    <div>
+                                        <a href="{{ fm.uid_back_link }}">
+                                            <img class="p-1" src="{{ fm.uid_back_link }}" style="height: 100px; object-fit:contain; width: 100%;" alt="{{ doc.type }}">
+                                        </a>
+                                        <p style="text-align: center">Back UID</p>`
+                                    </div>
+                                </div>
+                            </td>
+                    </tr>
+                    {% endfor %}
                     <tr>
                         <th>Pre-Inspection Status: </th>
                         <td>
@@ -73,6 +109,7 @@
                             </div>
                         </td>
                     </tr>
+
                     <tr>
                         <th>Connection Disbursement Status: </th>
                         <td>
@@ -88,7 +125,7 @@
                                     {% for doc in obj.connection_disbursement.documents.all %}
                                         <div>
                                             <a href="{{ doc.link }}">
-                                                <img class="p-1" src="{{ doc.link }}" style="height: 150px; object-fit:contain; width: 100%;" alt="{{ doc.type }}">
+                                                <img class="p-1" src="{{ doc.link }}" style="height: 100px; object-fit:contain; width: 100%;" alt="{{ doc.type }}">
                                             </a>
                                             <p style="text-align: center">{{ doc.get_type_display }}</p>
                                         </div>
