@@ -1212,35 +1212,37 @@ class PreInspection(models.Model):
 	)
 	def pre_inspection_review(self, *args, **kwargs):
 		if kwargs.get('review_status') == 'ACCEPTED':
-			ConnectionDisbursement.objects.create(
-				parent=self.parent,
-				mechanic=self.mechanic,
-				pending_quantity=product_quantity_map.get(self.parent.product, 0)
-			)
-			# Bucket Name: ujjwaladocuments
-			physical_legal_document = download_ujjwala_physical_legal_docs(self.parent)
-			upload_url = upload_file_to_minio_bucket(
-				physical_legal_document,
-				"ujjwaladocuments",
-				"ujjwala_{}_physical_legal_document".format(self.parent_id)
-			)
-			PreInspectionDocuments.objects.create(
-				type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT,
-				link=upload_url,
-				parent=self
-			)
-
 			self.parent.latitude = self.latitude
 			self.parent.longitude = self.longitude
 			self.parent.accuracy = self.accuracy
 			self.parent.save()
-			self.parent.event_legal_documents_upload_channel_whatsapp()
-			create_job_function = partial(
-				django_rq.enqueue,
-				"ujjwala.jobs.is_application_ready_for_disbursement",
-				args=(self.parent.id,)
-			)
-			transaction.on_commit(create_job_function)
+
+			if self.parent.status != UjjwalaV2ApplicationStatus.AUDIT_APPLICATION:
+				ConnectionDisbursement.objects.create(
+					parent=self.parent,
+					mechanic=self.mechanic,
+					pending_quantity=product_quantity_map.get(self.parent.product, 0)
+				)
+				# Bucket Name: ujjwaladocuments
+				physical_legal_document = download_ujjwala_physical_legal_docs(self.parent)
+				upload_url = upload_file_to_minio_bucket(
+					physical_legal_document,
+					"ujjwaladocuments",
+					"ujjwala_{}_physical_legal_document".format(self.parent_id)
+				)
+				PreInspectionDocuments.objects.create(
+					type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT,
+					link=upload_url,
+					parent=self
+				)
+
+				self.parent.event_legal_documents_upload_channel_whatsapp()
+				create_job_function = partial(
+					django_rq.enqueue,
+					"ujjwala.jobs.is_application_ready_for_disbursement",
+					args=(self.parent.id,)
+				)
+				transaction.on_commit(create_job_function)
 		else:
 			rejected_reasons = ",".join(
 				[PreInspectionRejectionReasonsEnum.__dict__.get('_value2label_map_').get(i) for i in
