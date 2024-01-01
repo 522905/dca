@@ -52,10 +52,8 @@
             <div class="card">
                 <div class="status_block">
                     <div class="main-header">
-                        <span class="text-black">Application Id: </span>
-                        <span class="float-right" data-turbolinks="false"><b><a href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">{{ obj.id }}</a></b>
-                        <input type="button" value="Back" onclick="history.back()"/>
-                        </span>
+                        <span class="text-black"><input type="button" value="Back" onclick="history.back()"/> Application Id: </span>
+                        <span class="float-right" data-turbolinks="false"><b><a href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">{{ obj.id }}</a></b></span>
                     </div>
                 </div>
                 <div class="card-body pb-0 p-0 list_block">
