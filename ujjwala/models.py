@@ -33,7 +33,7 @@ from ujjwala.forms import ConnectionStatusApproved, ApplicationRejected, \
 	ReleaseApplicationForm, CompleteDisbursementDriveForm, \
 	InstallationReviewAdminForm, LegalDocumentsAcceptedToPendingAdminForm, UpdateAddressForm, ReviewUpdatedAddressForm
 from ujjwala.ujjwala_functions import download_ujjwala_physical_legal_docs, \
-	fsm_custom_audit_points_description
+	fsm_custom_audit_points_description, re_create_legal_docs
 from utils.global_functions import upload_file_to_minio_bucket, old_address_to_description, \
 	old_walk_in_to_description
 
@@ -870,32 +870,34 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 
 		if self.pre_inspection:
 			if self.pre_inspection.status == PreInspectionStatusEnum.ACCEPTED:
+				if self.connection_disbursement:
+					re_create_legal_docs(self)
+				else:
+					ConnectionDisbursement.objects.create(
+						parent=self,
+						mechanic=self.pre_inspection.mechanic,
+						pending_quantity=product_quantity_map.get(self.product, 0)
+					)
+					# Bucket Name: ujjwaladocuments
+					physical_legal_document = download_ujjwala_physical_legal_docs(self)
+					upload_url = upload_file_to_minio_bucket(
+						physical_legal_document,
+						"ujjwaladocuments",
+						"ujjwala_{}_physical_legal_document".format(self.id)
+					)
+					PreInspectionDocuments.objects.create(
+						type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT,
+						link=upload_url,
+						parent=self.pre_inspection
+					)
 
-				ConnectionDisbursement.objects.create(
-					parent=self,
-					mechanic=self.pre_inspection.mechanic,
-					pending_quantity=product_quantity_map.get(self.product, 0)
-				)
-				# Bucket Name: ujjwaladocuments
-				physical_legal_document = download_ujjwala_physical_legal_docs(self)
-				upload_url = upload_file_to_minio_bucket(
-					physical_legal_document,
-					"ujjwaladocuments",
-					"ujjwala_{}_physical_legal_document".format(self.id)
-				)
-				PreInspectionDocuments.objects.create(
-					type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT,
-					link=upload_url,
-					parent=self.pre_inspection
-				)
-
-				self.event_legal_documents_upload_channel_whatsapp()
-				create_job_function = partial(
-					django_rq.enqueue,
-					"ujjwala.jobs.is_application_ready_for_disbursement",
-					args=(self.id,)
-				)
-				transaction.on_commit(create_job_function)
+					self.event_legal_documents_upload_channel_whatsapp()
+					create_job_function = partial(
+						django_rq.enqueue,
+						"ujjwala.jobs.is_application_ready_for_disbursement",
+						args=(self.id,)
+					)
+					transaction.on_commit(create_job_function)
 
 	@fsm_log_description
 	@fsm_log_by
