@@ -856,7 +856,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		field=status,
 		source=UjjwalaV2ApplicationStatus.AUDIT_APPLICATION,
 		target=GET_STATE(
-			lambda self, **kwargs: self.last_execution_state,
+			lambda self, **kwargs: get_last_valid_status_for_application(self.id),
 		),
 		custom=dict(
 			short_description='Audit Accepted', admin=True,
