@@ -3627,7 +3627,7 @@ class UjjwalaApplicationServiceRequestListView(ListView):
 		# return ServiceRequest.objects.filter(
 		# 	status=ServiceRequestTypeStatusEnum.PENDING
 		# )
-		return ServiceRequest.objects.all().order_by('-id')
+		return ServiceRequest.objects.filter(status='PENDING').order_by('-id')
 
 	def get_template_names(self):
 		return 'ujjwala/service_request/ujjwala_application_service_request_listview.html'
