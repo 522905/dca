@@ -21,6 +21,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 from django.urls import reverse
 from django_currentuser.middleware import get_current_user
+from django_fsm_log.models import StateLog
 from django_rq import job
 
 from communication_log.models import CommunicationLog
@@ -1890,3 +1891,19 @@ def fetch_payment_profile_variables(application_id, force_main_branch=False):
 		"ifscode": new_ifscode,
 		"first_name": application.name
 	}
+
+
+def get_last_valid_status_for_application(application_id):
+	from ujjwala.models import UjjwalaV2Application
+
+	application = UjjwalaV2Application.objects.get(pk=application_id)
+
+	if application.status == application.last_execution_state:
+		state_log = StateLog.objects.filter(
+			object_id=application_id,
+		    content_type=ContentType.objects.get(app_label='ujjwala', model='ujjwalav2application')
+		).exclude(state=application.status).order_by(
+			'-id').first()
+		return state_log.state
+	else:
+		return application.last_execution_state
