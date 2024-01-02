@@ -873,7 +873,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 
 		if self.pre_inspection:
 			if self.pre_inspection.status == PreInspectionStatusEnum.ACCEPTED:
-				if self.connection_disbursement:
+				if ConnectionDisbursement.objects.filter(parent_id=self.pk).exists():
 					re_create_legal_docs(self)
 				else:
 					ConnectionDisbursement.objects.create(
