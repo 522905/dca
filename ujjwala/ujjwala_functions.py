@@ -1912,7 +1912,6 @@ def get_last_valid_status_for_application(application_id):
 def get_data_for_new_relation(application_id):
 	from ujjwala.models import UjjwalaV2Application
 
-
 	data = []
 	record = UjjwalaV2Application.objects.get(pk=application_id)
 
@@ -1959,3 +1958,4 @@ def get_data_for_new_relation(application_id):
 			"pi_status": pi_status
 		}
 	})
+	return data
