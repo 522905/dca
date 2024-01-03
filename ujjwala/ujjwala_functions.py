@@ -1935,7 +1935,7 @@ def get_data_for_new_relation(application_id):
 		"Last Name": ' '.join(self_name_split[1:]).title() if len(self_name_split) > 1 else '.',
 		"Salutation": get_salutation(self_fm),
 		"Gender": "Female",
-		"DOB": self_fm.dob,
+		"DOB": self_fm.dob.strftime('%Y-%m-%d'),
 		"Migrated": "Y",
 		"Relationship": "SELF",
 		"phone": record.contact_mobile,
