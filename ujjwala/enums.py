@@ -143,6 +143,7 @@ class PreInspectionRejectionReasonsEnum(models.TextChoices):
 	CONDITION_NO_STOVE_PLATFORM = 'CONDITION_NO_STOVE_PLATFORM', 'आपके पास चूल्हा रखने के लिए उपयुक्त स्थान नही है'
 	CONDITION_NO_KITCHEN_MAIN_GATE_PHOTO = 'CONDITION_NO_KITCHEN_MAIN_GATE_PHOTO', 'आपने अपनी फोटो अपलोड की है कृपया रसोई घर ओर मेन गेट की फोटो अपलोड करे'
 	CONDITION_NO_SAFETY_GUIDE = 'CONDITION_NO_SAFETY_GUIDE', 'आपने सेफ्टी गाइड नहीं लगाया है'
+	CONDITION_LOCATION_MISMATCH = 'CONDITION_LOCATION_MISMATCH', 'गलत लोकेशन'
 
 
 PreInspectionRejectionReasons = (
@@ -157,6 +158,7 @@ PreInspectionRejectionReasons = (
 	('CONDITION_NO_KITCHEN_MAIN_GATE_PHOTO', 'आपने अपनी फोटो अपलोड की है कृपया रसोई घर ओर मेन गेट की फोटो अपलोड करे'),
 	('CONDITION_NO_SAFETY_GUIDE', 'आपके पास सेफ्टी गाइड नहीं लगाया है'),
 )
+
 
 class UjjwalaV2ApplicationStatus(models.TextChoices):
 	DOCUMENTS_UPLOADED = 'DOCUMENTS_UPLOADED', 'Documents Uploaded'
