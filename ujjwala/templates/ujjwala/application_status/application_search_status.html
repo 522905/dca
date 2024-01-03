@@ -127,11 +127,11 @@
                                     {{obj.pre_inspection.get_status_display}}
                                     {% if obj.pre_inspection.status == 'ACCEPTED' %}
                                         <b>{{ obj.pre_inspection.updated_on }}</b>
-                                        {% if obj.connection_disbursement.status == 'LEGAL_DOCUMENTS_PENDING' %}
+{#                                        {% if obj.connection_disbursement.status == 'LEGAL_DOCUMENTS_PENDING' %}#}
                                             <a class="link_wh" style="color:#007bff !important" href="{% url 'ujjwala:whatsapp_form_abc' pk=obj.id %}">
                                                 <b class="link"> (Whatsapp Form A B C)</b>
                                             </a>
-                                        {% endif %}
+{#                                        {% endif %}#}
                                     {% else %}
                                         {% if obj.pre_inspection.status != 'ACCEPTED' or obj.pre_inspection.status != 'SUBMITTED' %}
                                             <a href="{% url 'ujjwala:whatsapp_pre_inspection_type_self' pk=obj.id %}" class="btn btn-success" >
@@ -188,7 +188,7 @@
                                     <a class="text_link" href="{% url 'ujjwala:update_bank_details' pk=obj.id %}" >
                                         <b style="color:cornflowerblue"><i>Update Bank Details</i></b></a>
                                     {% if obj.status == 'READY_FOR_DISBURSEMENT' %}
-                                        <a href="https://dca.arungas.com/ujjwala/portal/disbursement/list/?application_id={{ obj.id }}" class="btn btn-success float-right">Create Walk-In</a>
+                                        <a href="https://dca.arungas.com/ujjwala/portal/disbursement/list/?application_id={{ obj.id }}" class="text-white btn btn-success float-right">Create Walk-In</a>
                                     {% endif %}
                                 </th>
                             </tr>
