@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
 <div class="p-2 pt-0 form_label application_form" style="width: 100%;">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
     body .application_form{ max-width: 700px;}
     html body .application_form .legal-button {
@@ -19,6 +20,10 @@
     height: 30px !important;
     line-height: 19px !important;
 }
+.copy_icon{ border: transparent; background: transparent; display: inline-block; color: #007bff; font-size: 20px;}
+.copy_icon:hover{ cursor: pointer; background: transparent; border: transparent;}
+
+.table_text td{ padding: 8px 10px; }
 .ekyc_status{ color: red; font-weight: bold; text-transform: uppercase; font-size: 14px;}
 </style>
 
@@ -56,9 +61,9 @@
                         <span class="float-right" data-turbolinks="false"><b><a href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">{{ obj.id }}</a></b></span>
                     </div>
                 </div>
-                <div class="card-body pb-0 p-0 list_block">
+                <div class="card-body pb-0 p-0 list_block table_text">
                     <div class="row m-0">
-                        <div class="col-8 p-0">
+                        <div class="col-9 p-0">
                             <table>
                                 <tr>
                                     <td>Name: <b>{{ obj.name }}</b></td>
@@ -73,26 +78,33 @@
                                         {% endfor %}
                                     </td>
                                 </tr>
-                                <tr>
-                                    {% if not obj.ekyc_cleared %}
-                                        <td>
-                                            <p style="font-size: 12pt">Aadhar No. : <b>{{ obj.self_uid_no_formatted }}</b>
-                                            </p>
-                                        </td>
-                                        <td>
-                                            {% if obj.consumer_id %}
-                                                <p>
-                                                    <a href="{% url 'ujjwala:get_ekyc_status_from_sdms' pk=obj.id %}" class="btn btn-success float-left">Fetch E-KYC Status From IOCL</a>
-                                                </p>
-                                            {% endif %}
-                                        </td>
-                                    {% endif %}
-                                </tr>
+                            
                             </table>
                         </div>
-                        <div class="col-4 p-0">
+                        <div class="col-3 p-0">
                             <img class="p-1" src="{{ obj.document_self }}" style="height: 150px; object-fit:contain; width: 100%;">
                         </div>
+                        <div class="col-12 p-0 eky_block">
+                                <table>
+                                    <tr colspan="2"> 
+                                        {% if not obj.ekyc_cleared %}
+                                            <td colspan="2">
+                                                <p style="font-size: 12pt">Aadhar No. : <b><span id="myLabel">{{ obj.self_uid_no_formatted }}</span></b> 
+                                                    <button class="button copy_icon" onclick="copyToClipboard()"><i class="fa-solid fa-copy"></i></button>
+                                                </p>
+                                                
+                                            </td>
+                                            <td colspan="2">
+                                                {% if obj.consumer_id %}
+                                                    <p>
+                                                        <a href="{% url 'ujjwala:get_ekyc_status_from_sdms' pk=obj.id %}" class="btn btn-success float-left text-white">Fetch E-KYC Status From IOCL</a>
+                                                    </p>
+                                                {% endif %}
+                                            </td>
+                                        {% endif %}
+                                    </tr>
+                                </table>
+                            </div>
                     </div>
                 </div>
                 <div class="status_block">
@@ -233,6 +245,37 @@
     .table.table-bordred:last-child tr{ border-bottom: transparent;}
     .search_form input{ padding: 0 10px !important; width: 96% !important;  }
     .link_wh:hover{ text-decoration: underline !important;}
+    @media only screen and (max-width: 600px) and (min-width: 400px)  {
+        .eky_block tr td{ float: left; width:100%;}
+    }
 </style>
+<script>
+    function copyToClipboard() {
+        // Get the text to copy from the label
+        var textToCopy = document.getElementById("myLabel").innerText;
+
+        // Remove spaces and special characters
+        var cleanedText = textToCopy.replace(/[^a-zA-Z0-9]/g, '');
+
+        // Create a temporary element to hold the cleaned text
+        var tempElement = document.createElement("textarea");
+        tempElement.value = cleanedText;
+        document.body.appendChild(tempElement);
+
+        // Select the text in the temporary element
+        tempElement.select();
+        
+        // Try to copy the selected text
+        try {
+        document.execCommand("copy");
+       
+        } catch (err) {
+        console.error("Unable to copy text", err);
+        } finally {
+        // Remove the temporary element
+        document.body.removeChild(tempElement);
+        }
+    }
+</script>
 {% endblock %}
 
