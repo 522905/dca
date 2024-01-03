@@ -58,7 +58,8 @@ from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_
 	send_ujjwala_application_whatsapp_link_v2, download_audit_documents_for_ids, is_member_of_disbursement_drive, \
 	get_current_user_disbursement_drive, is_member_of_second_cylinder_delivery, \
 	send_ujjwala_self_pre_inspection_share_link, is_member_of_reviewer_group, send_ujjwala_share_on_social_media_link, \
-	send_otp_using_channel, can_resolve_service_request, ujjwala_application_state_logs, is_front_end_staff
+	send_otp_using_channel, can_resolve_service_request, ujjwala_application_state_logs, is_front_end_staff, \
+	get_data_for_new_relation
 from utils.enums import RoboSdmsDedeupStatusEnum
 from utils.global_functions import unsign_data_base64, sign_data_base64
 
@@ -3273,6 +3274,7 @@ class GetEKYCStatusFromSDMS(View):
 						"consumer_id": {"value": application.consumer_id, "type": "String"},
 						"requested_by": {"value": f"{user.first_name} {user.last_name}", "type": "String"},
 						"requested_by_id": {"value": f"{user.id}", "type": "String"},
+						"contact": {"value": json.dumps(get_data_for_new_relation(application.id)), "type": "String"}
 					}
 			}
 			res, process_id = start_process_in_camunda_v2('process_get_ekyc_status_from_sdms', variables)

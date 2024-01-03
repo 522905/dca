@@ -1907,3 +1907,55 @@ def get_last_valid_status_for_application(application_id):
 		return state_log.state
 	else:
 		return application.last_execution_state
+
+
+def get_data_for_new_relation(application_id):
+	from ujjwala.models import UjjwalaV2Application
+
+
+	data = []
+	record = UjjwalaV2Application.objects.get(pk=application_id)
+
+
+	try:
+		address = record.get_address_for_sdms_upload()
+	except:
+		raise Exception("Address Error")
+
+	pi_status = 'NA'
+	try:
+		pi_status = record.pre_inspection.status
+	except:
+		pass
+
+	self_fm = record.family_members.get(relation=FamilyMemberRelationEnum.SELF)
+	self_name_split = record.name.split(" ")
+	data.append({
+		"id": record.id,
+		"First Name": self_name_split[0].title(),
+		"Last Name": ' '.join(self_name_split[1:]).title() if len(self_name_split) > 1 else '.',
+		"Salutation": get_salutation(self_fm),
+		"Gender": "Female",
+		"DOB": self_fm.dob,
+		"Migrated": "Y",
+		"Relationship": "SELF",
+		"phone": record.contact_mobile,
+		"identities": [{
+			"Identity Type": "POA-POI",
+			"Identity Method": "Aadhaar(UID)",
+			"Identity Num": self_fm.uid_no
+		}],
+		'consumer_id': record.consumer_id,
+		"address": {
+			"address": address['addr_str'].strip().replace('\\', '/'),
+			"landmark": f'DcaId-{record.id} ' + record.address_json.get('landmark', 'NA'),
+			"pincode": address['pincode']
+		},
+		"bank": {
+			"account": record.bank_account_number,
+			"ifsc": record.ifsc_code
+		},
+		"extras": {
+			"pi_status": pi_status
+		}
+	})
