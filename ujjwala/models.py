@@ -143,6 +143,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	def pre_inspection_accepted(self):
 		return self.pre_inspection
 
+	def document_bank_detail_photo(self):
+		return self.documents.filter(type=UjjwalaApplicationDocumentsEnum.BANK_DETAIL).first().link
 
 	def pre_inspection_form(self):
 		# if self.status == UjjwalaV2ApplicationStatus.PRE_INSPECTION_SUBMITTED:
@@ -219,10 +221,11 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	def formatted_address(self):
 		if self.version in ('V1', 'V2'):
 			return self.address
-		self.address_json['city'] = 'Ludhiana'
-		return ' '.join([self.address_json.get(r, '') for r in [
-			'room_no', 'floor', 'street_no', 'landmark', 'village', 'ward_no', 'post_office', 'pincode'
-		]])
+		if self.address_json:
+			self.address_json['city'] = 'Ludhiana'
+			return ' '.join([self.address_json.get(r, '') for r in [
+				'room_no', 'floor', 'street_no', 'landmark', 'village', 'post_office', 'pincode'
+			]])
 
 	def get_address_for_sdms_upload(self):
 		if not self.address_json:
@@ -235,10 +238,9 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		# 'StNo {street_no} {village}'.format(
 		# 	**self.address_json
 		# )
-		addr_str = 'hNo {} StNo {} {} '.format(
+		addr_str = 'hNo {} StNo {} {}'.format(
 			self.address_json.get('house_no', ''),
 			self.address_json.get('street_no', ''),
-			self.address_json.get('ward_no', ''),
 			self.address_json.get('village', '') or self.address_json.get('mohalla', ''),
 		)
 
