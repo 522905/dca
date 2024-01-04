@@ -35,7 +35,7 @@ from .ujjwala_functions import download_ujjwala_documents, get_salutation, \
     download_ujjwala_physical_legal_docs, \
     process_family_uid_result, process_omc_dedupe_result, send_whatsapp_contact_otp, verify_whatsapp_contact_otp, \
     send_sms_contact_otp, verify_sms_contact_otp, send_ujjwala_application_whatsapp_link_v2, download_installation_form, \
-    download_ujjwala_legal_docs_to_upload, send_upload_uid_for_ekyc_whatsapp_link
+    download_ujjwala_legal_docs_to_upload, send_upload_uid_for_ekyc_whatsapp_link, re_create_legal_docs
 from .vici_functions import add_lead_to_vicidial
 
 
@@ -853,6 +853,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=True, url_path='download_ujjwala_legal_docs')
     def download_ujjwala_legal_docs(self, request, *args, **kwargs):
         obj = self.get_object()
+        django_rq.enqueue(re_create_legal_docs, args=(obj,))
         return download_ujjwala_legal_docs_to_upload(obj)
 
     @action(methods=['get'], detail=True, url_path='download_ujjwala_physical_legal_documents')
