@@ -682,12 +682,13 @@ def is_application_ready_for_disbursement(parent_id):
 
 
 def enqueue_dedupe_and_audit_jobs(application_id, data):
-    dedupe_job = django_rq.enqueue("ujjwala.jobs.do_primary_omc_dedupe_check", args=(application_id,))
+    # Currently Disabled Due To Non Availability Of The Page For Dedup In Spandan
+    # dedupe_job = django_rq.enqueue("ujjwala.jobs.do_primary_omc_dedupe_check", args=(application_id,))
 
     django_rq.enqueue(
         move_application_for_audit,
         args=(application_id, data,),
-        depends_on=dedupe_job
+        # depends_on=dedupe_job
     )
 
 
