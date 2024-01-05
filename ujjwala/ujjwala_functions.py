@@ -1426,12 +1426,14 @@ def is_valid_name(name, gender):
 			return False, "Wrong Character In Name: {}".format(token)
 
 	if re.match(GOV_OF_INDIA_FUZZY_REGEX, name, flags=re.IGNORECASE):
-	   return False, "Name Might Be Gov Of India"
+		return False, "Name Might Be Gov Of India"
 
 	return True, "No Error In Name"
 
 
 def application_needs_to_be_audited(data):
+	from cdifflib import CSequenceMatcher
+
 	reason = []
 
 	result, message = is_valid_name(data.get('name'), 'FEMALE')
@@ -1442,11 +1444,24 @@ def application_needs_to_be_audited(data):
 	family_members = data.get('family_members')
 
 	for fm in family_members:
-		if fm['uid_no'].startswith(data.get('contact_mobile')[2:]):
+		seq_match = CSequenceMatcher(None, data.get('contact_mobile'), fm['uid_no'])
+		match = seq_match.find_longest_match(0, len(data.get('contact_mobile')), 0, len(fm['uid_no']))
+		if match.size >= 6:
+			matched_str = data.get('contact_mobile')[match.a: match.a + match.size]
 			reason.append(
-				"Relation {} Mobile Number Digits {} Found In UID {}".format(fm['relation'],
-				                                                             data.get('contact_mobile')[2:],
-				                                                             fm['uid_no'])
+				"Relation {} Contact Mobile Number Digits {} Found In UID {}".format(fm['relation'],
+				                                                                     matched_str,
+				                                                                     fm['uid_no'])
+			)
+
+		seq_match = CSequenceMatcher(None, data.get('uid_linked_mobile'), fm['uid_no'])
+		match = seq_match.find_longest_match(0, len(data.get('uid_linked_mobile')), 0, len(fm['uid_no']))
+		if match.size >= 6:
+			matched_str = data.get('uid_linked_mobile')[match.a: match.a + match.size]
+			reason.append(
+				"Relation {} UID Linked Mobile Number Digits {} Found In UID {}".format(fm['relation'],
+				                                                                     matched_str,
+				                                                                     fm['uid_no'])
 			)
 
 		result, message = is_valid_name(fm['name'], get_gender(fm['relation']).upper())
