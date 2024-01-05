@@ -1432,7 +1432,7 @@ def is_valid_name(name, gender):
 
 
 def application_needs_to_be_audited(data):
-	from cdifflib import CSequenceMatcher
+	from difflib import SequenceMatcher
 
 	reason = []
 
@@ -1444,7 +1444,7 @@ def application_needs_to_be_audited(data):
 	family_members = data.get('family_members')
 
 	for fm in family_members:
-		seq_match = CSequenceMatcher(None, data.get('contact_mobile'), fm['uid_no'])
+		seq_match = SequenceMatcher(None, data.get('contact_mobile'), fm['uid_no'])
 		match = seq_match.find_longest_match(0, len(data.get('contact_mobile')), 0, len(fm['uid_no']))
 		if match.size >= 6:
 			matched_str = data.get('contact_mobile')[match.a: match.a + match.size]
