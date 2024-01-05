@@ -1,4 +1,5 @@
 import datetime
+import json
 import re
 from functools import partial
 
@@ -1848,6 +1849,47 @@ class EkycLogs(models.Model):
 	)
 	requested_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
 	ekyc_date = models.DateTimeField(null=True)
+
+
+class DateTimeEncoder(json.JSONEncoder):
+	def default(self, o):
+		if isinstance(o, datetime.datetime):
+			return o.isoformat()
+		return json.JSONEncoder.default(self, o)
+
+
+class Ekyc(models.Model):
+	# """
+	# [
+	# 	{
+	# 		"": "",
+	# 		"eKYC Num": "1-985897526109",
+	# 		"Created On": "04-Jan-2024 02:02:43 PM",
+	# 		"eKYC Type": "KYC",
+	# 		"eKYC Sub Type": "Re-eKYC",
+	# 		"eKYC Status": "Closed",
+	# 		"Aadhar Number": "********7850",
+	# 		"Organization": "ARUN INDANE PROP LUDHIANA ENT.",
+	# 		"First Name": "Neelam",
+	# 		"Last Name": "Rani",
+	# 		"Aadhar Seeding": "N",
+	# 		"Channel": "Mobility",
+	# 		"Authentication Type": "Biometric-Finger",
+	# 		"Created By": "0000305948_18"
+	# 	}
+	# ]
+	# """
+	parent = models.OneToOneField(
+		UjjwalaV2Application, on_delete=models.PROTECT, related_name='ekyc'
+	)
+	ekyc_num = models.CharField(max_length=128)
+	ekyc_created_on = models.DateTimeField()
+	ekyc_type = models.CharField(max_length=128)
+	ekyc_subtype = models.CharField(max_length=128)
+	channel = models.CharField(max_length=128)
+	authentication_type = models.CharField(max_length=128)
+	status = models.CharField(max_length=128)
+	ekyc_details_data = models.JSONField(encoder=DateTimeEncoder)
 
 
 def dummy():

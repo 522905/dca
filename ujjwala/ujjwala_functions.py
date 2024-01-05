@@ -1442,6 +1442,13 @@ def application_needs_to_be_audited(data):
 	family_members = data.get('family_members')
 
 	for fm in family_members:
+		if fm['uid_no'].startswith(data.get('contact_mobile')[2:]):
+			reason.append(
+				"Relation {} Mobile Number Digits {} Found In UID {}".format(fm['relation'],
+				                                                             data.get('contact_mobile')[2:],
+				                                                             fm['uid_no'])
+			)
+
 		result, message = is_valid_name(fm['name'], get_gender(fm['relation']).upper())
 
 		if not result:
