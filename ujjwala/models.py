@@ -15,6 +15,7 @@ from django_currentuser.middleware import get_current_user
 from django_fsm import FSMField, transition, GET_STATE
 from django_fsm_log.decorators import fsm_log_description, fsm_log_by
 from organizations.models import Organization
+from taggit.managers import TaggableManager
 
 from communication_log.models import CommunicationLog
 from teams.models import ServiceLocations, ServiceArea, FormFillArea
@@ -119,6 +120,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	error_message = models.TextField(null=True, blank=True)
 	flag = models.TextField(null=True, blank=True)
 	ekyc_date = models.DateTimeField(null=True)
+	ekyc_channel = models.CharField(max_length=128, null=True, blank=True)
+	tags = TaggableManager()
 
 	class Meta:
 		permissions = (

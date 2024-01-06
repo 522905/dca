@@ -208,7 +208,7 @@ class UjjwalaV2Admin(ImportMixin, ExportActionMixin, FSMTransitionCustomMixin, a
             ]
         else:
             fields = super().get_fields(request, obj)
-            fields = fields + ['connection_disbursement', 'pre_inspection', ]
+            fields = fields + ['connection_disbursement', 'pre_inspection', 'tags',]
             return fields
 
     def get_readonly_fields(self, request, obj=None):
