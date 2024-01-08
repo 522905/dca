@@ -3274,7 +3274,8 @@ class GetEKYCStatusFromSDMS(View):
 						"consumer_id": {"value": application.consumer_id, "type": "String"},
 						"requested_by": {"value": f"{user.first_name} {user.last_name}", "type": "String"},
 						"requested_by_id": {"value": f"{user.id}", "type": "String"},
-						"contact": {"value": json.dumps(get_data_for_new_relation(application.id)), "type": "String"}
+						"contact": {"value": json.dumps(get_data_for_new_relation(application.id)), "type": "String"},
+						"start_time": {"value": datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S+0530'), "type": "String"}
 					}
 			}
 			res, process_id = start_process_in_camunda_v2('process_get_ekyc_status_from_sdms', variables)
