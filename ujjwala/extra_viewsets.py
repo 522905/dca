@@ -51,7 +51,7 @@ class UjjwalaApplicationExtraViewSet(viewsets.ViewSet):
             # else:
             #     send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id=inbound_call_user_id)
             # To be removed for scheduled message delivery
-            send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id=inbound_call_user_id)
+            send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id=inbound_call_user_id, share_link=True)
             update_lead_in_ujjwala_welcome(contact_mobile)
             # update_lead_in_ujjwala_enquiry_list(contact_mobile)
             # update_lead_in_out1005_campaign(contact_mobile)
