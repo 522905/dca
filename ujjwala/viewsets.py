@@ -846,7 +846,8 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                     application.contact_mobile, application.name, application.id,
                 ))
 
-            except:
+            except Exception as e:
+                print("Peform Submit: {}".format(e))
                 pass
         return application
 
