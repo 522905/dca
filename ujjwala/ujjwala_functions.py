@@ -1067,7 +1067,7 @@ def send_ujjwala_application_whatsapp_link_v1(contact_mobile, user_id):
 	return False
 
 
-def send_ujjwala_application_pos_list(contact_mobile):
+def send_ujjwala_application_pos_list(contact_mobile, template_name="ujjwala_form_fill_areas"):
 	"""
 	Function Working Changed Due To Closure of Public Form Filling
 	"""
@@ -1084,7 +1084,7 @@ def send_ujjwala_application_pos_list(contact_mobile):
 		},
 		"template": {
 			# "name": "ujjwala_application_shared_link_20082022",
-			"name": "ujjwala_form_fill_areas",
+			"name": template_name,
 			#"name": "votercard3122022",
 			"languageCode": "hi",
 			"headerValues": [
@@ -1092,7 +1092,7 @@ def send_ujjwala_application_pos_list(contact_mobile):
 			"bodyValues": [],
 			# "buttonValues": {
 			# 	"0": [
-			# 		url
+			# 		"https://dca.arungas.com/"
 			# 	]
 			# }
 		}
@@ -1114,12 +1114,16 @@ def send_ujjwala_application_pos_list(contact_mobile):
 	return False
 
 
+def send_pos_list_for_ekyc(contact_mobile):
+	return send_ujjwala_application_pos_list(contact_mobile, template_name="pos_list_ekyc_static_url")
+
+
 def send_ujjwala_application_whatsapp_link_v2(contact_mobile, user_id, share_link=False):
 	"""
 	Function Working Changed Due To Closure of Public Form Filling
 	"""
 	if not share_link:
-		return send_ujjwala_application_pos_list(contact_mobile)
+		return send_ujjwala_application_pos_list(contact_mobile, template_name="ujjwala_form_fill_areas")
 
 	data = get_signed_share_data(contact_mobile, user_id)
 	url = reverse('ujjwala:ujjwala_application_link', kwargs={'data': data})
