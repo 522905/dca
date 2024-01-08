@@ -121,6 +121,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	flag = models.TextField(null=True, blank=True)
 	ekyc_date = models.DateTimeField(null=True)
 	ekyc_channel = models.CharField(max_length=128, null=True, blank=True)
+	ekyc_last_attempt_log = models.TextField(null=True, blank=True)
 	tags = TaggableManager()
 
 	class Meta:
