@@ -100,10 +100,20 @@
                                                     <p>
                                                         <a href="{% url 'ujjwala:get_ekyc_status_from_sdms' pk=obj.id %}" class="btn btn-success float-left text-white">Fetch E-KYC Status From IOCL</a>
                                                     </p>
+
                                                 {% endif %}
                                             </td>
                                         {% endif %}
                                     </tr>
+                                    {% if obj.ekyc_last_attempt_log %}
+                                        <tr>
+                                            <td colspan="2">
+                                                <p>
+                                                    {{ obj.ekyc_last_attempt_log }}
+                                                </p>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
                                 </table>
                             </div>
                     </div>
