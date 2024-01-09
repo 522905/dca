@@ -1,5 +1,6 @@
 import io
 from functools import wraps
+from time import time, sleep
 
 import django_rq
 import magic
@@ -685,18 +686,17 @@ def is_application_ready_for_disbursement(parent_id):
 def enqueue_dedupe_and_audit_jobs(application_id, data):
     # Currently Disabled Due To Non Availability Of The Page For Dedup In Spandan
     # dedupe_job = django_rq.enqueue("ujjwala.jobs.do_primary_omc_dedupe_check", args=(application_id,))
-    from ujjwala.models import UjjwalaV2Application
+    from ujjwala.models import UjjwalaV2Application, PreInspection
 
     application_obj = UjjwalaV2Application.objects.get(pk=application_id)
 
-    if not application_obj.pre_inspection:
+    if not PreInspection.objects.filter(parent_id=application_id).exists():
         obj = PreInspection.objects.create(
             parent_id=application_obj.id,
             status=PreInspectionStatusEnum.KITCHEN_PHOTO,
             type=PreInspectionTypeEnum.SELF
         )
         application_obj.event_whatsapp_pre_inspection_type_self(obj.id)
-
     django_rq.enqueue(
         move_application_for_audit,
         args=(application_id, data,),
