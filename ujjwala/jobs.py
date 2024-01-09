@@ -17,7 +17,7 @@ from ujjwala.management.commands.ujjwala_file_worker import upload_compressed_fi
 from ujjwala.models import ConnectionDisbursementInvitation, ConnectionDisbursement, PreInspection
 from ujjwala.ujjwala_functions import application_needs_to_be_audited, application_needs_to_be_audited_by_id
 
-dedup_portal = IoclOmcDedup('305948', 'Ludhiana@123')
+dedup_portal = IoclOmcDedup('305948', 'Inder@1234')
 
 minio_api_client = Minio(
     settings.MINIO_API_ENDPOINT,
@@ -209,7 +209,7 @@ def do_primary_omc_dedupe_check_v2(id):
             application.application_rejected(**form.cleaned_data)
             application.event_ioc_dedupe_reject_channel_whatsapp()
     application.save()
-    print(application)
+    return application.robo_sdms_dedup
 
 
 @ensure_db_connection
@@ -268,6 +268,7 @@ def do_primary_omc_dedupe_check(id):
         else:
             application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.ENRICH_REJECTION_DETAILS
     application.save()
+    print(application)
 
 
 def compress_application_documents(application_id):
@@ -684,6 +685,17 @@ def is_application_ready_for_disbursement(parent_id):
 def enqueue_dedupe_and_audit_jobs(application_id, data):
     # Currently Disabled Due To Non Availability Of The Page For Dedup In Spandan
     # dedupe_job = django_rq.enqueue("ujjwala.jobs.do_primary_omc_dedupe_check", args=(application_id,))
+    from ujjwala.models import UjjwalaV2Application
+
+    application_obj = UjjwalaV2Application.objects.get(pk=application_id)
+
+    if not application_obj.pre_inspection:
+        obj = PreInspection.objects.create(
+            parent_id=application_obj.id,
+            status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+            type=PreInspectionTypeEnum.SELF
+        )
+        application_obj.event_whatsapp_pre_inspection_type_self(obj.id)
 
     django_rq.enqueue(
         move_application_for_audit,
@@ -715,3 +727,18 @@ def move_application_for_audit_by_id(application_id):
         application = UjjwalaV2Application.objects.get(pk=application_id)
         application.transition_audit_application(audit_points=move_to_audit)
         application.save()
+
+
+@ensure_db_connection
+def upload_recreated_physical_document_url(pre_inspection_id, upload_url):
+    from ujjwala.models import PreInspectionDocuments
+
+    pi_doc_obj = PreInspectionDocuments.objects.filter(parent_id=pre_inspection_id, type="PHYSICAL_LEGAL_DOCUMENT")
+
+    if pi_doc_obj:
+        pi_doc_obj.link = upload_url
+        pi_doc_obj.save()
+    else:
+        PreInspectionDocuments.objects.create(
+            type='PHYSICAL_LEGAL_DOCUMENT', link=upload_url, parent=pre_inspection_id
+        )

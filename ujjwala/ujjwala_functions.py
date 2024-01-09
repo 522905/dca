@@ -1,26 +1,27 @@
+import base64
 import io
 import random
 import re
 import string
 import zipfile
-import base64
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 from functools import wraps
 from time import timezone
 
+import django_rq
 import magic
-import pytz
 import requests
 import track
 from PyPDF2 import PdfFileMerger
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.signing import Signer
-from django.db.models import Q, QuerySet
-from django.http import HttpResponse, HttpResponseRedirect
+from django.db.models import Q
+from django.http import HttpResponse
 from django.template import loader
 from django.urls import reverse
-from django_currentuser.middleware import get_current_user
+from django.utils.timezone import now
 from django_fsm_log.models import StateLog
 from django_rq import job
 
@@ -30,9 +31,6 @@ from ujjwala.communication_functions import send_whatsapp_message, send_sms
 from ujjwala.enums import UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, ResidentialStatusEnum, \
 	MaritalStatusEnum, UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, RoboSdmsDedeupStatusEnum, \
 	PrintDocumentsTypeEnum, DisbursementDriveStatusEnum
-from datetime import datetime
-from django.utils.timezone import now
-
 from utils.global_functions import upload_file_to_minio_bucket, sign_data_base64
 from utils.qrcode import generate_base64_qr_code
 
@@ -507,7 +505,9 @@ def re_create_legal_docs(application):
 		"ujjwaladocuments",
 		"ujjwala_{}_physical_legal_document".format(application.id)
 	)
-	print(upload_url)
+
+	django_rq.enqueue("ujjwala.jobs.upload_recreated_physical_document_url",
+	                  args=(application.pre_inspection.id, upload_url,))
 	return physical_legal_document
 
 
