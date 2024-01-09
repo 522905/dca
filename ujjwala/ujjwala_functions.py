@@ -499,6 +499,8 @@ def download_ujjwala_physical_legal_docs(obj):
 
 
 def re_create_legal_docs(application):
+	from ujjwala.jobs import upload_recreated_physical_document_url
+
 	physical_legal_document = download_ujjwala_physical_legal_docs(application)
 	upload_url = upload_file_to_minio_bucket(
 		physical_legal_document,
@@ -506,8 +508,7 @@ def re_create_legal_docs(application):
 		"ujjwala_{}_physical_legal_document".format(application.id)
 	)
 
-	django_rq.enqueue("ujjwala.jobs.upload_recreated_physical_document_url",
-	                  args=(application.pre_inspection.id, upload_url,))
+	django_rq.enqueue(upload_recreated_physical_document_url, args=(application.pre_inspection.id, upload_url,))
 	return physical_legal_document
 
 
