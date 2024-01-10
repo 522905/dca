@@ -505,7 +505,7 @@ class PreInspectionReviewView(FormView, ApplicationView):
 			"obj": obj,
 			"kitchen_photo": kitchen_photo,
 			"main_gate": main_gate,
-			"location": f"https://maps.googleapis.com/maps/api/staticmap?zoom=14&size=600x300&maptype=roadmap&markers=color:red|label:D|{obj.latitude},{obj.longitude}&markers=color:green|label:C|31.05039535,75.79137439&key=AIzaSyCsnS5l8LDnJGdgEBlcnG3_DnwJW_2sEvg"
+			"location": f"https://maps.googleapis.com/maps/api/staticmap?center={obj.latitude},{obj.longitude}&zoom=16&size=600x300&maptype=roadmap&markers=color:red|label:C|{obj.latitude},{obj.longitude}&key=AIzaSyCsnS5l8LDnJGdgEBlcnG3_DnwJW_2sEvg"
 		})
 
 		if obj.type == PreInspectionTypeEnum.MECHANIC:
