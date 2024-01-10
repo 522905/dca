@@ -59,7 +59,7 @@ from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_
 	get_current_user_disbursement_drive, is_member_of_second_cylinder_delivery, \
 	send_ujjwala_self_pre_inspection_share_link, is_member_of_reviewer_group, send_ujjwala_share_on_social_media_link, \
 	send_otp_using_channel, can_resolve_service_request, ujjwala_application_state_logs, is_front_end_staff, \
-	get_data_for_new_relation
+	get_data_for_new_relation, re_create_legal_docs
 from utils.enums import RoboSdmsDedeupStatusEnum
 from utils.global_functions import unsign_data_base64, sign_data_base64
 
@@ -342,6 +342,20 @@ class WhatsappUploadLegalForms(View):
 			)
 
 
+class RecreateLegalDocumentView(View):
+	def get(self, request, *args, **kwargs):
+		application = UjjwalaV2Application.objects.filter(id=kwargs.get('pk')).first()
+		if not application:
+			return HttpResponse("Application Id {} does not exist".format(kwargs.get('pk')))
+
+		document = re_create_legal_docs(application)
+		resp = HttpResponse(document, content_type="application/pdf")
+		resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_physical_{}_legal_docs.pdf'.format(
+			application.id)
+
+		return resp
+
+
 class ResetRoboFailedCount(View):
 	def get(self, request, *args, **kwargs):
 		application = UjjwalaV2Application.objects.filter(id=kwargs.get('pk')).first()
@@ -491,6 +505,7 @@ class PreInspectionReviewView(FormView, ApplicationView):
 			"obj": obj,
 			"kitchen_photo": kitchen_photo,
 			"main_gate": main_gate,
+			"location": f"https://maps.googleapis.com/maps/api/staticmap?zoom=14&size=600x300&maptype=roadmap&markers=color:red|label:D|{obj.latitude},{obj.longitude}&markers=color:green|label:C|31.05039535,75.79137439&key=AIzaSyCsnS5l8LDnJGdgEBlcnG3_DnwJW_2sEvg"
 		})
 
 		if obj.type == PreInspectionTypeEnum.MECHANIC:
@@ -3543,24 +3558,28 @@ class UjjwalaApplicationAuditListView(ListView):
 class UjjwalaApplicationAuditFamilyMembersForm(forms.ModelForm):
 	class Meta:
 		model = FamilyMembers
-		fields = "__all__"
+		# fields = "__all__"
+		exclude = ['uid_back_compressed', 'relation', 'uid_front_file_size', 'uid_back_file_size']
 
 
 class UjjwalaApplicationAuditForm(forms.ModelForm):
 	class Meta:
 		model = UjjwalaV2Application
-		fields = "__all__"
+		# fields = "__all__"
+		exclude = ['sdms_last_updated_on', 'marital_status', 'version', 'robo_sdms_dedup', 'status',
+		           'availability_updated_on', 'tags', 'name', 'contact_mobile', 'ekyc_date']
+
+
+FamilyMembersInlineFormSet = inlineformset_factory(
+			UjjwalaV2Application, FamilyMembers, UjjwalaApplicationAuditFamilyMembersForm, extra=0,
+		)
 
 
 @method_decorator(login_required, 'dispatch')
-class UjjwalaApplicationAuditView(FormView):
+class UjjwalaApplicationAuditView(UpdateView):
 	model = UjjwalaV2Application
 	template_name = 'ujjwala/review/ujjwala_application_audit_new.html'
 	form_class = UjjwalaApplicationAuditForm
-	FamilyMembersInlineFormSet = inlineformset_factory(
-		UjjwalaV2Application, FamilyMembers, fields="__all__",
-		form=UjjwalaApplicationAuditFamilyMembersForm, extra=0,
-	)
 
 	def get_success_url(self):
 		return reverse('ujjwala:ujjwala_application_audit_list')
@@ -3587,36 +3606,34 @@ class UjjwalaApplicationAuditView(FormView):
 			)
 		return obj
 
-
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		obj = self.get_object()
-		context.update({
-			"obj": obj,
-			"form": UjjwalaApplicationAuditForm(instance=obj),
-			"formset": self.FamilyMembersInlineFormSet(instance=obj, prefix='family_members')
-		})
+		if self.request.POST:
+			context['obj'] = self.get_object()
+			context['form'] = UjjwalaApplicationAuditForm(self.request.POST, instance=obj)
+			context['formset'] = FamilyMembersInlineFormSet(self.request.POST, self.request.FILES, instance=obj)
+			print("Formset")
+		else:
+			context['obj'] = self.get_object()
+			context['form'] = UjjwalaApplicationAuditForm(instance=obj)
+			context['formset'] = FamilyMembersInlineFormSet(instance=obj, prefix='family_members')
 		return context
 
-	def post(self, request, *args, **kwargs):
-		# obj = self.get_object()
-		form_class = self.get_form_class()
-		form = self.get_form(form_class)
-		fm_formset = self.FamilyMembersInlineFormSet(self.request.POST)
+	def form_valid(self, form):
+		context = self.get_context_data()
+		form = context['form']
+		fm_formset = context['formset']
 		if form.is_valid() and fm_formset.is_valid():
-			return self.form_valid(form, fm_formset)
-		else:
-			return self.form_invalid(form, fm_formset)
+			obj = form.save()
+			form.instance = obj
+			form.save()
+			fm_formset.instance = obj
+			fm_formset.save()
+		return self.render_to_response(self.get_context_data(form=form))
 
-	def form_valid(self, form, fm_formset):
-		obj = form.save()
-		fm_formset.instance = obj
-		fm_formset.save()
-		return HttpResponseRedirect(self.get_success_url())
-
-	def form_invalid(self, form, fm_formset):
-		return self.render_to_response(
-			self.get_context_data(form=form, fm_formset=fm_formset,))
+	def form_invalid(self, form):
+		print(form)
 
 
 @method_decorator(login_required, 'dispatch')

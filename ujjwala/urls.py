@@ -162,6 +162,13 @@ urlpatterns = [
         views.WhatsappUploadLegalForms.as_view(),
         name="whatsapp_form_abc"
     ),
+
+    url(
+        '^portal/recreate_legal_document/(?P<pk>[^/.]+)/$',
+        views.RecreateLegalDocumentView.as_view(),
+        name="recreate_legal_document"
+    ),
+
     url(
         '^portal/reset_robo_failed_count/(?P<pk>[^/.]+)/$',
         views.ResetRoboFailedCount.as_view(),
@@ -179,16 +186,16 @@ urlpatterns = [
         name="application_status_search"
     ),
 
-    # path('portal/review/audit_application/',
-    #      views.UjjwalaApplicationAuditListView.as_view(),
-    #      name="ujjwala_application_audit_list"
-    # ),
-    #
-    # url(
-    #     '^portal/ujjwala-audit-application/(?P<pk>[^/.]+)/$',
-    #     views.UjjwalaApplicationAuditView.as_view(),
-    #     name="ujjwala_application_audit"
-    # ),
+    path('portal/review/audit_application/',
+         views.UjjwalaApplicationAuditListView.as_view(),
+         name="ujjwala_application_audit_list"
+    ),
+
+    url(
+        '^portal/ujjwala-audit-application/(?P<pk>[^/.]+)/$',
+        views.UjjwalaApplicationAuditView.as_view(),
+        name="ujjwala_application_audit"
+    ),
 
     path('portal/service_request/list_view/',
          views.UjjwalaApplicationServiceRequestListView.as_view(),

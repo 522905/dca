@@ -1,0 +1,344 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block content %}
+{% load material_form %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/xzoom.css' %}" media="all" />
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="{% static 'css/xzoom.css' %}" media="all" />
+<!--<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+ <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+ <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css">
+<script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
+<style>
+    .form_label .form-group input {
+        height: 38px !important;
+        border-radius: 3px !important;
+        border: 1px solid #ccc !important;
+        width: 100%;
+        line-height: 38px !important;
+        padding: 0 5px;
+    }
+    .hidden-field{ display: none;}
+    .header-button{ border: 1px solid transparent; box-shadow: none !important;}
+    .review_wrap .collapse .card-header h4{ font-size: 14px; margin: 0; }
+    .audit_review .form-control{ height: 2rem !important;}
+    .audit_img_block img{ width: 50%; float: left; }
+    .audit_textblock label, .audit_textblock input{ font-size: 12px !important;}
+    #image-container {
+        position: relative;
+        overflow: hidden;
+        width: 400px;
+        margin: 0px auto;
+    }
+
+    /* Styling for the image */
+    #rotatable-image {
+        width: 100%;
+        height: 100%;
+        transition: transform 0.5s ease-in-out;
+    }
+    .full_width{ width: 100% !important; max-width:100%}
+    .form-group { margin-bottom: 0 !important;}
+    .form_label .form-group input{ margin: 0;}
+    .text-red input{ color: red !important; font-weight: bold; }
+    .uid_block label{ padding: 0; margin: 0;}
+    .uid_block input{ font-size: 12px !important;}
+    .form_block label{ display: block; height: 3rem; line-height: 3rem;  }
+    .form_block input{ margin:0 !important}
+    .form_lable { font-size: 11px; height: 30px;}
+    .xzoom-container a img{ width: 100%; object-fit: cover; margin-bottom: 5px; height: 80px;  }
+    .xzoom-container ul li{ margin:3px; width: 110px; float: left;}
+    /* invail;d data   accept     reupload    insufficiat */
+</style>
+<div class="form_label p-2 full_width">
+    <div class="card">
+        <div class="card-header">
+            <b>Id: <span style="color:red; font-size:16px">{{ obj.id }}</span> ({{ obj.name }} - {{ obj.contact_mobile }})</b>
+           <p><span style="dislay:inline-block;" >Address</span>
+            <input style="dislay:inline-block;" type="text" value=" {{obj.formatted_address.value }}"></p> 
+        </div>
+        <form id="form" method="POST" class="p-2">
+        {% csrf_token %}
+        <!-- <div class="row">
+            <div class="col-2">
+                {{ form.contact_mobile }}
+            </div>
+        </div>
+        -->
+        <div class="row">
+            <div class="col-5">
+                <div class="row">
+                    <div class="col-12 pl-0 pr-0 form_block">
+                        <div class="row m-0 mb-1" >
+                            <div class="col col-4">
+                                <label for="exampleInputEmail1">Name</label>
+                                <label for="exampleInputEmail1">DOB</label>
+                                 <label for="exampleInputEmail1">Aadhaar Numaber</label>
+                            </div>
+                            {% for fm_form in formset %}
+                            <div class="col col-4">
+                                <span class="text-red">{{ fm_form.name }}</span>
+                                <span>{{ fm_form.dob }}</span>
+                                <span>{{ fm_form.uid_no }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                    </div>
+                </div>
+                <div class="card-header order">
+                    <h5 style="margin:0;">Bank Detail</h5>
+                </div>
+                <div class="row">
+                    <div class="col p-1 audit_textblock">
+                        <div class="form-group mb-0">
+                            <div class="row m-0">
+                                <div class="col col-5">
+                                    <label for="exampleInputEmail1">Account Number</label>
+                                </div>
+                                <div class="col col-7">
+                                    <span>{{ form.bank_account_number }}</span>
+                                    
+                                </div>
+                            </div>
+                            <div class="row m-0">
+                                <div class="col col-5">
+                                    <label for="exampleInputEmail1">IFSC Code</label>
+                                </div>
+                                <div class="col col-7">
+                                    <span>{{ form.ifsc_code }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12 photo_block mb-2">
+                        {{ formset.management_form }}
+                        {% for fm_form in formset %}
+                            {{ fm_form.uid_front_link.as_hidden }}
+                            {{ fm_form.uid_back_link.as_hidden }}
+                            {{ fm_form.id.as_hidden }}
+                        {% endfor %}
+
+                        <select style="display:block;" id="upload--documents">
+                            {% for fm_form in formset %}
+                                <option class="mb-2" value="{{ fm_form.uid_front_link.auto_id}}">{{ fm_form.name.value }} {{ fm_form.uid_front_link.name }}</option>
+                                <option value="{{ fm_form.uid_back_link.auto_id }}">{{ fm_form.name.value }} {{ fm_form.uid_back_link.name }}</option>
+                            {% endfor %}
+{#                            <option value="{{ obj.document_bank_detail_photo.name }}">Bank Photo</option>#}
+                        </select>
+                    </div>
+                    <div class="col-sm-12 photo_block">
+                        <span>{{ fm_form.uid_front_link }}</span>
+                        <p id="uid_front_link"></p>
+                        {{ fm_form.uid_front_link.errors }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-7">
+                
+                <div class="zoom_imge_container" style="height: 300px; object-fit: contain;">
+                    <img class="xzoom" id="xzoom-default" src="{{ form.uid_front_link.value }}"/>
+                </div>
+                <div class="row">
+                    <div class="xzoom-container">
+                        <ul>
+                            {% for fm_form in formset %}
+                            <li>
+                                <a href="{{ fm_form.uid_front_link.value }}" style="">
+                                    <img class="xzoom-gallery" width="80" height="80" src="{{ fm_form.uid_front_link.value }}"
+                                        xpreview="{{ fm_form.uid_front_link.value }}">
+                                    <p class="form_lable rounded-0">{{ fm_form.name.value}} Aadhaar Front</p>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ fm_form.uid_back_link.value }}">
+                                    <img class="xzoom-gallery" width="80" height="80" src="{{ fm_form.uid_back_link.value }}">
+                                    <p class="form_lable mb-2 rounded-0">{{ fm_form.name.value}} Aadhaar Back</p>
+                                </a>
+                            </li>
+                            {% endfor %}
+                            <li>
+                                <a href="{{ obj.document_bank_detail_photo }}">
+                                    <img class="xzoom-gallery" width="80" height="80" src="{{ obj.document_bank_detail_photo }}">
+                                    <p class="form_lable mb-2 rounded-0">Bank Passbook</p>
+                                </a>
+                            </li>
+                        </ul> 
+                        <button type="button" class="btns mb-2" id="rotate-button">Rotate</button> 
+                    </div>
+                </div> 
+            </div>
+        </div>
+        <div class="card-footer align-right" >
+            <input type="submit" class="btn btn-secondary" data-dismiss = "modal"/>
+        </div>
+    </form>
+</div>
+<script>
+    $(document).ready(function () {
+        var scale = 1;
+        var rotation = 0;
+        var isDragging = false;
+        var startX, startY;
+
+        // Handle mouse wheel event for zooming
+        $('#image-container').on('wheel', function (event) {
+            event.preventDefault();
+
+            var delta = event.originalEvent.deltaY;
+            scale += delta > 0 ? -0.1 : 0.1;
+            scale = Math.max(0.1, scale);
+
+            updateTransform();
+        });
+
+        // Handle mouse click event on the image container to rotate
+        $('#image-container').on('click', function () {
+            rotation += 45;
+            updateTransform();
+        });
+
+        // Handle mouse down event for starting the drag
+        $('#rotatable-image').on('mousedown', function (event) {
+            event.preventDefault();
+            isDragging = true;
+            startX = event.clientX - $('#rotatable-image').offset().left;
+            startY = event.clientY - $('#rotatable-image').offset().top;
+            $('#image-container').css('cursor', 'grabbing');
+        });
+
+        // Handle mouse move event for dragging
+        $(document).on('mousemove', function (event) {
+            if (isDragging) {
+                var mouseX = event.clientX - $('#rotatable-image').offset().left;
+                var mouseY = event.clientY - $('#rotatable-image').offset().top;
+
+                var deltaX = mouseX - startX;
+                var deltaY = mouseY - startY;
+
+                $('#rotatable-image').css('transform', 'translate(' + deltaX + 'px, ' + deltaY + 'px) scale(' + scale + ') rotate(' + rotation + 'deg)');
+            }
+        });
+
+        // Handle mouse up event for ending the drag
+        $(document).on('mouseup', function () {
+            if (isDragging) {
+                isDragging = false;
+                $('#image-container').css('cursor', 'grab');
+            }
+        });
+
+        // Update the transform property of the image
+        function updateTransform() {
+            $('#rotatable-image').css('transform', 'scale(' + scale + ') rotate(' + rotation + 'deg)');
+        }
+    });
+
+    window.updateImageUppy = new Uppy.Core({
+        debug: true,
+        autoProceed: true,
+        restrictions: {
+            maxFileSize: 50000000,
+            maxNumberOfFiles: 1,
+            minNumberOfFiles: 1,
+            allowedFileTypes: ['image/*'],
+        }
+    })
+    .use(Uppy.Dashboard, {
+        trigger: '#uid_front_link',
+        inline: true,
+        target: '#uid_front_link',
+        showProgressDetails: true,
+        note: 'Images only, 1 file, up to 10 MB',
+        height: 250,
+        metaFields: [],
+        id: 'uid_front_link',
+        browserBackButtonClose: false
+    })
+    .use(Uppy.Compressor, {
+        quality: 0.9,
+        maxWidth: 2048,
+        resize: 'contain',
+        limit: 10,
+        convertTypes: ['image/png', 'image/jpg', 'image/jpeg'],
+        convertSize: 1000000,
+    })
+    .use(Uppy.Tus, {
+        endpoint: 'https://tus.dca.arungas.com/files/',
+        
+    })
+    
+    updateImageUppy.on('complete', result => {
+        console.log('successful files:', result.successful);
+        var input_id = $('#upload--documents').val();
+        $(`#${input_id}`).val(result.successful[0]['tus']['uploadUrl']);
+    });
+
+        
+
+</script>
+<script type="text/javascript" src="{% static '/js/setup.js' %}"></script>
+<script type="text/javascript" src="{% static '/js/xzoom.min.js' %}"></script>
+<script>
+     document.addEventListener('DOMContentLoaded', function () {
+      var image = document.getElementById('xzoom-default');
+      var rotateButton = document.getElementById('rotate-button');
+      var scale = 1.0;
+
+      var currentRotation = 0;
+
+      rotateButton.addEventListener('click', function () {
+        // Increment rotation angle by 90 degrees on each click
+        currentRotation += 90;
+
+        // Apply the rotation transform to the image
+        image.style.transform = 'rotate(' + currentRotation + 'deg)';
+      });
+
+      image.addEventListener('wheel', function (event) {
+        // Prevent the default behavior of the mouse wheel
+        event.preventDefault();
+
+        // Adjust the scale based on the direction of the wheel
+        scale += event.deltaY > 0 ? -0.1 : 0.1;
+
+        // Apply the scale transform to the image
+        image.style.transform = 'scale(' + scale + ')';
+      });
+
+      $('.xzoom, .xzoom-gallery').xzoom({
+        // Other configuration options here
+        });
+
+        // Add mousewheel support
+        $('.xzoom').bind('mousewheel', function(e) {
+            e.preventDefault();
+            var delta = e.originalEvent.wheelDelta || -e.originalEvent.detail;
+            $(this).trigger('XZoom.' + (delta > 0 ? 'zoomIn' : 'zoomOut'));
+        });
+    });
+
+</script>
+<style>
+	#xzoom-default{ width: 300px !important;}
+	.xzoom{ max-height: 300px !important;}
+    .xzoom-thumbs a{ display: inline-block;}
+    .form_abc a{ width: 100%; }
+    body .mobile_review.form_abc span,.desktop_review .form_lable{ height: 32px !important; line-height: 22px !important;}
+    .desktop_review .xzoom-thumbs img{ margin:0 !important; float: left; width: 100%; }
+    .desktop_review .xzoom-thumbs{ float: left; width: 100%;}
+    .desktop_review .xzoom-thumbs .form_lable{  font-size: 12px !important; height: 32px !important; line-height: 22px !important;}
+    #id_review_status {
+        display: none;
+    }
+   
+    .zoom_imge_container{ border: 1px solid #ccc;}
+    .zoom_imge_container img{object-fit: contain; width: 200px;}
+    .xzoom-container ul li{ display: inline-block;}
+  </style>
+
+{% endblock %}
