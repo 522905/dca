@@ -1532,7 +1532,7 @@ def is_pre_inspection_applicable(application_id):
 	if application.status == UjjwalaV2ApplicationStatus.OMC_REJECTED:
 		return False
 
-	if application.robo_sdms_dedup == RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE:
+	if application.robo_sdms_dedup in (RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE, RoboSdmsDedeupStatusEnum.NOT_PROCESSED):
 		return True
 
 	return False
