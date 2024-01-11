@@ -3559,15 +3559,23 @@ class UjjwalaApplicationAuditFamilyMembersForm(forms.ModelForm):
 	class Meta:
 		model = FamilyMembers
 		# fields = "__all__"
-		exclude = ['uid_back_compressed', 'relation', 'uid_front_file_size', 'uid_back_file_size']
+		fields = [
+			'name', 'dob', 'uid_no', 'uid_front_link', 'uid_back_link'
+		]
+		# exclude = ['uid_back_compressed', 'relation', 'uid_front_file_size', 'uid_back_file_size']
 
 
 class UjjwalaApplicationAuditForm(forms.ModelForm):
 	class Meta:
 		model = UjjwalaV2Application
 		# fields = "__all__"
-		exclude = ['sdms_last_updated_on', 'marital_status', 'version', 'robo_sdms_dedup', 'status',
-		           'availability_updated_on', 'tags', 'name', 'contact_mobile', 'ekyc_date']
+		fields = [
+			'bank', 'bank_account_number'
+		]
+		# exclude = [
+		# 	'sdms_last_updated_on', 'marital_status', 'version', 'robo_sdms_dedup', 'status',
+		# 	'availability_updated_on', 'tags', 'name', 'contact_mobile', 'ekyc_date', 'address',
+		# ]
 
 
 FamilyMembersInlineFormSet = inlineformset_factory(
