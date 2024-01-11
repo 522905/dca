@@ -1810,8 +1810,6 @@ def send_otp_using_channel(template, mobile, otp_generated_for, application_id, 
 
 
 def omc_nic_status_update(application, request):
-	from ujjwala.models import UjjwalaV2Application
-
 	if not request.data.get('omc_status'):
 		return HttpResponse('No Data, Skip Update')
 
@@ -1924,6 +1922,14 @@ def get_last_valid_status_for_application(application_id):
 	from ujjwala.models import UjjwalaV2Application
 
 	application = UjjwalaV2Application.objects.get(pk=application_id)
+
+	if not application.last_execution_state:
+		state_log = StateLog.objects.filter(
+			object_id=application_id,
+		    content_type=ContentType.objects.get(app_label='ujjwala', model='ujjwalav2application')
+		).exclude(state=application.status).order_by(
+			'-id').first()
+		return state_log.source_state
 
 	if application.status == application.last_execution_state:
 		state_log = StateLog.objects.filter(
