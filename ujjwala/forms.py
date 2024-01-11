@@ -22,7 +22,8 @@ from ujjwala.enums import UjjwalaV2ApplicationStatus, ConnectionDisbursementStat
 	PrintDocumentsTypeEnum, InstallationTypeEnum, UjjwalaProductEnum, product_quantity_map, SDMSMobileNumberEnum, \
 	PreInspectionRejectionReasonsEnum
 from ujjwala.models import UjjwalaApplicationDocumentsEnum
-from ujjwala.ujjwala_functions import __get_ref_no__, id_generator, valid_file_uploaded, send_otp_using_channel
+from ujjwala.ujjwala_functions import __get_ref_no__, id_generator, valid_file_uploaded, send_otp_using_channel, \
+	is_pre_inspection_applicable
 from django.utils.timezone import now
 
 
@@ -389,14 +390,14 @@ class PreInspectionInitialForm(forms.Form):
 
 		if not application:
 			raise forms.ValidationError("Invalid Application Id")
-
-		elif not (
-			application.robo_sdms_dedup == RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE and\
-			application.status not in (
-				UjjwalaV2ApplicationStatus.APPLICATION_REJECTED,
-				UjjwalaV2ApplicationStatus.OMC_REJECTED
-			)
-		):
+		elif not is_pre_inspection_applicable(application.id):
+		# elif not (
+		# 	application.robo_sdms_dedup == RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE and\
+		# 	application.status not in (
+		# 		UjjwalaV2ApplicationStatus.APPLICATION_REJECTED,
+		# 		UjjwalaV2ApplicationStatus.OMC_REJECTED
+		# 	)
+		# ):
 			raise forms.ValidationError("Application Status: {} \n Dedup status".format(
 				application.status, application.robo_sdms_dedup
 			))
