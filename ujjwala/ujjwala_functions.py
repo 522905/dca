@@ -1532,7 +1532,8 @@ def is_pre_inspection_applicable(application_id):
 	if application.status == UjjwalaV2ApplicationStatus.OMC_REJECTED:
 		return False
 
-	if application.robo_sdms_dedup in (RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE, RoboSdmsDedeupStatusEnum.NOT_PROCESSED):
+	if application.robo_sdms_dedup in (
+		RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE, RoboSdmsDedeupStatusEnum.NOT_PROCESSED):
 		return True
 
 	return False
@@ -1923,23 +1924,32 @@ def get_last_valid_status_for_application(application_id):
 
 	application = UjjwalaV2Application.objects.get(pk=application_id)
 
-	if not application.last_execution_state:
-		state_log = StateLog.objects.filter(
-			object_id=application_id,
-		    content_type=ContentType.objects.get(app_label='ujjwala', model='ujjwalav2application')
-		).exclude(state=application.status).order_by(
-			'-id').first()
+	if application.status == application.last_execution_state or not application.last_execution_state:
+		state_log = StateLog.objects.filter(object_id=application_id,
+		                                    content_type=ContentType.objects.get(app_label='ujjwala',
+		                                                                         model='ujjwalav2application')).exclude(
+			source_state='AUDIT_APPLICATION').exclude(source_state='ON_HOLD').order_by('-id').first()
 		return state_log.source_state
-
-	if application.status == application.last_execution_state:
-		state_log = StateLog.objects.filter(
-			object_id=application_id,
-		    content_type=ContentType.objects.get(app_label='ujjwala', model='ujjwalav2application')
-		).exclude(state=application.status).order_by(
-			'-id').first()
-		return state_log.state
 	else:
 		return application.last_execution_state
+
+	# if not application.last_execution_state:
+	# 	state_log = StateLog.objects.filter(
+	# 		object_id=application_id,
+	# 	    content_type=ContentType.objects.get(app_label='ujjwala', model='ujjwalav2application')
+	# 	).exclude(state=application.status).order_by(
+	# 		'-id').first()
+	# 	return state_log.source_state
+	#
+	# if application.status == application.last_execution_state:
+	# 	state_log = StateLog.objects.filter(
+	# 		object_id=application_id,
+	# 	    content_type=ContentType.objects.get(app_label='ujjwala', model='ujjwalav2application')
+	# 	).exclude(state__in=[application.status, 'ON_HOLD']).order_by(
+	# 		'-id').first()
+	# 	return state_log.state
+	# else:
+	# 	return application.last_execution_state
 
 
 def get_data_for_new_relation(application_id):
