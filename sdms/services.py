@@ -30,8 +30,9 @@ class IoclOmcDedup():
 		self.captcha_client = deathbycaptcha.SocketClient('bhupesh', 'CoolerMaster@101')
 
 	def login(self):
+
 		self.login_attempt_time = datetime.datetime.now()
-		return self.session.post(
+		res = self.session.post(
 			LOGIN_URL,
 			data={
 				'LogId': self.user,
@@ -41,6 +42,8 @@ class IoclOmcDedup():
 
 
 		)
+		self.captcha = self.captcha_resp = None
+		return res
 
 	def __process_omc_dedup_result__(self, res_code):
 		"""
@@ -189,18 +192,39 @@ class IoclOmcDedup():
 
 	def mark_captcha_incorrect(self):
 		self.captcha_client.report(self.captcha_resp['captcha'])
+		self.captcha = self.captcha_resp = None
 
 
 if __name__ == '__main__':
+	"""
+	690369816920
+	288039742716
+	547793779274
+	468878490379
+	491593682739
+	384644481694
+	856569273903
+	"""
 	dedup_portal = IoclOmcDedup('305948', 'Inder@1234')
 	dedup_portal.login()
 
-	resp1 = dedup_portal.omc_aadhar_dedup('469715596115')
+	resp1 = dedup_portal.omc_aadhar_dedup('690369816920')
 	print(resp1)
 
-	resp2 = dedup_portal.omc_aadhar_dedup('822707010681')
+	resp2 = dedup_portal.omc_aadhar_dedup('288039742716')
 	print(resp2)
 
+	resp3 = dedup_portal.omc_aadhar_dedup('547793779274')
+	print(resp3)
+
+	resp4 = dedup_portal.omc_aadhar_dedup('468878490379')
+	print(resp4)
+
+	resp5 = dedup_portal.omc_aadhar_dedup('491593682739')
+	print(resp5)
+
+	resp6 = dedup_portal.omc_aadhar_dedup('856569273903')
+	print(resp6)
 	# for omc, status in resp.items():
 	# 	if status == 'Present':
 	# 		{
