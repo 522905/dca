@@ -1,33 +1,51 @@
 import io
 import json
 import datetime
+import logging
+import pickle
 
 import pytz
 import requests
 import deathbycaptcha
+from django.core.cache import cache
 
+from sdms.models import OMCDedup
+
+captcha_client = deathbycaptcha.SocketClient('bhupesh', 'CoolerMaster@101')
 
 LOGIN_URL = 'https://spandan.indianoil.co.in/ePIC/DealerLoginAuthentication'
 OMC_DEDUP_URL = 'https://spandan.indianoil.co.in/ePIC/OmcDedup'
+
+logger = logging.getLogger(__name__)
 
 
 class LoginRequired(Exception):
 	pass
 
 
-class IoclOmcDedup():
+# def save(obj):
+# 	return (obj.__class__, obj.__dict__)
+#
+#
+# def restore(cls, attributes):
+# 	obj = cls.__new__(cls)
+# 	obj.__dict__.update(attributes)
+# 	return obj
+
+
+class IoclOmcDedup:
 
 	def __init__(self, user, password):
 		self.captcha = None
 		self.captcha_resp = None
 		self.login_attempt_time = None
 		self.session = requests.Session()
-
 		self.session.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 		self.session.headers['Origin'] = 'https://spandan.indianoil.co.in'
 		self.user = user
 		self.password = password
-		self.captcha_client = deathbycaptcha.SocketClient('bhupesh', 'CoolerMaster@101')
+		# self.captcha_client = deathbycaptcha.SocketClient('bhupesh', 'CoolerMaster@101')
+		logger.debug("Initializing")
 
 	def login(self):
 
@@ -39,10 +57,10 @@ class IoclOmcDedup():
 				'LogPwd': self.password,
 				'LogType': 2
 			},
-
-
 		)
-		self.captcha = self.captcha_resp = None
+		omcdedup = OMCDedup.get_solo()
+		omcdedup.captcha_text = None
+		omcdedup.save()
 		return res
 
 	def __process_omc_dedup_result__(self, res_code):
@@ -149,6 +167,7 @@ class IoclOmcDedup():
 		# })
 
 		captchatext = self.get_captcha()
+
 		resp = self.session.post(OMC_DEDUP_URL, data={
 			'requestType': '02',
 			'aadhaar': aadhar_no,
@@ -163,9 +182,9 @@ class IoclOmcDedup():
 			res = self.session.get("https://spandan.indianoil.co.in/ePIC/Partner/partnerChkList.jsp")
 			if not "ARUN INDANE PROP LUDHIANA ENT." in res.text:
 				self.login()
-			else:
-				self.mark_captcha_incorrect()
-				self.captcha = None
+			# else:
+			# 	self.mark_captcha_incorrect()
+			# self.captcha = None
 			return self.omc_aadhar_dedup(aadhar_no)
 			# current_time = datetime.datetime.now()
 			# logged_time = current_time - self.login_attempt_time
@@ -180,19 +199,22 @@ class IoclOmcDedup():
 		return resp
 
 	def get_captcha(self):
-		if not self.captcha:
+		omcdedup = OMCDedup.get_solo()
+
+		if not omcdedup.captcha_text:
 			epoch_time = int(datetime.datetime.now(pytz.timezone('Asia/Kolkata')).timestamp() * 1000)
 			captcha_resp = self.session.get(f'https://spandan.indianoil.co.in/ePIC/CaptchImage?time={epoch_time}')
 			captcha_file = io.BytesIO(captcha_resp.content)
-			captcha = self.captcha_client.decode(captcha_file)
-			self.captcha = captcha['text']
-			self.captcha_resp = captcha
-
-		return self.captcha
+			captcha = captcha_client.decode(captcha_file)
+			omcdedup.captcha_text = captcha['text']
+			omcdedup.save()
+		return omcdedup.captcha_text
 
 	def mark_captcha_incorrect(self):
-		self.captcha_client.report(self.captcha_resp['captcha'])
-		self.captcha = self.captcha_resp = None
+		captcha_client.report(self.captcha_resp['captcha'])
+		omcdedup = OMCDedup.get_solo()
+		omcdedup.captcha_text = None
+		omcdedup.save()
 
 
 if __name__ == '__main__':

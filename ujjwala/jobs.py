@@ -1,4 +1,5 @@
 import io
+import pickle
 from functools import wraps
 from time import time, sleep
 
@@ -18,7 +19,7 @@ from ujjwala.management.commands.ujjwala_file_worker import upload_compressed_fi
 from ujjwala.models import ConnectionDisbursementInvitation, ConnectionDisbursement, PreInspection
 from ujjwala.ujjwala_functions import application_needs_to_be_audited, application_needs_to_be_audited_by_id
 
-dedup_portal = IoclOmcDedup('305948', 'Inder@1234')
+
 
 minio_api_client = Minio(
     settings.MINIO_API_ENDPOINT,
@@ -28,6 +29,8 @@ minio_api_client = Minio(
 )
 
 OMC_DEDUP_VERSION = 'V2'
+
+dedup_portal = IoclOmcDedup('305948', 'Inder@1234')
 
 
 def ensure_db_connection(func):
@@ -79,6 +82,142 @@ def move_file_to_minio(file_url_to_move, new_file_name, bucket_name, delete_src=
 
 
 def do_primary_omc_dedupe_check_v2(id):
+    """
+    {
+        "TRANSACID": "20230923121515-56592777",
+        "CON_STATE": null,
+        "CDP_ID": null,
+        "KYC_ID": null,
+        "CONSUMER_NO": null,
+        "LPG_ID": null,
+        "OMC_CODE": "3",
+        "DEDUP_RESULT": "Reject",
+        "DEMO_RESULT": null,
+        "COUNTERPART": [
+            {
+                "CON_STATE": "Consumer",
+                "CDP_ID": "1328115271",
+                "KYC_ID": null,
+                "LPG_ID": "10000000111494923",
+                "OMC_CODE": "1",
+                "DEDUP_TYP": "A",
+                "DEDUP_GRPID": "1",
+                "SUSPFLAG": null,
+                "DISTR_CODE": "188177",
+                "DISTR_NAME": "MANASWINI BHARATGAS GRAMIN VITRAK",
+                "DISTR_ADDR1": "AT/PO ERABANGA",
+                "DISTR_ADDR2": "PS GOP VIA BIRATUNG",
+                "DISTR_ADDR3": null,
+                "CONS_NAME": "KUNTALA BARAL",
+                "CONS_NO": "111494923",
+                "CONS_ADDR1": "- W/O-PABITRA MOHAN BARAL",
+                "CONS_ADDR2": "AT-KHANDASAHI PO-RAHANGA",
+                "CONS_ADDR3": "PURI Odisha",
+                "LANDMARK": "PS-GOP",
+                "VILL_TOWN": "409424",
+                "PIN_CODE": "752110",
+                "KYC_DATE": "20210821000000",
+                "SV_DATE": null,
+                "SEED_DATE": null,
+                "INSTL_DATE": "20210907183500",
+                "PPAC_DISTCODE": "2222",
+                "PPAC_STATCODE": null,
+                "CONS_STATUS": "1A",
+                "RATION_CARD": null,
+                "RELATIONCODE": "F",
+                "FAM_MEMBRNAME": "PABITRA MOHAN BARAL",
+                "ERROR_CODE": "ZZM_MSGCLS-015",
+                "ERROR_MSG": "Duplicate Aadhaar found in CDP"
+            }
+        ]
+    }
+    """
+    from ujjwala.models import UjjwalaV2Application, PreInspection
+
+    application = UjjwalaV2Application.objects.get(pk=id)
+    omc_dedupe_check_passed = True
+    iocl_investigation_required = False
+    invalid_result = ''
+
+    for fm in application.family_members.all():
+        if fm.uid_no in ('999999999999', '666666666666'):
+            continue
+
+        resp = global_dedup_portal.omc_aadhar_dedup(fm.uid_no)
+        print(resp)
+        counterpart = {}
+        if resp.get('DEDUP_RESULT', '') == 'Reject':
+            omc_dedupe_check_passed = False
+            counterpart = resp.get('COUNTERPART', [])
+            if counterpart:
+                counterpart = counterpart[0]
+
+                fm.uid_check_result = {
+                    "consumer_id": counterpart.get('CONS_NO'),
+                    "contact_name": counterpart.get('CONS_NAME'),
+                    "phone_number": "",
+                    "contact_address": f"{counterpart.get('CONS_ADDR1')} {counterpart.get('CONS_ADDR2')} {counterpart.get('CONS_ADDR3')} {counterpart.get('LANDMARK')} {counterpart.get('VILL_TOWN')}  {counterpart.get('PIN_CODE')} ",
+                    "distributor_name": counterpart.get('DISTR_NAME'),
+                    "relationship_status": counterpart.get('DEDUP_TYP'),
+                    "reason": counterpart.get('ERROR_MSG')
+                }
+                fm.save()
+                invalid_result = invalid_result + "{} {} {} {}<br>".format(
+                    fm.relation,
+                    fm.uid_check_result.get('distributor_name', ''), fm.uid_check_result.get('consumer_id', ''),
+                    fm.uid_check_result.get('contact_address', '')
+                )
+            else:
+                invalid_result = invalid_result + "{} <br>".format(fm.relation)
+            print(resp)
+        elif resp.get('DEDUP_RESULT', '') == 'Clear':
+            print(resp)
+            continue
+        elif resp.get('ERRORS', []):
+            print(resp)
+            error = resp.get('ERRORS', [])[0]
+            if error['ERROR_CODE'] == '0':
+                print(resp)
+                continue
+
+        else:
+            raise Exception("Technical Error")
+
+        if fm.relation == 'SELF':
+            if counterpart and counterpart.get('DISTR_CODE') == '305948':
+                iocl_investigation_required = True
+
+    if omc_dedupe_check_passed:
+        application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE
+        try:
+            obj, created = PreInspection.objects.get_or_create(
+                parent_id=application.id,
+                status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+                type=PreInspectionTypeEnum.SELF
+            )
+            # application.event_invite_for_ekyc_channel_whatsapp()
+            application.event_whatsapp_pre_inspection_type_self(obj.id)
+        except:
+            pass
+    else:
+        if iocl_investigation_required:
+            application.status = RoboSdmsDedeupStatusEnum.IOCL_INVESTIGATION_REQUIRED
+        else:
+            form = ApplicationRejected(data={
+                'rejected_reason': 'CONNECTION_ALREADY_EXIST',
+                'description': invalid_result
+            })
+            form.is_valid()
+            application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE
+            # if application.status == 'DOCUMENTS_UPLOADED':
+            application.application_rejected(**form.cleaned_data)
+            application.event_ioc_dedupe_reject_channel_whatsapp()
+    application.save()
+    return application.robo_sdms_dedup
+
+
+@ensure_db_connection
+def do_primary_omc_dedupe_check_worker(id, dedup_portal):
     """
     {
         "TRANSACID": "20230923121515-56592777",
