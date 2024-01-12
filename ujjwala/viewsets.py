@@ -289,9 +289,9 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                     )
                 })
 
-            ConnectionDisbursement.objects.filter(
+            connection_disbursement = ConnectionDisbursement.objects.filter(
                 parent_id=existing_application.id
-            ).delete()
+            ).first()
 
             pre_inspection = PreInspection.objects.filter(
                 parent_id=existing_application.id
@@ -303,9 +303,15 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                     pre_inspection.parent_id = response.data.get('id')
                     pre_inspection.save()
                     existing_application.delete()
+                    if connection_disbursement:
+                        connection_disbursement.parent_id = response.data.get('id')
+                        connection_disbursement.save()
+                    re_create_legal_docs(UjjwalaV2Application.objects.get(pk=response.data.get('id')))
                     return response
                 else:
                     pre_inspection.delete()
+                    if connection_disbursement:
+                        connection_disbursement.delete()
             existing_application.delete()
         return super().create(request, *args, **kwargs)
 
