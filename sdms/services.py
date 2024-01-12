@@ -1,6 +1,11 @@
+import io
 import json
+import datetime
 
+import pytz
 import requests
+import deathbycaptcha
+
 
 LOGIN_URL = 'https://spandan.indianoil.co.in/ePIC/DealerLoginAuthentication'
 OMC_DEDUP_URL = 'https://spandan.indianoil.co.in/ePIC/OmcDedup'
@@ -13,18 +18,28 @@ class LoginRequired(Exception):
 class IoclOmcDedup():
 
 	def __init__(self, user, password):
+		self.captcha = None
+		self.captcha_resp = None
+		self.login_attempt_time = None
 		self.session = requests.Session()
+
+		self.session.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+		self.session.headers['Origin'] = 'https://spandan.indianoil.co.in'
 		self.user = user
 		self.password = password
+		self.captcha_client = deathbycaptcha.SocketClient('bhupesh', 'CoolerMaster@101')
 
 	def login(self):
+		self.login_attempt_time = datetime.datetime.now()
 		return self.session.post(
 			LOGIN_URL,
 			data={
 				'LogId': self.user,
 				'LogPwd': self.password,
 				'LogType': 2
-			}
+			},
+
+
 		)
 
 	def __process_omc_dedup_result__(self, res_code):
@@ -129,17 +144,29 @@ class IoclOmcDedup():
 		# 	'account': '',
 		# 	'bankCode': '',
 		# })
+
+		captchatext = self.get_captcha()
 		resp = self.session.post(OMC_DEDUP_URL, data={
 			'requestType': '02',
 			'aadhaar': aadhar_no,
 			'atr': '',
 			'ifscState': '',
+			'captchatext': captchatext
 		})
 		resp = resp.text
+		# self.captcha_client.report(captcha['captcha'])
 
 		if not resp:
-			self.login()
+			res = self.session.get("https://spandan.indianoil.co.in/ePIC/Partner/partnerChkList.jsp")
+			if not "ARUN INDANE PROP LUDHIANA ENT." in res.text:
+				self.login()
+			else:
+				self.mark_captcha_incorrect()
+				self.captcha = None
 			return self.omc_aadhar_dedup(aadhar_no)
+			# current_time = datetime.datetime.now()
+			# logged_time = current_time - self.login_attempt_time
+			# print(logged_time.total_seconds())
 
 		resp = json.loads(resp)
 		# return {
@@ -149,19 +176,37 @@ class IoclOmcDedup():
 		# }
 		return resp
 
+	def get_captcha(self):
+		if not self.captcha:
+			epoch_time = int(datetime.datetime.now(pytz.timezone('Asia/Kolkata')).timestamp() * 1000)
+			captcha_resp = self.session.get(f'https://spandan.indianoil.co.in/ePIC/CaptchImage?time={epoch_time}')
+			captcha_file = io.BytesIO(captcha_resp.content)
+			captcha = self.captcha_client.decode(captcha_file)
+			self.captcha = captcha['text']
+			self.captcha_resp = captcha
+
+		return self.captcha
+
+	def mark_captcha_incorrect(self):
+		self.captcha_client.report(self.captcha_resp['captcha'])
+
 
 if __name__ == '__main__':
-	dedup_portal = IoclOmcDedup('305948', 'Arun@305948')
-	# dedup_portal.login()
+	dedup_portal = IoclOmcDedup('305948', 'Inder@1234')
+	dedup_portal.login()
 
-	resp = dedup_portal.omc_aadhar_dedup('984336989869')
+	resp1 = dedup_portal.omc_aadhar_dedup('469715596115')
+	print(resp1)
 
-	for omc, status in resp.items():
-		if status == 'Present':
-			{
-				'distributor_name': omc,
-				'consumer_id': 'NotAvail-CheckWithDistributor',
-				'contact_address': ''
-			}
+	resp2 = dedup_portal.omc_aadhar_dedup('822707010681')
+	print(resp2)
 
-	print(resp)
+	# for omc, status in resp.items():
+	# 	if status == 'Present':
+	# 		{
+	# 			'distributor_name': omc,
+	# 			'consumer_id': 'NotAvail-CheckWithDistributor',
+	# 			'contact_address': ''
+	# 		}
+	#
+	# print(resp)
