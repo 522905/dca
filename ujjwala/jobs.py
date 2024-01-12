@@ -685,7 +685,13 @@ def is_application_ready_for_disbursement(parent_id):
 
 def enqueue_dedupe_and_audit_jobs(application_id, data):
     # Currently Disabled Due To Non Availability Of The Page For Dedup In Spandan
-    # dedupe_job = django_rq.enqueue("ujjwala.jobs.do_primary_omc_dedupe_check", args=(application_id,))
+    dedupe_job = django_rq.enqueue("ujjwala.jobs.do_primary_omc_dedupe_check", args=(application_id,))
+    django_rq.enqueue(
+        move_application_for_audit,
+        args=(application_id, data,),
+        depends_on=dedupe_job
+    )
+
     from ujjwala.models import UjjwalaV2Application, PreInspection
 
     application_obj = UjjwalaV2Application.objects.get(pk=application_id)
@@ -697,11 +703,6 @@ def enqueue_dedupe_and_audit_jobs(application_id, data):
             type=PreInspectionTypeEnum.SELF
         )
         application_obj.event_whatsapp_pre_inspection_type_self(obj.id)
-    django_rq.enqueue(
-        move_application_for_audit,
-        args=(application_id, data,),
-        # depends_on=dedupe_job
-    )
 
 
 def move_application_for_audit(application_id, data):
@@ -740,5 +741,5 @@ def upload_recreated_physical_document_url(pre_inspection_id, upload_url):
         pi_doc_obj.save()
     else:
         PreInspectionDocuments.objects.create(
-            type='PHYSICAL_LEGAL_DOCUMENT', link=upload_url, parent=pre_inspection_id
+            type='PHYSICAL_LEGAL_DOCUMENT', link=upload_url, parent_id=pre_inspection_id
         )
