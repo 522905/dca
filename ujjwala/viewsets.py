@@ -5,6 +5,7 @@ from functools import partial
 import django_filters
 import django_rq
 import requests
+from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse, HttpRequest
@@ -279,6 +280,10 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
     @action(methods=['post'], detail=False, url_path='wf')
     def web_form(self, request, *args, **kwargs):
         request.PERFORM_SUBMIT = True
+        referral_username = request.data.get('referral_code').split("(")[0].strip()
+        user = User.objects.filter(username=referral_username).first()
+        if user:
+            request.data['referred_by_id'] = user.id
         self_family_member = FamilyMembers.objects.filter(uid_no=request.data.get('SELF-uid_no')).first()
         if self_family_member:
             existing_application = self_family_member.parent
