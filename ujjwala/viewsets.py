@@ -1074,6 +1074,15 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             application.save()
         return HttpResponse('OK')
 
+    @action(methods=['get'], detail=True, url_path='relation_uid')
+    def relation_uid(self, request: HttpRequest, *args, **kwargs):
+        application: UjjwalaV2Application = self.get_object()
+        uid_list = []
+        for record in application.family_members.filter().exclude(relation='SELF').all():
+            uid_list.append(record.uid_no)
+        return JsonResponse(uid_list, safe=False)
+
+
     @action(methods=['get'], detail=False, url_path='get_enrich_rejection_records')
     def get_enrich_rejection_records(self, request, *args, **kwargs):
         record_list = UjjwalaV2Application.objects.filter(
