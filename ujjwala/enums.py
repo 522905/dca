@@ -144,6 +144,8 @@ class PreInspectionRejectionReasonsEnum(models.TextChoices):
 	CONDITION_NO_KITCHEN_MAIN_GATE_PHOTO = 'CONDITION_NO_KITCHEN_MAIN_GATE_PHOTO', 'आपने अपनी फोटो अपलोड की है कृपया रसोई घर ओर मेन गेट की फोटो अपलोड करे'
 	CONDITION_NO_SAFETY_GUIDE = 'CONDITION_NO_SAFETY_GUIDE', 'आपने सेफ्टी गाइड नहीं लगाया है'
 	CONDITION_LOCATION_MISMATCH = 'CONDITION_LOCATION_MISMATCH', 'गलत लोकेशन'
+	CONDITION_APPLICANT_MISSING_IN_PHOTOS = 'CONDITION_APPLICANT_MISSING_IN_PHOTOS', 'आप रसोई और मेन गेट की फ़ोटो में स्वयं खड़े नहीं है'
+	CONDITION_OWNER_OF_WATER_FILTER = 'CONDITION_OWNER_OF_WATER_FILTER', 'आप एक पानी वाले फ़िल्टर के मालिक है'
 
 
 PreInspectionRejectionReasons = (
