@@ -201,7 +201,7 @@ def do_primary_omc_dedupe_check_v2(id):
             pass
     else:
         if iocl_investigation_required:
-            application.status = RoboSdmsDedeupStatusEnum.IOCL_INVESTIGATION_REQUIRED
+            application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.IOCL_INVESTIGATION_REQUIRED
         else:
             form = ApplicationRejected(data={
                 'rejected_reason': 'CONNECTION_ALREADY_EXIST',
