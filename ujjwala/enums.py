@@ -12,6 +12,11 @@ class UjjwalaProductEnum(models.TextChoices):
 	UJJWALA_14_KG = 'UJJWALA_14_KG', 'Ujjwala - 14 Kg SBC Package'
 
 
+class UjjwalaSearchLogEnum(models.TextChoices):
+	WEB = 'WEB', 'Web'
+	PHONE = 'PHONE', 'Phone'
+
+
 class DisbursementDriveStatusEnum(models.TextChoices):
 	ACTIVE = 'ACTIVE', 'Active'
 	COMPLETED = 'COMPLETED', 'Completed'

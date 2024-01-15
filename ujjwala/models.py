@@ -26,8 +26,8 @@ from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMo
 	RejectionTypeEnum, RoboSdmsDedeupStatusEnum, UserDocumentsEnum, PreInspectionStatusEnum, \
 	ConnectionDisbursementStatusEnum, PreInspectionTypeEnum, SchemeOnboardingStatusEnum, NicClearedCustomerRemarksEnum, \
 	DisbursementDriveStatusEnum, InstallationTypeEnum, product_quantity_map, UjjwalaV2ApplicationAvailabilityStatus, \
-	UjjwalaV2ApplicationAvailabilityChannel, UjjwalaProductEnum, ConnectionDisbursementInvitationEnum, \
-	SDMSMobileNumberEnum, FilledByFilterEnum, SVSDMSStatusEnum, PreInspectionRejectionReasonsEnum
+	UjjwalaV2ApplicationAvailabilityChannel, UjjwalaProductEnum, SDMSMobileNumberEnum, FilledByFilterEnum, \
+	SVSDMSStatusEnum, PreInspectionRejectionReasonsEnum, UjjwalaSearchLogEnum
 from ujjwala.forms import ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
 	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm, NewRelationCreated, \
@@ -1897,6 +1897,13 @@ class Ekyc(models.Model):
 	authentication_type = models.CharField(max_length=128)
 	status = models.CharField(max_length=128)
 	ekyc_details_data = models.JSONField(encoder=DateTimeEncoder)
+
+
+class UjjwalaSearchLog(models.Model):
+	parent = models.ForeignKey(UjjwalaV2Application, on_delete=models.PROTECT)
+	requested_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
+	source = models.CharField(max_length=128, choices=UjjwalaSearchLogEnum.choices)
+	activity_datetime = models.DateTimeField()
 
 
 def dummy():
