@@ -88,6 +88,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		max_length=64, choices=SchemeOnboardingStatusEnum.choices, blank=True, null=True
 	)
 	filled_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
+	referral_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True, related_name="referral_by")
 	service_area = models.ForeignKey(
 		ServiceArea, on_delete=models.PROTECT, null=True, blank=True
 	)
@@ -446,6 +447,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			UjjwalaV2ApplicationStatus.NIC_CLEARED_SDMS_RELATION_CANCELLED,
 			UjjwalaV2ApplicationStatus.NIC_ERROR,
 			UjjwalaV2ApplicationStatus.ON_HOLD,
+			UjjwalaV2ApplicationStatus.EDIT_APPLICATION,
+			UjjwalaV2ApplicationStatus.OMC_REJECTED,
 		],
 		# target=UjjwalaV2ApplicationStatus.APPLICATION_REJECTED,
 		target=GET_STATE(
