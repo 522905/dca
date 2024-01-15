@@ -68,5 +68,6 @@ class UjjwalaApplicationExtraViewSet(viewsets.ViewSet):
     @action(methods=['get'], detail=False, url_path='get_payment_variables')
     def get_payment_variables(self, request, *args, **kwargs):
         application_id = request.GET.get('application_id')
-        result = fetch_payment_profile_variables(application_id)
+        force_main_branch = request.GET.get('force_main_branch', False)
+        result = fetch_payment_profile_variables(application_id, force_main_branch=force_main_branch)
         return JsonResponse({'result': result}, safe=False)
