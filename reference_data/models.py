@@ -12,3 +12,10 @@ class IFSCodeList(models.Model):
 	old_ifscode = models.CharField(max_length=32)
 	new_ifscode = models.CharField(max_length=32)
 	main_branch = models.BooleanField(default=False)
+
+
+class RTGSList(models.Model):
+	bank_name = models.CharField(max_length=255)
+	ifscode = models.CharField(max_length=12)
+	address = models.TextField()
+
