@@ -36,7 +36,7 @@ from ujjwala.camunda_functions import start_ujjwala_sv_process_in_camunda, start
 from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
 	PreInspectionTypeEnum, DisbursementDriveStatusEnum, UjjwalaApplicationDocumentsEnum, NicClearedCustomerRemarksEnum, \
 	UjjwalaV2ApplicationAvailabilityChannel, ConnectionDisbursementInvitationEnum, FilledByFilterEnum, \
-	PreInspectionRejectionReasonsEnum
+	PreInspectionRejectionReasonsEnum, UjjwalaSearchLogEnum
 from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm, \
 	PreInspectionGenerateOtpForm, PreInspectionValidateOtpForm, \
 	KitchenPreInspectionForm, AudioOnSafetyForm, PreviewPreInspectionForm, PreInspectionAllocatedGenerateOtpForm, \
@@ -52,7 +52,7 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
 	NewRelationCreated, ChangePhoneNumberForm, UploadUIDForEKYCForm, UjjwalaApplicationServiceRequestForm
 from ujjwala.global_functions import login_required_if_mech_inspection
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
-	FamilyMembers, DisbursementDrive
+	FamilyMembers, DisbursementDrive, UjjwalaSearchLog
 from ujjwala.sv_functions import create_installation_document
 from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_pre_inspection_applicable, \
 	send_ujjwala_application_whatsapp_link_v2, download_audit_documents_for_ids, is_member_of_disbursement_drive, \
@@ -200,7 +200,8 @@ class UjjwalaApplicationSharedLinkView(View):
 		data.update({
 			"source": "link_share",
 			"signed_contact_mobile": signer.sign(data['contact_mobile']),
-			"referral_code": "{} ({} {})".format(user.username, user.first_name, user.last_name)
+			"referral_code": "{} ({} {})".format(user.username, user.first_name, user.last_name),
+			"referred_by": user,
 		})
 		return render(request, template_name='ujjwala/web_form.html', context=data)
 
@@ -941,7 +942,12 @@ class UjjwalaApplicationStatusView(TemplateView):
 			application = qs.filter(id=application_id).first()
 
 		if application:
+
 			reject_reason = ujjwala_application_reject_reason_log(application.id)
+			UjjwalaSearchLog.objects.create(
+				parent=application, requested_by=get_current_user(), source=UjjwalaSearchLogEnum.WEB,
+				activity_datetime=datetime.datetime.now()
+			)
 			return render(request, self.template_name, context={'obj': application, 'rejected_reason': reject_reason})
 		else:
 			messages.add_message(
@@ -3570,7 +3576,7 @@ class UjjwalaApplicationAuditForm(forms.ModelForm):
 		model = UjjwalaV2Application
 		# fields = "__all__"
 		fields = [
-			'bank', 'bank_account_number'
+			'ifsc_code', 'bank_account_number'
 		]
 		# exclude = [
 		# 	'sdms_last_updated_on', 'marital_status', 'version', 'robo_sdms_dedup', 'status',
@@ -3601,7 +3607,8 @@ class UjjwalaApplicationAuditView(UpdateView):
 		if application_id:
 			application = self.get_object()
 			if application.status != UjjwalaV2ApplicationStatus.AUDIT_APPLICATION:
-				messages.add_message(self.request, messages.ERROR, f"Application Id: {application_id} Not In Audit Status")
+				messages.add_message(self.request, messages.ERROR,
+				                     f"Application Id: {application_id} Not In Audit Status")
 				return redirect('ujjwala:ujjwala_application_audit_list')
 		return super().dispatch(request, *args, **kwargs)
 
