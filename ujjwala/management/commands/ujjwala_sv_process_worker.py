@@ -12,7 +12,6 @@ from django.core.management.base import BaseCommand
 from ujjwala.camunda_functions import download_file_variable_data, calculate_download_sv_wait_timing, \
 	start_ujjwala_cld_dedup_in_camunda, fetch_payment_profile_variables, get_activity_instance_count, \
 	enrich_omc_rejection_details
-from ujjwala.ekyc_data import ekyc_data_list
 from ujjwala.enums import UjjwalaV2ApplicationStatus
 from ujjwala.jobs import ensure_db_connection
 from ujjwala.sv_functions import update_sv_document, update_in_dca, update_sv_document_v2
@@ -31,6 +30,7 @@ EXTERNAL_TASK_TO_SUBSCRIBE = [
 	'process_get_ekyc_status_from_sdms#update_consumer_ekyc_status_in_dca',
 	'process_ekyc#enrich_omc_rejection',
 	'ujjwala_legal_docs_update#enrich_omc_rejection',
+	'iocl_investigation#extract_data_for_iocl_investigation',
 ]
 
 default_config = {
@@ -46,12 +46,6 @@ default_config = {
 _existing_relation_regex = re.compile(
 	'Aadhaar already exists for customer (?P<consumer_name>.*?)\((?P<consumer_id>.*?)\) of (?P<dist_name>.*?)\((?P<dict_code>.*?)-.*'
 )
-
-
-def get_ekyc_data_for_instance(process_instance_id):
-	for process_instance in ekyc_data_list:
-		if process_instance['process_instance_id'] == process_instance_id:
-			return process_instance['consumer_id']
 
 
 def task_process_sv(task: ExternalTask) -> TaskResult:
@@ -401,9 +395,8 @@ def handle_task(task: ExternalTask) -> TaskResult:
 					if start_time:
 						application.ekyc_last_attempt_log = f"Last attempt start time: {start_time} and could not find any E-KYC details. Did you click the button before doing E-KYC?"
 						application.save()
-
-		result_variables["biometric_authentication"] = {"value": biometric_authentication, "type": "Boolean"}
-		return task.complete(global_variables=result_variables)
+			result_variables["biometric_authentication"] = {"value": biometric_authentication, "type": "Boolean"}
+			return task.complete(global_variables=result_variables)
 	except Exception as e:
 		return task.failure(
 			str(e), traceback.format_exc(),
