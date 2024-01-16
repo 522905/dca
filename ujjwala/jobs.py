@@ -143,7 +143,7 @@ def do_primary_omc_dedupe_check_v2(id):
         if fm.uid_no in ('999999999999', '666666666666'):
             continue
 
-        resp = global_dedup_portal.omc_aadhar_dedup(fm.uid_no)
+        resp = dedup_portal.omc_aadhar_dedup(fm.uid_no)
         print(resp)
         counterpart = {}
         if resp.get('DEDUP_RESULT', '') == 'Reject':
@@ -209,11 +209,12 @@ def do_primary_omc_dedupe_check_v2(id):
             })
             form.is_valid()
             application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE
-            # if application.status == 'DOCUMENTS_UPLOADED':
-            application.application_rejected(**form.cleaned_data)
-            application.event_ioc_dedupe_reject_channel_whatsapp()
+            if not application.status == 'APPLICATION_REJECTED':
+                application.application_rejected(**form.cleaned_data)
+                application.event_ioc_dedupe_reject_channel_whatsapp()
+
     application.save()
-    return application.robo_sdms_dedup
+    return application
 
 
 @ensure_db_connection
@@ -337,7 +338,7 @@ def do_primary_omc_dedupe_check_worker(id, dedup_portal):
             pass
     else:
         if iocl_investigation_required:
-            application.status = RoboSdmsDedeupStatusEnum.IOCL_INVESTIGATION_REQUIRED
+            application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.IOCL_INVESTIGATION_REQUIRED
         else:
             form = ApplicationRejected(data={
                 'rejected_reason': 'CONNECTION_ALREADY_EXIST',
@@ -346,8 +347,9 @@ def do_primary_omc_dedupe_check_worker(id, dedup_portal):
             form.is_valid()
             application.robo_sdms_dedup = RoboSdmsDedeupStatusEnum.PROCESSED_AND_DUPLICATE
             # if application.status == 'DOCUMENTS_UPLOADED':
-            application.application_rejected(**form.cleaned_data)
-            application.event_ioc_dedupe_reject_channel_whatsapp()
+            if application.status != 'APPLICATION_REJECTED':
+                application.application_rejected(**form.cleaned_data)
+                application.event_ioc_dedupe_reject_channel_whatsapp()
     application.save()
     return application.robo_sdms_dedup
 

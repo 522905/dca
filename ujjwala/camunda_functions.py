@@ -1,4 +1,5 @@
 import datetime
+import json
 
 import arrow
 import pandas as pd
@@ -6,6 +7,8 @@ import requests
 
 # Camunda Production URL
 # CAMUNDA_WEB_ROOT_URL = "https://camunda.dca.arungas.com"
+from django.contrib.auth.models import User
+
 from domestic_app import settings
 
 # CAMUNDA_WEB_ROOT_URL = "http://192.168.171.15:38080"
@@ -15,6 +18,8 @@ from domestic_app import settings
 from domestic_app.settings import CAMUNDA_BASE_URL
 # Camunda Base URL
 # CAMUNDA_BASE_URL = f"{settings.CAMUNDA_BASE_URL}/engine-rest"
+from ujjwala.ujjwala_functions import get_data_for_new_relation
+
 UJJWALA_SV_GENERATION_PROCESS = 'ujjwala_sv_generation'
 PROCESS_CLDP_DEDUP = "Process_CLDP_DEDUP"
 
@@ -247,48 +252,58 @@ def num_there(s):
 
 def fetch_payment_profile_variables(application_id, force_main_branch=False):
 	res = requests.get(
-		"http://192.168.168.4:60612/ujjwala/ujjwala-extra/get_payment_variables/",
+		"https://dca.arungas.com/ujjwala/ujjwala-extra/get_payment_variables/",
         params={"application_id": application_id, 'force_main_branch': force_main_branch}
 	)
+	# res = requests.get(
+	# 	"http://192.168.168.4:60613/ujjwala/ujjwala-extra/get_payment_variables/",
+	# 	params={"application_id": application_id, 'force_main_branch': force_main_branch}
+	# )
 	res.raise_for_status()
 	return res.json()
-	# from ujjwala.models import UjjwalaV2Application
-	# from reference_data.models import IFSCodeList, RTGSList
-	#
-	# application = UjjwalaV2Application.objects.get(pk=application_id)
-	#
-	# old_ifscode = application.ifsc_code.strip().replace(" ", "")
-	#
-	# bank_code = old_ifscode[:4]
-	#
-	# new_ifscode = None
-	#
-	# if num_there(bank_code):
-	# 	raise Exception(f"Invalid IFSCode: {old_ifscode}. Manually Correct.")
-	#
-	# res = requests.get(f"https://ifsc.razorpay.com/{old_ifscode}")
-	# if res.status_code == 200:
-	# 	new_ifscode = old_ifscode
-	# else:
-	# 	ifscodelist_obj: IFSCodeList = IFSCodeList.objects.filter(old_ifscode=old_ifscode).first()
-	# 	if ifscodelist_obj:
-	# 		new_ifscode = ifscodelist_obj.new_ifscode
-	# 	else:
-	# 		merged_bank_code = IFSCodeList.objects.filter(
-	# 			old_ifscode__istartswith=old_ifscode[:4]).first()
-	# 		if merged_bank_code:
-	# 			rtgs_ifscode = RTGSList.objects.filter(ifscode__istartswith=merged_bank_code.new_ifscode[:4]).first()
-	# 			new_ifscode = rtgs_ifscode.ifscode if rtgs_ifscode else None
-	#
-	# if not new_ifscode:
-	# 	raise Exception(f"No Matching IFSCode Found Against Existing IFSCode: {old_ifscode}")
-	#
-	# return {
-	# 	"bank_account": application.bank_account_number,
-	# 	"ifscode": new_ifscode,
-	# 	"first_name": application.name
-	# }
 
+
+def get_activity_instance_count(activity_id, process_instance_id):
+	url = "{}/history/activity-instance/count".format(CAMUNDA_BASE_URL)
+
+	res = requests.post(url, json={
+		"processInstanceId": process_instance_id,
+		"activityId": activity_id
+	})
+	return res.json().get('count')
+
+
+def enrich_omc_rejection_details(id):
+	from ujjwala.jobs import do_primary_omc_dedupe_check
+
+	application = do_primary_omc_dedupe_check(id)
+	if application.robo_sdms_dedup == 'PROCESSED_AND_UNIQUE':
+		application.tags.add("In Process With Other Distributor")
+
+
+def start_new_relation_process_in_ekyc(application_id):
+	from ujjwala.models import UjjwalaV2Application
+
+	application = UjjwalaV2Application.objects.get(pk=application_id)
+	if not application.consumer_id:
+		return False, "Consumer Id Does Not Exist. Please Retry After Few Days (Pre-Suraksha Accepted)"
+	result = is_process_exist_in_camunda('process_get_ekyc_status_from_sdms', 'dca_id', application.id)
+
+	user = User.objects.get(username='admin')
+	if result == 0:
+		variables = {
+			"variables":
+				{
+					"dca_id": {"value": application.id, "type": "String"},
+					"consumer_id": {"value": application.consumer_id, "type": "String"},
+					"requested_by": {"value": f"{user.first_name} {user.last_name}", "type": "String"},
+					"requested_by_id": {"value": f"{user.id}", "type": "String"},
+					"contact": {"value": json.dumps(get_data_for_new_relation(application.id)), "type": "String"}
+				}
+		}
+		res, process_id = start_process_in_camunda_v2('process_get_ekyc_status_from_sdms', variables)
+		print(res)
+	return True
 
 
 if __name__ == '__main__':

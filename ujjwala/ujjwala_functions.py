@@ -1896,13 +1896,16 @@ def fetch_payment_profile_variables(application_id, force_main_branch=False):
 		if ifscodelist_obj:
 			new_ifscode = ifscodelist_obj.new_ifscode
 		else:
-			merged_bank_code = IFSCodeList.objects.filter(
-				old_ifscode__istartswith=old_ifscode[:4]
-			).first()
+			if old_ifscode[:4] in ['SBIN', 'UBIN', 'IDIB', 'PUNB', 'CNRB', 'BARB']:
+				rtgs_ifscode = RTGSList.objects.filter(ifscode__istartswith=old_ifscode[:4]).first()
+			else:
+				merged_bank_code = IFSCodeList.objects.filter(
+					old_ifscode__istartswith=old_ifscode[:4]
+				).first()
 
-			rtgs_ifscode = RTGSList.objects.filter(
-				ifscode__istartswith=merged_bank_code.new_ifscode[:4] if merged_bank_code else old_ifscode[:4]
-			).first()
+				rtgs_ifscode = RTGSList.objects.filter(
+					ifscode__istartswith=merged_bank_code.new_ifscode[:4] if merged_bank_code else old_ifscode[:4]
+				).first()
 			new_ifscode = rtgs_ifscode.ifscode if rtgs_ifscode else None
 
 	if not new_ifscode:
