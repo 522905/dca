@@ -23,6 +23,13 @@ def get_text_block(str_to_find, text_blocks):
 				return text_block
 
 
+def get_text_block_exist(str_to_find, pdf_file_bytes):
+	file_handle = fitz.open(stream=pdf_file_bytes, filetype="pdf")
+	first_page = file_handle[0]
+
+	return get_text_block(str_to_find, first_page.getTextBlocks())
+
+
 def append_qr_code_to_sv(content, booking_id, pdf_bytes):
 	# SV Arun Indane Signature Rectangle Co-ordinates
 	# https://www.arungas.com/public/arun_indane_stamp_sign.png

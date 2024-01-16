@@ -4,7 +4,7 @@ import requests
 
 from ujjwala.ujjwala_functions import download_installation_form
 from utils.global_functions import upload_file_to_minio_bucket, upload_file_type_obj_to_minio_bucket
-from utils.qrcode import append_qr_code_to_sv
+from utils.qrcode import append_qr_code_to_sv, get_text_block, get_text_block_exist
 
 
 def create_installation_document(connection_disbursement_id):
@@ -32,6 +32,34 @@ def update_sv_document(connection_disbursement_id, booking_id, content):
 
 	ci_obj = ConnectionDisbursement.objects.get(id=connection_disbursement_id)
 	pdf_file_bytes = io.BytesIO(content)
+	bytes_stream = append_qr_code_to_sv(
+		"{},SV".format(ci_obj.parent_id),
+		booking_id,
+		pdf_file_bytes
+	)
+	# Bucket Name: ujjwaladocuments
+	doc_file_bytes = io.BytesIO(bytes_stream)
+	sv_upload_link = upload_file_type_obj_to_minio_bucket(
+		doc_file_bytes, 'ujjwaladocuments', "sv_{}".format(ci_obj.parent_id), "application/pdf"
+	)
+	return sv_upload_link
+
+
+def update_sv_document_v2(connection_disbursement_id, booking_id, consumer_id, content):
+	from ujjwala.models import ConnectionDisbursement
+
+	ci_obj = ConnectionDisbursement.objects.get(id=connection_disbursement_id)
+	pdf_file_bytes = io.BytesIO(content)
+
+	result = get_text_block_exist(consumer_id, pdf_file_bytes)
+
+	if not result:
+		raise Exception("Consumer Id Mismatch.")
+
+	result = get_text_block_exist("14.2", pdf_file_bytes)
+	if not result:
+		raise Exception("Product Mismatch")
+
 	bytes_stream = append_qr_code_to_sv(
 		"{},SV".format(ci_obj.parent_id),
 		booking_id,
