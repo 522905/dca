@@ -432,7 +432,7 @@ class PreInspectionReviewListView(ListView):
 	def get_queryset(self):
 		return PreInspection.objects.filter(
 			status=PreInspectionStatusEnum.SUBMITTED
-		).order_by('submitted_on')
+		).exclude(parent__status='APPLICATION_REJECTED').order_by('submitted_on')
 
 	def get_template_names(self):
 		return 'ujjwala/review/pre_inspection_review_listview.html'
