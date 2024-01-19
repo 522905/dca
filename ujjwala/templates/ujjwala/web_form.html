@@ -1,8 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>ARUN GAS SERVICE</title>
     <link rel="icon" type="image/png" href="https://dca.arungas.com/static/img/logo2.png">
     <meta charset="utf-8"></meta>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,379 +20,432 @@
     <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
     <script src="https://arungas.com/public/ujwalla/js/signature_pad.umd.js"></script>
     <script src="{% static '/js/moment.min.js' %}"></script>
-
-    <!--  .uppy-StatusBar.is-complete -->
-</head>
-<style>
+    <style>
+   
     .ocr_aadhaar_img img{ width:100%; object-fit: contain; height: 100px;  margin-bottom: 10px; }
     .ocr_aadhaar_img ul{ padding:0}
     .ocr_aadhaar_img li{ display: inline-block; padding-right: 10px;}
-</style>
-<body id="background_image_styles" style="background-color: #efefef;">
-    <div class="loader" style="display: none;">
-        <div class="loader_outer">
-            <div class="loader_outer_inner">
-                <img src="{% static 'img/VAyR.gif' %}"><br><span id="ocr_loader"></span>
-            </div>
-        </div>
-    </div>
-    <div class="container" style="background-color: #fff;">
-        <div class="">
-            <div class="row justify-content-start ">
-                <div class="col-6">
-                    <h1 class="" style=" background-color: #fff;">
-                        <img style="max-width:200px; width: 100%; padding: 10px; margin-top: 18px;"
-                            src="https://www.arungas.com/wp-content/uploads/2022/04/Arungas-new-logo.png">
-                    </h1>
-                </div>
-
-                <div class="col-6">
-                    <h4 class="header2" style="float: right; margin-bottom: 0;">
-                        <img width="100px" src="https://www.pmuy.gov.in/hi/assets/images/logo.png">
-                    </h4>
+    </style>
+</head>
+<body class="p-3">
+   
+        <div id="background_image_styles" style="background-color: #efefef;">
+            <div class="loader" style="display: none;">
+                <div class="loader_outer">
+                    <div class="loader_outer_inner">
+                        <img src="{% static 'img/VAyR.gif' %}"><br><span id="ocr_loader"></span>
+                    </div>
                 </div>
             </div>
-            <div class="row mb-2">
-                {# <img src="https://arungas.com/public/har-ghar-tiranga.png" style="width: 100%;">#}
-		<img src="https://arungas.com/public/web_formbanner-news.jpg" style="width: 100%;">
-            </div>
-            <div class="row">
-                <div class="col-12">
-                    <h3 class="" style="font-size: 20px; margin-top: 0px; text-align: center;">प्रधानमंत्री उज्ज्वला
-                        योजना 2.0<br><span style="font-size: 12px;">  <b style="color: red;">नोट सभी सेवाएँ निःशुल्क हैं</b>
-                          
-                        </span>
-                    </h3>
-                    <p style="font-size: 12px; text-align: center; color: #2d5593; font-weight: bold;"> प्रधानमंत्री
-                        उज्ज्वला योजना हमारे देश के प्रधानमंत्री जी के द्वारा आरंभ की गई है।<br><i
-                            style="color: #c8860f;">हम सिर्फ़ माध्यम है</i></p>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- start Whatsapp OTP Verification Modal -->
-    <div class="modal fade" id="verifyMobileOtp" tabindex="-1" role="dialog" aria-labelledby="verifyMobileOtp" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                <h6 class="modal-title text-center" id="verifyMobileOtp">OTP Sent on <span id="verifyMobileNumber"></span></h6>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                </div>
-                <div class="modal-body">
-                    <input name="whatsapp_otp" style="margin: 0 auto; max-width: 150px;" type="tel" class="form-control" id="whatsapp_otp"
-                    required />
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Change Number</button>
-                    <button type="button" class="btn btn-primary" onclick="whatsapp_verifier.verify_otp()">Verify & Submit</button>
-                </div>
-            </div>
-        </div>
-    </div>
-     <!-- end Whatsapp OTP Verification Modal -->
-    <div class="container p-0 border-top" style="background-color: #fff;">
-        <form class="form-horizontal reno-bg p-4 " id="form" method="POST" spellcheck="false" autocomplete="off" autocorrect="off">
-            <input type="hidden" name="version" value="V6" />
-
-            <div class="card mb-2">
-                <div class="main-header bg-heading rounded-0 mb-2" style="background-color: #2957A4;">
-                    <span class="text-white">Enter Personal Detail</span>
-                </div>
-                
-                <div class="p-2">
-                    <div id="uid_linked_mobile_form_group" class="form-group whatsapp-form-group">
-                        <label style="margin-bottom: 0;">Own or Family Whatsapp Number(अपना या परिवार के किसी सदस्य का
-                            व्हाट्सएप नंबर) <i class="fa fa-whatsapp" aria-hidden="true"></i> <strong
-                                style="color:red">*</strong></label>
-                            <span style="color:red; font-size:12px; display: block; width: 100%;">जो कि कनेक्शन मिलने तक
-                            चलता रहे ताकि हम आपको संपर्क कर सके</span>
-                        <div class="row m-0">
-                            <div class="col-8 pl-0">
-                                <input type="tel"  class="form-control" id="contact_mobile"
-                                pattern="[6789][0-9]{9}" name="contact_mobile" maxlength="10" required />
-                                
-                            </div>
-                            <div class="col-4 pr-0">
-                                <button type="button" id="verifyWhatsappButton" class="btn btn-primary float-right" 
-                                onclick="whatsapp_verifier.start_verification()">
-                                    Verify
-                                </button>
-                                <button type="button" id="changeWhatsappButton" class="btn btn-primary float-right" 
-                                onclick="whatsapp_verifier.reset_verification()" style="display: none;">
-                                    Change
-                                </button>
-                            </div>
+            <div class="container" style="background-color: #fff;">
+                <div class="">
+                    <div class="row justify-content-start ">
+                        <div class="col-6">
+                            <h1 class="" style=" background-color: #fff;">
+                                <img style="max-width:200px; width: 100%; padding: 10px; margin-top: 18px;"
+                                    src="https://www.arungas.com/wp-content/uploads/2022/04/Arungas-new-logo.png">
+                            </h1>
                         </div>
-                        <div class="row m-0">
-                            <span id="contact_mobile_detail_whatsapp"></span>
+        
+                        <div class="col-6">
+                            <h4 class="header2" style="float: right; margin-bottom: 0;">
+                                <img width="100px" src="https://www.pmuy.gov.in/hi/assets/images/logo.png">
+                            </h4>
                         </div>
                     </div>
-
-                    <span id="self-details"></span>
-                    
-                    <div class="form-group">
-                        <label>Aadhaar linked mobile number.(आधार से जुड़ा मोबाइल नंबर) <strong style="color:red">*</strong></label>
-                        <input type="tel" class="form-control" id="uid_linked_mobile" onblur="checkContactMobileValidity();" pattern="[6789][0-9]{9}" name="uid_linked_mobile"
-                            maxlength="10" required />
-                        <div class="row m-0">
-                            <span id="contact_mobile_detail"></span>
-                        </div>                   
+                    <div class="row mb-2">
+                        {# <img src="https://arungas.com/public/har-ghar-tiranga.png" style="width: 100%;">#}
+                <img src="https://arungas.com/public/web_formbanner-news.jpg" style="width: 100%;">
                     </div>
-
-                    <div class="form-group ">
-                        <label>Marital Status (वैवाहिक स्थिति)<strong style="color:red">*</strong></label>
-                        <select required class="selectpicker form-control" id="marital_status" name="marital_status">
-                            <option value="" selected="selected" id="status">
-                                Select Marital Status (चुनें वैवाहिक स्थिति)
-                            </option>
-                            <option value="MARRIED">Married (विवाहित)</option>
-                            <!-- <option value="UNMARRIED">Unmarried (अविवाहित)</option> -->
-                            <!-- <option value="DIVORCED">Divorced (तलाक)</option>
-                                <option value="WIDOW">WIDOW ()</option> -->
-                        </select>
+                    <div class="row">
+                        <div class="col-12">
+                            <h3 class="" style="font-size: 20px; margin-top: 0px; text-align: center;">प्रधानमंत्री उज्ज्वला
+                                योजना 2.0<br><span style="font-size: 12px;">  <b style="color: red;">नोट सभी सेवाएँ निःशुल्क हैं</b>
+                                  
+                                </span>
+                            </h3>
+                            <p style="font-size: 12px; text-align: center; color: #2d5593; font-weight: bold;"> प्रधानमंत्री
+                                उज्ज्वला योजना हमारे देश के प्रधानमंत्री जी के द्वारा आरंभ की गई है।<br><i
+                                    style="color: #c8860f;">हम सिर्फ़ माध्यम है</i></p>
+                        </div>
                     </div>
-
-                    <div class="form-group mb-0">
-                        <div class="row">
-                            <div class="col-sm-12 col">
-                                <label>Your Picture or Selfie (प्रार्थी की फोटो)<strong
+                </div>
+            </div>
+            <!-- start Whatsapp OTP Verification Modal -->
+            <div class="modal fade" id="verifyMobileOtp" tabindex="-1" role="dialog" aria-labelledby="verifyMobileOtp" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                        <h6 class="modal-title text-center" id="verifyMobileOtp">OTP Sent on <span id="verifyMobileNumber"></span></h6>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        </div>
+                        <div class="modal-body">
+                            <input name="whatsapp_otp" style="margin: 0 auto; max-width: 150px;" type="tel" class="form-control" id="whatsapp_otp"
+                            required />
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Change Number</button>
+                            <button type="button" class="btn btn-primary" onclick="whatsapp_verifier.verify_otp()">Verify & Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <!-- end Whatsapp OTP Verification Modal -->
+            <div class="container p-0 border-top" style="background-color: #fff;">
+                <form class="form-horizontal reno-bg p-4 " id="form" method="POST" spellcheck="false" autocomplete="off" autocorrect="off">
+                    <input type="hidden" name="version" value="V6" />
+        
+                    <div class="card mb-2">
+                        <div class="main-header bg-heading rounded-0 mb-2" style="background-color: #2957A4;">
+                            <span class="text-white">Enter Personal Detail</span>
+                        </div>
+                        
+                        <div class="p-2">
+                            <div id="uid_linked_mobile_form_group" class="form-group whatsapp-form-group">
+                                <label style="margin-bottom: 0;">Own or Family Whatsapp Number(अपना या परिवार के किसी सदस्य का
+                                    व्हाट्सएप नंबर) <i class="fa fa-whatsapp" aria-hidden="true"></i> <strong
                                         style="color:red">*</strong></label>
-                                <span class="custom-file-input" name="customerpicture" id="customerpicture"></span><br>
-                                <span id="customerpicture_detail" class="text-danger"></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <input type="hidden" id="occupancy_status" name="residential_status" value="LIVING_WITH_FAMILY">
-            <div class="card mb-2 family_heading">
-                <div class="main-header bg-heading rounded-0" style="background-color: #2957A4;">
-                    <span class="text-white">(Family Detail) परिवार का डेटा </span>
-                </div>
-                <div id="family_members_tree" class="container p-0">
-                </div>
-            </div>
-
-            <div class="card mb-2">
-                <div class="main-header bg-heading rounded-0" style="background-color: #2957A4;">
-                    <span class="text-white">Current Address (वर्तमान पता)</span>
-                </div>
-                <div class="p-2">
-                    <div class="mb-2 m-0 " role="alert" style="border-radius: 0;">
-                        <div class="blink-bg" style="font-size: 14px;">कृपया मान्य पता दर्ज करें। केवल अक्षर, संख्या, स्पेस और #' । , - /_ की अनुमति है|</div>
-                    </div>
-                    <p><span style="color:red"></span></p>
-                    <div class="row">
-                        <div class="col pr-0">
-                            <div class="form-group">
-                                <label for="house_no">House No. <br>(घर का नंबर)<strong style="color:red">*</strong></label>
-                                <input required type="text" class="form-control" id="house_no" name="house_no" onblur="this.reportValidity();" pattern="^[A-Za-z0-9 #'.,\\-\\_\\/]+$" placeholder="House No.">
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="room_no">Room No.(कमरा सं.) <br><span style="color:red">केवल [0-9] दर्ज करें</span> <strong style="color:red">*</strong></label><br>
-                                <input type="text" class="form-control" id="room_no" name="room_no" maxlength="5" onblur="this.reportValidity();" pattern="^[0-9\\/]*)$" required />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col pr-0">
-                            <div class="form-group">
-                                <label for="floor">Floor(तल सं.) <span style="color:red">केवल [0-9] दर्ज करें</span> <strong style="color:red">*</strong></label>
-                                <input type="text" class="form-control" id="floor" name="floor" maxlength="2" onblur="this.reportValidity();" pattern="^(0|[1-9][0-9]*)$"  required />
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="street_no">Street No.(गली नंबर)<span style="color:red">केवल [0-9] दर्ज करें</span>  <strong style="color:red">*</strong></label>
-                                <input type="text" class="form-control" id="street_no" name="street_no" maxlength="2" onblur="this.reportValidity();" pattern="^[A-Za-z0-9 #'.,\\-\\_]+$" required />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="landmark">Land Mark (नजदीकी स्थान)<strong style="color:red">*</strong></label>
-                                <input type="text" class="form-control" id="landmark" name="landmark" minlength="7" onblur="this.reportValidity();" pattern="^[A-Za-z0-9 #'.,\\-\\_]+$"  required />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="village">Locality Village (रोड/गांव/मोहल्ला/इलाका)<strong
-                                        style="color:red">*</strong></label>
-                                <input type="text" class="form-control" id="village" name="village" minlength="4" required onblur="this.reportValidity();" pattern="^[A-Za-z0-9 #'.,\\-\\_]+$" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col pr-0">
-                            <div class="form-group">
-                                <label for="ward_no">Ward No. (वर्ड नंबर) <br> <span style="color:red">केवल [0-9] दर्ज करें</span> <strong style="color:red">*</strong></label>
-                                <input type="text" class="form-control" id="ward_no" name="ward_no" maxlength="3" required onblur="this.reportValidity();" pattern="^[1-9][0-9]*$" />
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="post_office">Post Office <br>(पोस्ट ऑफीस)<strong
-                                        style="color:red">*</strong></label>
-                                <input type="text" class="form-control" id="post_office" name="post_office" minlength="5" required  onblur="this.reportValidity();" pattern="[a-zA-Z .]+)*" />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col pr-0">
-                            <div class="form-group">
-                                <label for="city">City (शहर)<strong style="color:red">*</strong></label>
-                                <input type="text" class="form-control" value="Ludhiana" id="ludhiana" name="" required onblur="this.reportValidity();" />
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="pincode">Pincode (पिनकोड)<strong style="color:red">*</strong></label>
-                                <input type="tel" class="form-control" id="pincode" name="pincode"
-                                    onblur="validate_pincode();" pattern="[1-9]{1}[0-9]{5}" required />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card mb-2">
-                <div class="main-header bg-heading rounded-0 mb-2" style="background-color: #2957A4;">
-                    <span class="text-white">Bank Detail</span>
-                </div>
-                <div class="row p-2">
-                    <div class="col-sm-4">
-                        <label>Bank Detail (पास बुक का विवरण)<strong style="color:red">*</strong></label>
-                        <span class="custom-file-input" name="bankdetail" id="bankdetail"></span>
-                    </div>
-                    <div class="col-sm-4">
-                        <label>Enter Bank Account No (बैंक खाता संख्या)<strong style="color:red">*</strong></label>
-                        <input type="number"  class="form-control" pattern = "[0-9]" maxlength="19" id="bank_account_number"
-                            name="bank_account_number" required />
-                    </div>
-                    <div class="col-sm-4 p-sm-t-2" id="ifsccontainer">
-                        <!-- SBIN0050873 -->
-                        <label>Enter the IFSC code:</label>
-                        <!-- ^[A-Z]{4}0[A-Z0-9]{6}$ -->
-                        <input class="input_field form-control" placeholder="IFSC" id="ifsc_code"name="ifsc_code" required onblur="checkIfscCodeValidity();">
-                        <p id="ifscmess"></p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card mb-2">
-                <div class="main-header bg-heading rounded-0 mb-2 " style="background-color: #2957A4;">
-                    <span class="text-white">Other Detail</span>
-                </div>
-                <div class="p-2">
-                    <div id="show">
-                        <div class="form-group pt-2">
-                            <p>Referral Code</p>
-                            <input type="text" class="form-control" id="reference" name="referral_code" value="">
-                            <br>
-                            <p style="font-size: 14px;">
-                                <input id="term_condition_agree" type="checkbox" name="terms"
-                                    style="margin-right: 10px; font-size: 13px;">
-                                <a class="term_link" target="_blank" href="https://www.arungas.com/public/ujwalla/terms.pdf"
-                                    style="color: #000; text-decoration: underline;">
-                                    मैं प्रवासी हूँ, मैंने शर्तें पढ़ ली है और मुझे सारी शर्तें बताई भी गई है मैं सब कुछ जान
-                                    कर ये घोषणा करती हूं कि उपर दी गई सभी जानकारी सत्य एवं सही हैं इसमें कुछ भी छिपा नहीं
-                                    है</a>
-                            </p>
-                            <p style="font-size: 14px;">
-                                <span style="color: red;"><br><b> ज़रूरी सूचना :- </b><br></span>
-                                उज्जवला स्कीम का अवेदन करने का हम सिर्फ माध्यम हैं कनेक्शन की मंजूरी सरकार पर निर्भर करती है
-                            </p>
-                            <div id="signature-pad" class="signature-pad">
-                                <div class="signature-pad--body">
-                                    <canvas></canvas>
+                                    <span style="color:red; font-size:12px; display: block; width: 100%;">जो कि कनेक्शन मिलने तक
+                                    चलता रहे ताकि हम आपको संपर्क कर सके</span>
+                                <div class="row m-0">
+                                    <div class="col-8 pl-0">
+                                        <input type="tel"  class="form-control" id="contact_mobile"
+                                        pattern="[6789][0-9]{9}" name="contact_mobile" maxlength="10" required />
+                                        
+                                    </div>
+                                    <div class="col-4 pr-0">
+                                        <button type="button" id="verifyWhatsappButton" class="btn btn-primary float-right" 
+                                        onclick="whatsapp_verifier.start_verification()">
+                                            Verify
+                                        </button>
+                                        <button type="button" id="changeWhatsappButton" class="btn btn-primary float-right" 
+                                        onclick="whatsapp_verifier.reset_verification()" style="display: none;">
+                                            Change
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="signature-pad--footer border pl-2 pr-2 pb-2 rounded-3">
-                                    <div class="signature-pad--actions">
-                                        <div>
-                                            <button type="button" class="btn button clear" data-action="clear">Clear</button>
+                                <div class="row m-0">
+                                    <span id="contact_mobile_detail_whatsapp"></span>
+                                </div>
+                            </div>
+        
+                            <span id="self-details"></span>
+                            
+                            <div class="form-group">
+                                <label>Aadhaar linked mobile number.(आधार से जुड़ा मोबाइल नंबर) <strong style="color:red">*</strong></label>
+                                <input type="tel" class="form-control" id="uid_linked_mobile" onblur="checkContactMobileValidity();" pattern="[6789][0-9]{9}" name="uid_linked_mobile"
+                                    maxlength="10" required />
+                                <div class="row m-0">
+                                    <span id="contact_mobile_detail"></span>
+                                </div>                   
+                            </div>
+        
+                            <div class="form-group ">
+                                <label>Marital Status (वैवाहिक स्थिति)<strong style="color:red">*</strong></label>
+                                <select required class="selectpicker form-control" id="marital_status" name="marital_status">
+                                    <option value="" selected="selected" id="status">
+                                        Select Marital Status (चुनें वैवाहिक स्थिति)
+                                    </option>
+                                    <option value="MARRIED">Married (विवाहित)</option>
+                                    <!-- <option value="UNMARRIED">Unmarried (अविवाहित)</option> -->
+                                    <!-- <option value="DIVORCED">Divorced (तलाक)</option>
+                                        <option value="WIDOW">WIDOW ()</option> -->
+                                </select>
+                            </div>
+        
+                            <div class="form-group mb-0">
+                                <div class="row">
+                                    <div class="col-sm-12 col">
+                                        <label>Your Picture or Selfie (प्रार्थी की फोटो)<strong
+                                                style="color:red">*</strong></label>
+                                        <span class="custom-file-input" name="customerpicture" id="customerpicture"></span><br>
+                                        <span id="customerpicture_detail" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="occupancy_status" name="residential_status" value="LIVING_WITH_FAMILY">
+                    <div class="card mb-2 family_heading">
+                        <div class="main-header bg-heading rounded-0" style="background-color: #2957A4;">
+                            <span class="text-white">(Family Detail) परिवार का डेटा </span>
+                        </div>
+                        <div id="family_members_tree" class="container p-0">
+                        </div>
+
+                        <!-- Button trigger modal -->
+                        <div class="add_member">
+                            <button type="button" class="addmember btn btn-danger" data-toggle="modal" data-target="#addOtherfm" id ="Add_family_details" disabled>
+                                Add More Family Member   <span><i class="fa fa-plus-circle" aria-hidden="true"></i></span>                       
+                            </button>
+                        </div>
+                        <!-- Modal --> 
+                        <div class="modal fade" id="addOtherfm" tabindex="-1" role="dialog" aria-labelledby="addOtherfmLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                    <h5 class="modal-title" id="addOtherfmLabel">Family Members</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    </div>
+                                    <div class="modal-body" value="ADDMEMBER">
+                                        <ul>
+                                            <!-- <li>
+                                                <input type="radio" id="MOTHER_IN_LAW" name="familyMembers" value="MOTHER_IN_LAW">
+                                                <label for="MOTHER IN LAW">Mother In Law</label><br>                                           
+                                            </li>
+                                            <li>
+                                                <input type="radio" id="FATHER_IN_LAW" name="familyMembers" value="FATHER_IN_LAW">
+                                                <label for="FATHER IN LAW">Father In Law</label>
+                                            </li> -->
+                                            <li>
+                                                <input type="radio" id="DAUGHTER" name="familyMembers" value="DAUGHTER">
+                                                <label for="DAUGHTER">Daughter</label>
+                                            </li>
+                                            <li>
+                                                <input type="radio" id="SON" name="familyMembers" value="SON">
+                                                <label for="SON">Son</label>
+                                            </li>
+                                            <!-- <li>
+                                                <input type="radio" id="DAUGHTER_IN_LAW" name="familyMembers" value="DAUGHTER_IN_LAW">
+                                                <label for="DAUGHTER IN LAW">Daughter In Law</label>
+                                            </li>
+                                        </ul> -->
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss = "modal">Close</button>
+                                        <button type="button" class="btn btn-primary" onclick="addMember()">Add</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <div class="card mb-2">
+                        <div class="main-header bg-heading rounded-0" style="background-color: #2957A4;">
+                            <span class="text-white">Current Address (वर्तमान पता)</span>
+                        </div>
+                        <div class="p-2">
+                            <div class="mb-2 m-0 " role="alert" style="border-radius: 0;">
+                                <div class="blink-bg" style="font-size: 14px;">कृपया मान्य पता दर्ज करें। केवल अक्षर, संख्या, स्पेस और #' । , - /_ की अनुमति है|</div>
+                            </div>
+                            <p><span style="color:red"></span></p>
+                            <div class="row">
+                                <div class="col pr-0">
+                                    <div class="form-group">
+                                        <label for="house_no">House No. <br>(घर का नंबर)<strong style="color:red">*</strong></label>
+                                        <input required type="text" class="form-control" id="house_no" name="house_no" onblur="this.reportValidity();" pattern="^[A-Za-z0-9 #'.,\\-\\_\\/]+$" placeholder="House No.">
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="room_no">Room No.(कमरा सं.) <br><span style="color:red">केवल [0-9] दर्ज करें</span> <strong style="color:red">*</strong></label><br>
+                                        <input type="text" class="form-control" id="room_no" name="room_no" maxlength="5" onblur="this.reportValidity();" pattern="^[0-9\\/]*)$" required />
+                                    </div>
+                                </div>
+                            </div>
+        
+                            <div class="row">
+                                <div class="col pr-0">
+                                    <div class="form-group">
+                                        <label for="floor">Floor(तल सं.) <span style="color:red">केवल [0-9] दर्ज करें</span> <strong style="color:red">*</strong></label>
+                                        <input type="text" class="form-control" id="floor" name="floor" maxlength="2" onblur="this.reportValidity();" pattern="^(0|[1-9][0-9]*)$"  required />
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="street_no">Street No.(गली नंबर)<span style="color:red">केवल [0-9] दर्ज करें</span>  <strong style="color:red">*</strong></label>
+                                        <input type="text" class="form-control" id="street_no" name="street_no" maxlength="2" onblur="this.reportValidity();" pattern="^[A-Za-z0-9 #'.,\\-\\_]+$" required />
+                                    </div>
+                                </div>
+                            </div>
+        
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="landmark">Land Mark (नजदीकी स्थान)<strong style="color:red">*</strong></label>
+                                        <input type="text" class="form-control" id="landmark" name="landmark" minlength="7" onblur="this.reportValidity();" pattern="^[A-Za-z0-9 #'.,\\-\\_]+$"  required />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="village">Locality Village (रोड/गांव/मोहल्ला/इलाका)<strong
+                                                style="color:red">*</strong></label>
+                                        <input type="text" class="form-control" id="village" name="village" minlength="4" required onblur="this.reportValidity();" pattern="^[A-Za-z0-9 #'.,\\-\\_]+$" />
+                                    </div>
+                                </div>
+                            </div>
+        
+                            <div class="row">
+                                <div class="col pr-0">
+                                    <div class="form-group">
+                                        <label for="ward_no">Ward No. (वर्ड नंबर) <br> <span style="color:red">केवल [0-9] दर्ज करें</span> <strong style="color:red">*</strong></label>
+                                        <input type="text" class="form-control" id="ward_no" name="ward_no" maxlength="3" required onblur="this.reportValidity();" pattern="^[1-9][0-9]*$" />
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="post_office">Post Office <br>(पोस्ट ऑफीस)<strong
+                                                style="color:red">*</strong></label>
+                                        <input type="text" class="form-control" id="post_office" name="post_office" minlength="5" required  onblur="this.reportValidity();" pattern="[a-zA-Z .]+)*" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col pr-0">
+                                    <div class="form-group">
+                                        <label for="city">City (शहर)<strong style="color:red">*</strong></label>
+                                        <input type="text" class="form-control" value="Ludhiana" id="ludhiana" name="" required onblur="this.reportValidity();" />
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="pincode">Pincode (पिनकोड)<strong style="color:red">*</strong></label>
+                                        <input type="tel" class="form-control" id="pincode" name="pincode"
+                                            onblur="validate_pincode();" pattern="[1-9]{1}[0-9]{5}" required />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <div class="card mb-2">
+                        <div class="main-header bg-heading rounded-0 mb-2" style="background-color: #2957A4;">
+                            <span class="text-white">Bank Detail</span>
+                        </div>
+                        <div class="row p-2">
+                            <div class="col-sm-4">
+                                <label>Bank Detail (पास बुक का विवरण)<strong style="color:red">*</strong></label>
+                                <span class="custom-file-input" name="bankdetail" id="bankdetail"></span>
+                            </div>
+                            <div class="col-sm-4">
+                                <label>Enter Bank Account No (बैंक खाता संख्या)<strong style="color:red">*</strong></label>
+                                <input type="number"  class="form-control" pattern = "[0-9]" maxlength="19" id="bank_account_number"
+                                    name="bank_account_number" required />
+                            </div>
+                            <div class="col-sm-4 p-sm-t-2" id="ifsccontainer">
+                                <!-- SBIN0050873 -->
+                                <label>Enter the IFSC code:</label>
+                                <!-- ^[A-Z]{4}0[A-Z0-9]{6}$ -->
+                                <input class="input_field form-control" placeholder="IFSC" id="ifsc_code"name="ifsc_code" required onblur="checkIfscCodeValidity();">
+                                <p id="ifscmess"></p>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <div class="card mb-2">
+                        <div class="main-header bg-heading rounded-0 mb-2 " style="background-color: #2957A4;">
+                            <span class="text-white">Other Detail</span>
+                        </div>
+                        <div class="p-2">
+                            <div id="show">
+                                <div class="form-group pt-2">
+                                    <p>Referral Code</p>
+                                    <input type="text" class="form-control" id="reference" name="referral_code" value="">
+                                    <br>
+                                    <p style="font-size: 14px;">
+                                        <input id="term_condition_agree" type="checkbox" name="terms"
+                                            style="margin-right: 10px; font-size: 13px;">
+                                        <a class="term_link" target="_blank" href="https://www.arungas.com/public/ujwalla/terms.pdf"
+                                            style="color: #000; text-decoration: underline;">
+                                            मैं प्रवासी हूँ, मैंने शर्तें पढ़ ली है और मुझे सारी शर्तें बताई भी गई है मैं सब कुछ जान
+                                            कर ये घोषणा करती हूं कि उपर दी गई सभी जानकारी सत्य एवं सही हैं इसमें कुछ भी छिपा नहीं
+                                            है</a>
+                                    </p>
+                                    <div>
+                                        <p style="font-size: 14px;">
+                                            <input id="family_terms_condition" type="checkbox" name="term" style="margin-right: 10px; font-size: 13px;">
+                                            मैं अपने सास-ससुर के साथ नहीं रह रही हूँ।
+                                        </p>
+                                    </div>
+                                    <p style="font-size: 14px;">
+                                        <span style="color: red;"><br><b> ज़रूरी सूचना :- </b><br></span>
+                                        उज्जवला स्कीम का अवेदन करने का हम सिर्फ माध्यम हैं कनेक्शन की मंजूरी सरकार पर निर्भर करती है
+                                    </p>
+                                    <div id="signature-pad" class="signature-pad">
+                                        <div class="signature-pad--body">
+                                            <canvas></canvas>
                                         </div>
-                                        <div>
-                                            <button type="button" id="submit" name="submit"
-                                                onclick="upload_sign_and_submit()" class="btn btn-success">Upload Signature
-                                                & Submit</button>
+                                        <div class="signature-pad--footer border pl-2 pr-2 pb-2 rounded-3">
+                                            <div class="signature-pad--actions">
+                                                <div>
+                                                    <button type="button" class="btn button clear" data-action="clear">Clear</button>
+                                                </div>
+                                                <div>
+                                                    <button type="button" id="submit" name="submit"
+                                                        onclick="upload_sign_and_submit()" class="btn btn-success">Upload Signature
+                                                        & Submit</button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </form>
+            </div>
+            <div id="message"></div>
+        
+            <!-- Aadhar OCR Modal -->
+            <div class="modal fade"
+                id="uid_ocr_modal" tabindex="-1" role="dialog"
+                aria-labelledby="uid_ocr_modal" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h6 class="modal-title" id="${relation_label}_ModalLabel">Upload Aadhaar</h6>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body p-1">
+                            <div class="col-sm-4">
+                                <div>
+                                    <p style="font-size:12px;">Aadhaar Card Front Photo (आधार फ्रंट फोटो)<strong
+                                            style="color:red">*</strong></p>
+                                    <span class="custom-file-input" name="uid_front_link" id="uid_front_link">
+                                    </span><br>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="">
+                                    <p style="font-size:12px;">Aadhaar Card Back Photo (आधार बैक की फोटो)<strong style="color:red">*</strong>
+                                    </p>
+                                    <span class="custom-file-input" name="uid_back_link" id="uid_back_link">
+                                    </span><br>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            Close
+                        </button>
+        
+                        <button type="button" class="btn btn-secondary"
+                        onclick="aadhaar_ocr_service_obj.reset_service()">
+                            Reset
+                        </button>
+        
+                        <button
+                        type="button"
+                        class="btn btn-primary"
+                        onclick="aadhaar_ocr_service_obj.process_files()">
+                            RUN OCR
+                        </button>
+                    </div>
+                </div>
                 </div>
             </div>
-        </form>
-    </div>
-    <div id="message"></div>
-
-    <!-- Aadhar OCR Modal -->
-    <div class="modal fade"
-        id="uid_ocr_modal" tabindex="-1" role="dialog"
-        aria-labelledby="uid_ocr_modal" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h6 class="modal-title" id="${relation_label}_ModalLabel">Upload Aadhaar</h6>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body p-1">
-                    <div class="col-sm-4">
-                        <div>
-                            <p style="font-size:12px;">Aadhaar Card Front Photo (आधार फ्रंट फोटो)<strong
-                                    style="color:red">*</strong></p>
-                            <span class="custom-file-input" name="uid_front_link" id="uid_front_link">
-                            </span><br>
-                        </div>
-                    </div>
-                    <div class="col-sm-4">
-                        <div class="">
-                            <p style="font-size:12px;">Aadhaar Card Back Photo (आधार बैक की फोटो)<strong style="color:red">*</strong>
-                            </p>
-                            <span class="custom-file-input" name="uid_back_link" id="uid_back_link">
-                            </span><br>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                    Close
-                </button>
-
-                <button type="button" class="btn btn-secondary"
-                onclick="aadhaar_ocr_service_obj.reset_service()">
-                    Reset
-                </button>
-
-                <button
-                type="button"
-                class="btn btn-primary"
-                onclick="aadhaar_ocr_service_obj.process_files()">
-                    RUN OCR
-                </button>
-            </div>
         </div>
-        </div>
-    </div>
 </body>
-
-</html>
-
 <script src="https://arungas.com/public/ujwalla/js/app.js"></script>
-<script src="{% static '/js/ujjwala_webform_170822.js' %}"></script>
+<script src="{% static '/js/ujjwala_webform_18012024.js' %}"></script>
 <script>
 
 {% if source != 'link_share' %}
@@ -1070,6 +1122,19 @@ function FamilyMemberService(html_block_id, aadhaar_ocr_service) {
             }
         }
 
+        // Add validation for self and husband age
+        if ((fm.relation === 'SELF' || fm.relation === 'HUSBAND') && moment(new Date()).diff(moment(new Date(fm.dob)), 'years', true) > 35) {
+            if (!opts.familyMembers || opts.familyMembers.length === 0) {
+                alert('अगर आपकी आयु 35 वर्ष से अधिक है और आपने परिवार के सभी सदस्यों की जानकारी नहीं डाली है, तो कृपया परिवार के सभी सदस्यों की जानकारी डालें।');
+                // You can customize this part based on your application's logic
+                // For example, prompt the user to add family members or redirect to a specific page
+                 // Enable the button by removing the disabled attribute
+                document.getElementById('Add_family_details').removeAttribute('disabled');
+            }
+        }
+
+        // return errors;
+
         if (Object.keys(errors).length > 0) return Promise.reject(errors);
         if (!run_remote_validations) return Promise.resolve(true);
         if (fm.uid_no.length == 0) return Promise.resolve(true);
@@ -1192,7 +1257,7 @@ function FamilyMemberService(html_block_id, aadhaar_ocr_service) {
         var family_members = gatherFamilyMembersData();
         
         if (
-            (marital_status == 'MARRIED' && family_members.length != 2) ||
+            (marital_status == 'MARRIED' && (family_members.length < 2 || family_members.length > 4)) ||
             (marital_status == 'UNMARRIED' && family_members.length != 3)
         ) {
             alert("वैवाहिक स्थिति की जानकारी फिर से चुनें");
@@ -1240,14 +1305,20 @@ function FamilyMemberService(html_block_id, aadhaar_ocr_service) {
 
                 if (self_husband_diff > 15) {
                     alert('स्वयं और पति के आधार कार्ड की जांच करें। पति-पत्नी की उम्र में बड़ा फासला है। \n पति का जन्म वर्ष: '+husband_fm+' \n स्वयं का जन्म वर्ष: '+self_fm+' \n उम्र में अंतर: '+self_husband_diff+' वर्ष');
+                    // if (parseInt(self_fm) > 19 && parseInt(husband_fm) > 19) {
+                    //     alert('आपको अपने बच्चों की जानकारी जोड़ने के लिए अनुरोध किया जाता है।');
+                    //     // Add code to handle adding children's details
+                    //     // You can customize this part based on your requirements
+                    //     // For example, prompt the user to add children's details or redirect to a specific page
+                    // }
                     return false;
                 }
             }
-
             return true;
         });
 
     }
+    
     this.get_validated_data = () => {
         var family_members = gatherFamilyMembersData();
         return family_members;
@@ -1258,6 +1329,25 @@ function FamilyMemberService(html_block_id, aadhaar_ocr_service) {
 
 var family_member_service = new FamilyMemberService('', aadhaar_ocr_service_obj);
 family_member_service.add_fm('SELF');
+
+function addMember() {
+    var selectedRadioButton = document.querySelector('input[name="familyMembers"]:checked');
+
+    if (selectedRadioButton) {
+        var relation_name = selectedRadioButton.value;
+        var relation_label = selectedRadioButton.getAttribute('id');
+        var family_member = family_member_service.add_fm(relation_name);
+
+        // addFamilyMember(relation_name, relation_label);
+        console.log("Family Member added:", family_member);
+        family_member_service.update_fm_via_ocr(relation_name);
+        
+    } else {
+        console.error("Please select a family member.");
+    }
+    $('#addOtherfm').modal('hide');
+}
+
 
 {% if source == 'link_share' %}
 $('[name="referral_code"]').val('{{ referral_code }}');
@@ -1336,3 +1426,106 @@ $('[name="referral_code"]').attr('readonly', true);
 	} */
     /* #verifyMobileOtp{ z-index: 99;} */
 </style>
+
+<div class="background-overlay" id="backgroundOverlay"></div>
+
+<div id="popup" class="popup">
+  <div class="popup-content p-4">
+    <span class="close" onclick="closePopup()">&times;</span>
+    <p style="padding: 10px; font-size: 18px;max-width: 300px;">हमने आपका आवेदन  स्वीकार कर लिया है आप उज्ज्वला के योग्य पात्र नहीं है <br><span style="font-weight: bold;">धन्यवाद</span></p>
+  </div>
+</div>
+</div>
+    <script>
+        // Function to show the hidden div when the checkbox is checked
+        // function showDiv() {
+        //     var checkbox = document.getElementById("myCheckbox");
+        //     var hiddenDiv = document.getElementById("hiddenDiv");
+        //     var displayDiv = document.getElementById("dispalyDiv");
+
+        //     if (checkbox.checked) {
+        //         hiddenDiv.style.display = "block";
+        //         displayDiv.style.display = "none";
+        //     } else {
+        //         hiddenDiv.style.display = "none";
+        //         displayDiv.style.display = "block";
+        //     }
+        // }
+
+        // // Function to hide the div
+        // function hideDiv() {
+        //     var hiddenDiv = document.getElementById("hiddenDiv");
+        //     var displayDiv = document.getElementById("dispalyDiv");
+        //     hiddenDiv.style.display = "none";
+        //     displayDiv.style.display = "block";
+        // }
+        // document.getElementById('showPopupBtn').addEventListener('click', function() {
+        //     document.getElementById('popup').style.display = 'block';
+        //     document.getElementById('backgroundOverlay').style.display = 'block';
+        //     document.body.classList.add('popup-open');
+        // });
+
+        // function closePopup() {
+        //     document.getElementById('popup').style.display = 'none';
+        //     document.getElementById('backgroundOverlay').style.display = 'none';
+        //     document.body.classList.remove('popup-open');
+        // }
+    </script>
+    <style>
+        .delete_SELF {
+            display: none;
+        }
+        body.popup-open {
+         overflow: hidden;
+       }
+       main .content{
+           padding: 0 !important;
+       }
+   
+       .background-overlay {
+         position: fixed;
+         top: 0;
+         left: 0;
+         width: 100%;
+         height: 100%;
+         background: rgba(0, 0, 0, 0.9);
+         display: none;
+       }
+       .main-wrapper{
+           position: fixed;
+           top: 0;
+           left: 0;
+           width: 100%;
+           height: 100%;
+           background: rgba(0, 0, 0, 0.9);
+           color: #fff;
+           right: 0;
+           text-align: center;
+       }
+   
+       .popup {
+         display: none;
+         position: fixed;
+         top: 50%;
+         left: 50%;
+         transform: translate(-50%, -50%);
+         border: 1px solid #ccc;
+         padding: 20px;
+         background-color: #fff;
+         z-index: 1;
+       }
+   
+       .popup-content {
+         text-align: center;
+       }
+   
+       .close {
+         position: absolute;
+         top: 10px;
+         right: 10px;
+         font-size: 20px;
+         cursor: pointer;
+       }
+   </style>
+
+</html>
