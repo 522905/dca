@@ -1109,7 +1109,7 @@ class UjjwalaConnectionDisbursementListView(ListView):
 						return redirect('ujjwala:connection_disbursement_form_view', pk=obj.pk)
 				else:
 					messages.add_message(
-						request, messages.ERROR, "Application Id: {} not found".format(application_id)
+						request, messages.ERROR, "Application Id: {} Connection Disbursement not found".format(application_id)
 					)
 		return super().get(request, *args, **kwargs)
 
@@ -1685,7 +1685,9 @@ class ConnectionDisbursementSvLabelPrintView(FormView, ApplicationView):
 		)
 		context.update({
 			"obj": obj,
-			"bluebook_label_print_url": self.request.build_absolute_uri(bluebook_label_print_url)
+			# "bluebook_label_print_url": self.request.build_absolute_uri(bluebook_label_print_url)
+			"bluebook_label_print_url": self.request.build_absolute_uri(bluebook_label_print_url).replace("dca-local",
+			                                                                                              "dca")
 		})
 		return context
 
