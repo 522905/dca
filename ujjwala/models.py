@@ -1349,6 +1349,7 @@ class DisbursementDrive(models.Model):
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
 	manager = models.ForeignKey(User, on_delete=models.PROTECT, related_name="owned_disbursement_drives")
+	location = models.CharField(max_length=32, null=True, blank=True)
 	team_members = models.ManyToManyField(User)
 	filled_by_filter = models.CharField(max_length=32, choices=FilledByFilterEnum.choices,
 	                                    default=FilledByFilterEnum.DISABLED)

@@ -517,6 +517,7 @@ class DisbursementDriveAdmin(ExportActionMixin, FSMTransitionCustomMixin, admin.
         'id',
         'date',
         'manager',
+        'location',
         'updated_on',
         'status',
     )
