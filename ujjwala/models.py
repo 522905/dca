@@ -124,6 +124,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	ekyc_channel = models.CharField(max_length=128, null=True, blank=True)
 	ekyc_last_attempt_log = models.TextField(null=True, blank=True)
 	tags = TaggableManager()
+	marriage_date = models.DateField(null=True, blank=True)
 
 	class Meta:
 		permissions = (
