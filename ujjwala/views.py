@@ -2560,7 +2560,7 @@ class BarCodeLabelPrintView(View):
 		context_dict.update(
 			dict([(f'address_{index + 1}', val) for index, val in enumerate(address_lines)])
 		)
-		dd = ConnectionDisbursement.disbursement_drive
+		dd = obj.disbursement_drive
 		context_dict[
 			'dd_info'] = f"{dd.id}/{dd.date.strftime('%d-%m-%Y')}/{dd.manager.first_name} {dd.manager.last_name}/{dd.location}"
 		name = obj.parent.name
