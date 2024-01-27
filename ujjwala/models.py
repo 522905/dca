@@ -1902,7 +1902,7 @@ class Ekyc(models.Model):
 
 
 class UjjwalaSearchLog(models.Model):
-	parent = models.ForeignKey(UjjwalaV2Application, on_delete=models.PROTECT)
+	parent = models.ForeignKey(UjjwalaV2Application, on_delete=models.SET_NULL, null=True)
 	requested_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
 	source = models.CharField(max_length=128, choices=UjjwalaSearchLogEnum.choices)
 	activity_datetime = models.DateTimeField()
