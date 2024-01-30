@@ -16,6 +16,7 @@ from ujjwala.enums import UjjwalaV2ApplicationStatus
 from ujjwala.jobs import ensure_db_connection
 from ujjwala.sv_functions import update_sv_document, update_in_dca, update_sv_document_v2
 from ujjwala.ujjwala_functions import send_pos_list_for_ekyc
+from utils.qrcode import get_sv_date
 
 EXTERNAL_TASK_TO_SUBSCRIBE = [
 	'ujjwala_sv_generation#calculate_wait_time',
@@ -107,8 +108,10 @@ def handle_task(task: ExternalTask) -> TaskResult:
 			booking_id = task.get_variable('booking_id')
 			sv_file_content = download_file_variable_data(task.get_process_instance_id(), 'sv_file')
 			sv_file_link = update_sv_document_v2(connection_disbursement_id, booking_id, consumer_id, sv_file_content)
+			sv_date = get_sv_date(sv_file_content)
 			result = {
 				"sv_file_link": {"value": sv_file_link, "type": "string"},
+				"sv_date": {"value": sv_date, "type": "string"},
 				"connection_disbursement_id": {"value": connection_disbursement_id, "type": "string"},
 			}
 			return task.complete(global_variables=result)
@@ -123,7 +126,8 @@ def handle_task(task: ExternalTask) -> TaskResult:
 			consumer_id = task.get_variable('consumer_id')
 			booking_id = task.get_variable('booking_id')
 			sv_file_link = task.get_variable('sv_file_link')
-			update_in_dca(connection_disbursement_id, booking_id, sv_file_link, consumer_id)
+			sv_date = task.get_variable('sv_date')
+			update_in_dca(connection_disbursement_id, booking_id, sv_file_link, consumer_id, sv_date)
 			return task.complete()
 		elif topic == 'process_ekyc#update_in_dca':
 			dca_id = task.get_variable('dca_id')

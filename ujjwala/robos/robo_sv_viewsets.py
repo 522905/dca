@@ -166,6 +166,7 @@ class UjjwalaApplicationSVViewSet(viewsets.ModelViewSet):
 		booking_id = request.data.get('booking_id')
 		sv_upload_link = request.data.get('sv_upload_link')
 		consumer_id = request.data.get('consumer_id')
+		sv_date = datetime.datetime.strptime(request.data.get('sv_date'), '%d-%m-%Y')
 
 		ci_obj = ConnectionDisbursement.objects.get(id=connection_disbursement_id)
 
@@ -179,7 +180,8 @@ class UjjwalaApplicationSVViewSet(viewsets.ModelViewSet):
 				parent=ci_obj,
 				booking_id=booking_id,
 				sv_link=sv_upload_link,
-				sv_uploaded_on=datetime.datetime.now()
+				sv_uploaded_on=datetime.datetime.now(),
+				sv_date=sv_date
 			)
 		else:
 			invitation.booking_id = booking_id
