@@ -18,6 +18,7 @@ from domestic_app import settings
 from domestic_app.settings import CAMUNDA_BASE_URL
 # Camunda Base URL
 # CAMUNDA_BASE_URL = f"{settings.CAMUNDA_BASE_URL}/engine-rest"
+from ujjwala.enums import UjjwalaV2ApplicationStatus
 from ujjwala.ujjwala_functions import get_data_for_new_relation
 
 UJJWALA_SV_GENERATION_PROCESS = 'ujjwala_sv_generation'
@@ -276,9 +277,15 @@ def get_activity_instance_count(activity_id, process_instance_id):
 def enrich_omc_rejection_details(id):
 	from ujjwala.jobs import do_primary_omc_dedupe_check
 
-	application = do_primary_omc_dedupe_check(id)
-	if application.robo_sdms_dedup == 'PROCESSED_AND_UNIQUE':
-		application.tags.add("In Process With Other Distributor")
+	try:
+
+		application = do_primary_omc_dedupe_check(id)
+		if application.robo_sdms_dedup == 'PROCESSED_AND_UNIQUE':
+			application.tags.add("In Process With Other Distributor")
+		application.status = UjjwalaV2ApplicationStatus.APPLICATION_REJECTED
+		application.save()
+	except Exception as e:
+		raise Exception(e)
 
 
 def start_new_relation_process_in_ekyc(application_id):

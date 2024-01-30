@@ -290,15 +290,10 @@ def handle_task(task: ExternalTask) -> TaskResult:
 				return task.complete(global_variables=variables_dict)
 
 			return task.bpmn_error("non_arun_indane_customer_error", task.get_variable('bpmnError'), variables=variables_dict)
-		elif topic == 'process_ekyc#enrich_omc_rejection':
-			application_id = task.get_variable('dca_id')
-			res = enrich_omc_rejection_details(application_id)
-			print(res)
-			return task.complete()
-		elif topic == 'ujjwala_legal_docs_update#enrich_omc_rejection':
+		elif topic in ['process_ekyc#enrich_omc_rejection', 'ujjwala_legal_docs_update#enrich_omc_rejection']:
 			application_id = task.get_variable('application_id')
 			res = enrich_omc_rejection_details(application_id)
-			print(res)
+			print(f"{application_id}, {res}")
 			return task.complete()
 		elif topic == 'process_get_ekyc_status_from_sdms#update_consumer_ekyc_status_in_dca':
 			from ujjwala.models import UjjwalaV2Application, EkycLogs, FamilyMembers, Ekyc
