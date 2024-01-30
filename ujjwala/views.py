@@ -1080,7 +1080,7 @@ class UjjwalaConnectionDisbursementListView(ListView):
 					request, messages.INFO, "No Active Disbursement Drive Exist"
 				)
 			else:
-				obj = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
+				obj: ConnectionDisbursement = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
 				if obj:
 					allowed = True
 					if obj.status not in disbursement_drive.legal_documents_conditions:
@@ -1104,6 +1104,13 @@ class UjjwalaConnectionDisbursementListView(ListView):
 								"Not Allowed In This Disbursement Drive. Application Id: {} - {}".format(
 									application_id, obj.status
 								)
+							)
+
+					if allowed and disbursement_drive.allow_only_sv_generated:
+						if not obj.invitation.exists():
+							messages.add_message(
+								request, messages.ERROR,
+								"Application Id: {} No SV Generated.".format(application_id)
 							)
 					if allowed:
 						return redirect('ujjwala:connection_disbursement_form_view', pk=obj.pk)
