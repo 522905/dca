@@ -1845,6 +1845,8 @@ class ConnectionDisbursementInvitation(models.Model):
 	sv_sdms_updated_on = models.DateTimeField(null=True, blank=True)
 	robo_error_message = models.TextField(null=True, blank=True)
 	status = models.CharField(max_length=32, default='VALID')
+	sv_date = models.DateField(null=True, blank=True)
+	document_number = models.CharField(max_length=16, null=True, blank=True)
 
 	def download_links(self):
 		html = '''
