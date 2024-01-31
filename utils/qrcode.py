@@ -2,6 +2,10 @@ import io
 
 import pyqrcode
 import fitz
+import re
+
+sv_date = re.compile('(\d{2}-\d{2}-\d{4})')
+sv_document_number = re.compile('(7-\d{12})')
 
 
 def generate_base64_qr_code(content):
@@ -72,6 +76,13 @@ def append_qr_code_to_sv(content, booking_id, pdf_bytes):
 
 	file_handle.deletePage(1)
 	return file_handle.write()
+
+
+def get_sv_date_and_doc_no(pdf_content):
+	result = get_text_block_exist("Date", pdf_content)
+	date_match = sv_date.search(result[4])
+	doc_no_match = sv_document_number.search(result[4])
+	return date_match.groups()[0] if len(date_match.groups()) > 0 else None, doc_no_match.groups()[0] if doc_no_match else None
 
 
 if __name__ == '__main__':

@@ -16,7 +16,7 @@ from ujjwala.enums import UjjwalaV2ApplicationStatus
 from ujjwala.jobs import ensure_db_connection
 from ujjwala.sv_functions import update_sv_document, update_in_dca, update_sv_document_v2
 from ujjwala.ujjwala_functions import send_pos_list_for_ekyc
-from utils.qrcode import get_sv_date
+from utils.qrcode import get_sv_date_and_doc_no
 
 EXTERNAL_TASK_TO_SUBSCRIBE = [
 	'ujjwala_sv_generation#calculate_wait_time',
@@ -108,10 +108,11 @@ def handle_task(task: ExternalTask) -> TaskResult:
 			booking_id = task.get_variable('booking_id')
 			sv_file_content = download_file_variable_data(task.get_process_instance_id(), 'sv_file')
 			sv_file_link = update_sv_document_v2(connection_disbursement_id, booking_id, consumer_id, sv_file_content)
-			sv_date = get_sv_date(sv_file_content)
+			sv_date, sv_doc_no = get_sv_date_and_doc_no(sv_file_content)
 			result = {
 				"sv_file_link": {"value": sv_file_link, "type": "string"},
 				"sv_date": {"value": sv_date, "type": "string"},
+				"sv_document_number": {"value": sv_doc_no, "type": "string"},
 				"connection_disbursement_id": {"value": connection_disbursement_id, "type": "string"},
 			}
 			return task.complete(global_variables=result)
@@ -127,7 +128,8 @@ def handle_task(task: ExternalTask) -> TaskResult:
 			booking_id = task.get_variable('booking_id')
 			sv_file_link = task.get_variable('sv_file_link')
 			sv_date = task.get_variable('sv_date')
-			update_in_dca(connection_disbursement_id, booking_id, sv_file_link, consumer_id, sv_date)
+			document_number = task.get_variable('sv_document_number')
+			update_in_dca(connection_disbursement_id, booking_id, sv_file_link, consumer_id, sv_date, document_number)
 			return task.complete()
 		elif topic == 'process_ekyc#update_in_dca':
 			dca_id = task.get_variable('dca_id')
@@ -290,9 +292,18 @@ def handle_task(task: ExternalTask) -> TaskResult:
 				return task.complete(global_variables=variables_dict)
 
 			return task.bpmn_error("non_arun_indane_customer_error", task.get_variable('bpmnError'), variables=variables_dict)
-		elif topic in ['process_ekyc#enrich_omc_rejection', 'ujjwala_legal_docs_update#enrich_omc_rejection']:
+		elif topic == 'process_ekyc#enrich_omc_rejection':
+			application_id = task.get_variable('dca_id')
+			dist_name = task.get_variable('dist_name')
+			data = {'distributor_name': dist_name}
+			res = enrich_omc_rejection_details(application_id, data)
+			print(f"{application_id}, {res}")
+			return task.complete()
+		elif topic == 'ujjwala_legal_docs_update#enrich_omc_rejection':
 			application_id = task.get_variable('application_id')
-			res = enrich_omc_rejection_details(application_id)
+			dist_name = task.get_variable('dist_name')
+			data = {'distributor_name': dist_name}
+			res = enrich_omc_rejection_details(application_id, data)
 			print(f"{application_id}, {res}")
 			return task.complete()
 		elif topic == 'process_get_ekyc_status_from_sdms#update_consumer_ekyc_status_in_dca':

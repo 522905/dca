@@ -167,6 +167,7 @@ class UjjwalaApplicationSVViewSet(viewsets.ModelViewSet):
 		sv_upload_link = request.data.get('sv_upload_link')
 		consumer_id = request.data.get('consumer_id')
 		sv_date = datetime.datetime.strptime(request.data.get('sv_date'), '%d-%m-%Y')
+		document_number = request.data.get('document_number')
 
 		ci_obj = ConnectionDisbursement.objects.get(id=connection_disbursement_id)
 
@@ -181,7 +182,8 @@ class UjjwalaApplicationSVViewSet(viewsets.ModelViewSet):
 				booking_id=booking_id,
 				sv_link=sv_upload_link,
 				sv_uploaded_on=datetime.datetime.now(),
-				sv_date=sv_date
+				sv_date=sv_date,
+				document_number=document_number
 			)
 		else:
 			invitation.booking_id = booking_id
