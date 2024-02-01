@@ -407,6 +407,27 @@ def handle_task(task: ExternalTask) -> TaskResult:
 						application.save()
 			result_variables["biometric_authentication"] = {"value": biometric_authentication, "type": "Boolean"}
 			return task.complete(global_variables=result_variables)
+		elif topic == 'iocl_investigation#extract_data_for_iocl_investigation':
+			from ujjwala.models import UjjwalaV2Application, FamilyMembers
+
+			application_id = task.get_variable('application_id')
+			application = UjjwalaV2Application.objects.get(pk=application_id)
+
+			fm_self: FamilyMembers = application.family_members.filter(relation='SELF').first()
+
+			if fm_self.uid_check_result:
+				consumer_id = fm_self.uid_check_result.get('consumer_id')
+
+				return task.complete(global_variables={
+					"consumer_id": {"type": "string", "value": consumer_id}
+				})
+			else:
+				raise Exception("Could Not Find UID Check Result Consumer Id Missing")
+
+		elif topic == 'process_update_cancel_sv_flag#update_in_dca':
+			dca_id = task.get_variable('dca_id')
+			remove_sv_record(dca_id)
+			return task.complete()
 	except Exception as e:
 		return task.failure(
 			str(e), traceback.format_exc(),

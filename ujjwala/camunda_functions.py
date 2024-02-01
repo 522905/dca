@@ -8,6 +8,7 @@ import requests
 # Camunda Production URL
 # CAMUNDA_WEB_ROOT_URL = "https://camunda.dca.arungas.com"
 from django.contrib.auth.models import User
+from minio import Minio
 
 from domestic_app import settings
 
@@ -23,6 +24,13 @@ from ujjwala.ujjwala_functions import get_data_for_new_relation
 
 UJJWALA_SV_GENERATION_PROCESS = 'ujjwala_sv_generation'
 PROCESS_CLDP_DEDUP = "Process_CLDP_DEDUP"
+
+minio_client = Minio(
+		settings.MINIO_API_ENDPOINT,
+		access_key=settings.MINIO_CREDENTIAL.get("access_key"),
+		secret_key=settings.MINIO_CREDENTIAL.get("secret_key"),
+		secure=False
+	)
 
 
 def start_ujjwala_sv_process_in_camunda(connection_disbursement_id, disbursement_drive):
@@ -274,15 +282,19 @@ def get_activity_instance_count(activity_id, process_instance_id):
 	return res.json().get('count')
 
 
-def enrich_omc_rejection_details(id):
+def enrich_omc_rejection_details(id, data=""):
 	from ujjwala.jobs import do_primary_omc_dedupe_check
+	from ujjwala.models import UjjwalaV2Application
+	from ujjwala.forms import ApplicationRejected
 
 	try:
+		do_primary_omc_dedupe_check(id)
+		application = UjjwalaV2Application.objects.get(pk=id)
 
-		application = do_primary_omc_dedupe_check(id)
 		if application.robo_sdms_dedup == 'PROCESSED_AND_UNIQUE':
 			application.tags.add("In Process With Other Distributor")
-		application.status = UjjwalaV2ApplicationStatus.APPLICATION_REJECTED
+		if not application.status == 'APPLICATION_REJECTED':
+			application.application_rejected(rejected_reason='CONNECTION_ALREADY_EXIST', description=data)
 		application.save()
 	except Exception as e:
 		raise Exception(e)
@@ -311,6 +323,20 @@ def start_new_relation_process_in_ekyc(application_id):
 		res, process_id = start_process_in_camunda_v2('process_get_ekyc_status_from_sdms', variables)
 		print(res)
 	return True
+
+
+def remove_sv_record(application_id):
+	from ujjwala.models import UjjwalaV2Application, ConnectionDisbursementInvitation
+
+	application = UjjwalaV2Application.objects.get(pk=application_id)
+	invitation: ConnectionDisbursementInvitation = ConnectionDisbursementInvitation.objects.filter(
+		parent_id=application.connection_disbursement.pk).first()
+	if invitation:
+		minio_client.remove_object(settings.MINIO_UJJWALA_BUCKET_NAME, invitation.sv_link.split("/")[-1])
+		application.tags.add("SV Cancelled")
+		application.connection_disbursement.invitation.first().delete()
+		application.connection_disbursement.save()
+		application.save()
 
 
 if __name__ == '__main__':
