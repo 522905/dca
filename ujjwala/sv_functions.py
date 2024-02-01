@@ -73,14 +73,15 @@ def update_sv_document_v2(connection_disbursement_id, booking_id, consumer_id, c
 	return sv_upload_link
 
 
-def update_in_dca(connection_disbursement_id, booking_id, sv_upload_link, consumer_id, sv_date):
+def update_in_dca(connection_disbursement_id, booking_id, sv_upload_link, consumer_id, sv_date, document_number):
 
 	data = {
 		"connection_disbursement_id": connection_disbursement_id,
 		"booking_id": booking_id,
 		"sv_upload_link": sv_upload_link,
 		"consumer_id": consumer_id,
-		"sv_date": sv_date
+		"sv_date": sv_date,
+		"document_number": document_number
 	}
 	url = "https://dca.arungas.com/ujjwala/sv-bot/invitation_update/"
 	# url = "http://192.168.168.4:60610/ujjwala/sv-bot/invitation_update/"
