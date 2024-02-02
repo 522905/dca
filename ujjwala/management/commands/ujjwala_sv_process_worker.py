@@ -191,39 +191,17 @@ def handle_task(task: ExternalTask) -> TaskResult:
 			approval = "Approval" in nic_status
 
 			if not reject and approval:
-				if "fo" in nic_status.lower():
-					return task.bpmn_error(
-						'Error_NIC_Error_FO_Approval', f'NIC: {nic_status}, OMC: {omc_status}',
-						variables={
-							'nic_status': {"value": nic_status, "type": "string"},
-							'omc_status': {"value": omc_status, "type": "string"},
-						}
-					)
-
-				if "DNSA" in nic_status and "Dist" in nic_status:
-					return task.bpmn_error(
-						'Error_Auto_Approve_Dedup', f'NIC: {nic_status}, OMC: {omc_status}',
-						variables={
-							'nic_status': {"value": nic_status, "type": "string"},
-							'omc_status': {"value": omc_status, "type": "string"},
-						}
-					)
-
 				return task.bpmn_error(
-					'Error_NIC_Error_Dist_Approval', f'NIC: {nic_status}, OMC: {omc_status}',
+					'Error_NIC_Error_Approval', f'NIC: {nic_status}, OMC: {omc_status}',
 					variables={
 						'nic_status': {"value": nic_status, "type": "string"},
 						'omc_status': {"value": omc_status, "type": "string"},
+						'approval_type': {
+							"value": 'FO' if "fo" in nic_status.lower() else 'DIST',
+							"type": "string"
+						}
 					}
 				)
-				#
-				# return task.bpmn_error(
-				# 	'Error_NIC_Error_User_Approval', f'NIC: {nic_status}, OMC: {omc_status}',
-				# 	variables={
-	            #        'nic_status': {"value": nic_status, "type": "string"},
-	            #        'omc_status': {"value": omc_status, "type": "string"},
-	            #     }
-				# )
 
 			if not reject and not cleared:
 				dedup_retry_date = datetime.datetime.now() + datetime.timedelta(seconds=150)
