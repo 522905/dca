@@ -1459,7 +1459,7 @@ def application_needs_to_be_audited(data):
 				                                                                     fm['uid_no'])
 			)
 
-		seq_match = CSequenceMatcher(None, data.get('uid_linked_mobile'), fm['uid_no'])
+		seq_match = SequenceMatcher(None, data.get('uid_linked_mobile'), fm['uid_no'])
 		match = seq_match.find_longest_match(0, len(data.get('uid_linked_mobile')), 0, len(fm['uid_no']))
 		if match.size >= 6:
 			matched_str = data.get('uid_linked_mobile')[match.a: match.a + match.size]
@@ -1484,6 +1484,8 @@ def application_needs_to_be_audited(data):
 
 
 def application_needs_to_be_audited_by_id(obj):
+	from difflib import SequenceMatcher
+
 	reason = []
 
 	# result, message = is_valid_name(obj.name, 'FEMALE')
@@ -1494,6 +1496,25 @@ def application_needs_to_be_audited_by_id(obj):
 	family_members = obj.family_members
 
 	for fm in family_members.all():
+		seq_match = SequenceMatcher(None, obj.contact_mobile, fm.uid_no)
+		match = seq_match.find_longest_match(0, len(obj.contact_mobile), 0, len(fm.uid_no))
+		if match.size >= 6:
+			matched_str = obj.contact_mobile[match.a: match.a + match.size]
+			reason.append(
+				"Relation {} Contact Mobile Number Digits {} Found In UID {}".format(fm.relation,
+				                                                                     matched_str,
+				                                                                     fm.uid_no)
+			)
+
+		seq_match = SequenceMatcher(None, obj.uid_linked_mobile, fm.uid_no)
+		match = seq_match.find_longest_match(0, len(obj.uid_linked_mobile), 0, len(fm.uid_no))
+		if match.size >= 6:
+			matched_str = obj.uid_linked_mobile[match.a: match.a + match.size]
+			reason.append(
+				"Relation {} UID Linked Mobile Number Digits {} Found In UID {}".format(fm.relation,
+				                                                                        matched_str,
+				                                                                        fm.uid_no)
+			)
 		result, message = is_valid_name(fm.name, fm.get_gender().upper())
 
 		if not result:
