@@ -272,7 +272,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		addr_str = ' '.join(rs)
 		landmark = self.address_json.get('landmark', '')
 		if len(addr_str) + len(landmark) <= 100:
-			addr_str = addr_str + landmark
+			addr_str = addr_str + ' ' + landmark
 
 		return {
 			'addr_str': addr_str,
