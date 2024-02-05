@@ -484,6 +484,7 @@ class PreInspectionReviewView(FormView, ApplicationView):
 		obj.save()
 		return redirect(self.get_success_url())
 
+
 	def get_form_kwargs(self):
 		kwargs = super().get_form_kwargs()
 		# connection_disbursement = self.get_object()
@@ -501,6 +502,17 @@ class PreInspectionReviewView(FormView, ApplicationView):
 		main_gate = obj.documents.filter(
 			type=UjjwalaApplicationDocumentsEnum.MAIN_GATE
 		).first().link
+
+		change_address_url = reverse(
+			'ujjwala:change_address_view',
+			kwargs={
+				'pk': obj.id,
+			}
+		)
+
+		context.update({
+			"change_address_url": self.request.build_absolute_uri(change_address_url)
+		})
 
 		context.update({
 			"obj": obj,
@@ -942,7 +954,6 @@ class UjjwalaApplicationStatusView(TemplateView):
 			application = qs.filter(id=application_id).first()
 
 		if application:
-
 			reject_reason = ujjwala_application_reject_reason_log(application.id)
 			UjjwalaSearchLog.objects.create(
 				parent=application, requested_by=get_current_user(), source=UjjwalaSearchLogEnum.WEB,
@@ -1071,6 +1082,7 @@ class UjjwalaConnectionDisbursementListView(ListView):
 		if not is_member_of_disbursement_drive(user):
 			return render(request, 'ujjwala/no_permissions.html')
 		application_id = request.GET.get('application_id', '')
+
 		if application_id:
 			disbursement_drive: DisbursementDrive = DisbursementDrive.objects.filter(
 				date__lte=datetime.datetime.now().date(), status=DisbursementDriveStatusEnum.ACTIVE
@@ -2646,6 +2658,49 @@ class NicErrorUpdateAddress(FormView):
 		return HttpResponse("<b>Address Updated Successfully</b>")
 
 
+# @method_decorator(login_required, 'dispatch')
+class NicErrorUpdateAddress(FormView):
+	# model = ConnectionDisbursementInvitation
+	form_class = NicUpdateAddressForm
+	template_name = "ujjwala/NicErrorUpdateAddress/update_address.html"
+
+	def dispatch(self, request, *args, **kwargs):
+		application = self.get_object()
+		if application:
+			if application.status == \
+					UjjwalaV2ApplicationStatus.NIC_ERROR_UPDATE_ADDRESS:
+				return HttpResponse("Address already submitted by you and is under review.")
+		return super().dispatch(request, *args, **kwargs)
+
+	def get_object(self, queryset=None):
+		try:
+			obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No application with id: {} found.".format(self.kwargs.get('pk'))
+			)
+		return obj
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		obj = self.get_object()
+		context.update({
+			"obj": obj
+		})
+		return context
+
+	def form_valid(self, form):
+		obj = self.get_object()
+		data = form.clean()
+		old_address_json = obj.address_json or obj.address
+		obj.transition_nic_address_updated(
+			description=old_address_json,
+			address_json=data['address_json']
+		)
+		obj.save()
+		return HttpResponse("<b>Address Updated Successfully</b>")
+
+
 class UpdateAddressView(FormView):
 	form_class = UpdateAddressForm
 	template_name = "ujjwala/update_address.html"
@@ -2684,6 +2739,56 @@ class UpdateAddressView(FormView):
 		)
 		obj.save()
 		return HttpResponse("<b>Address Updated Successfully</b>")
+
+
+class ChangeAddressView(FormView):
+	form_class = UpdateAddressForm
+	template_name = "ujjwala/update_address.html"
+
+	# def dispatch(self, request, *args, **kwargs):
+	# 	application = self.get_object()
+	# 	if application:
+	# 		if application.address_updated:
+	# 			return HttpResponse("Address already submitted by you and is under review.")
+	# 	return super().dispatch(request, *args, **kwargs)
+
+	def get_object(self, queryset=None):
+		try:
+			obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No application with id: {} found.".format(self.kwargs.get('pk'))
+			)
+		return obj
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		obj = self.get_object()
+		context.update({
+			"obj": obj,
+		})
+		return context
+
+	def form_invalid(self, form):
+		return super().form_invalid(form)
+
+	def form_valid(self, form):
+		obj = self.get_object()
+		data = form.clean()
+		old_address_json = obj.address_json or obj.address
+		obj.transition_updated_address(
+			description=old_address_json,
+			address_json=data['address_json']
+		)
+		obj.save()
+		return render(
+			self.request,
+			"ujjwala/response.html",
+			{
+				"heading": "Change Address",
+				"message": "Address Updated Successfully"
+			}
+		)
 
 
 class PreInspectionConvertToView(FormView):
@@ -3644,6 +3749,14 @@ class UjjwalaApplicationAuditView(UpdateView):
 			context['obj'] = self.get_object()
 			context['form'] = UjjwalaApplicationAuditForm(instance=obj)
 			context['formset'] = FamilyMembersInlineFormSet(instance=obj, prefix='family_members')
+
+		change_address_url = reverse(
+			'ujjwala:change_address_view',
+			kwargs={'pk': obj.id}
+		)
+		context.update({
+			"change_address_url": self.request.build_absolute_uri(change_address_url)
+		})
 		return context
 
 	def form_valid(self, form):

@@ -255,7 +255,12 @@ urlpatterns = [
     url(
         '^portal/update_address/(?P<pk>[^/.]+)/$',
         views.UpdateAddressView.as_view(),
-        name="nic_error_update_address"
+        name="update_address_view"
+    ),
+    url(
+        '^portal/change_address/(?P<pk>[^/.]+)/$',
+        views.ChangeAddressView.as_view(),
+        name="change_address_view"
     ),
     url(
         '^portal/change_phone_number/(?P<pk>[^/.]+)/$',
