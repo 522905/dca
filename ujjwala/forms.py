@@ -197,7 +197,7 @@ class ChangeAddressForm(forms.Form):
 		widget=forms.TextInput, label='Village', required=True
 	)
 	ward_no = forms.CharField(
-		widget=forms.TextInput, label='House No.', required=True
+		widget=forms.TextInput, label='Ward No', required=True
 	)
 	post_office = forms.CharField(
 		widget=forms.TextInput, label='Post Office', required=True
@@ -212,27 +212,23 @@ class ChangeAddressForm(forms.Form):
 
 	def save(self):
 		data = self.cleaned_data
-		
-		# if not self.update_address:
-		# 	return data
-
 		obj = self.pre_inspection
+		old_address_json = "{}"
 
-		old_address_json = obj.parent.address_json
-
-		obj.parent.address_json = {
-			"house_no": data.get('house_no', ''),
-			"room_no": data.get('room_no', ''),
-			"floor": data.get('floor', ''),
-			"street_no": data.get('street_no', ''),
-			"landmark": data.get('landmark', ''),
-			"village": data.get('village', ''),
-			"ward_no": data.get('ward_no', ''),
-			"post_office": data.get('post_office', ''),
-			"pincode": data.get('pincode', '')
-		}
-
-		obj.parent.save()
+		if data['update_address']:
+			old_address_json = obj.parent.address_json
+			obj.parent.address_json = {
+				"house_no": data.get('house_no', ''),
+				"room_no": data.get('room_no', ''),
+				"floor": data.get('floor', ''),
+				"street_no": data.get('street_no', ''),
+				"landmark": data.get('landmark', ''),
+				"village": data.get('village', ''),
+				"ward_no": data.get('ward_no', ''),
+				"post_office": data.get('post_office', ''),
+				"pincode": data.get('pincode', '')
+			}
+			obj.parent.save()
 		obj.pre_inspection_change_address(by=get_current_user(), description=old_address_json)
 		obj.save()
 

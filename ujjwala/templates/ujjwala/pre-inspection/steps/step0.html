@@ -1,19 +1,63 @@
 {% extends "material/frontend/base_module.html" %}
 {% load static %}
+{% load material_form %}
 {% block content %}
-<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="{% static '/css/style.css' %}">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
-
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <style>
-    .hidden-field{ display: none;}
-    .form_label .card{ width: 100%;  }
-    .address_form label{ margin-bottom: 5px; }
-    #address_form .form_block input{ padding-left:5px; border-radius: 3px; border: 1px solid #ccc; width: 100%; line-height: 40px; }
-    .form_block label{ float: left; width: 100%; }
+    #id_update_address_container{ visibility: hidden; position: fixed; top: 45px;}
+    .hidden-field {
+        display: none;
+    }
+
+    .form_label .card {
+        width: 100%;
+    }
+
+    .address_form label {
+        margin-bottom: 5px;
+    }
+
+    #address_form .form_block input {
+        padding-left: 5px;
+        border-radius: 3px;
+        border: 1px solid #ccc;
+        width: 100%;
+        line-height: 40px;
+    }
+
+    .form_block label {
+        float: left;
+        width: 100%;
+    }
+
+    #myDiv {
+        display: none;
+        /* Initially hide the div */
+        padding: 20px;
+        border: 1px solid #ccc;
+        margin-top: 10px;
+    }
+
+    .edit_address {
+        background-color: transparent;
+        box-shadow: none;
+        border: none;
+    }
+
+    #modal-content .row{ margin: 0; }
+    #modal-content .form-group{ margin-bottom: 5px !important;}
+    .modal-content label{ font-size: 12px; color:#333; font-weight: 500; margin-bottom: 2px; }
+    .modal-content span{ font-size: 12px; color:blue; font-weight: 600; }
+    .note-text{ text-align: center; font-size: 16px; font-weight: 800;}
+    .card-profile-image img{ height: 100px; object-fit: cover; width: 100px; object-position: 60% top; }
 </style>
 <div id="address_form" class="row m-0 form_label p-2">
     <div class="card card-profile pt-0 mt-0 " style="width: 100%;" >
-		<div class="row justify-content-center m-0" style="width: 100%; margin: 0 auto !important; padding: 10px;">
+		<div class="row m-0" style="width: 100%; margin: 0 auto !important; padding: 10px;">
 			<div style="width: 30%; float:left">
 				<div class="card-profile-image">
 					<a href="#">
@@ -23,69 +67,107 @@
 			</div>
 			<div style="width: 70%; float:right">
 				<div class="card-body pt-0">
-					<div class="text-center">
-						<h5 class="h3">{{ obj.parent.name }}({{ obj.parent.id }})<span class="font-weight-light"></span></h5>
-						<div class="h5 font-weight-300">
-							<i class="ni location_pin mr-2"></i>{{ obj.parent.contact_mobile }}
-						</div>
-						<div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
-							{% if address_json == address_json  %}
-								{% for key,data in obj.parent.address_json.items %}
-									{{data}},
-								{% endfor %}
-							{% else %}
-								{{ obj.parent.address }}
-							{% endif%}
-						</div>
-					</div>
+					<h5 class="h3">{{ obj.parent.name }}({{ obj.parent.id }})<span class="font-weight-light"></span></h5>
+                    <div class="h5 font-weight-300">
+                        {{ obj.parent.contact_mobile }}
+                    </div>
+                    <div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
+                        {% if obj.parent.address_json  %}
+                            {% for key,data in obj.parent.address_json.items %}
+                                {{data}},
+                            {% endfor %}
+                        {% else %}
+                            {{ obj.parent.address }}
+                        {% endif%}
+                    </div>
 				</div>
 			</div>
-		</div>
-	</div>
-    <form method="post" id="form" style="width: 100%;">
-{#        {% csrf_token %}#}
-        <div class="card address_form">
-            {{form.form_type}}
-            {{form.application_id}}
-            {{form.name}}
-            {{form.address}}
-            <div class="main-header bg-heading p-2 border-0" style="background-color: #2957A4;">
-                <span class="text-white" style="font-size: 18px; padding-left: 20PX;">Edit Address</span>
-            </div>
-            <div class="p-4 form_block">
-               
-                {{ form }}
-            </div>
-           
-            <div class="card-footer">
-                <input class="btn btn-secondary rounded-0 float-right" type="button" id="form" onclick="submit()"  value="Submit"/>
+        </div>
+    </div>
+    <div class="card card-profile pt-0 mt-0 " style="width: 100%;" >
+        <div class="row justify-content-center m-0" style="width: 100%; margin: 0 auto !important; padding: 10px;">
+            <div style="width: 100%; float:left">
+                <form method="post" id="id_change_address_form">
+                    {% csrf_token %}
+                    {% form form=form %}{% endform %}
+                    <button class="btn btn-secondary" type="submit">Submit</button>
+                </form>
             </div>
         </div>
-        
-    </form>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade edit_address p-0" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog p-0 " role="document">
+        <div class="modal-content p-0">
+            <div class="modal-header m-0 p-0" style="display: block;">
+                <p class="note-text p-3" style="color: red; display: block;">कृपया अपने पते की पुष्टि करें, ताकि आपको कनेक्शन देने में देरी न हो</p>                   
+            </div>
+            <div id="modal-content" class="modal-body p-0">
+                <div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
+                    {% if obj.parent.address_json %}
+                        <div class="row">
+                            <div class="col-4">
+                                <div class="card-profile-image">
+                                    <a href="#">
+                                        <img src="{{obj.parent.document_self}}">
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-8 pr-0">
+                                <div class="form-group">
+                                    <label style="display: block; font-weight: bold;">{{obj.parent.name }} ({{ obj.parent.id }})</label>
+                                    <label style="display: block; font-weight: bold;"> {{ obj.parent.contact_mobile }}</label>
+                                    <label for="house_no">House No. </label> <span>{{obj.parent.address_json.house_no}}</span>,
+                                    <label for="room_no">Room No.</label> <span>{{obj.parent.address_json.room_no}}</span>,
+                                    <label for="floor">Floor</label> <span>{{obj.parent.address_json.floor}}</span>,
+                                    <label for="street_no">Street No.</label> <span>{{obj.parent.address_json.street_no}}</span>,
+                                    <label for="landmark">Land Mark</label> <span>{{obj.parent.address_json.landmark}}</span>,
+                                    <label for="ward_no">Ward No</label> <span>{{obj.parent.address_json.ward_no}}</span>,
+                                    <label for="village">Locality Village</label> <span>{{obj.parent.address_json.village}}</span>,
+                                    <label for="post_office">Post Office </label><span>{{obj.parent.address_json.post_office}}</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        {{ obj.parent.address }}
+                    {% endif%}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary mr-2" data-dismiss="modal" onclick="confirmAddressSubmitForm()">Confirm</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="toggleDiv()">Edit Address</button>
+                <!-- Add additional buttons if needed -->
+            </div>
+        </div>
+    </div>
 </div>
 <script>
-    function submit() {
-        if(!$('#form')[0].reportValidity()) {
-            alert("Please complete all required fields");
-            return;
-        }
+    $(document).ready(function () {
+        $('#myModal').modal('show');
+    });
+    $('#myModal').modal({backdrop: 'static', keyboard: false}, 'show');
 
-        if (!validate_pincode()) {
-            return;
+    function toggleDiv() {
+        var div = document.getElementById('myDiv');
+        if (div.style.display === '' || div.style.display === 'none') {
+            div.style.display = 'block';
+            document.getElementById("id_update_address").checked = false;
+        } else {
+            div.style.display = 'none';
         }
     }
+    
+    $('#id_pincode').on('keyup paste', function() {
+        this.value = this.value.replace(/\D/g,'');
+        var thisVal = $(this).val();
+        if ((thisVal.match(/^[1-9]{1}[0-9]{5}$/))){
+        } else {
+            
+        }
+    });
 
-    function validate_pincode() {
-        if(!$('#id_pincode')[0].reportValidity()) {
-            return;
-        }
-        pincode = parseInt($('#id_pincode').val());
-        if(pincode && pincode >= 141001 && pincode <= 141014) {
-            return true;
-        }
-        alert("We don't provide service this Pin code area. हम इस पिन कोड क्षेत्र में सेवा प्रदान नहीं करते हैं");
-        return false;
-    }
 </script>
 {% endblock %}

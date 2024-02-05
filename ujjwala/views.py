@@ -650,11 +650,11 @@ class PreInspectionView(FormView):
 					)
 					pre_inspection.save()
 
-					pre_inspection.pre_inspection_change_address(
-						by=get_current_user(),
-						description="Skipped By Admin, Change Address"
-					)
-					pre_inspection.save()
+					# pre_inspection.pre_inspection_change_address(
+					# 	by=get_current_user(),
+					# 	description="Skipped By Admin, Change Address"
+					# )
+					# pre_inspection.save()
 					return redirect('ujjwala:pre_inspection_form_view', type='mech', pk=pre_inspection.id)
 
 	def get_object(self, queryset=None):
@@ -720,10 +720,10 @@ class PreInspectionView(FormView):
 			return self.pre_inspection_step3_template
 
 	# def get_form(self, form_class=None):
-	#     form = super().get_form(form_class=form_class)
-	#     if form.__class__ == ChangeAddressForm:
-	#         form = ChangeAddressForm(initial=form.pre_inspection.parent.address_json)
-	#     return form
+	# 	form = super().get_form(form_class=form_class)
+	# 	# if form.__class__ == ChangeAddressForm:
+	# 	# 	form = ChangeAddressForm(initial=form.pre_inspection.parent.address_json)
+	# 	return form
 
 	def get_form_kwargs(self):
 		kwargs = super().get_form_kwargs()
