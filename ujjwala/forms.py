@@ -229,7 +229,10 @@ class ChangeAddressForm(forms.Form):
 				"pincode": data.get('pincode', '')
 			}
 			obj.parent.save()
-		obj.pre_inspection_change_address(by=get_current_user(), description=old_address_json)
+		user = get_current_user()
+		if user.is_anonymous:
+			user = None
+		obj.pre_inspection_change_address(by=user, description=old_address_json)
 		obj.save()
 
 
