@@ -61,7 +61,15 @@ class UjjwalaApplicationSdmsRelationshipViewSet(viewsets.ViewSet):
 				pass
 
 			self_fm = record.family_members.get(relation=FamilyMemberRelationEnum.SELF)
-			self_name_split = record.name.split(" ")
+			# self_name_split = record.name.split(" ")
+			if self_fm.name != record.name:
+				record.name = self_fm.name
+				record.save()
+			self_name_split = self_fm.name.split(" ")
+
+			if self_name_split[0].strip() == '':
+				continue
+
 			data.append({
 				"id": record.id,
 				"First Name": self_name_split[0].title(),
