@@ -192,7 +192,8 @@ def do_primary_omc_dedupe_check_v2(id):
         try:
             obj, created = PreInspection.objects.get_or_create(
                 parent_id=application.id,
-                status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+                # status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+                status=PreInspectionStatusEnum.CHANGE_ADDRESS,
                 type=PreInspectionTypeEnum.SELF
             )
             # application.event_invite_for_ekyc_channel_whatsapp()
@@ -329,7 +330,8 @@ def do_primary_omc_dedupe_check_worker(id, dedup_portal):
         try:
             obj, created = PreInspection.objects.get_or_create(
                 parent_id=application.id,
-                status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+                # status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+                status=PreInspectionStatusEnum.CHANGE_ADDRESS,
                 type=PreInspectionTypeEnum.SELF
             )
             # application.event_invite_for_ekyc_channel_whatsapp()
@@ -396,7 +398,8 @@ def do_primary_omc_dedupe_check(id):
         try:
             obj, created = PreInspection.objects.get_or_create(
                 parent_id=application.id,
-                status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+                # status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+                status=PreInspectionStatusEnum.CHANGE_ADDRESS,
                 type=PreInspectionTypeEnum.SELF
             )
             # application.event_invite_for_ekyc_channel_whatsapp()
@@ -818,7 +821,8 @@ def is_application_ready_for_disbursement(parent_id):
     else:
         obj = PreInspection.objects.create(
             parent_id=application.id,
-            status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+            # status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+            status=PreInspectionStatusEnum.CHANGE_ADDRESS,
             type=PreInspectionTypeEnum.SELF
         )
         obj.parent.event_whatsapp_pre_inspection_type_self(obj.pk)
@@ -840,7 +844,8 @@ def enqueue_dedupe_and_audit_jobs(application_id, data):
     if not PreInspection.objects.filter(parent_id=application_id).exists():
         obj = PreInspection.objects.create(
             parent_id=application_obj.id,
-            status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+            # status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+            status=PreInspectionStatusEnum.CHANGE_ADDRESS,
             type=PreInspectionTypeEnum.SELF
         )
         application_obj.event_whatsapp_pre_inspection_type_self(obj.id)

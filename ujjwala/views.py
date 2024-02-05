@@ -134,7 +134,8 @@ class WhatsappPreInspectionTypeSelf(View):
 		if not pi_obj:
 			pi_obj = PreInspection.objects.create(
 				parent_id=application.id,
-				status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+				# status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+				status=PreInspectionStatusEnum.CHANGE_ADDRESS,
 				type=PreInspectionTypeEnum.SELF
 			)
 
@@ -232,7 +233,8 @@ class ShareSelfPreInspectionLink(View):
 		if not pi:
 			PreInspection.objects.create(
 				parent_id=application.id,
-				status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+				# status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+				status=PreInspectionStatusEnum.CHANGE_ADDRESS,
 				type=PreInspectionTypeEnum.SELF
 			)
 

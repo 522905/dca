@@ -596,7 +596,8 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             # Create PreInspection Object
             obj = PreInspection.objects.create(
                 parent_id=application_obj.id,
-                status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+                # status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+                status=PreInspectionStatusEnum.CHANGE_ADDRESS,
                 type=PreInspectionTypeEnum.SELF
             )
             application_obj.event_whatsapp_pre_inspection_type_self(obj.id)
@@ -682,7 +683,8 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             if not application_obj.pre_inspection:
                 obj = PreInspection.objects.create(
                     parent_id=application_obj.id,
-                    status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+                    # status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+                    status=PreInspectionStatusEnum.CHANGE_ADDRESS,
                     type=PreInspectionTypeEnum.SELF
                 )
                 application_obj.event_whatsapp_pre_inspection_type_self(obj.id)
