@@ -27,6 +27,7 @@ def update_lead_in_ujjwala_enquiry_list(mobile):
 
 def add_lead_to_vicidial(contact_mobile, name, id):
 	res = requests.post(
-		f"http://192.168.171.15/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101&function=add_lead&phone_number={contact_mobile}&phone_code=1&list_id=1001&first_name={name}&last_name={id}"
+		f"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
+		"&function=add_lead&phone_number={contact_mobile}&phone_code=1&list_id=1001&first_name={name}&last_name={id}"
 	)
 	return res
