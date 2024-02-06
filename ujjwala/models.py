@@ -18,8 +18,8 @@ from organizations.models import Organization
 from taggit.managers import TaggableManager
 
 from communication_log.models import CommunicationLog
-from teams.models import ServiceLocations, ServiceArea, FormFillArea
 from teams.models import ServiceAreaHex
+from teams.models import ServiceLocations, ServiceArea, FormFillArea
 from ujjwala.communication_models import UjjwalaWhatsappCommunication
 from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMobileStatusEnum, \
 	UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, \
@@ -31,7 +31,7 @@ from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMo
 from ujjwala.forms import ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
 	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm, NewRelationCreated, \
-	CancelWalkInForm, MoveForManualOperationForm, MaterialDeliveryOtpOverrideForm, OnHoldForm, \
+	CancelWalkInForm, MoveForManualOperationForm, OnHoldForm, \
 	ReleaseApplicationForm, CompleteDisbursementDriveForm, \
 	InstallationReviewAdminForm, LegalDocumentsAcceptedToPendingAdminForm, UpdateAddressForm, ReviewUpdatedAddressForm
 from ujjwala.ujjwala_functions import download_ujjwala_physical_legal_docs, \
@@ -732,17 +732,18 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	@transition(
 		field=status,
 		source=UjjwalaV2ApplicationStatus.ADDRESS_CHANGE,
-		# target=UjjwalaV2ApplicationStatus.UPDATE_ADDRESS,
-		target=GET_STATE(
-			lambda self, **kwargs: self.last_execution_state,
-		),
+		target=UjjwalaV2ApplicationStatus.UPDATE_ADDRESS,
+		# target=GET_STATE(
+		# 	lambda self, **kwargs: self.last_execution_state,
+		# ),
 		custom=dict(
 			short_description='Update Address', admin=True, form=UpdateAddressForm
 		),
 		permission='ujjwala.can_approve_connection',
 	)
 	def transition_updated_address(self, *args, **kwargs):
-		self.address_json = kwargs['address_json']
+		pass
+		# self.address_json = kwargs['address_json']
 
 	@old_address_to_description
 	@fsm_log_description
@@ -750,15 +751,18 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	@transition(
 		field=status,
 		source=UjjwalaV2ApplicationStatus.UPDATE_ADDRESS,
+		# target=GET_STATE(
+		# 	lambda self, **kwargs: \
+		# 			UjjwalaV2ApplicationStatus.NIC_CLEARED \
+		# 					if kwargs.get("review_status") == 'ACCEPTED' \
+		# 					else UjjwalaV2ApplicationStatus.ADDRESS_CHANGE,
+		# 	states=[
+		# 		UjjwalaV2ApplicationStatus.NIC_CLEARED,
+		# 		UjjwalaV2ApplicationStatus.ADDRESS_CHANGE
+		# 	]
+		# ),
 		target=GET_STATE(
-			lambda self, **kwargs: \
-					UjjwalaV2ApplicationStatus.NIC_CLEARED \
-							if kwargs.get("review_status") == 'ACCEPTED' \
-							else UjjwalaV2ApplicationStatus.ADDRESS_CHANGE,
-			states=[
-				UjjwalaV2ApplicationStatus.NIC_CLEARED,
-				UjjwalaV2ApplicationStatus.ADDRESS_CHANGE
-			]
+			lambda self, **kwargs: self.last_execution_state,
 		),
 		custom=dict(
 			short_description='Review Updated Address', admin=True, form=ReviewUpdatedAddressForm
@@ -767,7 +771,6 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	def transition_review_address_updated(self, *args, **kwargs):
 		if kwargs.get('review_status') == 'ACCEPTED':
 			self.address_json = kwargs['address_json']
-
 		else:
 			self.transition_address_change(
 				error_code='', description="User Entered In-correct Address"
@@ -1315,7 +1318,6 @@ class PreInspection(models.Model):
 	# j.documents.exclude(type='PHYSICAL_LEGAL_DOCUMENT').delete()
 	# j.save()
 
-import requests
 
 # k = [12606,12566,2721,4871,2913,1006,1373,2932,3073,4103,1569,3371,240,3137,1492,1382,1624,5963,2855,11812,11841,7975,5957,11593,5877,8065,1024,5692,3678,5506,11280,8363,5376,4013,3939,12021,11670,646,11918,12986,7306,11577,1375]
 #
