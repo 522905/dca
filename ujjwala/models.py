@@ -150,8 +150,10 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	def pre_inspection_accepted(self):
 		return self.pre_inspection
 
+
 	def document_bank_detail_photo(self):
 		return self.documents.filter(type=UjjwalaApplicationDocumentsEnum.BANK_DETAIL).first().link
+
 
 	def pre_inspection_form(self):
 		# if self.status == UjjwalaV2ApplicationStatus.PRE_INSPECTION_SUBMITTED:
@@ -222,7 +224,6 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			return mark_safe(html)
 		else:
 			return mark_safe("Bank Details Updated")
-
 
 	@property
 	def formatted_address(self):
@@ -397,6 +398,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	)
 	def transition_on_hold(self, *args, **kwargs):
 		self.last_execution_state = self.status
+
 
 	@fsm_log_description
 	@fsm_log_by
@@ -710,16 +712,18 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=[
-			UjjwalaV2ApplicationStatus.NIC_CLEARED,
-		],
+		# source=[
+		# 	UjjwalaV2ApplicationStatus.NIC_CLEARED,
+		# ],
+		source='*',
 		target=UjjwalaV2ApplicationStatus.ADDRESS_CHANGE,
 		custom=dict(
-			short_description='User Selected To Address Change', admin=False
+			short_description='Address Change', admin=True
 		),
 		permission='ujjwala.can_approve_connection',
 	)
 	def transition_address_change(self, *args, **kwargs):
+		self.last_execution_state = self.status
 		self.event_whatsapp_update_address()
 
 	@old_address_to_description
@@ -728,7 +732,10 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	@transition(
 		field=status,
 		source=UjjwalaV2ApplicationStatus.ADDRESS_CHANGE,
-		target=UjjwalaV2ApplicationStatus.UPDATE_ADDRESS,
+		# target=UjjwalaV2ApplicationStatus.UPDATE_ADDRESS,
+		target=GET_STATE(
+			lambda self, **kwargs: self.last_execution_state,
+		),
 		custom=dict(
 			short_description='Update Address', admin=True, form=UpdateAddressForm
 		),
@@ -1068,7 +1075,6 @@ class PreInspection(models.Model):
 
 	def document_main_gate_photo(self):
 		return self.documents.filter(type=UjjwalaApplicationDocumentsEnum.MAIN_GATE).first().link
-
 
 	@fsm_log_description
 	@fsm_log_by

@@ -126,7 +126,7 @@ class UpdateAddressForm(forms.Form):
 		widget=forms.TextInput, label='Ward No.(वार्ड नंबर)', required=True
 	)
 	post_office = forms.CharField(
-		widget=forms.TextInput, label='Post Office (डाकख़ाना )', required=True
+		widget=forms.TextInput, label='Post Office (डाकख़ाना)', required=True
 	)
 	pincode = forms.CharField(
 		widget=forms.TextInput, label='Pin Code (पिन कोड)', required=True

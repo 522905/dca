@@ -2618,46 +2618,46 @@ class BarCodeLabelPrintView(View):
 
 
 # @method_decorator(login_required, 'dispatch')
-class NicErrorUpdateAddress(FormView):
-	# model = ConnectionDisbursementInvitation
-	form_class = NicUpdateAddressForm
-	template_name = "ujjwala/NicErrorUpdateAddress/update_address.html"
-
-	def dispatch(self, request, *args, **kwargs):
-		application = self.get_object()
-		if application:
-			if application.status == \
-					UjjwalaV2ApplicationStatus.NIC_ERROR_UPDATE_ADDRESS:
-				return HttpResponse("Address already submitted by you and is under review.")
-		return super().dispatch(request, *args, **kwargs)
-
-	def get_object(self, queryset=None):
-		try:
-			obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
-		except:
-			raise Http404(
-				"No application with id: {} found.".format(self.kwargs.get('pk'))
-			)
-		return obj
-
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-		obj = self.get_object()
-		context.update({
-			"obj": obj
-		})
-		return context
-
-	def form_valid(self, form):
-		obj = self.get_object()
-		data = form.clean()
-		old_address_json = obj.address_json or obj.address
-		obj.transition_nic_address_updated(
-			description=old_address_json,
-			address_json=data['address_json']
-		)
-		obj.save()
-		return HttpResponse("<b>Address Updated Successfully</b>")
+# class NicErrorUpdateAddress(FormView):
+# 	# model = ConnectionDisbursementInvitation
+# 	form_class = NicUpdateAddressForm
+# 	template_name = "ujjwala/NicErrorUpdateAddress/update_address.html"
+#
+# 	def dispatch(self, request, *args, **kwargs):
+# 		application = self.get_object()
+# 		if application:
+# 			if application.status == \
+# 					UjjwalaV2ApplicationStatus.NIC_ERROR_UPDATE_ADDRESS:
+# 				return HttpResponse("Address already submitted by you and is under review.")
+# 		return super().dispatch(request, *args, **kwargs)
+#
+# 	def get_object(self, queryset=None):
+# 		try:
+# 			obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
+# 		except:
+# 			raise Http404(
+# 				"No application with id: {} found.".format(self.kwargs.get('pk'))
+# 			)
+# 		return obj
+#
+# 	def get_context_data(self, **kwargs):
+# 		context = super().get_context_data(**kwargs)
+# 		obj = self.get_object()
+# 		context.update({
+# 			"obj": obj
+# 		})
+# 		return context
+#
+# 	def form_valid(self, form):
+# 		obj = self.get_object()
+# 		data = form.clean()
+# 		old_address_json = obj.address_json or obj.address
+# 		obj.transition_nic_address_updated(
+# 			description=old_address_json,
+# 			address_json=data['address_json']
+# 		)
+# 		obj.save()
+# 		return HttpResponse("<b>Address Updated Successfully</b>")
 
 
 # @method_decorator(login_required, 'dispatch')
@@ -2731,6 +2731,13 @@ class UpdateAddressView(FormView):
 		})
 		return context
 
+	def get_form_kwargs(self):
+		kwargs = super().get_form_kwargs()
+		obj = self.get_object()
+		# kwargs['pre_inspection'] = pre_inspection
+		kwargs['initial'] = obj.address_json
+		return kwargs
+
 	def form_valid(self, form):
 		obj = self.get_object()
 		data = form.clean()
@@ -2740,7 +2747,14 @@ class UpdateAddressView(FormView):
 			address_json=data['address_json']
 		)
 		obj.save()
-		return HttpResponse("<b>Address Updated Successfully</b>")
+		return render(
+			self.request,
+			"ujjwala/response.html",
+			{
+				"heading": "Change Address",
+				"message": "Address Updated Successfully"
+			}
+		)
 
 
 class ChangeAddressView(FormView):
@@ -2770,6 +2784,14 @@ class ChangeAddressView(FormView):
 			"obj": obj,
 		})
 		return context
+
+	def get_form_kwargs(self):
+		kwargs = super().get_form_kwargs()
+		obj = self.get_object()
+		# kwargs['pre_inspection'] = pre_inspection
+		kwargs['initial'] = obj.address_json
+		return kwargs
+
 
 	def form_invalid(self, form):
 		return super().form_invalid(form)
