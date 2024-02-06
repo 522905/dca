@@ -2705,7 +2705,7 @@ class NicErrorUpdateAddress(FormView):
 
 class UpdateAddressView(FormView):
 	form_class = UpdateAddressForm
-	template_name = "ujjwala/update_address.html"
+	template_name = "ujjwala/user_update_address.html"
 
 	def dispatch(self, request, *args, **kwargs):
 		application = self.get_object()
