@@ -95,6 +95,11 @@ urlpatterns = [
         name="connection_disbursement_list"
     ),
 
+    path('portal/review_address_list/',
+         views.UjjwalaAddressReviewListView.as_view(),
+         name="address_review_list"
+    ),
+
     path('portal/pre-inspection/pre_inspection_review_list/',
          views.PreInspectionReviewListView.as_view(),
          name="pre_inspection_review_list"
@@ -218,6 +223,12 @@ urlpatterns = [
         '^portal/pre-inspection-review/(?P<pk>[^/.]+)/$',
         views.PreInspectionReviewView.as_view(),
         name="pre_inspection_review"
+    ),
+
+    url(
+        '^portal/address-review/(?P<pk>[^/.]+)/$',
+        views.UjjwalaAddressReviewView.as_view(),
+        name="address_review"
     ),
 
     url(

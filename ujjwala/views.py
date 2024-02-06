@@ -4,11 +4,8 @@ import json
 import textwrap
 from functools import partial
 
-import requests
-from django.db import transaction
-from django.db.models import Case, Value, When, Q
 import django_rq
-from dateutil.relativedelta import relativedelta
+import requests
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -16,7 +13,9 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.signing import Signer
-from django.forms import formset_factory, inlineformset_factory
+from django.db import transaction
+from django.db.models import Q
+from django.forms import inlineformset_factory
 from django.http import HttpResponse, Http404, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -27,16 +26,15 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, FormView, ListView, TemplateView, UpdateView
 from django_currentuser.middleware import get_current_user
 
-from communication_log.models import CommunicationLog
 from otp.models import Otp
 from service_request.enums import ServiceRequestTypeEnum, ServiceRequestTypeStatusEnum
 from service_request.models import ServiceRequest
-from ujjwala.camunda_functions import start_ujjwala_sv_process_in_camunda, start_process_in_camunda, \
+from ujjwala.camunda_functions import start_process_in_camunda, \
 	evaluate_and_start_ujjwala_sv_process_in_camunda, start_process_in_camunda_v2, is_process_exist_in_camunda
 from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
-	PreInspectionTypeEnum, DisbursementDriveStatusEnum, UjjwalaApplicationDocumentsEnum, NicClearedCustomerRemarksEnum, \
+	PreInspectionTypeEnum, DisbursementDriveStatusEnum, UjjwalaApplicationDocumentsEnum, \
 	UjjwalaV2ApplicationAvailabilityChannel, ConnectionDisbursementInvitationEnum, FilledByFilterEnum, \
-	PreInspectionRejectionReasonsEnum, UjjwalaSearchLogEnum
+	UjjwalaSearchLogEnum
 from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm, \
 	PreInspectionGenerateOtpForm, PreInspectionValidateOtpForm, \
 	KitchenPreInspectionForm, AudioOnSafetyForm, PreviewPreInspectionForm, PreInspectionAllocatedGenerateOtpForm, \
@@ -47,20 +45,19 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
 	ConnectionDisbursementSocialMediaUpdatesForm, NicUpdateAddressForm, \
 	PreInspectionConvertForm, LegalDocumentsReviewAdminForm, SetPrimaryPhoneNumberForm, \
 	UpdateBankDetailsForm, NicClearedCustomerRemarksForm, PrintDocumentsForm, \
-	InstallationReviewAdminForm, FirstCylinderMaterialDeliveryForm, SecondCylinderMaterialDeliveryForm, \
-	PreInspectionReviewAdminForm, CancelInvitationForm, UpdateAddressForm, \
-	NewRelationCreated, ChangePhoneNumberForm, UploadUIDForEKYCForm, UjjwalaApplicationServiceRequestForm
+	InstallationReviewAdminForm, PreInspectionReviewAdminForm, CancelInvitationForm, UpdateAddressForm, \
+	NewRelationCreated, ChangePhoneNumberForm, UploadUIDForEKYCForm, UjjwalaApplicationServiceRequestForm, \
+	ReviewUpdatedAddressForm
 from ujjwala.global_functions import login_required_if_mech_inspection
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
 	FamilyMembers, DisbursementDrive, UjjwalaSearchLog
 from ujjwala.sv_functions import create_installation_document
 from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_pre_inspection_applicable, \
 	send_ujjwala_application_whatsapp_link_v2, download_audit_documents_for_ids, is_member_of_disbursement_drive, \
-	get_current_user_disbursement_drive, is_member_of_second_cylinder_delivery, \
-	send_ujjwala_self_pre_inspection_share_link, is_member_of_reviewer_group, send_ujjwala_share_on_social_media_link, \
-	send_otp_using_channel, can_resolve_service_request, ujjwala_application_state_logs, is_front_end_staff, \
+	get_current_user_disbursement_drive, send_ujjwala_self_pre_inspection_share_link, is_member_of_reviewer_group, \
+	send_ujjwala_share_on_social_media_link, \
+	can_resolve_service_request, ujjwala_application_state_logs, is_front_end_staff, \
 	get_data_for_new_relation, re_create_legal_docs
-from utils.enums import RoboSdmsDedeupStatusEnum
 from utils.global_functions import unsign_data_base64, sign_data_base64
 
 
@@ -406,6 +403,96 @@ class UjjwalaApplicationWebFormView(TemplateView):
 	#         "form_fill_area_list": form_fill_area_list
 	#     })
 	#     return context_data
+
+
+@method_decorator(login_required, 'dispatch')
+class UjjwalaAddressReviewListView(ListView):
+	model = UjjwalaV2Application
+	template_name = 'ujjwala/review/address_review_listview.html'
+
+	paginate_by = 20
+	permission = 'has_view_permission'
+
+	def get_queryset(self):
+		return UjjwalaV2Application.objects.filter(status=UjjwalaV2ApplicationStatus.UPDATE_ADDRESS)
+
+
+@method_decorator(login_required, 'dispatch')
+class UjjwalaAddressReviewView(FormView, ApplicationView):
+	model = UjjwalaV2Application
+	template_name = 'ujjwala/review/address_review.html'
+	form_class = ReviewUpdatedAddressForm
+
+	def get_success_url(self):
+		return reverse('ujjwala:address_review_list')
+
+	def dispatch(self, request, *args, **kwargs):
+		user = get_current_user()
+		if not user.has_perm('can_review_address', 'ujjwala'):
+			return render(request, 'ujjwala/no_permissions.html')
+
+		application_id = kwargs.get('pk', '')
+		if application_id:
+			obj = self.get_object()
+			if obj.status != UjjwalaV2ApplicationStatus.UPDATE_ADDRESS:
+				messages.add_message(
+					request, messages.ERROR, "Application Id: {} Not In Update Address Status".format(obj.id)
+				)
+				return redirect('ujjwala:address_review_list')
+		return super().dispatch(request, *args, **kwargs)
+
+	def get_object(self, queryset=None):
+		try:
+			obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No Application Exist For Given Application Id"
+			)
+		return obj
+
+	def form_valid(self, form):
+		obj = self.get_object()
+		data = form.cleaned_data
+		address_json = {
+			"house_no": data.get('house_no', ''),
+			"room_no": data.get('room_no', ''),
+			"floor": data.get('floor', ''),
+			"street_no": data.get('street_no', ''),
+			"landmark": data.get('landmark', ''),
+			"village": data.get('village', ''),
+			"ward_no": data.get('ward_no', ''),
+			"post_office": data.get('post_office', ''),
+			"pincode": data.get('pincode', '')
+		}
+
+		if data['review_status'] == 'ACCEPTED':
+			obj.transition_review_address_updated(
+				review_status=data['review_status'],
+				by=get_current_user(),
+				description='{} - {}'.format(data.get('review_status'), data.get('rejected_reason' '')),
+				address_json=address_json
+			)
+		else:
+			obj.transition_address_change()
+
+		obj.save()
+		return redirect(self.get_success_url())
+
+	def get_form_kwargs(self):
+		kwargs = super().get_form_kwargs()
+		obj = self.get_object()
+		kwargs['initial'] = obj.address_json
+		return kwargs
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		obj = self.get_object()
+		# address_form = UpdateAddressForm(initial=obj.address_json)
+		context.update({
+			"obj": obj,
+			# "address_form": address_form
+		})
+		return context
 
 
 @method_decorator(login_required, 'dispatch')
@@ -1564,8 +1651,6 @@ class ConnectionDisbursementReviewFormAbcView(FormView, ApplicationView):
 @method_decorator(login_required, 'dispatch')
 class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
 	model = ConnectionDisbursement
-	from django_fsm_log.models import StateLog
-
 
 	paginate_by = 20
 	permission = 'has_view_permission'
