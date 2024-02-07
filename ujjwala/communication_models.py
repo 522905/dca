@@ -398,12 +398,12 @@ class UjjwalaWhatsappCommunication(object):
 				message_id=data.get('id')
 			)
 
-		# res = requests.post(
-		# 	"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
-		# 	"&function=add_lead&phone_number={}&list_id=1006&first_name={}&last_name={}".format(
-		# 		self.contact_mobile, self.name, self.pk
-		# 	)
-		# )
+		res = requests.post(
+			"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
+			"&function=add_lead&phone_number={}&list_id=1106&first_name={}&last_name={}".format(
+				self.contact_mobile, self.name, self.pk
+			)
+		)
 		return data.get('result', '')
 
 
