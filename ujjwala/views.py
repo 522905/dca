@@ -2820,7 +2820,7 @@ class UpdateAddressView(FormView):
 		kwargs = super().get_form_kwargs()
 		obj = self.get_object()
 		# kwargs['pre_inspection'] = pre_inspection
-		kwargs['initial'] = obj.address_json
+		# kwargs['initial'] = obj.address_json
 		return kwargs
 
 	def form_valid(self, form):
