@@ -11,9 +11,10 @@ from django.core.management.base import BaseCommand
 
 from ujjwala.camunda_functions import download_file_variable_data, calculate_download_sv_wait_timing, \
 	start_ujjwala_cld_dedup_in_camunda, fetch_payment_profile_variables, get_activity_instance_count, \
-	enrich_omc_rejection_details
-from ujjwala.enums import UjjwalaV2ApplicationStatus
-from ujjwala.jobs import ensure_db_connection
+	enrich_omc_rejection_details, remove_sv_record
+from ujjwala.enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum
+from ujjwala.jobs import ensure_db_connection, do_primary_omc_dedupe_check, move_application_for_audit, \
+	compress_application_documents
 from ujjwala.sv_functions import update_sv_document, update_in_dca, update_sv_document_v2
 from ujjwala.ujjwala_functions import send_pos_list_for_ekyc
 from utils.qrcode import get_sv_date_and_doc_no
@@ -405,6 +406,43 @@ def handle_task(task: ExternalTask) -> TaskResult:
 		elif topic == 'process_update_cancel_sv_flag#update_in_dca':
 			dca_id = task.get_variable('dca_id')
 			remove_sv_record(dca_id)
+			return task.complete()
+		elif topic == 'dedup_eval#dedup_with_uid':
+			from ujjwala.models import UjjwalaV2Application
+
+			application_id = task.get_variable('application_id')
+			application: UjjwalaV2Application = do_primary_omc_dedupe_check(application_id)
+
+			return task.complete(global_variables={
+					"robo_sdms_dedup": {"type": "string", "value": application.robo_sdms_dedup},
+				}
+			)
+		elif topic == 'dedup_eval#evaluate_dedup_results':
+			robo_sdms_dedup = task.get_variable('robo_sdms_dedup')
+
+			if robo_sdms_dedup == RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE:
+				status = 'PASS'
+			elif robo_sdms_dedup == RoboSdmsDedeupStatusEnum.IOCL_INVESTIGATION_REQUIRED:
+				return task.bpmn_error("Error_IOCL_Investigation_Required", "Error IOCL Investigation Required")
+			else:
+				status = 'FAIL'
+
+			return task.complete(global_variables={
+					"status": {"type": "string", "value": status}
+				}
+			)
+		elif topic == 'dedup_eval#evaluate_audit':
+			from ujjwala.models import UjjwalaV2Application
+
+			application_id = task.get_variable('application_id')
+			data = json.loads(task.get_variable('data'))
+			move_application_for_audit(application_id, data)
+			return task.complete()
+		elif topic == 'dedup_eval#compress_docs':
+			application_id = task.get_variable('application_id')
+			compress_application_documents(application_id)
+			return task.complete()
+		elif topic == 'dedup_eval#enrich_rejection':
 			return task.complete()
 	except Exception as e:
 		return task.failure(
