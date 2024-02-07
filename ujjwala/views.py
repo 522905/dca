@@ -25,6 +25,7 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, FormView, ListView, TemplateView, UpdateView
 from django_currentuser.middleware import get_current_user
+from django_fsm_log.models import StateLog
 
 from otp.models import Otp
 from service_request.enums import ServiceRequestTypeEnum, ServiceRequestTypeStatusEnum
@@ -488,9 +489,14 @@ class UjjwalaAddressReviewView(FormView, ApplicationView):
 		context = super().get_context_data(**kwargs)
 		obj = self.get_object()
 		# address_form = UpdateAddressForm(initial=obj.address_json)
+		state_log = StateLog.objects.filter(
+			object_id=obj.id,
+		    content_type=ContentType.objects.get(app_label='ujjwala', model='ujjwalav2application'),
+			state=UjjwalaV2ApplicationStatus.UPDATE_ADDRESS
+		).order_by('-id').first()
 		context.update({
 			"obj": obj,
-			# "address_form": address_form
+			"old_address": state_log.description
 		})
 		return context
 
