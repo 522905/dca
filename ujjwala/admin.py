@@ -107,15 +107,15 @@ class UjjwalaApplicationDocumentsInline(admin.TabularInline):
     fields = ('type', 'download_links', 'file_size')
     readonly_fields = ('download_links',)
 
-    def get_readonly_fields(self, request, obj=None):
-        readonly_fields = super().get_readonly_fields(request, obj)
-        if obj and obj.status not in (
-                UjjwalaV2ApplicationStatus.EDIT_APPLICATION,
-                UjjwalaV2ApplicationStatus.AUDIT_APPLICATION
-        ):
-            readonly_fields = readonly_fields + self.fields
-
-        return readonly_fields
+    # def get_readonly_fields(self, request, obj=None):
+    #     readonly_fields = super().get_readonly_fields(request, obj)
+    #     if obj and obj.status not in (
+    #             UjjwalaV2ApplicationStatus.EDIT_APPLICATION,
+    #             UjjwalaV2ApplicationStatus.AUDIT_APPLICATION
+    #     ):
+    #         readonly_fields = readonly_fields + self.fields
+    #
+    #     return readonly_fields
 
 
 class FamilyMembersInline(admin.TabularInline):
@@ -125,15 +125,15 @@ class FamilyMembersInline(admin.TabularInline):
               'uid_check_result', 'uid_front_file_size', 'uid_back_file_size',)
     readonly_fields = ('download_links', 'uid_check_result', 'uid_front_file_size', 'uid_back_file_size',)
 
-    def get_readonly_fields(self, request, obj=None):
-        readonly_fields = super().get_readonly_fields(request, obj)
-        if obj and obj.status not in (
-                    UjjwalaV2ApplicationStatus.EDIT_APPLICATION,
-                    UjjwalaV2ApplicationStatus.AUDIT_APPLICATION
-                ):
-            readonly_fields = readonly_fields + self.fields
-
-        return readonly_fields
+    # def get_readonly_fields(self, request, obj=None):
+    #     readonly_fields = super().get_readonly_fields(request, obj)
+    #     if obj and obj.status not in (
+    #                 UjjwalaV2ApplicationStatus.EDIT_APPLICATION,
+    #                 UjjwalaV2ApplicationStatus.AUDIT_APPLICATION
+    #             ):
+    #         readonly_fields = readonly_fields + self.fields
+    #
+    #     return readonly_fields
 
 
 class UjjwalaV2ApplicationResource(resources.ModelResource):
@@ -198,13 +198,13 @@ class UjjwalaV2Admin(ImportMixin, ExportActionMixin, FSMTransitionCustomMixin, a
             return qs
         return qs.filter(status='GIFT')
 
-    # def has_change_permission(self, request, obj=None):
-    #     if not obj:
-    #         return True
-    #     return obj.status in (
-    #         UjjwalaV2ApplicationStatus.EDIT_APPLICATION,
-    #         UjjwalaV2ApplicationStatus.AUDIT_APPLICATION
-    #     )
+    def has_change_permission(self, request, obj=None):
+        if not obj:
+            return True
+        return obj.status in (
+            UjjwalaV2ApplicationStatus.EDIT_APPLICATION,
+            UjjwalaV2ApplicationStatus.AUDIT_APPLICATION
+        )
 
     def get_fields(self, request, obj=None):
         if obj and obj.status in (
@@ -225,14 +225,14 @@ class UjjwalaV2Admin(ImportMixin, ExportActionMixin, FSMTransitionCustomMixin, a
             ]
         else:
             fields = super().get_fields(request, obj)
-            fields = fields + ['connection_disbursement', 'pre_inspection',]
+            fields = fields + ['connection_disbursement', 'pre_inspection', 'tags',]
             return fields
 
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = super().get_readonly_fields(request, obj)
 
         if obj and obj.status in (
-            UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
+            # UjjwalaV2ApplicationStatus.EKYC_ACCEPTED,
             UjjwalaV2ApplicationStatus.DO_MANUAL_OPERATION,
             UjjwalaV2ApplicationStatus.MANUAL_LEGAL_DOCUMENTS_UPLOAD
         ):
@@ -249,67 +249,67 @@ class UjjwalaV2Admin(ImportMixin, ExportActionMixin, FSMTransitionCustomMixin, a
             readonly_fields = readonly_fields + [
                 'audit_points'
             ]
-        else:
-            readonly_fields = readonly_fields + ['uid_uploaded',
-                                                 'sdms_last_updated_on',
-                                                 'rejection_type',
-                                                 'marital_status',
-                                                 'residential_status',
-                                                 'name',
-                                                 'address',
-                                                 'address_json',
-                                                 'contact_mobile',
-                                                 'consumer_id',
-                                                 'uid_linked_mobile',
-                                                 'sdms_mobile_number',
-                                                 'uid_mobile_status',
-                                                 'application_id_kyc_no',
-                                                 'referral_code',
-                                                 'service_team',
-                                                 'service_location',
-                                                 'version',
-                                                 'latitude',
-                                                 'longitude',
-                                                 'accuracy',
-                                                 'product',
-                                                 'robo_sdms_dedup',
-                                                 'status',
-                                                 'manual_operation_code',
-                                                 'legal_documents_upload_status',
-                                                 'sv',
-                                                 'documents_required_for_reupload',
-                                                 'last_execution_state',
-                                                 'sync_with_sdms',
-                                                 'applicant_verified',
-                                                 'applicant_verified_on',
-                                                 'audit_points',
-                                                 'ifsc_code',
-                                                 'bank_account_number',
-                                                 'scheme_onboarding_status',
-                                                 'filled_by',
-                                                 'referral_by',
-                                                 'service_area',
-                                                 'service_area_hex',
-                                                 'customer_remarks',
-                                                 'scheduled_date',
-                                                 'additional_remarks',
-                                                 'ekyc_cleared',
-                                                 'robo_execution_failed_count',
-                                                 'availability_updated_on',
-                                                 'availability_status',
-                                                 'availability_channel',
-                                                 'address_updated',
-                                                 'sdms_relation_cancelled',
-                                                 'sdms_mobile_number_update',
-                                                 'error_message',
-                                                 'flag',
-                                                 'ekyc_date',
-                                                 'ekyc_channel',
-                                                 'ekyc_last_attempt_log',
-                                                 'marriage_date',
-                                                 'connection_disbursement',
-                                                 'pre_inspection',
-                                                 ]
+        # else:
+        #     readonly_fields = readonly_fields + ['uid_uploaded',
+        #                                          'sdms_last_updated_on',
+        #                                          'rejection_type',
+        #                                          'marital_status',
+        #                                          'residential_status',
+        #                                          'name',
+        #                                          'address',
+        #                                          'address_json',
+        #                                          'contact_mobile',
+        #                                          'consumer_id',
+        #                                          'uid_linked_mobile',
+        #                                          'sdms_mobile_number',
+        #                                          'uid_mobile_status',
+        #                                          'application_id_kyc_no',
+        #                                          'referral_code',
+        #                                          'service_team',
+        #                                          'service_location',
+        #                                          'version',
+        #                                          'latitude',
+        #                                          'longitude',
+        #                                          'accuracy',
+        #                                          'product',
+        #                                          'robo_sdms_dedup',
+        #                                          'status',
+        #                                          'manual_operation_code',
+        #                                          'legal_documents_upload_status',
+        #                                          'sv',
+        #                                          'documents_required_for_reupload',
+        #                                          'last_execution_state',
+        #                                          'sync_with_sdms',
+        #                                          'applicant_verified',
+        #                                          'applicant_verified_on',
+        #                                          'audit_points',
+        #                                          'ifsc_code',
+        #                                          'bank_account_number',
+        #                                          'scheme_onboarding_status',
+        #                                          'filled_by',
+        #                                          'referral_by',
+        #                                          'service_area',
+        #                                          'service_area_hex',
+        #                                          'customer_remarks',
+        #                                          'scheduled_date',
+        #                                          'additional_remarks',
+        #                                          'ekyc_cleared',
+        #                                          'robo_execution_failed_count',
+        #                                          'availability_updated_on',
+        #                                          'availability_status',
+        #                                          'availability_channel',
+        #                                          'address_updated',
+        #                                          'sdms_relation_cancelled',
+        #                                          'sdms_mobile_number_update',
+        #                                          'error_message',
+        #                                          'flag',
+        #                                          'ekyc_date',
+        #                                          'ekyc_channel',
+        #                                          'ekyc_last_attempt_log',
+        #                                          'marriage_date',
+        #                                          # 'connection_disbursement',
+        #                                          # 'pre_inspection',
+        #                                          ]
 
             # readonly_fields = readonly_fields + self.get_fields(request, obj)
 
