@@ -1,4 +1,5 @@
 import io
+import json
 import pickle
 from functools import wraps
 from time import time, sleep
@@ -837,7 +838,7 @@ def enqueue_dedupe_and_audit_jobs(application_id, data):
         variables={
             "variables": {
                 "application_id": {"type": "string", "value": application_id},
-                "data": {"type": "string", "value": data}
+                "data": {"type": "string", "value": json.dumps(data)}
             }
         }
     )
