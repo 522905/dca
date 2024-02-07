@@ -415,7 +415,8 @@ class UjjwalaAddressReviewListView(ListView):
 	permission = 'has_view_permission'
 
 	def get_queryset(self):
-		return UjjwalaV2Application.objects.filter(status=UjjwalaV2ApplicationStatus.UPDATE_ADDRESS)
+		return UjjwalaV2Application.objects.filter(status=UjjwalaV2ApplicationStatus.UPDATE_ADDRESS).order_by(
+			'updated_on')
 
 
 @method_decorator(login_required, 'dispatch')
@@ -2833,6 +2834,7 @@ class UpdateAddressView(FormView):
 		obj = self.get_object()
 		data = form.clean()
 		old_address_json = obj.address_json or obj.address
+		obj.address_json = data['address_json']
 		obj.transition_updated_address(
 			description=old_address_json,
 			address_json=data['address_json']
