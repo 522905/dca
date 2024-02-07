@@ -27,7 +27,7 @@ class UjjwalaWhatsappCommunication(object):
 				"bodyValues": [
 					self.name,
 					self.id,
-					"90"
+					# "90"
 				],
 				"buttonValues": {}
 			}
@@ -51,12 +51,12 @@ class UjjwalaWhatsappCommunication(object):
 				message_id=data.get('id')
 			)
 
-		res = requests.post(
-			"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
-			"&function=add_lead&phone_number={}&list_id=1006&first_name={}&last_name={}".format(
-				self.contact_mobile, self.name, self.pk
-			)
-		)
+		# res = requests.post(
+		# 	"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
+		# 	"&function=add_lead&phone_number={}&list_id=1006&first_name={}&last_name={}".format(
+		# 		self.contact_mobile, self.name, self.pk
+		# 	)
+		# )
 
 	def event_ioc_dedupe_reject_channel_whatsapp(self):
 		from ujjwala.models import FamilyMembers
@@ -158,7 +158,7 @@ class UjjwalaWhatsappCommunication(object):
 			)
 
 		#res = requests.post(
-		#	"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+		#	"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
 		#	"&function=add_lead&phone_number={}&list_id=1007&first_name={}&last_name={}".format(
 		#		self.contact_mobile, self.name, self.pk
 		#	)
@@ -219,13 +219,13 @@ class UjjwalaWhatsappCommunication(object):
 			)
 
 		res = requests.post(
-			"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+			"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
 			"&function=add_lead&phone_number={}&list_id=1009&first_name={}&last_name={}".format(
 				self.contact_mobile, self.name, self.pk
 			)
 		)
 		# res = requests.post(
-		# 	"http://vici.hawabadlo.in/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+		# 	"http://vici.hawabadlo.in/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
 		# 	"&function=add_lead&phone_number={}&list_id=1006&first_name={}&last_name={}".format(
 		# 		self.contact_mobile, self.name, self.pk
 		# 	)
@@ -286,14 +286,14 @@ class UjjwalaWhatsappCommunication(object):
 			)
 
 		res = requests.post(
-			"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+			"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
 			"&function=add_lead&phone_number={}&list_id=1009&first_name={}&last_name={}".format(
 				self.contact_mobile, self.name, self.pk
 			)
 		)
 
 	# res = requests.post(
-	# 	"http://vici.hawabadlo.in/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+	# 	"http://vici.hawabadlo.in/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
 	# 	"&function=add_lead&phone_number={}&list_id=1006&first_name={}&last_name={}".format(
 	# 		self.contact_mobile, self.name, self.pk
 	# 	)
@@ -345,7 +345,7 @@ class UjjwalaWhatsappCommunication(object):
 			)
 
 		# res = requests.post(
-		# 	"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+		# 	"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
 		# 	"&function=add_lead&phone_number={}&list_id=1006&first_name={}&last_name={}".format(
 		# 		self.contact_mobile, self.name, self.pk
 		# 	)
@@ -399,7 +399,7 @@ class UjjwalaWhatsappCommunication(object):
 			)
 
 		# res = requests.post(
-		# 	"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+		# 	"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
 		# 	"&function=add_lead&phone_number={}&list_id=1006&first_name={}&last_name={}".format(
 		# 		self.contact_mobile, self.name, self.pk
 		# 	)
@@ -455,7 +455,7 @@ class UjjwalaWhatsappCommunication(object):
 			)
 
 		# res = requests.post(
-		# 	"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+		# 	"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
 		# 	"&function=add_lead&phone_number={}&list_id=1006&first_name={}&last_name={}".format(
 		# 		self.contact_mobile, self.name, self.pk
 		# 	)
@@ -509,7 +509,7 @@ class UjjwalaWhatsappCommunication(object):
 			)
 
 		# res = requests.post(
-		# 	"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster"
+		# 	"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
 		# 	"&function=add_lead&phone_number={}&list_id=1006&first_name={}&last_name={}".format(
 		# 		self.contact_mobile, self.name, self.pk
 		# 	)

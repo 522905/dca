@@ -12,6 +12,7 @@ from minio import Minio
 
 from domestic_app.utils import get_minio_public_url
 from sdms.services import IoclOmcDedup
+from ujjwala.camunda_functions import start_process_in_camunda_v2
 from ujjwala.enums import RoboSdmsDedeupStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum, \
     UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum
 from ujjwala.forms import ApplicationRejected
@@ -830,12 +831,22 @@ def is_application_ready_for_disbursement(parent_id):
 
 def enqueue_dedupe_and_audit_jobs(application_id, data):
     # Currently Disabled Due To Non Availability Of The Page For Dedup In Spandan
-    dedupe_job = django_rq.enqueue("ujjwala.jobs.do_primary_omc_dedupe_check", args=(application_id,))
-    django_rq.enqueue(
-        move_application_for_audit,
-        args=(application_id, data,),
-        depends_on=dedupe_job
+    # dedupe_job = django_rq.enqueue("ujjwala.jobs.do_primary_omc_dedupe_check", args=(application_id,))
+    start_process_in_camunda_v2(
+        'Process_PrimaryDedup',
+        variables={
+            "variables": {
+                "application_id": {"type": "string", "value": application_id},
+                "data": {"type": "string", "value": data}
+            }
+        }
     )
+
+    # django_rq.enqueue(
+    #     move_application_for_audit,
+    #     args=(application_id, data,),
+    #     # depends_on=dedupe_job
+    # )
 
     from ujjwala.models import UjjwalaV2Application, PreInspection
 

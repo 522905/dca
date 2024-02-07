@@ -22,6 +22,7 @@ from service_request.models import ServiceRequest
 from utils.global_functions import upload_file_to_minio_bucket, upload_file_type_obj_to_minio_bucket
 from utils.qrcode import append_qr_code_to_sv
 from . import models
+from .camunda_functions import start_process_in_camunda, start_process_in_camunda_v2
 from .enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum, FamilyMemberRelationEnum, \
     ManualOperationCodeEnum, MaritalStatusEnum, PreInspectionStatusEnum, PreInspectionTypeEnum, \
     UjjwalaApplicationDocumentsEnum, UjjwalaV2ApplicationAvailabilityStatus, UjjwalaV2ApplicationAvailabilityChannel
@@ -843,14 +844,17 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                 create_txn_status_job_function = partial(
                     enqueue_dedupe_and_audit_jobs, application.id, self.request.data
                 )
+                # create_txn_status_job_function = partial(
+                #     start_process_in_camunda_v2, application.id, self.request.data
+                # )
                 transaction.on_commit(create_txn_status_job_function)
 
-                create_compress_docs_job_function = partial(
-                    django_rq.enqueue,
-                    "ujjwala.jobs.compress_application_documents",
-                    application_id=application.id
-                )
-                transaction.on_commit(create_compress_docs_job_function)
+                # create_compress_docs_job_function = partial(
+                #     django_rq.enqueue,
+                #     "ujjwala.jobs.compress_application_documents",
+                #     application_id=application.id
+                # )
+                # transaction.on_commit(create_compress_docs_job_function)
 
                 # commented for development
                 application.event_submit_channel_whatsapp()
