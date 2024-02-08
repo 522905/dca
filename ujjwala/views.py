@@ -414,14 +414,14 @@ class UjjwalaAddressReviewListView(ListView):
 
 	permission = 'has_view_permission'
 
-	# def get_queryset(self):
-	# 	return UjjwalaV2Application.objects.filter(status=UjjwalaV2ApplicationStatus.UPDATE_ADDRESS).order_by(
-	# 		'updated_on')
+	def get_queryset(self):
+		return UjjwalaV2Application.objects.filter(status=UjjwalaV2ApplicationStatus.REVIEW_ADDRESS).order_by(
+			'updated_on')
 
 
 	def get_context_data(self, **kwargs):
 		context = super(UjjwalaAddressReviewListView, self).get_context_data(**kwargs)
-		address_reviews = UjjwalaV2Application.objects.filter(status=UjjwalaV2ApplicationStatus.REVIEW_ADDRESS).order_by('updated_on')
+		address_reviews = self.get_queryset()
 		paginator = Paginator(address_reviews, self.paginate_by)
 
 		page = self.request.GET.get('page')
@@ -511,7 +511,7 @@ class UjjwalaAddressReviewView(FormView, ApplicationView):
 		state_log = StateLog.objects.filter(
 			object_id=obj.id,
 		    content_type=ContentType.objects.get(app_label='ujjwala', model='ujjwalav2application'),
-			state=UjjwalaV2ApplicationStatus.UPDATE_ADDRESS
+			state=UjjwalaV2ApplicationStatus.REVIEW_ADDRESS
 		).order_by('-id').first()
 		context.update({
 			"obj": obj,
@@ -764,9 +764,9 @@ class PreInspectionView(FormView):
 					)
 					pre_inspection.save()
 
-					pre_inspection.pre_inspection_change_address(
-						description="Skipped By Admin, Change Address"
-					)
+					# pre_inspection.pre_inspection_change_address(
+					# 	description="Skipped By Admin, Change Address"
+					# )
 					pre_inspection.save()
 					return redirect('ujjwala:pre_inspection_form_view', type='self', pk=pre_inspection.id)
 				else:
@@ -795,13 +795,10 @@ class PreInspectionView(FormView):
 
 	def get_form_class(self):
 		application = self.get_object()
-		if application.status == PreInspectionStatusEnum.CHANGE_ADDRESS:
+		if application.status in (
+		PreInspectionStatusEnum.CHANGE_ADDRESS, PreInspectionStatusEnum.REJECTED, PreInspectionStatusEnum.REDO):
 			return ChangeAddressForm
-		elif application.status in (
-				PreInspectionStatusEnum.KITCHEN_PHOTO,
-				PreInspectionStatusEnum.REJECTED,
-				PreInspectionStatusEnum.REDO
-		):
+		elif application.status == PreInspectionStatusEnum.KITCHEN_PHOTO:
 			return KitchenPreInspectionForm
 		elif application.status == PreInspectionStatusEnum.SAFETY_AUDIO:
 			return AudioOnSafetyForm
