@@ -1151,8 +1151,8 @@ class PreInspection(models.Model):
 		field=status,
 		source=[
 			PreInspectionStatusEnum.KITCHEN_PHOTO,
-			PreInspectionStatusEnum.REJECTED,
-			PreInspectionStatusEnum.REDO,
+			# PreInspectionStatusEnum.REJECTED,
+			# PreInspectionStatusEnum.REDO,
 		],
 		target=PreInspectionStatusEnum.PREVIEW_INSPECTION,
 		custom=dict(short_description='Upload Main Gate Pic & Location', admin=False),
