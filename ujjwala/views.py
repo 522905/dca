@@ -414,14 +414,14 @@ class UjjwalaAddressReviewListView(ListView):
 
 	permission = 'has_view_permission'
 
-	def get_queryset(self):
-		return UjjwalaV2Application.objects.filter(status=UjjwalaV2ApplicationStatus.UPDATE_ADDRESS).order_by(
-			'updated_on')
+	# def get_queryset(self):
+	# 	return UjjwalaV2Application.objects.filter(status=UjjwalaV2ApplicationStatus.UPDATE_ADDRESS).order_by(
+	# 		'updated_on')
 
 
 	def get_context_data(self, **kwargs):
 		context = super(UjjwalaAddressReviewListView, self).get_context_data(**kwargs)
-		address_reviews = UjjwalaV2Application.objects.filter(status='UPDATE_ADDRESS').order_by('updated_on')
+		address_reviews = UjjwalaV2Application.objects.filter(status=UjjwalaV2ApplicationStatus.REVIEW_ADDRESS).order_by('updated_on')
 		paginator = Paginator(address_reviews, self.paginate_by)
 
 		page = self.request.GET.get('page')
@@ -454,7 +454,7 @@ class UjjwalaAddressReviewView(FormView, ApplicationView):
 		application_id = kwargs.get('pk', '')
 		if application_id:
 			obj = self.get_object()
-			if obj.status != UjjwalaV2ApplicationStatus.UPDATE_ADDRESS:
+			if obj.status != UjjwalaV2ApplicationStatus.REVIEW_ADDRESS:
 				messages.add_message(
 					request, messages.ERROR, "Application Id: {} Not In Update Address Status".format(obj.id)
 				)
