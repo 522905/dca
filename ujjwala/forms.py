@@ -232,7 +232,9 @@ class ChangeAddressForm(forms.Form):
 		user = get_current_user()
 		if user.is_anonymous:
 			user = None
-		obj.pre_inspection_change_address(by=user, description=old_address_json)
+		obj.pre_inspection_change_address(
+			by=user, description=old_address_json
+		)
 		obj.save()
 
 

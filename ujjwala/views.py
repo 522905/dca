@@ -2817,8 +2817,15 @@ class UpdateAddressView(FormView):
 	def dispatch(self, request, *args, **kwargs):
 		application = self.get_object()
 		if application:
-			if application.address_updated:
-				return HttpResponse("Address already submitted by you and is under review.")
+			if application.status == 'REVIEW_ADDRESS':
+				return render(
+					self.request,
+					"ujjwala/response.html",
+					{
+						"heading": "Update Address",
+						"message": "Address already submitted by you and is under review."
+					}
+				)
 		return super().dispatch(request, *args, **kwargs)
 
 	def get_object(self, queryset=None):

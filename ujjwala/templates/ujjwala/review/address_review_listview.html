@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
 
-<div class="p-2 pt-0 form_label" style="width: 100%;">
+<div class="p-2 pt-0 form_label w800" style="width: 100%;">
     {% if messages %}
         {% for msg in messages %}
             <div class="alert alert-info alert-dismissable">
@@ -21,7 +21,23 @@
     <div class="main-header bg-heading" style="background-color: #2957A4;">
         <span class="text-white">List of Address For Review</span>
     </div>
-    {% for obj in address_review_list %}
+    <table class="table-striped border address_td">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Mobile no.</th>
+            <th>Address</th>
+        </tr>
+        {% for obj in address_review_list %}
+        <tr>
+            <td><a class="text-under-n text-primary" href="{% url 'ujjwala:address_review' pk=obj.id %}" data-turbolinks="false">{{ obj.id }}</a></td>
+            <td class="text-name">{{ obj.name }} <b></td>
+            <td>{{ obj.contact_mobile }}</td>
+            <td class="text-left text-address"><p class="float-left">{{ obj.formatted_address }}</p></td>
+        </tr>
+        {% endfor %}
+    </table>
+    <!-- {% for obj in address_review_list %}
         <div class="card mb-2 app_card">
             <a class="text-under-n" href="{% url 'ujjwala:address_review' pk=obj.id %}" data-turbolinks="false">
                 <div class="card-header">
@@ -34,27 +50,38 @@
                 </div>
             </a>
         </div>
-    {% endfor %}
-    <div class="card">
+    {% endfor %} -->
+    <div class="pagination float-right ">
         {% if is_paginated %}
-            <div class="card-header"><p class="text-center">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</p></div>
-            <div class="card-footer">
+            <div class="border p-2 align-right">
                 {% if page_obj.has_previous %}
-                    <p class="float-left btn btn-success"><a href="?page={{ page_obj.previous_page_number }}">Previous</a></p>
-                {% endif %}
+                <a class="nev-btn" href="?page={{ page_obj.previous_page_number }}"><i class="fa fa-chevron-left" aria-hidden="true"></i></a>
+            {% endif %}
+                <span class="text-center nav-pag-text">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                
 
-                {% if page_obj.has_next %}
-                    <p class="float-right btn btn-success"><a href="?page={{ page_obj.next_page_number }}">Next</a></p>
-                {% endif %}
+            {% if page_obj.has_next %}
+               <a class="nev-btn" href="?page={{ page_obj.next_page_number }}"><i class="fa fa-chevron-right" aria-hidden="true"></i></a>
+            {% endif %}
             </div>
+
         {% else %}
             <h3>No Records Exist</h3>
         {% endif %}
     </div>
 </div>
 <style>
+.pagination { display: block; width: 100%;}
 #id_review_status{ display: block;}
 #id_rejected_reason{ margin-top: 10px;}
 #id_rejected_reason{ border: 1px solid #ccc !important;}
+.pagination .border{ text-align: right;}
+.nev-btn{ position: relative; top:-4px;}
+.nav-pag-text{ padding: 0 10px;}
+.address_td td{ padding: 5px 10px!important; font-size: 12px; font-weight: 600; }
+.form_label.w800{ max-width:700px !important; }
+.text-address{ text-align: left;}
+.text-name { width: 100px;}
+.address_td th{ font-weight: 800;}
 </style>
 {% endblock %}
