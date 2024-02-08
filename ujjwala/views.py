@@ -984,11 +984,11 @@ class PreInspectionCreateView(View):
 			)
 			obj.save()
 
-			obj.pre_inspection_change_address(
-				by=get_current_user(),
-				description="Skipped By Admin, Customer Address"
-			)
-			obj.save()
+			# obj.pre_inspection_change_address(
+			# 	by=get_current_user(),
+			# 	description="Skipped By Admin, Customer Address"
+			# )
+			# obj.save()
 
 			return redirect('ujjwala:pre_inspection_form_view', type='mech', pk=obj.pk)
 
