@@ -733,25 +733,24 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	@transition(
 		field=status,
 		source=UjjwalaV2ApplicationStatus.ADDRESS_CHANGE,
-		target=UjjwalaV2ApplicationStatus.UPDATE_ADDRESS,
+		target=UjjwalaV2ApplicationStatus.REVIEW_ADDRESS,
 		# target=GET_STATE(
 		# 	lambda self, **kwargs: self.last_execution_state,
 		# ),
 		custom=dict(
-			short_description='Update Address', admin=True, form=UpdateAddressForm
+			short_description='Review Address', admin=True, form=UpdateAddressForm
 		),
 		permission='ujjwala.can_approve_connection',
 	)
-	def transition_updated_address(self, *args, **kwargs):
-		pass
-		# self.address_json = kwargs['address_json']
+	def transition_review_address(self, *args, **kwargs):
+		self.address_json = kwargs['address_json']
 
 	@old_address_to_description
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=UjjwalaV2ApplicationStatus.UPDATE_ADDRESS,
+		source=UjjwalaV2ApplicationStatus.REVIEW_ADDRESS,
 		# target=GET_STATE(
 		# 	lambda self, **kwargs: \
 		# 			UjjwalaV2ApplicationStatus.NIC_CLEARED \

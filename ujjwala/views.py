@@ -410,13 +410,31 @@ class UjjwalaApplicationWebFormView(TemplateView):
 class UjjwalaAddressReviewListView(ListView):
 	model = UjjwalaV2Application
 	template_name = 'ujjwala/review/address_review_listview.html'
-
 	paginate_by = 20
+
 	permission = 'has_view_permission'
 
 	def get_queryset(self):
 		return UjjwalaV2Application.objects.filter(status=UjjwalaV2ApplicationStatus.UPDATE_ADDRESS).order_by(
 			'updated_on')
+
+
+	def get_context_data(self, **kwargs):
+		context = super(UjjwalaAddressReviewListView, self).get_context_data(**kwargs)
+		address_reviews = UjjwalaV2Application.objects.filter(status='UPDATE_ADDRESS').order_by('updated_on')
+		paginator = Paginator(address_reviews, self.paginate_by)
+
+		page = self.request.GET.get('page')
+
+		try:
+			address_reviews = paginator.page(page)
+		except PageNotAnInteger:
+			address_reviews = paginator.page(1)
+		except EmptyPage:
+			address_reviews = paginator.page(paginator.num_pages)
+
+		context['address_review_list'] = address_reviews
+		return context
 
 
 @method_decorator(login_required, 'dispatch')
@@ -2835,7 +2853,7 @@ class UpdateAddressView(FormView):
 		data = form.clean()
 		old_address_json = obj.address_json or obj.address
 		obj.address_json = data['address_json']
-		obj.transition_updated_address(
+		obj.transition_review_address(
 			description=old_address_json,
 			address_json=data['address_json']
 		)

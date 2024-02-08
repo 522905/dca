@@ -9,32 +9,48 @@
 
 <div class="p-2 pt-0 form_label" style="width: 100%;">
     {% if messages %}
-      {% for msg in messages %}
-        <div class="alert alert-info alert-dismissable">
-          <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-          {{msg.message}}
-        </div>
-      {% endfor %}
+        {% for msg in messages %}
+            <div class="alert alert-info alert-dismissable">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                {{msg.message}}
+            </div>
+        {% endfor %}
     {% endif %}
+
     {% include 'ujjwala/disbursement/forms/application_search.html' %}
     <div class="main-header bg-heading" style="background-color: #2957A4;">
         <span class="text-white">List of Address For Review</span>
     </div>
-    {% for obj in object_list %}
+    {% for obj in address_review_list %}
         <div class="card mb-2 app_card">
             <a class="text-under-n" href="{% url 'ujjwala:address_review' pk=obj.id %}" data-turbolinks="false">
                 <div class="card-header">
-                    <p class="float-left">{{ forloop.counter }}</p><p class="float-right">{{ obj.name }} <b>({{ obj.id }})</p>
+                    <p class="float-left">{{ obj.name }} <b>({{ obj.id }})</b></p>
+                    <p class="float-right">{{ obj.contact_mobile }}</p>
                     <br>
                 </div>
                 <div class="card-body pb-0 p-2 list_block">
-                    <p class="float-center">{{ obj.address_json }}</p>
+                    <p class="float-right">{{ obj.formatted_address }}</p>
                 </div>
             </a>
-            <div class="card-footer p-2">
-            </div>
         </div>
     {% endfor %}
+    <div class="card">
+        {% if is_paginated %}
+            <div class="card-header"><p class="text-center">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</p></div>
+            <div class="card-footer">
+                {% if page_obj.has_previous %}
+                    <p class="float-left btn btn-success"><a href="?page={{ page_obj.previous_page_number }}">Previous</a></p>
+                {% endif %}
+
+                {% if page_obj.has_next %}
+                    <p class="float-right btn btn-success"><a href="?page={{ page_obj.next_page_number }}">Next</a></p>
+                {% endif %}
+            </div>
+        {% else %}
+            <h3>No Records Exist</h3>
+        {% endif %}
+    </div>
 </div>
 <style>
 #id_review_status{ display: block;}

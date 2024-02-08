@@ -64,6 +64,7 @@ class UjjwalaApplicationDocumentsEnum(models.TextChoices):
 	INSTALLATION_KITCHEN_PHOTO = 'INSTALLATION_KITCHEN_PHOTO', 'Installation Kitchen Photo'
 	INSTALLATION_STOVE_WITH_STICKER = 'INSTALLATION_STOVE_WITH_STICKER', 'Installation Stove With Sticker'
 	INSTALLATION_DOCUMENT = 'INSTALLATION_DOCUMENT', 'Installation Document'
+	RATION_CARD = 'RATION_CARD', 'Ration Card'
 
 	@classmethod
 	def get_skipped_additional_choices(cls):
@@ -190,7 +191,7 @@ class UjjwalaV2ApplicationStatus(models.TextChoices):
 	NIC_ERROR_INSUFFICIENT_ADDRESS = 'NIC_ERROR_INSUFFICIENT_ADDRESS', 'Nic Error Insufficient Address'
 	NIC_ERROR_UPDATE_ADDRESS = 'NIC_ERROR_UPDATE_ADDRESS', 'Nic Error Update Address'
 	ADDRESS_CHANGE = 'ADDRESS_CHANGE', 'Address Change'
-	UPDATE_ADDRESS = 'UPDATE_ADDRESS', 'Update Address'
+	REVIEW_ADDRESS = 'REVIEW_ADDRESS', 'Review Address'
 	NIC_ERROR_ADDRESS_ACCEPTED = 'NIC_ERROR_ADDRESS_ACCEPTED', 'Nic Error Address Accepted'
 	NIC_ERROR_APPROVED = 'NIC_ERROR_APPROVED', 'Nic Error Approved'
 	ON_HOLD = 'ON_HOLD', 'On Hold'
@@ -298,6 +299,3 @@ class PrintDocumentsTypeEnum(models.TextChoices):
 	BANK_DETAILS = 'BANK_DETAILS', 'Bank Details'
 	FORM_ABC = 'FORM_ABC', 'Form A B C'
 	AADHAR = 'AADHAR', 'Aadhar'
-
-
-
