@@ -1138,7 +1138,11 @@ class PreInspection(models.Model):
 	@fsm_log_by
 	@transition(
 		field=status,
-		source=PreInspectionStatusEnum.CHANGE_ADDRESS,
+		source=[
+			PreInspectionStatusEnum.CHANGE_ADDRESS,
+			PreInspectionStatusEnum.REJECTED,
+			PreInspectionStatusEnum.REDO,
+		],
 		target=PreInspectionStatusEnum.KITCHEN_PHOTO,
 		custom=dict(short_description='Change Address', admin=False),
 	)

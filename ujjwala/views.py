@@ -702,7 +702,6 @@ class PreInspectionView(FormView):
 					    and pre_inspection.type == PreInspectionTypeEnum.MECHANIC
 			):
 				return self.otp_verification(pre_inspection)
-				# return HttpResponse("<h1>Ujjwala Pre-Inspection Currently On Hold</h1>")
 
 		return super().dispatch(request, *args, **kwargs)
 
@@ -827,15 +826,18 @@ class PreInspectionView(FormView):
 			self.get_success_url() + '?referral_user_id={}'.format(self.request.GET.get('referral_user_id', ''))
 		)
 
+	# def form_invalid(self, form):
+	# 	print(form)
+
 	def get_template_names(self):
 		pre_inspection_obj = self.get_object()
-		if pre_inspection_obj.status == PreInspectionStatusEnum.CHANGE_ADDRESS:
-			return self.pre_inspection_step0_template
-		elif pre_inspection_obj.status in (
-				PreInspectionStatusEnum.KITCHEN_PHOTO,
+		if pre_inspection_obj.status in (
+				PreInspectionStatusEnum.CHANGE_ADDRESS,
 				PreInspectionStatusEnum.REJECTED,
-				PreInspectionStatusEnum.REDO,
+				PreInspectionStatusEnum.REDO
 		):
+			return self.pre_inspection_step0_template
+		elif pre_inspection_obj.status == PreInspectionStatusEnum.KITCHEN_PHOTO:
 			return self.pre_inspection_step1_template
 		elif pre_inspection_obj.status == PreInspectionStatusEnum.SAFETY_AUDIO:
 			return self.pre_inspection_step2_template
@@ -852,7 +854,11 @@ class PreInspectionView(FormView):
 		kwargs = super().get_form_kwargs()
 		pre_inspection = self.get_object()
 		kwargs['pre_inspection'] = pre_inspection
-		if pre_inspection.status == PreInspectionStatusEnum.CHANGE_ADDRESS:
+		if pre_inspection.status in (
+				PreInspectionStatusEnum.CHANGE_ADDRESS,
+				PreInspectionStatusEnum.REJECTED,
+				PreInspectionStatusEnum.REDO
+		):
 			kwargs['initial'] = pre_inspection.parent.address_json
 		return kwargs
 
