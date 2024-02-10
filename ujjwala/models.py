@@ -1006,8 +1006,8 @@ class FamilyMembers(models.Model):
 		<a href="{}" target="blank">View Ori.</a> UID Front <a href="{}{}" target="blank">Download Comp.</a><br><br>
 		<a href="{}" target="blank">View Ori.</a> UID Back <a href="{}{}" target="blank">Download Comp.</a>
 		'''.format(
-			self.uid_front_link, settings.THUMBOR_URL, self.uid_front_link,
-			self.uid_back_link, settings.THUMBOR_URL, self.uid_back_link,
+			self.uid_front_link, settings.THUMBOR_LOCAL_URL, self.uid_front_link,
+			self.uid_back_link, settings.THUMBOR_LOCAL_URL, self.uid_back_link,
 		)
 		return mark_safe(html)
 
@@ -1024,7 +1024,7 @@ class UjjwalaApplicationDocuments(models.Model):
 	def download_links(self):
 		html = '''
 		<a href="{}" target="blank">Ori. File</a>&nbsp||&nbsp<a href="{}{}" target="blank">Download Comp.</a>
-		'''.format(self.link, settings.THUMBOR_URL, self.link)
+		'''.format(self.link, settings.THUMBOR_LOCAL_URL, self.link)
 		return mark_safe(html)
 
 
