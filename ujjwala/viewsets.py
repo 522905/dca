@@ -295,6 +295,8 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
                     )
                 })
 
+            response = super().create(request, *args, **kwargs)
+
             connection_disbursement = ConnectionDisbursement.objects.filter(
                 parent_id=existing_application.id
             ).first()
@@ -305,20 +307,18 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 
             if pre_inspection:
                 if pre_inspection.status == 'ACCEPTED':
-                    response = super().create(request, *args, **kwargs)
                     pre_inspection.parent_id = response.data.get('id')
                     pre_inspection.save()
-                    existing_application.delete()
-                    if connection_disbursement:
-                        connection_disbursement.parent_id = response.data.get('id')
-                        connection_disbursement.save()
-                    re_create_legal_docs(UjjwalaV2Application.objects.get(pk=response.data.get('id')))
-                    return response
                 else:
                     pre_inspection.delete()
-                    if connection_disbursement:
-                        connection_disbursement.delete()
+
+            if connection_disbursement:
+                connection_disbursement.parent_id = response.data.get('id')
+                connection_disbursement.save()
+                re_create_legal_docs(UjjwalaV2Application.objects.get(pk=response.data.get('id')))
+
             existing_application.delete()
+            return response
         return super().create(request, *args, **kwargs)
 
     @action(methods=['post'], detail=False, url_path='ujjwala_ivr_confirmation')
