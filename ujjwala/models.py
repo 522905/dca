@@ -35,7 +35,8 @@ from ujjwala.forms import ConnectionStatusApproved, ApplicationRejected, \
 	ReleaseApplicationForm, CompleteDisbursementDriveForm, \
 	InstallationReviewAdminForm, LegalDocumentsAcceptedToPendingAdminForm, UpdateAddressForm, ReviewUpdatedAddressForm
 from ujjwala.ujjwala_functions import download_ujjwala_physical_legal_docs, \
-	fsm_custom_audit_points_description, re_create_legal_docs, get_last_valid_status_for_application
+	fsm_custom_audit_points_description, re_create_legal_docs, get_last_valid_status_for_application, \
+	get_review_to_target_status
 from utils.global_functions import upload_file_to_minio_bucket, old_address_to_description, \
 	old_walk_in_to_description
 
@@ -762,8 +763,11 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		# 	]
 		# ),
 		target=GET_STATE(
-			lambda self, **kwargs: self.last_execution_state,
+			lambda self, **kwargs: get_review_to_target_status(self.id),
 		),
+		# target=GET_STATE(
+		# 	lambda self, **kwargs: self.last_execution_state,
+		# ),
 		custom=dict(
 			short_description='Review Updated Address', admin=True, form=ReviewUpdatedAddressForm
 		),

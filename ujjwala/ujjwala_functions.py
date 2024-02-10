@@ -1957,6 +1957,21 @@ def get_last_valid_status_for_application(application_id):
 	else:
 		return application.last_execution_state
 
+
+def get_review_to_target_status(application_id):
+	from ujjwala.models import UjjwalaV2Application
+
+	application = UjjwalaV2Application.objects.get(pk=application_id)
+
+	if application.status == application.last_execution_state or not application.last_execution_state:
+		state_log = StateLog.objects.filter(object_id=application_id,
+		                                    content_type=ContentType.objects.get(app_label='ujjwala',
+		                                                                         model='ujjwalav2application')).exclude(
+			source_state='REVIEW_ADDRESS').exclude(source_state='ADDRESS_CHANGE').order_by('-id').first()
+		return state_log.source_state
+	else:
+		return application.last_execution_state
+
 	# if not application.last_execution_state:
 	# 	state_log = StateLog.objects.filter(
 	# 		object_id=application_id,
