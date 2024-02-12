@@ -1070,6 +1070,7 @@ class PreInspection(models.Model):
 	camunda_process_id = models.CharField(max_length=128, null=True, blank=True)
 	camunda_error_message = models.TextField(null=True, blank=True)
 	rejected_reasons = models.JSONField(null=True, blank=True)
+	address_updated = models.BooleanField(default=False)
 
 	def mechanic_name(self):
 		if self.mechanic:
