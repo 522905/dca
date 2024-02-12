@@ -1088,7 +1088,6 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             uid_list.append(record.uid_no)
         return JsonResponse(uid_list, safe=False)
 
-
     @action(methods=['get'], detail=False, url_path='get_enrich_rejection_records')
     def get_enrich_rejection_records(self, request, *args, **kwargs):
         record_list = UjjwalaV2Application.objects.filter(
@@ -1322,6 +1321,19 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         if not result:
             return JsonResponse({"status": False}, safe=False)
         return JsonResponse({"status": True}, safe=False)
+
+
+class UjjwalaPreInspectionAPIViewSet(viewsets.ViewSet):
+    @action(methods=['get'], detail=False, url_path='preinspection_review_address')
+    def preinspection_review_address(self, request: HttpRequest, *args, **kwargs):
+        preinspection_id = request.GET.get('preinspection_id')
+
+        obj = PreInspection.objects.get(pk=preinspection_id)
+        return JsonResponse({
+            "address_json": obj.parent.address_json,
+            "latitude": obj.parent.latitude,
+            "longitude": obj.parent.longitude
+        })
 
 
 class UjjwalaApplicationOtpViewSet(viewsets.ViewSet):

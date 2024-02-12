@@ -14,11 +14,13 @@ from .robos.sv_cancellation import SvCancellationViewSet
 from .robos.viewsets import UjjwalaApplicationNicViewSet
 from .views import UjjwalaApplicationWebFormView, WebFormOldView, UjjwalaApplicationIframeWebFormView, \
     LegalDocumentsAcceptedToPendingView, ShareOnSocialMediaView, CancelInvitationView, UserDashboardView
-from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet, UjjwalaApplicationOtpViewSet
+from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet, UjjwalaApplicationOtpViewSet, \
+    UjjwalaPreInspectionAPIViewSet
 
 router = routers.DefaultRouter()
 router.register(r'ujjwala-application', UjjwalaApplicationViewSet)
 router.register(r'ujjwala-bot', UjjwalaApplicationAPIViewSet)
+router.register(r'ujjwala-preinspection', UjjwalaPreInspectionAPIViewSet, basename='ujjwala_preinspection')
 router.register(r'ujjwala-nic', UjjwalaApplicationNicViewSet, basename='ujjwala_nic')
 router.register(
     r'ujjwala-bot-failed-count', UjjwalaApplicationRoboExecutionErrorAPIViewSet, basename='ujjwala_bot_failed_count'
