@@ -1340,7 +1340,8 @@ class UjjwalaPreInspectionAPIViewSet(viewsets.ViewSet):
                              object_id=preinspection_id).first()
 
         return JsonResponse({
-            "old_address_json": state_log.description,
+            "application_id": obj.parent_id,
+            "old_address_json": state_log.description if state_log else "",
             "address_json": obj.parent.address_json,
             "latitude": obj.parent.latitude,
             "longitude": obj.parent.longitude
@@ -1351,12 +1352,19 @@ class UjjwalaPreInspectionAPIViewSet(viewsets.ViewSet):
         preinspection_id = request.GET.get('preinspection_id')
 
         obj = PreInspection.objects.get(pk=preinspection_id)
-        return JsonResponse({
-            "kitchen_photo": obj.parent.address_json,
-            "main_gate_photo": obj.parent.address_json,
+
+        result = {
+            "application_id": obj.parent_id,
+            "kitchen_photo": obj.documents.get(type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO).link,
+            "main_gate_photo": obj.documents.get(type=UjjwalaApplicationDocumentsEnum.MAIN_GATE).link,
             "latitude": obj.parent.latitude,
-            "longitude": obj.parent.longitude
-        })
+            "longitude": obj.parent.longitude,
+            "accuracy": obj.parent.accuracy
+        }
+        safety_audio = obj.documents.filter(type=UjjwalaApplicationDocumentsEnum.SAFETY_AUDIO).first()
+        result["safety_audio"] = safety_audio.link if safety_audio else ""
+
+        return JsonResponse(result)
 
 
 class UjjwalaApplicationOtpViewSet(viewsets.ViewSet):
