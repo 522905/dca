@@ -6,6 +6,7 @@ import django_filters
 import django_rq
 import requests
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse, HttpRequest
@@ -1326,11 +1327,33 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
 class UjjwalaPreInspectionAPIViewSet(viewsets.ViewSet):
     @action(methods=['get'], detail=False, url_path='preinspection_review_address')
     def preinspection_review_address(self, request: HttpRequest, *args, **kwargs):
+        from django_fsm_log.models import StateLog
+
+        preinspection_id = request.GET.get('preinspection_id')
+
+        obj = PreInspection.objects.get(pk=preinspection_id)
+
+        state_log = StateLog.objects.filter(source_state=PreInspectionStatusEnum.CHANGE_ADDRESS,
+                             content_type_id=ContentType.objects.get(
+                                 app_label='ujjwala', model='preinspection'
+                             ),
+                             object_id=preinspection_id).first()
+
+        return JsonResponse({
+            "old_address_json": state_log.description,
+            "address_json": obj.parent.address_json,
+            "latitude": obj.parent.latitude,
+            "longitude": obj.parent.longitude
+        })
+
+    @action(methods=['get'], detail=False, url_path='preinspection_review')
+    def preinspection_review(self, request: HttpRequest, *args, **kwargs):
         preinspection_id = request.GET.get('preinspection_id')
 
         obj = PreInspection.objects.get(pk=preinspection_id)
         return JsonResponse({
-            "address_json": obj.parent.address_json,
+            "kitchen_photo": obj.parent.address_json,
+            "main_gate_photo": obj.parent.address_json,
             "latitude": obj.parent.latitude,
             "longitude": obj.parent.longitude
         })
