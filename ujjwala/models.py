@@ -1280,11 +1280,13 @@ class PreInspection(models.Model):
 			self.parent.save()
 
 			if self.parent.status != UjjwalaV2ApplicationStatus.AUDIT_APPLICATION:
-				ConnectionDisbursement.objects.create(
-					parent=self.parent,
-					mechanic=self.mechanic,
-					pending_quantity=product_quantity_map.get(self.parent.product, 0)
-				)
+				ci_obj = ConnectionDisbursement.objects.get_or_create(
+					parent=self.parent
+				)[0]
+				ci_obj.mechanic = self.mechanic
+				ci_obj.pending_quantity = product_quantity_map.get(self.parent.product, 0)
+				ci_obj.save()
+
 				# Bucket Name: ujjwaladocuments
 				physical_legal_document = download_ujjwala_physical_legal_docs(self.parent)
 				upload_url = upload_file_to_minio_bucket(
