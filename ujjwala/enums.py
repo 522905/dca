@@ -168,6 +168,12 @@ PreInspectionRejectionReasons = (
 )
 
 
+class HouseTypeEnum(models.TextChoices):
+	OWNHOUSE = 'OWNHOUSE', 'Own House'
+	RENT = 'RENT', 'Rent'
+	VEHRA = 'VEHRA', 'Vehra'
+
+
 class UjjwalaV2ApplicationStatus(models.TextChoices):
 	DOCUMENTS_UPLOADED = 'DOCUMENTS_UPLOADED', 'Documents Uploaded'
 	DOCUMENTS_REUPLOAD = 'DOCUMENTS_REUPLOAD', 'Documents Reupload'

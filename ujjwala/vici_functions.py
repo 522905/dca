@@ -32,3 +32,22 @@ def add_lead_to_vicidial(contact_mobile, name, id):
 		                                                                                                 name, id)
 	)
 	return res
+
+
+def add_lead_to_vicidial_list(list_id, contact_mobile, name, id):
+	res = requests.post(
+		"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
+		"&function=add_lead&phone_number={}&phone_code=1&list_id={}&first_name={}&last_name={}".format(list_id,
+		                                                                                               contact_mobile,
+		                                                                                               name, id)
+	)
+	return res
+
+
+def delete_lead_from_vicidial_list(list_id, contact_mobile):
+	res = requests.post(
+		"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
+		"&function=update_lead&search_location=LIST&search_method=PHONE_NUMBER&phone_number={}&list_id={}".format(
+			contact_mobile, list_id)
+	)
+	return res

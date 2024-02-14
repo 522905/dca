@@ -1,6 +1,7 @@
 {% extends "material/frontend/base_module.html" %}
-{% load static %}
 {% load comments %}
+{% load comments_xtd %}
+{% load static %}
 {% block page_title %}Application Status Search {% endblock %}
 {% block content %}
 <link rel="stylesheet" href="{% static '/css/style.css' %}" >
@@ -236,10 +237,19 @@
                             </td>
                         </tr>
                     </table>
-                    {% render_comment_list for obj %}
                 </div>
             </div>
-            {% render_comment_form for obj %}
+            <div class="card card-block mb-5">
+                <div class="comments">
+                  {% render_comment_list for obj %}
+                </div>
+            </div>
+            <div class="card card-block mb-5">
+                <div class="card-body">
+                    <h4 class="card-title text-center pb-3">Post your comment</h4>
+                    {% render_comment_form for obj %}
+                </div>
+            </div>
         {% endif %}
     </div>
 <style>

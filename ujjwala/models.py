@@ -282,6 +282,10 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			'pincode': self.address_json.get('pincode', '141001')
 		}
 
+	def get_absolute_url(self):
+		return "http://192.168.168.4:60613" + reverse(
+			'ujjwala:application_status_search') + f'?application_id={self.id}'
+
 	@property
 	def all_contacts(self):
 		phones = set([i for i in [

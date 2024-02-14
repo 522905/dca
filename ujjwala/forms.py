@@ -217,6 +217,7 @@ class ChangeAddressForm(forms.Form):
 
 		if data['update_address']:
 			old_address_json = obj.parent.address_json
+			obj.address_updated = True
 			obj.parent.address_json = {
 				"house_no": data.get('house_no', ''),
 				"room_no": data.get('room_no', ''),

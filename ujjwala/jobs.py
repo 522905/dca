@@ -423,58 +423,74 @@ def compress_application_documents(application_id):
     Compress Application Documents
     Params:
         application_id: Ujjwala Application Object Id
+
+    Compresses Ujjwala Application
+    Compresses PreInspection
+    Compress Connection Disbursement
     """
+
+    # Ujjwala Application
     from ujjwala.models import UjjwalaV2Application
 
-    application = UjjwalaV2Application.objects.filter(id=application_id).first()
+    application: UjjwalaV2Application = UjjwalaV2Application.objects.filter(id=application_id).first()
     if not application:
         print("No application with id {} exists".format(application_id))
 
     print("Application Documents Compressing".format(application_id))
 
     for customer_doc in application.documents.all():
-        print("Customer Doc {} {}".format(customer_doc.type, customer_doc.link))
-        if not customer_doc.link:
-            print("No url exist for document")
-            continue
-        success, upload_url, file_size = upload_compressed_file_to_tus(customer_doc.link)
-        if success and not customer_doc.link == upload_url:
-            customer_doc.link = upload_url
-            customer_doc.compressed = True
+        if not customer_doc.compressed:
+            print("Customer Doc {} {}".format(customer_doc.type, customer_doc.link))
+            if not customer_doc.link:
+                print("No url exist for document")
+                continue
+            success, upload_url, file_size = upload_compressed_file_to_tus(customer_doc.link)
+            if success and not customer_doc.link == upload_url:
+                customer_doc.link = upload_url
+                customer_doc.compressed = True
 
-        customer_doc.file_size = file_size
-        customer_doc.save()
+            customer_doc.file_size = file_size
+            customer_doc.save()
 
     print("Application Documents Family Member Compressing".format(application_id))
     for family_member in application.family_members.all():
-        print("UID Front {}".format(family_member.uid_front_link))
-        if not family_member.uid_front_link:
-            print("No url exist for document")
-            continue
+        if not family_member.uid_front_compressed:
+            print("UID Front {}".format(family_member.uid_front_link))
+            if not family_member.uid_front_link:
+                print("No url exist for document")
+                continue
 
-        success, upload_url, file_size = upload_compressed_file_to_tus(family_member.uid_front_link)
-        if success and not family_member.uid_front_link == upload_url:
-            family_member.uid_front_link = upload_url
-            family_member.uid_front_compressed = True
+            success, upload_url, file_size = upload_compressed_file_to_tus(family_member.uid_front_link)
+            if success and not family_member.uid_front_link == upload_url:
+                family_member.uid_front_link = upload_url
+                family_member.uid_front_compressed = True
 
-        family_member.uid_front_file_size = file_size
-        family_member.save()
+            family_member.uid_front_file_size = file_size
+            family_member.save()
 
-        print("UID Back {}".format(family_member.uid_back_link))
-        if not family_member.uid_back_link:
-            print("No url exist for document")
-            continue
+        if not family_member.uid_back_compressed:
+            print("UID Back {}".format(family_member.uid_back_link))
+            if not family_member.uid_back_link:
+                print("No url exist for document")
+                continue
 
-        success, upload_url, file_size = upload_compressed_file_to_tus(family_member.uid_back_link)
-        if success and not family_member.uid_back_link == upload_url:
-            family_member.uid_back_link = upload_url
-            family_member.uid_back_compressed = True
+            success, upload_url, file_size = upload_compressed_file_to_tus(family_member.uid_back_link)
+            if success and not family_member.uid_back_link == upload_url:
+                family_member.uid_back_link = upload_url
+                family_member.uid_back_compressed = True
 
-        family_member.uid_back_file_size = file_size
-        family_member.save()
+            family_member.uid_back_file_size = file_size
+            family_member.save()
+
+    # PreInspection Documents
+    if PreInspection.objects.filter(parent_id=application_id).exists():
+        compress_pre_inspection_documents(application_id)
+
+    if ConnectionDisbursement.objects.filter(parent_id=application.id).exists():
+        compress_connection_disbursement_documents(application_id)
 
 
-def compress_pre_inspection_documents(parent_id):
+def compress_pre_inspection_documents(pi_id):
     """
     Compress Pre Inspection Documents
     Params:
@@ -482,28 +498,29 @@ def compress_pre_inspection_documents(parent_id):
     """
     from ujjwala.models import PreInspectionDocuments
 
-    docs = PreInspectionDocuments.objects.filter(parent_id=parent_id, compressed=False)
+    docs = PreInspectionDocuments.objects.filter(parent_id=pi_id, compressed=False)
     for customer_doc in docs:
-        print("PreInspection Doc {} {} {}".format(customer_doc.parent_id, customer_doc.type, customer_doc.link))
-        if not customer_doc.link:
-            print("No url exist for document")
-            continue
-        if customer_doc.type in (
-            UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT,
-            UjjwalaApplicationDocumentsEnum.INSTALLATION_DOCUMENT,
-            UjjwalaApplicationDocumentsEnum.SAFETY_AUDIO,
-            UjjwalaApplicationDocumentsEnum.SV,
-        ):
-            continue
-        success, upload_url, file_size = upload_compressed_file_to_tus(customer_doc.link)
-        customer_doc.file_size = file_size
-        if success and not customer_doc.link == upload_url:
-            customer_doc.link = upload_url
-            customer_doc.compressed = True
-        customer_doc.save()
+        if not customer_doc.compressed:
+            print("PreInspection Doc {} {} {}".format(customer_doc.parent_id, customer_doc.type, customer_doc.link))
+            if not customer_doc.link:
+                print("No url exist for document")
+                continue
+            if customer_doc.type in (
+                UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT,
+                UjjwalaApplicationDocumentsEnum.INSTALLATION_DOCUMENT,
+                UjjwalaApplicationDocumentsEnum.SAFETY_AUDIO,
+                UjjwalaApplicationDocumentsEnum.SV,
+            ):
+                continue
+            success, upload_url, file_size = upload_compressed_file_to_tus(customer_doc.link)
+            customer_doc.file_size = file_size
+            if success and not customer_doc.link == upload_url:
+                customer_doc.link = upload_url
+                customer_doc.compressed = True
+            customer_doc.save()
 
 
-def compress_connection_disbursement_documents(parent_id):
+def compress_connection_disbursement_documents(ci_id):
     """
     Compress Connection Disbursement Documents
     Params:
@@ -511,25 +528,26 @@ def compress_connection_disbursement_documents(parent_id):
     """
     from ujjwala.models import ConnectionDisbursementDocuments
 
-    docs = ConnectionDisbursementDocuments.objects.filter(parent_id=parent_id, compressed=False)
+    docs = ConnectionDisbursementDocuments.objects.filter(parent_id=ci_id, compressed=False)
     for customer_doc in docs:
-        print("Disb Doc {} {} {}".format(customer_doc.parent_id, customer_doc.type, customer_doc.link))
-        if not customer_doc.link:
-            print("No url exist for document")
-            continue
-        if customer_doc.type in (
-            UjjwalaApplicationDocumentsEnum.INSTALLATION_DOCUMENT,
-            UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT,
-            UjjwalaApplicationDocumentsEnum.SAFETY_AUDIO,
-            UjjwalaApplicationDocumentsEnum.SV,
-        ):
-            continue
-        success, upload_url, file_size = upload_compressed_file_to_tus(customer_doc.link)
-        customer_doc.file_size = file_size
-        if success and not customer_doc.link == upload_url:
-            customer_doc.link = upload_url
-            customer_doc.compressed = True
-        customer_doc.save()
+        if not customer_doc.compressed:
+            print("Disb Doc {} {} {}".format(customer_doc.parent_id, customer_doc.type, customer_doc.link))
+            if not customer_doc.link:
+                print("No url exist for document")
+                continue
+            if customer_doc.type in (
+                UjjwalaApplicationDocumentsEnum.INSTALLATION_DOCUMENT,
+                UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT,
+                UjjwalaApplicationDocumentsEnum.SAFETY_AUDIO,
+                UjjwalaApplicationDocumentsEnum.SV,
+            ):
+                continue
+            success, upload_url, file_size = upload_compressed_file_to_tus(customer_doc.link)
+            customer_doc.file_size = file_size
+            if success and not customer_doc.link == upload_url:
+                customer_doc.link = upload_url
+                customer_doc.compressed = True
+            customer_doc.save()
 
 
 def move_ujjwala_application_files_to_minio(application_id):
