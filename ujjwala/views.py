@@ -4041,17 +4041,19 @@ class CamundaChangeAddressView(FormView):
 		return kwargs
 
 	def form_valid(self, form):
-		obj = self.get_object()
+		# obj = self.get_object()
 		data = form.clean()
-		user = get_current_user()
+		user = None
+		if self.kwargs.get('message_source') == 'STAFF':
+			user = get_current_user()
 		url = f"https://camunda.dca.arungas.com/engine-rest/message"
 		res = requests.post(url, json={
 			"messageName": "Message_review_addressnew_address_received",
 			'processInstanceId': self.kwargs.get('process_instance_id'),
 			"processVariables": {
 				"address_json": {"value": json.dumps(data['address_json']), "type": "String"},
-				"user_id": {"value": user.id, "type": "String"},
-				"user_name": {"value": f"{user.first_name} {user.last_name}", "type": "String"},
+				"user_id": {"value": user.id if user else '', "type": "String"},
+				"user_name": {"value": f"{user.first_name} {user.last_name}" if user else '', "type": "String"},
 				"message_source": {"value": f"{self.kwargs.get('message_source')}", "type": "String"},
 			}
 		})
