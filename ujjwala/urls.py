@@ -276,7 +276,7 @@ urlpatterns = [
         name="change_address_view"
     ),
     url(
-        '^portal/camunda_change_address/(?P<message_source>(STAFF|APPLICANT))/(?P<process_instance_id>[^/.]+)/$',
+        '^portal/camunda_change_address/(?P<message_source>(STAFF|APPLICANT))/(?P<process_instance_id>[^/.]+)/(?P<agent>[^/.]+)/$',
         views.CamundaChangeAddressView.as_view(),
         name="camunda_change_address_view"
     ),
