@@ -4056,7 +4056,7 @@ class CamundaChangeAddressView(FormView):
 				# "user_id": {"value": user.id if user else '', "type": "String"},
 				# "user_name": {"value": f"{user.first_name} {user.last_name}" if user else '', "type": "String"},
 				"message_source": {"value": f"{self.kwargs.get('message_source')}", "type": "String"},
-				"agent": {"value": f"{self.kwargs.get('agent')}", "type": "String"}
+				"agent": {"value": f"{self.kwargs.get('agent', '').replace('+', '')}", "type": "String"}
 			}
 		})
 		res.raise_for_status()
