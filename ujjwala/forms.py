@@ -20,7 +20,7 @@ from ujjwala.communication_functions import send_whatsapp_message, send_sms
 from ujjwala.enums import UjjwalaV2ApplicationStatus, ConnectionDisbursementStatusEnum, \
 	RejectionTypeEnum, PreInspectionTypeEnum, RoboSdmsDedeupStatusEnum, NicClearedCustomerRemarksEnum, \
 	PrintDocumentsTypeEnum, InstallationTypeEnum, UjjwalaProductEnum, product_quantity_map, SDMSMobileNumberEnum, \
-	PreInspectionRejectionReasonsEnum
+	PreInspectionRejectionReasonsEnum, HouseTypeEnum
 from ujjwala.models import UjjwalaApplicationDocumentsEnum
 from ujjwala.ujjwala_functions import __get_ref_no__, id_generator, valid_file_uploaded, send_otp_using_channel, \
 	is_pre_inspection_applicable
@@ -104,6 +104,16 @@ class NicUpdateAddressForm(forms.Form):
 
 
 class UpdateAddressForm(forms.Form):
+	house_type = forms.ChoiceField(
+		widget=forms.Select,
+		choices=HouseTypeEnum.choices,
+		required=False
+	)
+	# house_type = forms.ChoiceField(
+	# 	label="House Type",
+	# 	required=True,
+	# 	choices=HouseTypeEnum.choices
+	# )
 	house_no = forms.CharField(
 		widget=forms.TextInput, label='House No. (मकान नंबर)', required=True
 	)
@@ -138,6 +148,7 @@ class UpdateAddressForm(forms.Form):
 	def clean(self):
 		data = self.cleaned_data
 		data['address_json'] = {
+			"house_type": data.get('house_type', ''),
 			"house_no": data.get('house_no', ''),
 			"room_no": data.get('room_no', ''),
 			"floor": data.get('floor', ''),

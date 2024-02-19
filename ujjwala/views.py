@@ -4000,3 +4000,67 @@ class UjjwalaApplicationServiceRequestView(FormView):
 		res.raise_for_status()
 
 		return redirect(self.get_success_url())
+
+
+# @method_decorator(login_required, 'dispatch')
+class CamundaChangeAddressView(FormView):
+	form_class = UpdateAddressForm
+	template_name = "ujjwala/camunda_update_address.html"
+	variables = None
+
+	def dispatch(self, request, *args, **kwargs):
+		process_instance_id = kwargs.get('process_instance_id')
+		url = f"https://camunda.dca.arungas.com/engine-rest/process-instance/{process_instance_id}/variables"
+		self.variables = requests.get(url).json()
+		return super().dispatch(request, *args, **kwargs)
+
+	def get_object(self, queryset=None):
+		try:
+			obj = UjjwalaV2Application.objects.get(
+				pk=self.variables.get('application_id').get('value'))
+		except:
+			raise Http404(
+				"No application with id: {} found.".format(
+					self.get_object(self.variables.get('application_id').get('value')))
+			)
+		return obj
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		obj = self.get_object()
+		context.update({
+			"obj": obj,
+			"old_address_json": self.variables['old_address_json']
+		})
+		return context
+
+	def get_form_kwargs(self):
+		kwargs = super().get_form_kwargs()
+		# To Be Fixed In Embedded Form
+		kwargs['initial'] = json.loads(self.variables['address_json']['value'])
+		return kwargs
+
+	def form_valid(self, form):
+		obj = self.get_object()
+		data = form.clean()
+		user = get_current_user()
+		url = f"https://camunda.dca.arungas.com/engine-rest/message"
+		res = requests.post(url, json={
+			"messageName": "Message_review_addressnew_address_received",
+			'processInstanceId': self.kwargs.get('process_instance_id'),
+			"processVariables": {
+				"address_json": {"value": json.dumps(data['address_json']), "type": "String"},
+				"user_id": {"value": user.id, "type": "String"},
+				"user_name": {"value": f"{user.first_name} {user.last_name}", "type": "String"},
+				"message_source": {"value": f"{self.kwargs.get('message_source')}", "type": "String"},
+			}
+		})
+		res.raise_for_status()
+		return render(
+			self.request,
+			"ujjwala/response.html",
+			{
+				"heading": "Update Address",
+				"message": "Address Updated Successfully"
+			}
+		)

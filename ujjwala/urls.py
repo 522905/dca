@@ -276,6 +276,16 @@ urlpatterns = [
         name="change_address_view"
     ),
     url(
+        '^portal/camunda_change_address/(?P<message_source>(STAFF|APPLICANT))/(?P<process_instance_id>[^/.]+)/$',
+        views.CamundaChangeAddressView.as_view(),
+        name="camunda_change_address_view"
+    ),
+    url(
+        '^portal/update_address_service_request/(?P<pk>[^/.]+)/$',
+        views.UpdateAddressServiceRequestView.as_view(),
+        name="update_address_service_request"
+    ),
+    url(
         '^portal/change_phone_number/(?P<pk>[^/.]+)/$',
         views.ChangePhoneNumberView.as_view(),
         name="change_phone_number"
