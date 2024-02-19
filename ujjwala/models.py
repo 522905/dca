@@ -112,6 +112,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		max_length=128, choices=UjjwalaV2ApplicationAvailabilityChannel.choices, blank=True, null=True
 	)
 	address_updated = models.BooleanField(default=False, blank=True, null=True)
+	address_updated_on = models.DateTimeField(blank=True, null=True)
 	# form_fill_area = models.ForeignKey(
 	# 	FormFillArea, on_delete=models.CASCADE, related_name='form_fill_area', null=True, blank=True
 	# )
@@ -126,6 +127,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	ekyc_last_attempt_log = models.TextField(null=True, blank=True)
 	tags = TaggableManager()
 	marriage_date = models.DateField(null=True, blank=True)
+	address_verified = models.BooleanField(null=True, blank=True)
 
 	class Meta:
 		permissions = (
