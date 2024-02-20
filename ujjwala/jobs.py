@@ -910,7 +910,7 @@ def move_application_for_audit_by_id(application_id):
 def upload_recreated_physical_document_url(pre_inspection_id, upload_url):
     from ujjwala.models import PreInspectionDocuments
 
-    pi_doc_obj = PreInspectionDocuments.objects.filter(parent_id=pre_inspection_id, type="PHYSICAL_LEGAL_DOCUMENT")
+    pi_doc_obj = PreInspectionDocuments.objects.filter(parent_id=pre_inspection_id, type="PHYSICAL_LEGAL_DOCUMENT").first()
 
     if pi_doc_obj:
         pi_doc_obj.link = upload_url

@@ -14,12 +14,14 @@ from django.utils.safestring import mark_safe
 from django_currentuser.middleware import get_current_user
 from django_fsm import FSMField, transition, GET_STATE
 from django_fsm_log.decorators import fsm_log_description, fsm_log_by
+from django_fsm_log.models import StateLog
 from organizations.models import Organization
 from taggit.managers import TaggableManager
 
 from communication_log.models import CommunicationLog
 from teams.models import ServiceAreaHex
 from teams.models import ServiceLocations, ServiceArea, FormFillArea
+from ujjwala.camunda_functions import start_process_in_camunda_v2
 from ujjwala.communication_models import UjjwalaWhatsappCommunication
 from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMobileStatusEnum, \
 	UjjwalaV2ApplicationStatus, UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, \
@@ -1252,12 +1254,62 @@ class PreInspection(models.Model):
 
 		self.save()
 
-		create_txn_status_job_function = partial(
-			django_rq.enqueue,
-			"ujjwala.jobs.compress_pre_inspection_documents",
-			parent_id=self.id
+		state_log = StateLog.objects.filter(source_state=PreInspectionStatusEnum.CHANGE_ADDRESS,
+		                                    content_type_id=ContentType.objects.get(
+			                                    app_label='ujjwala', model='preinspection'
+		                                    ),
+		                                    object_id=self.id).first()
+
+		safety_audio = self.documents.filter(type=UjjwalaApplicationDocumentsEnum.SAFETY_AUDIO).first()
+
+		family_members = []
+
+		for family_member in self.parent.family_members.all():
+			family_members.append({
+				"relation": family_member.relation,
+				"name": family_member.name,
+				'dob': family_member.dob,
+				'uid_no': family_member.uid_no,
+				"uid_front_link": family_member.uid_front_link,
+				"uid_back_link": family_member.uid_back_link,
+			})
+
+		variables = {
+			"variables":
+				{
+					"preinspection_id": {"value": self.id, "type": "String"},
+					"address_json": {"value": json.dumps(self.parent.address_json), "type": "String"},
+					"old_address_json": {"value": json.dumps(state_log.description) if state_log else "", "type": "String"},
+					"latitude": {"value": self.latitude, "type": "String"},
+					"longitude": {"value": self.longitude, "type": "String"},
+					"accuracy": {"value": self.accuracy, "type": "String"},
+					"application_id": {"value": self.parent_id, "type": "String"},
+					"name": {"value": self.parent.name, "type": "String"},
+					"kitchen_photo": {"value": self.documents.get(type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO).link},
+					"main_gate_photo": {"value": self.documents.get(type=UjjwalaApplicationDocumentsEnum.MAIN_GATE).link},
+					"safety_audio": {"value": safety_audio.link if safety_audio else ""},
+					"mobile": {"value": self.parent.contact_mobile},
+					"family_members": {"value": json.dumps(family_members)}
+				}
+		}
+
+		if not self.address_updated:
+			variables['variables']['action'] = {"value": self.id, "type": "String"}
+
+		# start_process_in_camunda_v2('Process_preinspection', variables)
+		create_camunda_preinspection_review_function = partial(
+			start_process_in_camunda_v2,
+			process_definition_key='Process_preinspection',
+			variables=variables
 		)
-		transaction.on_commit(create_txn_status_job_function)
+		transaction.on_commit(create_camunda_preinspection_review_function)
+
+		# create_txn_status_job_function = partial(
+		# 	django_rq.enqueue,
+		# 	"ujjwala.jobs.compress_pre_inspection_documents",
+		# 	parent_id=self.id
+		# )
+		# transaction.on_commit(create_txn_status_job_function)
 
 	@fsm_log_description
 	@fsm_log_by
@@ -1941,3 +1993,4 @@ def dummy():
 
 	for obj in FamilyMembers.objects.filter(uid_front_link__contains='tus.', uid_back_link__contains='tus.'):
 		print(obj.id)
+
