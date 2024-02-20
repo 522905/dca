@@ -1345,26 +1345,26 @@ class PreInspection(models.Model):
 				ci_obj.pending_quantity = product_quantity_map.get(self.parent.product, 0)
 				ci_obj.save()
 
-				# Bucket Name: ujjwaladocuments
-				physical_legal_document = download_ujjwala_physical_legal_docs(self.parent)
-				upload_url = upload_file_to_minio_bucket(
-					physical_legal_document,
-					"ujjwaladocuments",
-					"ujjwala_{}_physical_legal_document".format(self.parent_id)
-				)
-				PreInspectionDocuments.objects.create(
-					type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT,
-					link=upload_url,
-					parent=self
-				)
-
-				self.parent.event_legal_documents_upload_channel_whatsapp()
-				create_job_function = partial(
-					django_rq.enqueue,
-					"ujjwala.jobs.is_application_ready_for_disbursement",
-					args=(self.parent.id,)
-				)
-				transaction.on_commit(create_job_function)
+				# # Bucket Name: ujjwaladocuments
+				# physical_legal_document = download_ujjwala_physical_legal_docs(self.parent)
+				# upload_url = upload_file_to_minio_bucket(
+				# 	physical_legal_document,
+				# 	"ujjwaladocuments",
+				# 	"ujjwala_{}_physical_legal_document".format(self.parent_id)
+				# )
+				# PreInspectionDocuments.objects.create(
+				# 	type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT,
+				# 	link=upload_url,
+				# 	parent=self
+				# )
+				#
+				# self.parent.event_legal_documents_upload_channel_whatsapp()
+				# create_job_function = partial(
+				# 	django_rq.enqueue,
+				# 	"ujjwala.jobs.is_application_ready_for_disbursement",
+				# 	args=(self.parent.id,)
+				# )
+				# transaction.on_commit(create_job_function)
 		else:
 			rejected_reasons = ",".join(
 				[PreInspectionRejectionReasonsEnum.__dict__.get('_value2label_map_').get(i) for i in
