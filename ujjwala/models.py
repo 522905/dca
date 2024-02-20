@@ -1698,7 +1698,7 @@ class ConnectionDisbursement(models.Model):
 		create_txn_status_job_function = partial(
 			django_rq.enqueue,
 			"ujjwala.jobs.compress_connection_disbursement_documents",
-			parent_id=self.id
+			ci_id=self.id
 		)
 		transaction.on_commit(create_txn_status_job_function)
 
