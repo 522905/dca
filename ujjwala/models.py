@@ -1254,11 +1254,13 @@ class PreInspection(models.Model):
 
 		self.save()
 
-		state_log = StateLog.objects.filter(source_state=PreInspectionStatusEnum.CHANGE_ADDRESS,
-		                                    content_type_id=ContentType.objects.get(
-			                                    app_label='ujjwala', model='preinspection'
-		                                    ),
-		                                    object_id=self.id).first()
+		state_log = None
+		if self.address_updated:
+			state_log = StateLog.objects.filter(source_state=PreInspectionStatusEnum.CHANGE_ADDRESS,
+			                                    content_type_id=ContentType.objects.get(
+				                                    app_label='ujjwala', model='preinspection'
+			                                    ),
+			                                    object_id=self.id).first()
 
 		safety_audio = self.documents.filter(type=UjjwalaApplicationDocumentsEnum.SAFETY_AUDIO).first()
 
@@ -1268,7 +1270,7 @@ class PreInspection(models.Model):
 			family_members.append({
 				"relation": family_member.relation,
 				"name": family_member.name,
-				'dob': family_member.dob,
+				'dob': family_member.dob.strftime("%Y-%m-%d"),
 				'uid_no': family_member.uid_no,
 				"uid_front_link": family_member.uid_front_link,
 				"uid_back_link": family_member.uid_back_link,
@@ -1289,7 +1291,8 @@ class PreInspection(models.Model):
 					"main_gate_photo": {"value": self.documents.get(type=UjjwalaApplicationDocumentsEnum.MAIN_GATE).link},
 					"safety_audio": {"value": safety_audio.link if safety_audio else ""},
 					"mobile": {"value": self.parent.contact_mobile},
-					"family_members": {"value": json.dumps(family_members)}
+					"family_members": {"value": json.dumps(family_members)},
+					"action": {"value": 'ADDRESS_ACCEPT' if not self.address_updated else ''}
 				}
 		}
 
