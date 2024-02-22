@@ -14,11 +14,13 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.template.defaulttags import url
+from django.conf.urls import url
 from django.urls import path, include
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic import RedirectView
 from material.frontend import urls as frontend_urls
+
+from ujjwala.views import CamundaChangeAddressView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -37,6 +39,12 @@ urlpatterns = [
     path(r'comments/', include('django_comments_xtd.urls')),
     path(r'', RedirectView.as_view(url='/ujjwala/portal/user_dashboard/', permanent=False)),
     path(r'', include(frontend_urls)),
+    # path(r'portal/camunda_change_address/APPLICANT/',
+    #      RedirectView.as_view(url='ujjwala/portal/camunda_change_address/APPLICANT/'))
+    url(
+        '^portal/camunda_change_address/(?P<message_source>(STAFF|APPLICANT))/(?P<process_instance_id>[^/.]+)/(?P<agent>[^/.]+)/$',
+        CamundaChangeAddressView.as_view()
+    ),
 ]
 
 
