@@ -102,10 +102,10 @@ urlpatterns = [
          name="address_review_list"
     ),
 
-    path('portal/pre-inspection/pre_inspection_review_list/',
-         views.PreInspectionReviewListView.as_view(),
-         name="pre_inspection_review_list"
-    ),
+    # path('portal/pre-inspection/pre_inspection_review_list/',
+    #      views.PreInspectionReviewListView.as_view(),
+    #      name="pre_inspection_review_list"
+    # ),
 
     path('portal/disbursement/review_form_abc/',
          views.ConnectionDisbursementReviewFormAbcListView.as_view(),
@@ -221,11 +221,11 @@ urlpatterns = [
         name="pre_inspection_form_view"
     ),
 
-    url(
-        '^portal/pre-inspection-review/(?P<pk>[^/.]+)/$',
-        views.PreInspectionReviewView.as_view(),
-        name="pre_inspection_review"
-    ),
+    # url(
+    #     '^portal/pre-inspection-review/(?P<pk>[^/.]+)/$',
+    #     views.PreInspectionReviewView.as_view(),
+    #     name="pre_inspection_review"
+    # ),
 
     url(
         '^portal/address-review/(?P<pk>[^/.]+)/$',
