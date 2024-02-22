@@ -39,6 +39,7 @@ from ujjwala.forms import ConnectionStatusApproved, ApplicationRejected, \
 from ujjwala.ujjwala_functions import download_ujjwala_physical_legal_docs, \
 	fsm_custom_audit_points_description, re_create_legal_docs, get_last_valid_status_for_application, \
 	get_review_to_target_status
+from ujjwala.vici_functions import add_lead_to_vicidial_list
 from utils.global_functions import upload_file_to_minio_bucket, old_address_to_description, \
 	old_walk_in_to_description
 
@@ -1372,6 +1373,14 @@ class PreInspection(models.Model):
 			rejected_reasons = ",".join(
 				[PreInspectionRejectionReasonsEnum.__dict__.get('_value2label_map_').get(i) for i in
 				 kwargs.get('rejected_reasons')])
+			if PreInspectionRejectionReasonsEnum.CONDITION_LOCATION_MISMATCH in kwargs.get('rejected_reasons'):
+				django_rq.enqueue(add_lead_to_vicidial_list, args=(
+					'1014', self.parent.contact_mobile, self.parent.name, self.parent.id,
+				))
+			else:
+				django_rq.enqueue(add_lead_to_vicidial_list, args=(
+					'1012', self.parent.contact_mobile, self.parent.name, self.parent.id,
+				))
 			self.parent.event_whatsapp_pre_inspection_reject(self.id, rejected_reasons)
 
 
@@ -1611,7 +1620,11 @@ class ConnectionDisbursement(models.Model):
 			# self.parent.save()
 		else:
 			self.documents.all().delete()
+			django_rq.enqueue(add_lead_to_vicidial_list, args=(
+				'1009', self.parent.contact_mobile, self.parent.name, self.parent.id,
+			))
 			self.parent.event_legal_documents_reupload_channel_whatsapp(kwargs.get('description'))
+
 
 	@fsm_log_description
 	@fsm_log_by
