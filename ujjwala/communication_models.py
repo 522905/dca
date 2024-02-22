@@ -426,7 +426,7 @@ class UjjwalaWhatsappCommunication(object):
 				],
 				"buttonValues": {
 					"0": [
-						f"portal/camunda_change_address/APPLICANT/{process_instance_id}/self/"
+						f"ujjwala/portal/camunda_change_address/APPLICANT/{process_instance_id}/self/"
 						# "ujjwala/portal/update_address/{}/".format(self.id)
 					]
 				}

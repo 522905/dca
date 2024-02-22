@@ -1015,8 +1015,8 @@ class FamilyMembers(models.Model):
 		<a href="{}" target="blank">View Ori.</a> UID Front <a href="{}{}" target="blank">Download Comp.</a><br><br>
 		<a href="{}" target="blank">View Ori.</a> UID Back <a href="{}{}" target="blank">Download Comp.</a>
 		'''.format(
-			self.uid_front_link, settings.THUMBOR_LOCAL_URL, self.uid_front_link,
-			self.uid_back_link, settings.THUMBOR_LOCAL_URL, self.uid_back_link,
+			self.uid_front_link, settings.THUMBOR_LOCAL_COMPRESSION_URL, self.uid_front_link,
+			self.uid_back_link, settings.THUMBOR_LOCAL_COMPRESSION_URL, self.uid_back_link,
 		)
 		return mark_safe(html)
 
@@ -1033,7 +1033,7 @@ class UjjwalaApplicationDocuments(models.Model):
 	def download_links(self):
 		html = '''
 		<a href="{}" target="blank">Ori. File</a>&nbsp||&nbsp<a href="{}{}" target="blank">Download Comp.</a>
-		'''.format(self.link, settings.THUMBOR_LOCAL_URL, self.link)
+		'''.format(self.link, settings.THUMBOR_LOCAL_COMPRESSION_URL, self.link)
 		return mark_safe(html)
 
 
@@ -1342,12 +1342,13 @@ class PreInspection(models.Model):
 			self.parent.save()
 
 			if self.parent.status != UjjwalaV2ApplicationStatus.AUDIT_APPLICATION:
-				ci_obj = ConnectionDisbursement.objects.get_or_create(
-					parent=self.parent
-				)[0]
-				ci_obj.mechanic = self.mechanic
-				ci_obj.pending_quantity = product_quantity_map.get(self.parent.product, 0)
-				ci_obj.save()
+				pass
+				# ci_obj = ConnectionDisbursement.objects.get_or_create(
+				# 	parent=self.parent
+				# )[0]
+				# ci_obj.mechanic = self.mechanic
+				# ci_obj.pending_quantity = product_quantity_map.get(self.parent.product, 0)
+				# ci_obj.save()
 
 				# # Bucket Name: ujjwaladocuments
 				# physical_legal_document = download_ujjwala_physical_legal_docs(self.parent)
