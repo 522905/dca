@@ -4013,6 +4013,15 @@ class CamundaChangeAddressView(FormView):
 		process_instance_id = kwargs.get('process_instance_id')
 		url = f"https://camunda.dca.arungas.com/engine-rest/process-instance/{process_instance_id}/variables"
 		self.variables = requests.get(url).json()
+		if self.variables.get('camunda_address_updated'):
+			return render(
+				self.request,
+				"ujjwala/response.html",
+				{
+					"heading": "Update Address",
+					"message": "Address Already Updated. Waiting For Review."
+				}
+			)
 		return super().dispatch(request, *args, **kwargs)
 
 	def get_object(self, queryset=None):
@@ -4056,7 +4065,8 @@ class CamundaChangeAddressView(FormView):
 				# "user_id": {"value": user.id if user else '', "type": "String"},
 				# "user_name": {"value": f"{user.first_name} {user.last_name}" if user else '', "type": "String"},
 				"message_source": {"value": f"{self.kwargs.get('message_source')}", "type": "String"},
-				"agent": {"value": f"{self.kwargs.get('agent', '').replace('+', '')}", "type": "String"}
+				"agent": {"value": f"{self.kwargs.get('agent', '').replace('+', '')}", "type": "String"},
+				"camunda_address_updated": {"value": True, "type": "Boolean"}
 			}
 		})
 		res.raise_for_status()
