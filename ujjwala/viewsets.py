@@ -307,7 +307,7 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             ).first()
 
             if pre_inspection:
-                if pre_inspection.status == 'ACCEPTED':
+                if pre_inspection.status in (PreInspectionStatusEnum.ACCEPTED, PreInspectionStatusEnum.SUBMITTED):
                     pre_inspection.parent_id = response.data.get('id')
                     pre_inspection.save()
                 else:
