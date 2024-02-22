@@ -407,6 +407,59 @@ class UjjwalaWhatsappCommunication(object):
 		return data.get('result', '')
 
 
+	def event_whatsapp_camunda_update_address(self, process_instance_id):
+		body_text = {
+			"countryCode": "+91",
+			"phoneNumber": self.contact_mobile,
+			"type": "Template",
+			"traits": {
+				"name": self.name,
+			},
+			"template": {
+				"name": "nic_error_update_address",
+				"languageCode": "hi",
+				"headerValues": [
+					# "Alert",  #
+				],
+				"bodyValues": [
+					self.name,
+				],
+				"buttonValues": {
+					"0": [
+						f"portal/camunda_change_address/APPLICANT/{process_instance_id}/self/"
+						# "ujjwala/portal/update_address/{}/".format(self.id)
+					]
+				}
+			}
+		}
+
+		ujjwala_v2_application_content_type = ContentType.objects.get(
+			app_label='ujjwala', model='ujjwalav2application'
+		)
+		data = track.client.post(
+			api_key=settings.INTERAKT_API_KEY,
+			path="/v1/public/message/",
+			body=body_text
+		).json()
+
+		if data.get('result', ''):
+			CommunicationLog.objects.create(
+				content_type=ujjwala_v2_application_content_type,
+				object_id=self.pk,
+				channel_subscriber=self.contact_mobile,
+				event="nic_error_update_address", channel="whatsapp",
+				message_id=data.get('id')
+			)
+
+		res = requests.post(
+			"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
+			"&function=add_lead&phone_number={}&list_id=1106&first_name={}&last_name={}".format(
+				self.contact_mobile, self.name, self.pk
+			)
+		)
+		return data.get('result', '')
+
+
 	def event_whatsapp_pre_inspection_type_self(self, pre_inspection_id):
 		body_text = {
 			"countryCode": "+91",
