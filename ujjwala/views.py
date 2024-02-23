@@ -4013,7 +4013,7 @@ class CamundaChangeAddressView(FormView):
 		process_instance_id = kwargs.get('process_instance_id')
 		url = f"https://camunda.dca.arungas.com/engine-rest/process-instance/{process_instance_id}/variables?deserializeValues=false"
 		self.variables = requests.get(url).json()
-		if self.variables.get('camunda_address_updated'):
+		if self.variables['camunda_address_updated']['value']:
 			return render(
 				self.request,
 				"ujjwala/response.html",
