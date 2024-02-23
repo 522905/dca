@@ -47,7 +47,8 @@ def add_lead_to_vicidial_list(list_id, contact_mobile, name, object_id):
 def delete_lead_from_vicidial_list(list_id, contact_mobile):
 	res = requests.post(
 		"http://192.168.168.3/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
-		"&function=update_lead&search_location=LIST&search_method=PHONE_NUMBER&phone_number={}&list_id={}".format(
+		"&function=update_lead&search_location=LIST&search_method=PHONE_NUMBER&delete_lead=Y"
+		"&phone_number={}&list_id={}".format(
 			contact_mobile, list_id)
 	)
 	return res
