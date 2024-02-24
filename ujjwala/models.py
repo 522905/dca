@@ -1293,7 +1293,8 @@ class PreInspection(models.Model):
 					"safety_audio": {"value": safety_audio.link if safety_audio else ""},
 					"mobile": {"value": self.parent.contact_mobile},
 					"family_members": {"value": json.dumps(family_members)},
-					"action": {"value": 'ADDRESS_ACCEPT' if not self.address_updated else ''}
+					"action": {"value": 'ADDRESS_ACCEPT' if not self.address_updated else ''},
+					"source": {"value": 'PREINSPECTION', "type": "String"}
 				}
 		}
 
