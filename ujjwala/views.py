@@ -4054,14 +4054,15 @@ class CamundaChangeAddressView(FormView):
 		obj = self.get_object()
 		context.update({
 			"obj": obj,
-			"old_address_json": self.variables['old_address_json']
+			"old_address_json": self.variables['old_address_json'] if self.kwargs.get('message_source') == 'STAFF' else {}
 		})
 		return context
 
 	def get_form_kwargs(self):
 		kwargs = super().get_form_kwargs()
 		# To Be Fixed In Embedded Form
-		kwargs['initial'] = json.loads(self.variables['address_json']['value'])
+		kwargs['initial'] = json.loads(self.variables['address_json']['value']) if self.kwargs.get(
+			'message_source') == 'STAFF' else {}
 		return kwargs
 
 	def form_valid(self, form):
