@@ -484,10 +484,12 @@ def compress_application_documents(application_id):
 
     # PreInspection Documents
     if PreInspection.objects.filter(parent_id=application_id).exists():
-        compress_pre_inspection_documents(application_id)
+        pi_obj = PreInspection.objects.get(parent_id=application_id)
+        compress_pre_inspection_documents(pi_obj.id)
 
     if ConnectionDisbursement.objects.filter(parent_id=application.id).exists():
-        compress_connection_disbursement_documents(application_id)
+        ci_obj = ConnectionDisbursement.objects.get(parent_id=application_id)
+        compress_connection_disbursement_documents(ci_obj.id)
 
 
 def compress_pre_inspection_documents(pi_id):
