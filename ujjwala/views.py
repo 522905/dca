@@ -562,20 +562,21 @@ class PreInspectionReviewView(FormView, ApplicationView):
 		return reverse('ujjwala:pre_inspection_review_list')
 
 	def dispatch(self, request, *args, **kwargs):
-		user = get_current_user()
-		if not is_member_of_reviewer_group(user):
-			return render(request, 'ujjwala/no_permissions.html')
-		application_id = request.GET.get('application_id', '')
-		if application_id:
-			pre_inspection = self.get_object()
-			if pre_inspection.status != PreInspectionStatusEnum.SUBMITTED:
-				messages.add_message(
-					request, messages.ERROR, "Application Id: {} - {}".format(
-						pre_inspection.parent_id, pre_inspection.get_status_display()
-					)
-				)
-				return redirect('ujjwala:installation_review')
-		return super().dispatch(request, *args, **kwargs)
+		return HttpResponse(content="Not Allowed")
+		# user = get_current_user()
+		# if not is_member_of_reviewer_group(user):
+		# 	return render(request, 'ujjwala/no_permissions.html')
+		# application_id = request.GET.get('application_id', '')
+		# if application_id:
+		# 	pre_inspection = self.get_object()
+		# 	if pre_inspection.status != PreInspectionStatusEnum.SUBMITTED:
+		# 		messages.add_message(
+		# 			request, messages.ERROR, "Application Id: {} - {}".format(
+		# 				pre_inspection.parent_id, pre_inspection.get_status_display()
+		# 			)
+		# 		)
+		# 		return redirect('ujjwala:installation_review')
+		# return super().dispatch(request, *args, **kwargs)
 
 	def get_object(self, queryset=None):
 		try:
