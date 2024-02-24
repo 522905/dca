@@ -1264,7 +1264,7 @@ class UjjwalaApplicationGenerateOtpForm(forms.Form):
 			content_type, pk, transition = None, None, None
 
 		otp_obj = Otp.objects.filter(
-			mobile=self.data.get('mobile'), content_type=content_type, object_id=pk, transition=transition
+			mobile=self.data.get('mobile'), content_type=content_type, object_id=pk, transition=transition, closed=False
 		).order_by('-created_on').first()
 
 		if otp_obj and now() < otp_obj.valid_till:
