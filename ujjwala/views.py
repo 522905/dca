@@ -3546,6 +3546,17 @@ class GetEKYCStatusFromSDMS(View):
 					"message": "Consumer Id Does Not Exist. Please Retry After Few Days (Pre-Suraksha Accepted)"
 				}
 			)
+
+		if not application.address_json:
+			return render(
+				self.request,
+				"ujjwala/response.html",
+				{
+					"heading": "Address Update",
+					"message": "Please Update Address Then Proceed"
+				}
+			)
+
 		result = is_process_exist_in_camunda('process_get_ekyc_status_from_sdms', 'dca_id', application.id)
 		user = get_current_user()
 		if result == 0:
