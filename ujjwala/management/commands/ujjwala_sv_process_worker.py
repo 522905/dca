@@ -12,6 +12,7 @@ from django.core.management.base import BaseCommand
 from ujjwala.camunda_functions import download_file_variable_data, calculate_download_sv_wait_timing, \
 	start_ujjwala_cld_dedup_in_camunda, fetch_payment_profile_variables, get_activity_instance_count, \
 	enrich_omc_rejection_details, remove_sv_record
+from ujjwala.camunda_worker_tasks import variables_to_update_for_preinspection
 from ujjwala.enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum
 from ujjwala.jobs import ensure_db_connection, do_primary_omc_dedupe_check, move_application_for_audit, \
 	compress_application_documents
@@ -441,7 +442,11 @@ def handle_task(task: ExternalTask) -> TaskResult:
 		elif topic == 'dedup_eval#compress_docs':
 			application_id = task.get_variable('application_id')
 			compress_application_documents(application_id)
-			return task.complete()
+			variables_to_update = variables_to_update_for_preinspection(task)
+			if variables_to_update:
+				return task.complete(global_variables=variables_to_update)
+			else:
+				return task.complete()
 		elif topic == 'dedup_eval#enrich_rejection':
 			return task.complete()
 	except Exception as e:
