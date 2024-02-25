@@ -4022,20 +4022,24 @@ class CamundaChangeAddressView(FormView):
 	variables = None
 
 	def dispatch(self, request, *args, **kwargs):
-		process_instance_id = kwargs.get('process_instance_id')
-		url = f'http://192.168.171.15:38080/engine-rest/process-instance/{process_instance_id}/activity-instances'
+		pi_id = kwargs.get('process_instance_id')
+		url = f'http://192.168.171.15:38080/engine-rest/process-instance/{pi_id}/activity-instances'
 		res = requests.get(url)
 		if res.status_code != 200:
 			return HttpResponse("Process Instance Could Not Found")
 
+		relevent_activity = False
 		for activity_instance in res.json()['childActivityInstances']:
-			if activity_instance['id'] != ['Event_review_address_new_address_received', 'Event_new_address_received']:
-				return HttpResponse(f"Process Instance: {activity_instance['name']}")
+			if activity_instance['activityId'] not in ['Event_review_address_new_address_received', 'Event_new_address_received']:
+				relevent_activity = True
+		if not relevent_activity:
+			return HttpResponse(f"Process Instance: {activity_instance['name']}")
 
-		url = f"https://camunda.dca.arungas.com/engine-rest/process-instance/{process_instance_id}/variables?deserializeValues=false"
+		url = f"https://camunda.dca.arungas.com/engine-rest/process-instance/{pi_id}/variables?deserializeValues=false"
 		self.variables = requests.get(url).json()
 		if self.variables.get('camunda_address_updated', {}).get('value'):
-			return HttpResponse(f"Address Already Filled By Customer {json.loads(self.variables.get('address_json', {}).get('value', {}))}")
+			return HttpResponse(
+				f"Address Already Filled By Customer {json.loads(self.variables.get('address_json', {}).get('value', {}))}")
 		return super().dispatch(request, *args, **kwargs)
 
 	def get_object(self, queryset=None):
