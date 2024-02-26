@@ -51,36 +51,34 @@ def handle_task(task: ExternalTask) -> TaskResult:
 			if action == 'PREINSPECTION_ACCEPT':
 				preinspection_create_legal_docs(preinspection_id)
 			return task.complete()
-		elif topic == 'Process_preinspection#add_lead_in_vicidial':
-			preinspection_id = task.get_variable('preinspection_id')
-			preinspection_add_lead_to_vicidial(preinspection_id, task.get_process_instance_id())
-			return task.complete(global_variables={
-				'camunda_address_updated': {"type": "Boolean", "value": False}
-			})
-		elif topic == 'Process_preinspection#delete_lead_from_vicidial':
-			preinspection_id = task.get_variable('preinspection_id')
+		# elif topic == 'Process_preinspection#delete_lead_from_vicidial':
+		# 	preinspection_id = task.get_variable('preinspection_id')
+		# 	contact_mobile = task.get_variable('contact_mobile')
+		# 	preinspection_delete_lead_from_vicidial(preinspection_id, contact_mobile)
+		# 	return task.complete()
+		elif topic in ['Process_review_address#add_lead_in_vicidial', 'Process_preinspection#add_lead_in_vicidial']:
 			contact_mobile = task.get_variable('contact_mobile')
-			preinspection_delete_lead_from_vicidial(preinspection_id, contact_mobile)
-			return task.complete()
-		elif topic == 'Process_review_address#add_lead_in_vicidial':
-			contact_mobile = task.get_variable('contact_mobile')
+			if not contact_mobile:
+				contact_mobile = task.get_variable('mobile')
 			name = task.get_variable('name')
 			application_id = task.get_variable('application_id')
 			process_instance_id = task.get_process_instance_id()
-			list_id = task.get_variable('list_id')
+			list_id = 1201
 			res = review_address_add_lead_to_vicidial(list_id, contact_mobile, name, application_id, process_instance_id)
 
 			if not "success" in res.lower():
 				raise Exception("res")
 
-			return task.complete()
-		elif topic == 'Process_review_address#delete_lead_from_vicidial':
-			list_id = task.get_variable('list_id')
-			contact_mobile = task.get_variable('contact_mobile')
-			review_address_delete_lead_from_vicidial(list_id, contact_mobile)
 			return task.complete(global_variables={
 				'camunda_address_updated': {"type": "Boolean", "value": False}
 			})
+		elif topic in ['Process_review_address#delete_lead_from_vicidial', 'Process_preinspection#delete_lead_from_vicidial']:
+			list_id = 1201
+			contact_mobile = task.get_variable('contact_mobile')
+			if not contact_mobile:
+				contact_mobile = task.get_variable('mobile')
+			review_address_delete_lead_from_vicidial(list_id, contact_mobile)
+			return task.complete()
 		elif topic == 'Process_review_address#update_in_dca':
 			application_id = task.get_variable('application_id')
 			address_json = json.loads(task.get_variable('address_json'))
