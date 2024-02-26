@@ -1154,8 +1154,8 @@ class PreInspection(models.Model):
 		field=status,
 		source=[
 			PreInspectionStatusEnum.CHANGE_ADDRESS,
-			PreInspectionStatusEnum.REJECTED,
-			PreInspectionStatusEnum.REDO,
+			# PreInspectionStatusEnum.REJECTED,
+			# PreInspectionStatusEnum.REDO,
 		],
 		target=PreInspectionStatusEnum.KITCHEN_PHOTO,
 		custom=dict(short_description='Change Address', admin=False),
@@ -1291,7 +1291,7 @@ class PreInspection(models.Model):
 					"kitchen_photo": {"value": self.documents.get(type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO).link},
 					"main_gate_photo": {"value": self.documents.get(type=UjjwalaApplicationDocumentsEnum.MAIN_GATE).link},
 					"safety_audio": {"value": safety_audio.link if safety_audio else ""},
-					"mobile": {"value": self.parent.contact_mobile},
+					"contact_mobile": {"value": self.parent.contact_mobile},
 					"family_members": {"value": json.dumps(family_members)},
 					"action": {"value": 'ADDRESS_ACCEPT' if not self.address_updated else ''},
 					"source": {"value": 'PREINSPECTION', "type": "String"}
@@ -1332,7 +1332,7 @@ class PreInspection(models.Model):
 			]
 		),
 		custom=dict(
-			short_description='Pre-Inspection Review', admin=True, form=PreInspectionReviewAdminForm
+			short_description='Pre-Inspection Review', admin=False, form=PreInspectionReviewAdminForm
 		),
 	)
 	def pre_inspection_review(self, *args, **kwargs):
