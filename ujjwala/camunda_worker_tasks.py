@@ -1,3 +1,4 @@
+import datetime
 import json
 from functools import partial
 
@@ -150,6 +151,8 @@ def review_address_update_in_dca(application_id, address_json, agent=''):
 
 	application.address_json = address_json
 	application.address_verified = True
+	application.address_verified_on = datetime.datetime.now()
+	application.address_verified_by = agent
 	application.save()
 
 	ci_obj: ConnectionDisbursement = ConnectionDisbursement.objects.filter(parent_id=application_id).first()

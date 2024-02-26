@@ -4080,7 +4080,7 @@ class CamundaChangeAddressView(FormView):
 				"old_address_json": {"value": json.dumps(self.variables.get('address_json').get('value')), "type": "String"},
 				"address_json": {"value": json.dumps(data['address_json']), "type": "String"},
 				"message_source": {"value": f"{self.kwargs.get('message_source')}", "type": "String"},
-				"agent": {"value": f"{self.kwargs.get('agent', '').replace('+', '')}", "type": "String"},
+				"agent": {"value": f"{self.kwargs.get('agent', '').replace('+', ' ')}", "type": "String"},
 				"camunda_address_updated": {"value": True, "type": "Boolean"}
 			}
 		})

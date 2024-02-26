@@ -131,6 +131,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	tags = TaggableManager()
 	marriage_date = models.DateField(null=True, blank=True)
 	address_verified = models.BooleanField(null=True, blank=True)
+	address_verified_by = models.CharField(max_length=256, null=True, blank=True)
+	address_verified_on = models.DateTimeField(null=True, blank=True)
 
 	class Meta:
 		permissions = (
