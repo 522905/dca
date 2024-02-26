@@ -92,8 +92,19 @@ def preinspection_add_lead_to_vicidial(preinspection_id, process_instance_id):
 	from ujjwala.models import PreInspection
 
 	obj = PreInspection.objects.get(pk=preinspection_id)
-	obj.parent.event_whatsapp_camunda_update_address(process_instance_id)
 	add_lead_to_vicidial_list(VICIDIAL_LIST, obj.parent.contact_mobile, obj.parent.name, obj.parent_id)
+
+	res = requests.post(
+		"http://192.168.168.3/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
+		"&custom_fields=Y&function=add_lead&phone_number={}&phone_code=1&list_id={}"
+		"&first_name={}&last_name={}&process_instance_id={}".format(
+			obj.parent.contact_mobile,
+			VICIDIAL_LIST,
+			obj.parent.name, obj.parent_id, process_instance_id)
+	)
+	res.raise_for_status()
+	obj.parent.event_whatsapp_camunda_update_address(process_instance_id)
+	return res.text
 
 
 def preinspection_delete_lead_from_vicidial(preinspection_id, contact_mobile):
@@ -104,7 +115,6 @@ def review_address_add_lead_to_vicidial(list_id, contact_mobile, name, applicati
 	from ujjwala.models import UjjwalaV2Application
 
 	application_obj = UjjwalaV2Application.objects.get(id=application_id)
-	application_obj.event_whatsapp_camunda_update_address(process_instance_id)
 
 	res = requests.post(
 		"http://192.168.168.3/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
@@ -114,6 +124,8 @@ def review_address_add_lead_to_vicidial(list_id, contact_mobile, name, applicati
 			list_id,
 			name, application_id, process_instance_id)
 	)
+	res.raise_for_status()
+	application_obj.event_whatsapp_camunda_update_address(process_instance_id)
 	return res.text
 
 
