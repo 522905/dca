@@ -224,7 +224,7 @@ class ChangeAddressForm(forms.Form):
 	def save(self):
 		data = self.cleaned_data
 		obj = self.pre_inspection
-		old_address_json = "{}"
+		old_address_json = {}
 
 		if data['update_address']:
 			old_address_json = obj.parent.address_json

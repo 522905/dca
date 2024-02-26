@@ -1154,7 +1154,7 @@ class PreInspection(models.Model):
 		field=status,
 		source=[
 			PreInspectionStatusEnum.CHANGE_ADDRESS,
-			# PreInspectionStatusEnum.REJECTED,
+			PreInspectionStatusEnum.REJECTED,
 			# PreInspectionStatusEnum.REDO,
 		],
 		target=PreInspectionStatusEnum.KITCHEN_PHOTO,
