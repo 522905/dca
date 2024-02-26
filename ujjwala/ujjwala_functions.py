@@ -369,6 +369,9 @@ def download_ujjwala_legal_docs_to_upload(obj, signature=True):
 		uid_front_doc_file_extension = uid_front_descriptor.mime_type.split('/')[-1]
 		# uid_back_doc_file_extension = uid_back_descriptor.mime_type.split('/')[-1]
 
+		if uid_front_doc_file_extension not in ('jpg', 'jpeg'):
+			uid_front_doc_file_extension = 'jpg'
+
 		attachments.append(
 			('{}_uid_front.{}'.format(family_member.relation, uid_front_doc_file_extension), uid_front_doc_file)
 		)
