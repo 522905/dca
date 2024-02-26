@@ -1963,7 +1963,8 @@ def get_review_to_target_status(application_id):
 
 	application = UjjwalaV2Application.objects.get(pk=application_id)
 
-	if application.status == application.last_execution_state or not application.last_execution_state:
+	if application.last_execution_state in ['ADDRESS_CHANGE', 'REVIEW_ADDRESS']:
+	# if application.status == application.last_execution_state or not application.last_execution_state:
 		state_log = StateLog.objects.filter(object_id=application_id,
 		                                    content_type=ContentType.objects.get(app_label='ujjwala',
 		                                                                         model='ujjwalav2application')).exclude(
