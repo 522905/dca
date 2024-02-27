@@ -4071,7 +4071,11 @@ class CamundaChangeAddressView(FormView):
 
 	def form_valid(self, form):
 		data = form.clean()
-		address_change_source = self.variables.get('address_change_source', 'PREINSPECTION')
+		if self.variables.get('address_change_source'):
+			address_change_source = self.variables.get('address_change_source').get('value', '')
+		else:
+			address_change_source = 'PREINSPECTION'
+
 		url = f"http://192.168.171.15:38080/engine-rest/message"
 		res = requests.post(url, json={
 			"messageName": "Message_review_addressnew_address_received" \
