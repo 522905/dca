@@ -1300,9 +1300,6 @@ class PreInspection(models.Model):
 				}
 		}
 
-		if not self.address_updated:
-			variables['variables']['action'] = {"value": self.id, "type": "String"}
-
 		# start_process_in_camunda_v2('Process_preinspection', variables)
 		create_camunda_preinspection_review_function = partial(
 			start_process_in_camunda_v2,
