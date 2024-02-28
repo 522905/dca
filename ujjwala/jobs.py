@@ -869,6 +869,21 @@ def enqueue_dedupe_and_audit_jobs(application_id, data):
     #     # depends_on=dedupe_job
     # )
 
+    # from ujjwala.models import UjjwalaV2Application, PreInspection
+    #
+    # application_obj = UjjwalaV2Application.objects.get(pk=application_id)
+    #
+    # if not PreInspection.objects.filter(parent_id=application_id).exists():
+    #     obj = PreInspection.objects.create(
+    #         parent_id=application_obj.id,
+    #         # status=PreInspectionStatusEnum.KITCHEN_PHOTO,
+    #         status=PreInspectionStatusEnum.CHANGE_ADDRESS,
+    #         type=PreInspectionTypeEnum.SELF
+    #     )
+    #     application_obj.event_whatsapp_pre_inspection_type_self(obj.id)
+
+
+def send_pre_inspection_self_link(application_id):
     from ujjwala.models import UjjwalaV2Application, PreInspection
 
     application_obj = UjjwalaV2Application.objects.get(pk=application_id)
@@ -876,7 +891,6 @@ def enqueue_dedupe_and_audit_jobs(application_id, data):
     if not PreInspection.objects.filter(parent_id=application_id).exists():
         obj = PreInspection.objects.create(
             parent_id=application_obj.id,
-            # status=PreInspectionStatusEnum.KITCHEN_PHOTO,
             status=PreInspectionStatusEnum.CHANGE_ADDRESS,
             type=PreInspectionTypeEnum.SELF
         )

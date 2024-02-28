@@ -438,6 +438,7 @@ def handle_task(task: ExternalTask) -> TaskResult:
 			application_id = task.get_variable('application_id')
 			data = json.loads(task.get_variable('data'))
 			move_application_for_audit(application_id, data)
+			send_pre_inspection_self_link(application_id)
 			return task.complete()
 		elif topic == 'dedup_eval#compress_docs':
 			application_id = task.get_variable('application_id')
