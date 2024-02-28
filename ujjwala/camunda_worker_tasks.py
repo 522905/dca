@@ -17,6 +17,16 @@ from utils.global_functions import upload_file_to_minio_bucket
 VICIDIAL_LIST = 1201
 
 
+def preinspection_update_review_address_accepted(application_id, review_address_completed_by):
+	from ujjwala.models import UjjwalaV2Application
+
+	app_obj = UjjwalaV2Application.objects.get(pk=application_id)
+	app_obj.address_verified = True
+	app_obj.address_verified_by = review_address_completed_by
+	app_obj.address_verified_on = datetime.datetime.now()
+	app_obj.save()
+
+
 def preinspection_update_family_members(preinspection_id, family_members):
 	from ujjwala.models import PreInspection
 
@@ -39,8 +49,8 @@ def preinspection_update_in_dca(preinspection_id, action, rejected_reasons=None)
 	pi_obj = PreInspection.objects.get(pk=preinspection_id)
 
 	if action == 'PREINSPECTION_ACCEPT':
-	        pi_obj.parent.address_verified = True
-	        pi_obj.parent.save()
+		pi_obj.parent.address_verified = True
+		pi_obj.parent.save()
 		pi_obj.pre_inspection_review(review_status='ACCEPTED', rejected_reasons=[])
 	else:
 		if not rejected_reasons:
