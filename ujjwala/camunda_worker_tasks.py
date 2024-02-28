@@ -39,6 +39,8 @@ def preinspection_update_in_dca(preinspection_id, action, rejected_reasons=None)
 	pi_obj = PreInspection.objects.get(pk=preinspection_id)
 
 	if action == 'PREINSPECTION_ACCEPT':
+	        pi_obj.parent.address_verified = True
+	        pi_obj.parent.save()
 		pi_obj.pre_inspection_review(review_status='ACCEPTED', rejected_reasons=[])
 	else:
 		if not rejected_reasons:
@@ -150,10 +152,11 @@ def review_address_update_in_dca(application_id, address_json, agent=''):
 	), object_pk=application_id, site_id=1,	comment=comment)
 
 	application.address_json = address_json
-	application.address_verified = True
-	application.address_verified_on = datetime.datetime.now()
-	application.address_verified_by = agent
-	application.save()
+	if agent.lower() != 'self':
+		application.address_verified = True
+		application.address_verified_on = datetime.datetime.now()
+		application.address_verified_by = agent
+		application.save()
 
 	ci_obj: ConnectionDisbursement = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
 	if ci_obj.status in (
