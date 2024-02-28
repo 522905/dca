@@ -49,8 +49,6 @@ def preinspection_update_in_dca(preinspection_id, action, rejected_reasons=None)
 	pi_obj = PreInspection.objects.get(pk=preinspection_id)
 
 	if action == 'PREINSPECTION_ACCEPT':
-		pi_obj.parent.address_verified = True
-		pi_obj.parent.save()
 		pi_obj.pre_inspection_review(review_status='ACCEPTED', rejected_reasons=[])
 	else:
 		if not rejected_reasons:

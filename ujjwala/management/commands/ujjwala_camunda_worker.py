@@ -9,10 +9,12 @@ from django.core.management.base import BaseCommand
 
 from ujjwala.camunda_worker_tasks import preinspection_update_in_dca, preinspection_create_legal_docs, \
 	preinspection_add_lead_to_vicidial, preinspection_delete_lead_from_vicidial, preinspection_update_family_members, \
-	review_address_add_lead_to_vicidial, review_address_delete_lead_from_vicidial, review_address_update_in_dca
+	review_address_add_lead_to_vicidial, review_address_delete_lead_from_vicidial, review_address_update_in_dca, \
+	preinspection_update_review_address_accepted
 from ujjwala.jobs import ensure_db_connection
 
 EXTERNAL_TASK_TO_SUBSCRIBE = [
+	"Process_preinspection#update_review_address_accepted",
 	'Process_preinspection#update_in_dca',
 	'Process_preinspection#create_legal_docs',
 	'Process_preinspection#add_lead_in_vicidial',
@@ -37,7 +39,12 @@ def handle_task(task: ExternalTask) -> TaskResult:
 	try:
 		topic = task.get_topic_name()
 		print(topic)
-		if topic == "Process_preinspection#update_in_dca":
+		if topic == "Process_preinspection#update_review_address_accepted":
+			application_id = task.get_variable('application_id')
+			review_address_completed_by = task.get_variable('review_address_completed_by')
+			preinspection_update_review_address_accepted(application_id, review_address_completed_by)
+			return task.complete()
+		elif topic == "Process_preinspection#update_in_dca":
 			preinspection_id = task.get_variable('preinspection_id')
 			family_members = json.loads(task.get_variable('family_members'))
 			preinspection_update_family_members(preinspection_id, family_members)
