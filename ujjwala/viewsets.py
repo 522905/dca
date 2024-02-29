@@ -1089,6 +1089,25 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
             uid_list.append(record.uid_no)
         return JsonResponse(uid_list, safe=False)
 
+    @action(methods=['get'], detail=True, url_path='relation_data')
+    def relation_data(self, request: HttpRequest, *args, **kwargs):
+        application: UjjwalaV2Application = self.get_object()
+        uid_list = []
+        for record in application.family_members.filter().exclude(relation='SELF').all():
+            fm = {"uid": record.uid_no}
+            try:
+                fm["first_name"], fm["last_name"] = record.name.split(' ', 1)
+            except ValueError:
+                fm["first_name"], fm["last_name"] = record.name, '.'
+
+            if record.relation in ['HUSBAND', 'FATHER']:
+                fm["gender"] = "Male"
+            else:
+                fm["gender"] = "Female"
+            fm["dob"] = record.dob.strftime("%d-%b-%Y")
+            uid_list.append(fm)
+        return JsonResponse(uid_list, safe=False)
+
     @action(methods=['get'], detail=False, url_path='get_enrich_rejection_records')
     def get_enrich_rejection_records(self, request, *args, **kwargs):
         record_list = UjjwalaV2Application.objects.filter(
