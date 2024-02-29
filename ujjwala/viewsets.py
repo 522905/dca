@@ -1096,15 +1096,15 @@ class UjjwalaApplicationViewSet(viewsets.ModelViewSet):
         for record in application.family_members.filter().exclude(relation='SELF').all():
             fm = {"uid": record.uid_no}
             try:
-                fm["first_name"], fm["last_name"] = record.name.split(' ', 1)
+                f_name, l_name = record.name.split(' ', 1)
             except ValueError:
-                fm["first_name"], fm["last_name"] = record.name, '.'
+                f_name, l_name = record.name, '.'
 
-            if record.relation in ['HUSBAND', 'FATHER']:
-                fm["gender"] = "Male"
-            else:
-                fm["gender"] = "Female"
-            fm["dob"] = record.dob.strftime("%d-%b-%Y")
+            fm["Salutation"] = get_salutation(record)
+            fm["First Name"] = f_name.title()
+            fm["Last Name"] = l_name.title()
+            fm["Gender"] = record.get_gender()
+            fm["DOB"] = record.dob.strftime("%d-%b-%Y")
             uid_list.append(fm)
         return JsonResponse(uid_list, safe=False)
 
