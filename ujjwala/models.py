@@ -133,6 +133,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	address_verified = models.BooleanField(null=True, blank=True)
 	address_verified_by = models.CharField(max_length=256, null=True, blank=True)
 	address_verified_on = models.DateTimeField(null=True, blank=True)
+	sdms_address_version = models.CharField(default=2, max_length=32)
 
 	class Meta:
 		permissions = (
