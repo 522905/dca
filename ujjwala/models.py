@@ -1113,11 +1113,11 @@ class PreInspection(models.Model):
 		],
 		target=GET_STATE(
 			lambda self, **kwargs: \
-					PreInspectionStatusEnum.KITCHEN_PHOTO \
+					PreInspectionStatusEnum.CHANGE_ADDRESS \
 						if kwargs.get('convert_to_type') == 'self' \
 						else PreInspectionStatusEnum.ALLOCATED,
 			states=[
-				PreInspectionStatusEnum.KITCHEN_PHOTO,
+				PreInspectionStatusEnum.CHANGE_ADDRESS,
 				PreInspectionStatusEnum.ALLOCATED
 			]
 		),
@@ -1157,8 +1157,6 @@ class PreInspection(models.Model):
 		field=status,
 		source=[
 			PreInspectionStatusEnum.CHANGE_ADDRESS,
-			PreInspectionStatusEnum.REJECTED,
-			# PreInspectionStatusEnum.REDO,
 		],
 		target=PreInspectionStatusEnum.KITCHEN_PHOTO,
 		custom=dict(short_description='Change Address', admin=False),
@@ -1172,8 +1170,6 @@ class PreInspection(models.Model):
 		field=status,
 		source=[
 			PreInspectionStatusEnum.KITCHEN_PHOTO,
-			# PreInspectionStatusEnum.REJECTED,
-			# PreInspectionStatusEnum.REDO,
 		],
 		target=PreInspectionStatusEnum.PREVIEW_INSPECTION,
 		custom=dict(short_description='Upload Main Gate Pic & Location', admin=False),
