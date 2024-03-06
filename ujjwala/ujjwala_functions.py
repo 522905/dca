@@ -402,7 +402,10 @@ def download_ujjwala_physical_legal_docs(obj):
 
 	pre_inspection = PreInspection.objects.exclude(
 		status=PreInspectionStatusEnum.REJECTED
-	).get(parent_id=obj.id)
+	).filter(parent_id=obj.id).first()
+
+	if not pre_inspection:
+		raise Exception("No Pre-Inspection Submitted.")
 
 	relationship_name = ''
 
