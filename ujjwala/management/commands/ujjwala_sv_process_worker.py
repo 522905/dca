@@ -11,7 +11,7 @@ from django.core.management.base import BaseCommand
 
 from ujjwala.camunda_functions import download_file_variable_data, calculate_download_sv_wait_timing, \
 	start_ujjwala_cld_dedup_in_camunda, fetch_payment_profile_variables, get_activity_instance_count, \
-	enrich_omc_rejection_details, remove_sv_record
+	enrich_omc_rejection_details, remove_sv_record, start_ujjwala_legal_docs_upload_in_camunda
 from ujjwala.camunda_worker_tasks import variables_to_update_for_preinspection
 from ujjwala.enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum
 from ujjwala.jobs import ensure_db_connection, do_primary_omc_dedupe_check, move_application_for_audit, \
@@ -134,7 +134,11 @@ def handle_task(task: ExternalTask) -> TaskResult:
 			update_in_dca(connection_disbursement_id, booking_id, sv_file_link, consumer_id, sv_date, document_number)
 			return task.complete()
 		elif topic == 'process_ekyc#update_in_dca':
+			from ujjwala.models import UjjwalaV2Application
+
+
 			dca_id = task.get_variable('dca_id')
+			application = UjjwalaV2Application.objects.get(pk=dca_id)
 			consumer_id = task.get_variable('consumer_id')
 			uid_check_result = task.get_variable('uid_check_result')
 			req = requests.post(
@@ -152,6 +156,8 @@ def handle_task(task: ExternalTask) -> TaskResult:
 					return task.complete()
 				else:
 					req.raise_for_status()
+
+			res = start_ujjwala_legal_docs_upload_in_camunda(consumer_id, dca_id)
 			return task.complete()
 		elif topic == 'ujjwala_legal_docs_update#customer_status_update':
 			from ujjwala.models import UjjwalaV2Application

@@ -24,6 +24,7 @@ from ujjwala.ujjwala_functions import get_data_for_new_relation
 
 UJJWALA_SV_GENERATION_PROCESS = 'ujjwala_sv_generation'
 PROCESS_CLDP_DEDUP = "Process_CLDP_DEDUP"
+PROCESS_LEGAL_DOCS_UPLOAD = "ujjwala_legal_docs_update"
 
 minio_client = Minio(
 		settings.MINIO_API_ENDPOINT,
@@ -138,6 +139,25 @@ def start_ujjwala_cld_dedup_in_camunda(consumer_id, application_id):
 		"variables": {
 			"consumer_id": {"value": consumer_id, "type": "string"},
 			"id": {"value": application_id, "type": "string"},
+		}
+	})
+	res.raise_for_status()
+	return res.json()
+
+
+def start_ujjwala_legal_docs_upload_in_camunda(consumer_id, application_id):
+	url = "{}/process-definition/key/{}/start".format(CAMUNDA_BASE_URL, PROCESS_LEGAL_DOCS_UPLOAD)
+	#
+	# data = requests.get("https://dca.arungas.com/ujjwala/ujjwala-bot//get_list_to_fetch_omc_nic_status/&quot;).json()
+	#
+	# for i in data:
+	# record = i['payload']
+	# if record['id'] in existing:
+	# continue
+	res = requests.post(url, json={
+		"variables": {
+			"consumer_id": {"value": consumer_id, "type": "string"},
+			"application_id": {"value": application_id, "type": "string"},
 		}
 	})
 	res.raise_for_status()
