@@ -241,9 +241,14 @@ class ChangeAddressForm(forms.Form):
 				"pincode": data.get('pincode', '')
 			}
 			obj.parent.save()
+
+
 		user = get_current_user()
 		if user.is_anonymous:
 			user = None
+		# Hack For Rejected Transition To Change Address
+		if obj.status == 'REJECTED':
+			obj.pre_inspection_otp_verified()
 		obj.pre_inspection_change_address(
 			by=user, description=old_address_json
 		)
