@@ -359,6 +359,36 @@ def remove_sv_record(application_id):
 		application.save()
 
 
+def clean_camunda_processes(application_id):
+	pi_list = []
+	res = requests.post(f'{CAMUNDA_BASE_URL}/variable-instance', json={
+			"variableValues": [
+				{"name": "dca_id", "operator": "eq", "value": str(application_id)},
+			],
+			'includeDeleted': False
+		})
+	pi_list.extend(res.json())
+
+	res = requests.post(f'{CAMUNDA_BASE_URL}/variable-instance', json={
+		"variableValues": [
+			{"name": "id", "operator": "eq", "value": str(application_id)},
+		],
+		'includeDeleted': False
+	})
+	pi_list.extend(res.json())
+
+	res = requests.post(f'{CAMUNDA_BASE_URL}/variable-instance', json={
+		"variableValues": [
+			{"name": "application_id", "operator": "eq", "value": str(application_id)}
+		],
+		'includeDeleted': False
+	})
+	pi_list.extend(res.json())
+
+	for pi in pi_list:
+		print(requests.delete('http://192.168.171.4:38080/engine-rest/process-instance/' + pi['processInstanceId']))
+
+
 if __name__ == '__main__':
 	# connection_disbursement_id = 12735
 	# start_ujjwala_sv_process_in_camunda(connection_disbursement_id)
