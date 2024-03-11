@@ -38,7 +38,7 @@ from ujjwala.forms import ConnectionStatusApproved, ApplicationRejected, \
 	InstallationReviewAdminForm, LegalDocumentsAcceptedToPendingAdminForm, UpdateAddressForm, ReviewUpdatedAddressForm
 from ujjwala.ujjwala_functions import download_ujjwala_physical_legal_docs, \
 	fsm_custom_audit_points_description, re_create_legal_docs, get_last_valid_status_for_application, \
-	get_review_to_target_status
+	get_review_to_target_status, get_area_tag
 from ujjwala.vici_functions import add_lead_to_vicidial_list
 from utils.global_functions import upload_file_to_minio_bucket, old_address_to_description, \
 	old_walk_in_to_description
@@ -1083,6 +1083,7 @@ class PreInspection(models.Model):
 	camunda_error_message = models.TextField(null=True, blank=True)
 	rejected_reasons = models.JSONField(null=True, blank=True)
 	address_updated = models.BooleanField(default=False)
+	tags = TaggableManager()
 
 	def mechanic_name(self):
 		if self.mechanic:
@@ -1252,6 +1253,7 @@ class PreInspection(models.Model):
 			self.mechanic = get_current_user()
 		self.submitted_on = datetime.datetime.now()
 
+		self.tags.add(get_area_tag(self.id))
 		self.save()
 
 		state_log = None
@@ -1261,6 +1263,15 @@ class PreInspection(models.Model):
 				                                    app_label='ujjwala', model='preinspection'
 			                                    ),
 			                                    object_id=self.id).first()
+		# Evaluate If Address Needs To Be Verified
+		old_address_json = json.loads(state_log.description) if state_log else None
+
+		# address_matched = True
+		# if self.address_updated and self.parent.address_verified:
+		# 	for k, v in self.parent.address_json.items():
+		# 		if not old_address_json.get(k) == v:
+		# 			address_matched = False
+		# 			break
 
 		safety_audio = self.documents.filter(type=UjjwalaApplicationDocumentsEnum.SAFETY_AUDIO).first()
 
@@ -1281,19 +1292,22 @@ class PreInspection(models.Model):
 				{
 					"preinspection_id": {"value": self.id, "type": "String"},
 					"address_json": {"value": json.dumps(self.parent.address_json), "type": "String"},
-					"old_address_json": {"value": json.dumps(state_log.description) if state_log else "", "type": "String"},
+					"old_address_json": {"value": old_address_json, "type": "String"},
 					"latitude": {"value": self.latitude, "type": "String"},
 					"longitude": {"value": self.longitude, "type": "String"},
 					"accuracy": {"value": self.accuracy, "type": "String"},
 					"application_id": {"value": self.parent_id, "type": "String"},
 					"name": {"value": self.parent.name, "type": "String"},
-					"kitchen_photo": {"value": self.documents.get(type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO).link},
-					"main_gate_photo": {"value": self.documents.get(type=UjjwalaApplicationDocumentsEnum.MAIN_GATE).link},
+					"kitchen_photo": {
+						"value": self.documents.get(type=UjjwalaApplicationDocumentsEnum.KITCHEN_PHOTO).link},
+					"main_gate_photo": {
+						"value": self.documents.get(type=UjjwalaApplicationDocumentsEnum.MAIN_GATE).link},
 					"safety_audio": {"value": safety_audio.link if safety_audio else ""},
 					"contact_mobile": {"value": self.parent.contact_mobile},
 					"family_members": {"value": json.dumps(family_members)},
-					"action": {"value": 'ADDRESS_ACCEPT' if not self.address_updated else ''},
-					"source": {"value": 'PREINSPECTION', "type": "String"}
+					# "action": {"value": 'ADDRESS_ACCEPT' if not self.address_updated else ''},
+					"source": {"value": 'PREINSPECTION', "type": "String"},
+					"mechanic": {"value": self.mechanic, "type": "String"}
 				}
 		}
 
