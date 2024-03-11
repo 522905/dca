@@ -88,18 +88,18 @@
                         </div>
                         <div class="col-12 p-0 eky_block">
                                 <table>
-                                    <tr>
-                                        <td>
-                                            <p><b>Tags :</b></p>
-                                        </td>
-                                        <td>
-                                            <ul class="list_block">
-                                                {% for tag in obj.tags.all %}
-                                                    <li><p><b>{{ tag }}</b></p></li>
-                                                {% endfor %}
-                                            </ul>
-                                        </td>
-                                    </tr>
+{#                                    <tr>#}
+{#                                        <td>#}
+{#                                            <p><b>Tags :</b></p>#}
+{#                                        </td>#}
+{#                                        <td>#}
+{#                                            <ul class="list_block">#}
+{#                                                {% for tag in obj.tags.all %}#}
+{#                                                    <li><p><b>{{ tag }}</b></p></li>#}
+{#                                                {% endfor %}#}
+{#                                            </ul>#}
+{#                                        </td>#}
+{#                                    </tr>#}
                                     <tr>
                                         {% if not obj.ekyc_cleared %}
                                             <td colspan="2">
