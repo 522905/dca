@@ -1296,7 +1296,12 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
 		connection_disbursement = self.get_object()
 
 		if connection_disbursement:
-			if not connection_disbursement.parent.ekyc_cleared:
+			if not connection_disbursement.invitation.first().sv_link:
+				messages.add_message(
+					request, messages.ERROR,
+					"No SV Found."
+				)
+			elif not connection_disbursement.parent.ekyc_cleared:
 				messages.add_message(
 					request, messages.ERROR,
 					"Application Id : {} Status: {} Pre-Inspection Status: {} Ekyc Cleared: {}".format(
