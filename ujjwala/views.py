@@ -1299,7 +1299,7 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
 			if not connection_disbursement.invitation.first().sv_link:
 				messages.add_message(
 					request, messages.ERROR,
-					"No SV Found."
+					"Approval Awaited, Expected After Election"
 				)
 			elif not connection_disbursement.parent.ekyc_cleared:
 				messages.add_message(
