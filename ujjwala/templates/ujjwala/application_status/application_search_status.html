@@ -88,7 +88,19 @@
                         </div>
                         <div class="col-12 p-0 eky_block">
                                 <table>
-                                    <tr colspan="2"> 
+                                    <tr>
+                                        <td>
+                                            <p><b>Tags :</b></p>
+                                        </td>
+                                        <td>
+                                            <ul class="list_block">
+                                                {% for tag in obj.tags.all %}
+                                                    <li><p><b>{{ tag }}</b></p></li>
+                                                {% endfor %}
+                                            </ul>
+                                        </td>
+                                    </tr>
+                                    <tr>
                                         {% if not obj.ekyc_cleared %}
                                             <td colspan="2">
                                                 <p style="font-size: 12pt">Aadhar No. : <b><span id="myLabel">{{ obj.self_uid_no_formatted }}</span></b> 
@@ -104,6 +116,7 @@
 
                                                 {% endif %}
                                             </td>
+
                                         {% endif %}
                                     </tr>
                                     {% if obj.ekyc_last_attempt_log %}
@@ -194,7 +207,11 @@
                             <tr>
                                 <th>
                                     <a class="text_link" href="{% url 'ujjwala:change_phone_number' pk=obj.id %}">
-                                        <b style="color:cornflowerblue"><i>Change Phone Number</i></b></a>
+                                        <b style="color:cornflowerblue"><i>Change Phone Number Request</i></b></a>
+                                </th>
+                                <th>
+                                    <a class="text_link" href="{% url 'ujjwala:update_address_service_request' pk=obj.id %}">
+                                        <b style="color:cornflowerblue"><i>Update Address Request</i></b></a>
                                 </th>
                                 <th>
                                     <a class="text_link" href="{% url 'ujjwala:update_bank_details' pk=obj.id %}" >
