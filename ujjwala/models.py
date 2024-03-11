@@ -85,6 +85,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	sync_with_sdms = models.BooleanField(default=True)
 	applicant_verified = models.BooleanField(default=False)
 	applicant_verified_on = models.DateTimeField(null=True, blank=True)
+	other_members_verified = models.BooleanField(default=False)
+	other_members_verified_on = models.DateTimeField(null=True, blank=True)
 	audit_points = models.TextField(null=True, blank=True)
 	ifsc_code = models.CharField(max_length=16, null=True, blank=True)
 	bank_account_number = models.CharField(max_length=24, null=True, blank=True)
@@ -1252,26 +1254,18 @@ class PreInspection(models.Model):
 		else:
 			self.mechanic = get_current_user()
 		self.submitted_on = datetime.datetime.now()
-
+		area_tag = get_area_tag(self.id)
 		self.tags.add(get_area_tag(self.id))
 		self.save()
 
-		state_log = None
-		if self.address_updated:
-			state_log = StateLog.objects.filter(source_state=PreInspectionStatusEnum.CHANGE_ADDRESS,
-			                                    content_type_id=ContentType.objects.get(
-				                                    app_label='ujjwala', model='preinspection'
-			                                    ),
-			                                    object_id=self.id).first()
-		# Evaluate If Address Needs To Be Verified
-		old_address_json = json.loads(state_log.description) if state_log else None
-
-		# address_matched = True
-		# if self.address_updated and self.parent.address_verified:
-		# 	for k, v in self.parent.address_json.items():
-		# 		if not old_address_json.get(k) == v:
-		# 			address_matched = False
-		# 			break
+		# state_log = Noneq
+		# if self.address_updated:
+		state_log = StateLog.objects.filter(source_state=PreInspectionStatusEnum.CHANGE_ADDRESS,
+		                                    content_type_id=ContentType.objects.get(
+			                                    app_label='ujjwala', model='preinspection'
+		                                    ),
+		                                    object_id=self.id).order_by("-id").first()
+		old_address_json = json.loads(state_log.description) if state_log else ""
 
 		safety_audio = self.documents.filter(type=UjjwalaApplicationDocumentsEnum.SAFETY_AUDIO).first()
 
@@ -1305,9 +1299,9 @@ class PreInspection(models.Model):
 					"safety_audio": {"value": safety_audio.link if safety_audio else ""},
 					"contact_mobile": {"value": self.parent.contact_mobile},
 					"family_members": {"value": json.dumps(family_members)},
-					# "action": {"value": 'ADDRESS_ACCEPT' if not self.address_updated else ''},
 					"source": {"value": 'PREINSPECTION', "type": "String"},
-					"mechanic": {"value": self.mechanic, "type": "String"}
+					"mechanic": {"value": self.mechanic, "type": "String"},
+					"area_name": {"value": area_tag, "type": "String"}
 				}
 		}
 
@@ -1393,34 +1387,6 @@ class PreInspection(models.Model):
 					'1012', self.parent.contact_mobile, self.parent.name, self.parent.id,
 				))
 			self.parent.event_whatsapp_pre_inspection_reject(self.id, rejected_reasons)
-
-
-	# for doc in j.documents.filter(link__contains="tus."):
-	# 	if requests.get(doc.link).status_code == 404:
-	# 		doc.link = ''
-	# 		doc.save()
-
-
-
-	# j.status = 'SUBMITTED'
-	# j.pre_inspection_review(
-	# 	review_status='REJECTED', description='Missing Files, Please UploadAgain',
-	# 	rejected_reason="Missing Files, Please UploadAgain"
-	# )
-	# j.documents.exclude(type='PHYSICAL_LEGAL_DOCUMENT').delete()
-	# j.save()
-
-
-# k = [12606,12566,2721,4871,2913,1006,1373,2932,3073,4103,1569,3371,240,3137,1492,1382,1624,5963,2855,11812,11841,7975,5957,11593,5877,8065,1024,5692,3678,5506,11280,8363,5376,4013,3939,12021,11670,646,11918,12986,7306,11577,1375]
-#
-# for i in k:
-# 	j = PreInspection.objects.get(pk=i)
-#
-# 	ids_to_preserve = {}
-# 	for doc in j.documents.filter(link="").order_by('-id'):
-# 		if doc.type not in ids_to_preserve:
-# 			ids_to_preserve[doc.type] = doc.id
-# 	j.documents.filter(type__in=ids_to_preserve.keys()).exclude(id__in=ids_to_preserve.values()).delete()
 
 
 class PreInspectionDocuments(models.Model):
