@@ -193,3 +193,18 @@ def variables_to_update_for_preinspection(task):
 		if main_gate_photo:
 			variables["main_gate_photo"] = {"value": pi_obj.documents.get(type=UjjwalaApplicationDocumentsEnum.MAIN_GATE).link}
 	return variables
+
+
+def get_consumer_id_for_iocl_investigation(application_id):
+	from ujjwala.models import UjjwalaV2Application
+
+	application = UjjwalaV2Application.objects.get(pk=application_id)
+
+	uf_self = application.family_members.get(relation='SELF')
+	consumer_id: str = uf_self.uid_check_result.get('consumer_id')
+
+	if consumer_id.startswith('372'):
+		formatted_consumer_id = "72" + consumer_id[3:].rjust(14, '0')
+	else:
+		formatted_consumer_id = "72" + consumer_id[2:].rjust(14, '0')
+	return formatted_consumer_id

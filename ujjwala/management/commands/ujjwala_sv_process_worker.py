@@ -12,7 +12,7 @@ from django.core.management.base import BaseCommand
 from ujjwala.camunda_functions import download_file_variable_data, calculate_download_sv_wait_timing, \
 	start_ujjwala_cld_dedup_in_camunda, fetch_payment_profile_variables, get_activity_instance_count, \
 	enrich_omc_rejection_details, remove_sv_record, start_ujjwala_legal_docs_upload_in_camunda
-from ujjwala.camunda_worker_tasks import variables_to_update_for_preinspection
+from ujjwala.camunda_worker_tasks import variables_to_update_for_preinspection, get_consumer_id_for_iocl_investigation
 from ujjwala.enums import UjjwalaV2ApplicationStatus, RoboSdmsDedeupStatusEnum
 from ujjwala.jobs import ensure_db_connection, do_primary_omc_dedupe_check, move_application_for_audit, \
 	compress_application_documents
@@ -426,11 +426,20 @@ def handle_task(task: ExternalTask) -> TaskResult:
 			)
 		elif topic == 'dedup_eval#evaluate_dedup_results':
 			robo_sdms_dedup = task.get_variable('robo_sdms_dedup')
+			application_id = task.get_variable('application_id')
 
 			if robo_sdms_dedup == RoboSdmsDedeupStatusEnum.PROCESSED_AND_UNIQUE:
 				status = 'PASS'
 			elif robo_sdms_dedup == RoboSdmsDedeupStatusEnum.IOCL_INVESTIGATION_REQUIRED:
-				return task.bpmn_error("Error_IOCL_Investigation_Required", "Error IOCL Investigation Required")
+				return task.bpmn_error(
+					"Error_IOCL_Investigation_Required", "Error IOCL Investigation Required",
+					variables={
+						"consumer_id": {
+							"value": get_consumer_id_for_iocl_investigation(application_id),
+			                "type": "String"
+						}
+					}
+				)
 			else:
 				status = 'FAIL'
 
