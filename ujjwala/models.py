@@ -484,7 +484,12 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		permission='ujjwala.can_reject_application'
 	)
 	def application_rejected(self, *args, **kwargs):
-		pass
+		create_job_function = partial(
+			django_rq.enqueue,
+			"ujjwala.camunda_functions.clean_camunda_processes",
+			application_id=self.id
+		)
+		transaction.on_commit(create_job_function)
 
 
 	@fsm_log_description
