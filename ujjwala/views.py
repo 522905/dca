@@ -51,7 +51,7 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
 	ReviewUpdatedAddressForm
 from ujjwala.global_functions import login_required_if_mech_inspection
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
-	FamilyMembers, DisbursementDrive, UjjwalaSearchLog
+	FamilyMembers, DisbursementDrive, UjjwalaSearchLog, ConnectionDisbursementInvitation
 from ujjwala.sv_functions import create_installation_document
 from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_pre_inspection_applicable, \
 	send_ujjwala_application_whatsapp_link_v2, download_audit_documents_for_ids, is_member_of_disbursement_drive, \
@@ -1296,7 +1296,10 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
 		connection_disbursement = self.get_object()
 
 		if connection_disbursement:
-			if not connection_disbursement.invitation.first().sv_link:
+			cd_invitation = ConnectionDisbursementInvitation.objects.filter(
+				parent_id=connection_disbursement.id).first()
+
+			if not cd_invitation:
 				messages.add_message(
 					request, messages.ERROR,
 					"Approval Awaited, Expected After Election"
