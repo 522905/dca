@@ -241,8 +241,8 @@ class ChangeAddressForm(forms.Form):
 				"pincode": data.get('pincode', '')
 			}
 			obj.parent.save()
-
-
+		else:
+			obj.address_updated = False
 		user = get_current_user()
 		if user.is_anonymous:
 			user = None
