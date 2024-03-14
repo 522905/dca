@@ -74,3 +74,7 @@ class ConnectionApplicationDocumentsEnum(models.TextChoices):
 			if e in ('SV', 'CONNECTION_DETAIL', 'KITCHEN_PHOTO'):
 				ret.append((e.value, e.label))
 		return ret
+
+
+class PaymentProfileApprovalStatusEnum(models.TextChoices):
+	PENDING = 'PENDING', 'Pending'
