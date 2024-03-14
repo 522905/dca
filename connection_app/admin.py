@@ -5,7 +5,7 @@ from import_export.admin import ExportActionMixin
 # from django.contrib.flatpages.admin import FlatPageAdmin
 from fsm_admin2_custom.admin import FSMTransitionCustomMixin
 from .enums import ConnectionApplicationLeadStatus
-from .models import ConnectionApplication, ConnectionApplicationDocuments
+from .models import ConnectionApplication, ConnectionApplicationDocuments, PaymentProfile
 from django_fsm_log.admin import StateLogInline
 from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 from django_admin_listfilter_dropdown.filters import DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter
@@ -211,3 +211,13 @@ class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionCustomMixin, ad
                 self.message_user(request, "Installation Reminder Not Sent")
             return HttpResponseRedirect(".")
         return super().response_change(request, obj)
+
+
+@admin.register(PaymentProfile)
+class ConnectionApplicationAdmin(admin.ModelAdmin):
+    list_display = ['id', 'case_num', 'created_date', 'status', 'name_as_per_bank', 'name_as_on_relationship',
+                    'name_as_per_bank_response', 'name_match', 'approval_status', 'profile_type']
+
+    def has_change_permission(self, request, obj=None):
+        return False
+    pass

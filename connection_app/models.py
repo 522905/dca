@@ -17,7 +17,8 @@ from communication_log.jobs import move_sv_doc_file_tus_to_minio, move_files_to_
 from communication_log.models import CommunicationLog
 from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTypeEnum, \
 	ConnectionApplicationProcessType, ConnectionApplicationLeadStatus, ConnectionApplicationDocumentsEnum, \
-	ConnectionApplicationLeadCommunicationMode, ConnectionInstallationStatus
+	ConnectionApplicationLeadCommunicationMode, ConnectionInstallationStatus, \
+	PaymentProfileApprovalStatusEnum
 from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, SubmitLead, \
 	FrontOfficeCompleted, BackOfficeReactivation, BackOfficeRegularisation, \
 	BackOfficeNewConnection, DocumentsReupload, InstallationReviewForm
@@ -577,3 +578,47 @@ class ConnectionApplicationDocuments(models.Model):
 	type = models.CharField(max_length=25, choices=ConnectionApplicationDocumentsEnum.choices)
 	link = models.URLField()
 	valid_size = models.BooleanField(default=False, null=True, blank=True)
+
+
+class PaymentProfile(models.Model):
+	"""
+		{
+			"": "",
+			"Case Num": "1-38288458",
+			"Closed Date": "",
+			"Created Date": "14-Nov-2023 12:45:51 AM",
+		    "Name As Per Bank": "Laddi",
+		    "Name As On Relationship": "Laddi Devi",
+		    "Name As Per Bank Response": "",
+		    "Name Match": "N",
+		    "Distributor Code": "0000305948",
+		    "Distributor Name": "ARUN INDANE PROP LUDHIANA ENT.",
+		    "Comments": "",
+		    "Relationship Id": "7200000026714114",
+		    "Payment Profile Id": "1-8NKUKSUI",
+		    "Account Id": "1-8NKUKSTQ",
+		    "Status": "Open",
+		    "Contact Id": "1-8NKUKST1",
+		    "Type": "Bank Verification Approval",
+		    "PFMS Payment Method": "ACTC"
+		}
+	"""
+	case_num = models.CharField(max_length=128)
+	closed_data = models.DateTimeField(null=True, blank=True)
+	created_date = models.DateTimeField(null=True, blank=True)
+	name_as_per_bank = models.CharField(max_length=256)
+	name_as_on_relationship = models.CharField(max_length=256)
+	name_as_per_bank_response = models.CharField(max_length=256)
+	name_match = models.BooleanField(default=False)
+	distributor_code = models.CharField(max_length=256)
+	distributor_name = models.CharField(max_length=256)
+	comments = models.CharField(max_length=256, null=True, blank=True)
+	relationship_id = models.CharField(max_length=128)
+	payment_profile_id = models.CharField(max_length=128)
+	account_id = models.CharField(max_length=128)
+	status = models.CharField(max_length=128)
+	contact_id = models.CharField(max_length=128)
+	profile_type = models.CharField(max_length=256)
+	pfms_payment_method = models.CharField(max_length=128)
+	approval_status = models.CharField(max_length=128, choices=PaymentProfileApprovalStatusEnum.choices,
+	                          default=PaymentProfileApprovalStatusEnum.PENDING)
