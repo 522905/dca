@@ -622,3 +622,4 @@ class PaymentProfile(models.Model):
 	pfms_payment_method = models.CharField(max_length=128)
 	approval_status = models.CharField(max_length=128, choices=PaymentProfileApprovalStatusEnum.choices,
 	                          default=PaymentProfileApprovalStatusEnum.PENDING)
+	action = models.CharField(max_length=1, null=True)

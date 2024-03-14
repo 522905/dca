@@ -1,3 +1,6 @@
+import datetime
+import json
+
 from django.http import JsonResponse
 from django.urls import reverse
 from rest_framework import viewsets
@@ -77,3 +80,53 @@ class ConnectionApplicationViewSet(viewsets.ModelViewSet):
         instance.save()
 
         return Response({'id': instance.id})
+
+
+class ConnectionApplicationAPIViewSet(viewsets.ViewSet):
+
+    @action(methods=['get'], detail=False, url_path='get_last_date_of_record')
+    def get_last_date_of_record(self, request, *args, **kwargs):
+        from connection_app.models import PaymentProfile
+
+        last_record_date = '14-Nov-2023 12:00:00 AM'
+        pp_obj: PaymentProfile = PaymentProfile.objects.all().order_by("-created_date").first()
+
+        if pp_obj:
+            last_record_date = pp_obj.created_date.strftime("%d-%b-%Y %I:%M:%S %p")
+
+        return JsonResponse(data={"last_record_date": last_record_date})
+
+    @action(methods=['post'], detail=False, url_path='update_payment_profile_list')
+    def update_payment_profile_list(self, request, *args, **kwargs):
+        from connection_app.models import PaymentProfile
+
+        data = request.data
+
+        skipped_rows = []
+        for payment_profile in data['data']:
+            if PaymentProfile.objects.filter(case_num=payment_profile.get('case_num')).exists():
+                skipped_rows.append(payment_profile)
+            else:
+                PaymentProfile.objects.create(
+                    case_num=payment_profile.get('case_num'),
+                    closed_data=datetime.datetime.strptime(payment_profile.get("Closed Date"),
+                                                           "%d-%b-%Y %I:%M:%S %p") if payment_profile.get(
+                        "Closed Date") else None,
+                    created_date=datetime.datetime.strptime(payment_profile.get("Created Date"),
+                                                            "%d-%b-%Y %I:%M:%S %p"),
+                    name_as_per_bank=payment_profile.get("Name As Per Bank"),
+                    name_as_on_relationship=payment_profile.get("Name As On Relationship"),
+                    name_as_per_bank_response=payment_profile.get("Name As Per Bank Response"),
+                    name_match=True if payment_profile.get("Name Match") == 'Y' else False,
+                    distributor_code=payment_profile.get("Distributor Code"),
+                    distributor_name=payment_profile.get("Distributor Name"),
+                    comments=payment_profile.get("Comments"),
+                    relationship_id=payment_profile.get("Relationship Id"),
+                    payment_profile_id=payment_profile.get("Payment Profile Id"),
+                    account_id=payment_profile.get("Account Id"),
+                    status=payment_profile.get("Status"),
+                    contact_id=payment_profile.get("Contact Id"),
+                    profile_type=payment_profile.get("Type"),
+                    pfms_payment_method=payment_profile.get("PFMS Payment Method"))
+
+        return JsonResponse(data={"status": "Processed", "skipped_rows": skipped_rows})
