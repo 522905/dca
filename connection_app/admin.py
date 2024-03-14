@@ -217,6 +217,7 @@ class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionCustomMixin, ad
 class ConnectionApplicationAdmin(admin.ModelAdmin):
     list_display = ['id', 'case_num', 'created_date', 'status', 'name_as_per_bank', 'name_as_on_relationship',
                     'name_as_per_bank_response', 'name_match', 'approval_status', 'profile_type', 'action']
+    list_filter = ['name_match', 'action']
 
     def has_change_permission(self, request, obj=None):
         return False
