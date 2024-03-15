@@ -1825,6 +1825,7 @@ class ConnectionDisbursement(models.Model):
 	def transition_cancel_walk_in(self, *args, **kwargs):
 		self.disbursement_drive = None
 		self.walk_in_date = None
+		self.document_printed = False
 		if kwargs['delete_invitation']:
 			self.invitation.all().delete()
 		self.save()
