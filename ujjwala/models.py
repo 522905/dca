@@ -1891,6 +1891,7 @@ class BankDetailsUpdateRequest(models.Model):
 	ifsc_code = models.CharField(max_length=16)
 	status = models.CharField(max_length=128, choices=BankDetailsUpdateRequestEnum.choices,
 	                          default=BankDetailsUpdateRequestEnum.PENDING)
+	camunda_process_id = models.CharField(max_length=128, null=True)
 
 
 class DateTimeEncoder(json.JSONEncoder):
