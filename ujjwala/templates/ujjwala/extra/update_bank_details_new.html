@@ -1,4 +1,4 @@
-{% extends "material/frontend/base_module.html" %}
+{#{% extends "material/frontend/base_module.html" %}#}
 {% load static %}
 {% load material_form %}
 {% include 'material/includes/material_css.html' %}
@@ -11,6 +11,27 @@
     rel="stylesheet">
 <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
 <div class="p-2 pt-0 form_label" style="width: 100%;">
+    <div class="card-body pb-0 p-0 list_block">
+        <div class="row m-0">
+            <div class="col-8 p-0">
+                <table>
+                    <tr>
+                        <td>Name: <b>{{ obj.name }}</b>
+                        <br>Address: <b>{{ obj.formatted_address }}</b>
+                        <br>
+                            {% for contact in obj.all_contacts %}
+                                <p>Phone {{ forloop.counter }}: <b><a href="tel:{{ contact}}" onclick="return true;">{{contact}}</a></b></p>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-4 p-0">
+                <img class="p-1" src="{{ obj.document_self }}" style="height: 125px; object-fit:contain; width: 100%;">
+            </div>
+        </div>
+    </div>
+
     <form method="POST" id="form">
         {% csrf_token %}
         <div class="card">
