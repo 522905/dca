@@ -300,6 +300,11 @@ urlpatterns = [
         views.UpdateBankDetailsFormView.as_view(),
         name="update_bank_details"
     ),
+    url(
+        '^portal/update_bank_details_new/(?P<pk>[^/.]+)/$',
+        views.UpdateBankDetailsNewFormView.as_view(),
+        name="update_bank_details_new"
+    ),
 
     # url(
     #     '^portal/connection-disbursement/(?P<pk>[^/.]+)/send_invitation/$',
