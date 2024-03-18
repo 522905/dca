@@ -48,10 +48,10 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
 	UpdateBankDetailsForm, NicClearedCustomerRemarksForm, PrintDocumentsForm, \
 	InstallationReviewAdminForm, PreInspectionReviewAdminForm, CancelInvitationForm, UpdateAddressForm, \
 	NewRelationCreated, ChangePhoneNumberForm, UploadUIDForEKYCForm, UjjwalaApplicationServiceRequestForm, \
-	ReviewUpdatedAddressForm
+	ReviewUpdatedAddressForm, UpdateBankDetailsNewForm
 from ujjwala.global_functions import login_required_if_mech_inspection
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
-	FamilyMembers, DisbursementDrive, UjjwalaSearchLog, ConnectionDisbursementInvitation
+	FamilyMembers, DisbursementDrive, UjjwalaSearchLog, ConnectionDisbursementInvitation, BankDetailsUpdateRequest
 from ujjwala.sv_functions import create_installation_document
 from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_pre_inspection_applicable, \
 	send_ujjwala_application_whatsapp_link_v2, download_audit_documents_for_ids, is_member_of_disbursement_drive, \
@@ -3090,6 +3090,61 @@ class UpdateBankDetailsFormView(FormView):
 			'application': obj
 		})
 		return kwargs
+
+
+class UpdateBankDetailsNewFormView(FormView):
+	form_class = UpdateBankDetailsNewForm
+	template_name = "ujjwala/extra/update_bank_details_new.html"
+
+	def dispatch(self, request, *args, **kwargs):
+		obj = self.get_object()
+		bd_obj = BankDetailsUpdateRequest.objects.filter(parent=obj).first()
+
+		if bd_obj:
+			return render(
+				self.request,
+				"ujjwala/response.html",
+				{
+					"heading": "Update Bank Details",
+					"message": "Your bank details update request has been already submitted."
+				}
+			)
+
+		return super().dispatch(request, *args, **kwargs)
+
+	def get_object(self, queryset=None):
+		try:
+			obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No application found with Application Id: {}".format(self.kwargs.get('pk'))
+			)
+		return obj
+
+	def form_valid(self, form):
+		cleaned_data = form.cleaned_data
+		obj = self.get_object()
+		bd_obj = BankDetailsUpdateRequest.objects.create(parent=obj, bank_account_number=cleaned_data['bank_account_number'],
+		                           ifsc_code=cleaned_data['ifsc_code'])
+		return render(
+			self.request,
+			"ujjwala/response.html",
+			{
+				"heading": "Update Bank Details",
+				"message": "Your bank details update request has been submitted."
+			}
+		)
+
+	def form_invalid(self, form):
+		print("Invalid")
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data()
+		obj = self.get_object()
+		context.update({
+			"obj": obj,
+		})
+		return context
 
 
 class NicClearedCustomerRemarks(FormView):

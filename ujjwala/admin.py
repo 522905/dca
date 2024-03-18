@@ -22,7 +22,7 @@ from ujjwala.admin_forms import DisbursementDriveAdminForm
 from .enums import PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, DisbursementDriveStatusEnum
 from .models import UjjwalaV2Application, FamilyMembers, UjjwalaApplicationDocuments, UjjwalaV2ApplicationStatus, \
     UserDocuments, PreInspectionDocuments, PreInspection, ConnectionDisbursementDocuments, ConnectionDisbursement, \
-    ConnectionDisbursementInvitation, DisbursementDrive, EkycLogs, Ekyc, UjjwalaSearchLog
+    ConnectionDisbursementInvitation, DisbursementDrive, EkycLogs, Ekyc, UjjwalaSearchLog, BankDetailsUpdateRequest
 from .ujjwala_functions import download_ujjwala_documents, download_ujjwala_physical_legal_docs, \
     re_create_legal_docs_pdf
 from .views import SendInvitationView
@@ -606,3 +606,24 @@ class DisbursementDriveAdmin(ExportActionMixin, FSMTransitionCustomMixin, admin.
     filter_horizontal = ['team_members', 'filled_by']
     fsm_fields = ['status', ]
     inlines = [StateLogInline, ]
+
+
+@admin.register(BankDetailsUpdateRequest)
+class BankDetailsUpdateRequestAdmin(admin.ModelAdmin):
+    form = DisbursementDriveAdminForm
+    list_display = (
+        'id',
+        'created_on',
+        'name',
+        'contact_mobile',
+        'bank_account_number',
+        'ifsc_code',
+        'status'
+    )
+    list_filter = ('created_on', 'status',)
+
+    def name(self, obj):
+        return obj.parent.name
+
+    def contact_mobile(self, obj):
+        return obj.parent.name

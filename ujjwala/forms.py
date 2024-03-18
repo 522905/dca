@@ -1554,6 +1554,18 @@ class UpdateBankDetailsForm(forms.Form):
 		obj.save()
 
 
+class UpdateBankDetailsNewForm(forms.Form):
+	bank_account_number = forms.CharField(
+		widget=forms.TextInput, label='Bank Account Number', required=True
+	)
+	ifsc_code = forms.CharField(
+		widget=forms.TextInput, label='IFSC Code', required=True
+	)
+	passbook_photo = forms.URLField(
+		widget=forms.HiddenInput, required=True, label='Passbook Photo'
+	)
+
+
 class CancelDisbursementDriveForm(forms.Form):
 	description = forms.CharField(
 		widget=forms.TextInput, label='Cancel Reason', required=True

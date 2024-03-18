@@ -29,7 +29,7 @@ from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMo
 	ConnectionDisbursementStatusEnum, PreInspectionTypeEnum, SchemeOnboardingStatusEnum, NicClearedCustomerRemarksEnum, \
 	DisbursementDriveStatusEnum, InstallationTypeEnum, product_quantity_map, UjjwalaV2ApplicationAvailabilityStatus, \
 	UjjwalaV2ApplicationAvailabilityChannel, UjjwalaProductEnum, SDMSMobileNumberEnum, FilledByFilterEnum, \
-	SVSDMSStatusEnum, PreInspectionRejectionReasonsEnum, UjjwalaSearchLogEnum
+	SVSDMSStatusEnum, PreInspectionRejectionReasonsEnum, UjjwalaSearchLogEnum, BankDetailsUpdateRequestEnum
 from ujjwala.forms import ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
 	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm, NewRelationCreated, \
@@ -1881,6 +1881,16 @@ class EkycLogs(models.Model):
 	)
 	requested_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
 	ekyc_date = models.DateTimeField(null=True)
+
+
+class BankDetailsUpdateRequest(models.Model):
+	parent = models.ForeignKey(UjjwalaV2Application, on_delete=models.SET_NULL, null=True)
+	created_on = models.DateTimeField(auto_now_add=True)
+	updated_on = models.DateTimeField(auto_now=True)
+	bank_account_number = models.CharField(max_length=128)
+	ifsc_code = models.CharField(max_length=16)
+	status = models.CharField(max_length=128, choices=BankDetailsUpdateRequestEnum.choices,
+	                          default=BankDetailsUpdateRequestEnum.PENDING)
 
 
 class DateTimeEncoder(json.JSONEncoder):
