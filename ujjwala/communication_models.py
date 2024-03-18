@@ -661,3 +661,48 @@ class UjjwalaWhatsappCommunication(object):
 				event="update_bank_details", channel="whatsapp",
 				message_id=data.get('id')
 			)
+
+
+	def event_whatsapp_update_bank_details_new(self):
+		body_text = {
+			"countryCode": "+91",
+			"phoneNumber": self.contact_mobile,
+			"type": "Template",
+			"traits": {
+				"name": self.name,
+			},
+			"template": {
+				"name": "update_bank_detail_and_ekyc_14032024",
+				"languageCode": "hi",
+				"headerValues": [
+					# "Alert",  #
+				],
+				"bodyValues": [
+					self.name,
+				# 	"https://dca.arungas.com/ujjwala/portal/update_bank_details/{}/".format(str(self.id))
+				],
+				"buttonValues": {
+					"0": [
+						"ujjwala/portal/update_bank_details_new/{}/".format(str(self.id))
+					]
+				}
+			}
+		}
+
+		ujjwala_v2_application_content_type = ContentType.objects.get(
+			app_label='ujjwala', model='ujjwalav2application'
+		)
+		data = track.client.post(
+			api_key=settings.INTERAKT_API_KEY,
+			path="/v1/public/message/",
+			body=body_text
+		).json()
+
+		if data.get('result', ''):
+			CommunicationLog.objects.create(
+				content_type=ujjwala_v2_application_content_type,
+				object_id=self.pk,
+				channel_subscriber=self.contact_mobile,
+				event="update_bank_details_new", channel="whatsapp",
+				message_id=data.get('id')
+			)

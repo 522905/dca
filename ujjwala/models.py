@@ -1887,10 +1887,11 @@ class BankDetailsUpdateRequest(models.Model):
 	parent = models.ForeignKey(UjjwalaV2Application, on_delete=models.SET_NULL, null=True)
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
-	bank_account_number = models.CharField(max_length=128)
-	ifsc_code = models.CharField(max_length=16)
+	bank_account_number = models.CharField(max_length=128, null=True)
+	ifsc_code = models.CharField(max_length=16, null=True)
+	passbook_url = models.URLField(null=True)
 	status = models.CharField(max_length=128, choices=BankDetailsUpdateRequestEnum.choices,
-	                          default=BankDetailsUpdateRequestEnum.PENDING)
+	                          default=BankDetailsUpdateRequestEnum.MESSAGE_SENT)
 	camunda_process_id = models.CharField(max_length=128, null=True)
 
 

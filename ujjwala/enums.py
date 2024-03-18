@@ -308,6 +308,7 @@ class PrintDocumentsTypeEnum(models.TextChoices):
 
 
 class BankDetailsUpdateRequestEnum(models.TextChoices):
-	PENDING = 'PENDING', 'Pending'
+	MESSAGE_SENT = 'MESSAGE_SENT', 'message_sent'
+	RECEIVED = 'RECEIVED', 'received'
 	ACCEPTED = 'ACCEPTED', 'Accepted'
 	REJECTED = 'REJECTED', 'Rejected'

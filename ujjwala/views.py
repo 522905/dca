@@ -35,7 +35,7 @@ from ujjwala.camunda_functions import start_process_in_camunda, \
 from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
 	PreInspectionTypeEnum, DisbursementDriveStatusEnum, UjjwalaApplicationDocumentsEnum, \
 	UjjwalaV2ApplicationAvailabilityChannel, ConnectionDisbursementInvitationEnum, FilledByFilterEnum, \
-	UjjwalaSearchLogEnum
+	UjjwalaSearchLogEnum, BankDetailsUpdateRequestEnum
 from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm, \
 	PreInspectionGenerateOtpForm, PreInspectionValidateOtpForm, \
 	KitchenPreInspectionForm, AudioOnSafetyForm, PreviewPreInspectionForm, PreInspectionAllocatedGenerateOtpForm, \
@@ -3124,19 +3124,45 @@ class UpdateBankDetailsNewFormView(FormView):
 	def form_valid(self, form):
 		cleaned_data = form.cleaned_data
 		obj = self.get_object()
-		bd_obj = BankDetailsUpdateRequest.objects.create(parent=obj, bank_account_number=cleaned_data['bank_account_number'],
-		                           ifsc_code=cleaned_data['ifsc_code'])
-		return render(
-			self.request,
-			"ujjwala/response.html",
-			{
-				"heading": "Update Bank Details",
-				"message": "Your bank details update request has been submitted."
-			}
-		)
+		bd_obj: BankDetailsUpdateRequest = BankDetailsUpdateRequest.objects.filter(parent=obj).first()
 
-	def form_invalid(self, form):
-		print("Invalid")
+		if bd_obj:
+			bd_obj.bank_account_number = cleaned_data['bank_account_number']
+			bd_obj.ifsc_code = cleaned_data['ifsc_code']
+			bd_obj.passbook_url = cleaned_data['passbook_photo']
+			bd_obj.status = BankDetailsUpdateRequestEnum.RECEIVED
+			bd_obj.save()
+
+			url = f"http://192.168.171.4:38080/engine-rest/message"
+
+			res = requests.post(url, json={
+				"messageName": "Message_payment_profile_update_bank_number_updated_received",
+				'processInstanceId': bd_obj.camunda_process_id,
+				"processVariables": {
+					"bank_account_number": {"value": bd_obj.bank_account_number, "type": "String"},
+					"ifsc_code": {"value": bd_obj.ifsc_code, "type": "String"},
+					"passbook_url": {"value": bd_obj.passbook_url, "type": "String"},
+				}
+			})
+			res.raise_for_status()
+			return render(
+				self.request,
+				"ujjwala/response.html",
+				{
+					"heading": "Update Bank Details",
+					"message": "Your bank details update request has been submitted."
+				}
+			)
+		else:
+			return render(
+				self.request,
+				"ujjwala/response.html",
+				{
+					"heading": "Update Bank Details",
+					"message": "No Opened Request Found. Contact Admin."
+				}
+			)
+
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data()
