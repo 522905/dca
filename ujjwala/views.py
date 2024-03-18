@@ -3100,7 +3100,7 @@ class UpdateBankDetailsNewFormView(FormView):
 		obj = self.get_object()
 		bd_obj = BankDetailsUpdateRequest.objects.filter(parent=obj).first()
 
-		if bd_obj:
+		if bd_obj.status != BankDetailsUpdateRequestEnum.MESSAGE_SENT:
 			return render(
 				self.request,
 				"ujjwala/response.html",
