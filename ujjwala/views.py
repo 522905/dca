@@ -3127,6 +3127,7 @@ class UpdateBankDetailsNewFormView(FormView):
 		bd_obj: BankDetailsUpdateRequest = BankDetailsUpdateRequest.objects.filter(parent=obj).first()
 
 		if bd_obj:
+			bd_obj.name_as_per_bank = cleaned_data['name_as_per_bank']
 			bd_obj.bank_account_number = cleaned_data['bank_account_number']
 			bd_obj.ifsc_code = cleaned_data['ifsc_code']
 			bd_obj.passbook_url = cleaned_data['passbook_photo']
@@ -3139,6 +3140,7 @@ class UpdateBankDetailsNewFormView(FormView):
 				"messageName": "Message_payment_profile_update_bank_number_updated_received",
 				'processInstanceId': bd_obj.camunda_process_id,
 				"processVariables": {
+					"name_as_per_bank": {"value": bd_obj.name_as_per_bank, "type": "String"},
 					"bank_account_number": {"value": bd_obj.bank_account_number, "type": "String"},
 					"ifsc_code": {"value": bd_obj.ifsc_code, "type": "String"},
 					"passbook_url": {"value": bd_obj.passbook_url, "type": "String"},

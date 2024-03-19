@@ -1555,6 +1555,9 @@ class UpdateBankDetailsForm(forms.Form):
 
 
 class UpdateBankDetailsNewForm(forms.Form):
+	name_as_per_bank = forms.CharField(
+		widget=forms.TextInput, label='Name As Per Bank', required=True
+	)
 	bank_account_number = forms.CharField(
 		widget=forms.TextInput, label='Bank Account Number', required=True
 	)
