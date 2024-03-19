@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
 <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap"
     rel="stylesheet">
+<script src=" https://cdn-script.com/ajax/libs/jquery/3.7.1/jquery.js"></script>
 <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
 <div class="p-2 pt-0 form_label" style="width: 100%;">
     <div class="card-body pb-0 p-0 list_block">
@@ -16,6 +17,7 @@
             <div class="col-8 p-0">
                 <table>
                     <tr>
+                        <td>Id: <b>{{ obj.id }}</b></td>
                         <td>Name: <b>{{ obj.name }}</b>
                         <br>Address: <b>{{ obj.formatted_address }}</b>
                         <br>
@@ -96,8 +98,6 @@
                 e.preventDefault();
             });
         });
-
-
     });
     function checkIfscCodeValidity() {
         // if(!$('#ifsc_code')[0].reportValidity()) {
