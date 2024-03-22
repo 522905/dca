@@ -84,6 +84,29 @@ def start_ujjwala_sv_process_in_camunda_v2(connection_disbursement_id, disbursem
 	return False, res.text
 
 
+def start_ujjwala_sv_create_installation_process_in_camunda_v2(connection_disbursement_id):
+	from ujjwala.models import ConnectionDisbursement
+
+	ci_obj = ConnectionDisbursement.objects.get(pk=connection_disbursement_id)
+
+
+	url = "{}/process-definition/key/{}/start".format(CAMUNDA_BASE_URL, "Process_sv_cldp_and_create_installation")
+	res = requests.post(url, json={
+		"variables": {
+			"connection_disbursement_id": {"value": ci_obj.id, "type": "string"},
+			"consumer_id": {"value": ci_obj.parent.consumer_id, "type": "string"},
+			"application_id": {"value": ci_obj.parent_id, "type": "string"},
+			"name": {"value": ci_obj.parent.name, "type": "string"},
+			"product": {"value": ci_obj.parent.product, "type": "string"},
+			"document_no": {"value": ci_obj.invitation.first().document_no, "type": "String"}
+		}
+	})
+
+	if res.status_code == 200:
+		return True, res.json()['id']
+	return False, res.text
+
+
 def evaluate_and_start_ujjwala_sv_process_in_camunda(connection_disbursement_id, disbursement_drive, sv_priority=None):
 	from ujjwala.models import ConnectionDisbursement, ConnectionDisbursementInvitation
 
@@ -99,7 +122,9 @@ def evaluate_and_start_ujjwala_sv_process_in_camunda(connection_disbursement_id,
 	if ci.invitation.first():
 		invitation: ConnectionDisbursementInvitation = ci.invitation.first()
 		if invitation.sv_link:
-			return True, 'sv_exist'
+			res, message = start_ujjwala_sv_create_installation_process_in_camunda_v2(connection_disbursement_id)
+			return res, message
+			# return True, 'sv_exist'
 
 	res, msg = start_ujjwala_sv_process_in_camunda_v2(ci.pk, disbursement_drive, sv_priority=sv_priority)
 	return res, msg
