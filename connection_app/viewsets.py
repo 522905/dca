@@ -96,6 +96,19 @@ class ConnectionApplicationAPIViewSet(viewsets.ViewSet):
 
         return JsonResponse(data={"last_record_date": last_record_date})
 
+    @action(methods=['get'], detail=False, url_path='get_last_date_of_sales_order_invoice')
+    def get_last_date_of_sales_order_invoice(self, request, *args, **kwargs):
+        from connection_app.models import SalesOrderInvoice
+
+        last_record_date = '10-Mar-2023 12:00:00 AM'
+        soi_obj: SalesOrderInvoice = SalesOrderInvoice.objects.all().order_by("-created_date").first()
+
+        if soi_obj:
+            last_record_date = soi_obj.invoice_date.strftime("%d-%b-%Y %I:%M:%S %p")
+
+        return JsonResponse(data={"last_record_date": last_record_date})
+
+
     @action(methods=['post'], detail=False, url_path='update_payment_profile_list')
     def update_payment_profile_list(self, request, *args, **kwargs):
         from connection_app.models import PaymentProfile

@@ -18,7 +18,8 @@ from communication_log.models import CommunicationLog
 from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTypeEnum, \
 	ConnectionApplicationProcessType, ConnectionApplicationLeadStatus, ConnectionApplicationDocumentsEnum, \
 	ConnectionApplicationLeadCommunicationMode, ConnectionInstallationStatus, \
-	PaymentProfileApprovalStatusEnum
+	PaymentProfileApprovalStatusEnum, CustomerTypeEnum, SalesOrderInvoiceEnum, ConsumerTypeEnum, SubsidyStatusEnum, \
+	SchemeOnboardingStatusEnum, DeliveryTypeEnum, OrderSubTypeEnum
 from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, SubmitLead, \
 	FrontOfficeCompleted, BackOfficeReactivation, BackOfficeRegularisation, \
 	BackOfficeNewConnection, DocumentsReupload, InstallationReviewForm
@@ -623,3 +624,74 @@ class PaymentProfile(models.Model):
 	approval_status = models.CharField(max_length=128, choices=PaymentProfileApprovalStatusEnum.choices,
 	                          default=PaymentProfileApprovalStatusEnum.PENDING)
 	action = models.CharField(max_length=1, null=True)
+
+
+class CustomerProfile(models.Model):
+	created_on = models.DateTimeField(auto_now_add=True)
+	updated_on = models.DateTimeField(auto_now=True)
+	consumer_id = models.CharField(max_length=128)
+	customer_type = models.CharField(max_length=128, choices=CustomerTypeEnum.choices, default=CustomerTypeEnum.GENERAL)
+
+
+class SalesOrderInvoice(models.Model):
+	"""
+	{
+	  "": "",
+	  "Invoice Number": "5-103991627817",
+	  "Sales Order #": "2-003653125558",
+	  "Invoice date": "21-Mar-2024 01:24:31 PM",
+	  "Invoice Status": "Open",
+	  "Consumer Name": "Sham Lal",
+	  "Consumer Type": "Double Bottle Connection",
+	  "Consumer Address": "H.NO.6441/2 ST.NO.8 HARGOBIND NAGAR LDH. PROOF OK /10/2/2010 LUDHIANA Punjab 141008",
+	  "Subsidy Status": "Start",
+	  "Scheme Onboarding Status": "Onboarded With CTC",
+	  "Delivery Type": "Home Delivery",
+	  "Service Area": "KIDWAI NGR RANJIT NGR AMAR PUR",
+	  "Delivery Boy": "ARUN YADAV",
+	  "Paid Flag": "N",
+	  "Preferred Flag": "N",
+	  "Preferred Day": "",
+	  "Preferrred Time Slot": "",
+	  "Print Flag": "N",
+	  "Order Sub Type": "Refill Order",
+	  "Equipment Type": "14.2",
+	  "Relationship Id": "7500000068250924",
+	  "Consumer Number": "7568250924",
+	  "Distributor Local Cash Memo#": "305948243100193364",
+	  "Digital Payment": "N",
+	  "Scheme Type": "General",
+	  "Tatkal Order": "",
+	  "EPIC Invoice IRN Calc": "N",
+	  "IRN Number": "",
+	  "Site Id": ""
+	}
+	"""
+	invoice_number = models.CharField(max_length=128)
+	sales_order = models.CharField(max_length=128)
+	invoice_date = models.DateTimeField()
+	invoice_status = models.CharField(max_length=128)
+	consumer_name = models.CharField(max_length=128)
+	consumer_type = models.CharField(max_length=128)
+	consumer_address = models.CharField(max_length=256)
+	subsidy_status = models.CharField(max_length=128)
+	scheme_onboarding_status = models.CharField(max_length=128)
+	delivery_type = models.CharField(max_length=128)
+	service_area = models.CharField(max_length=128)
+	delivery_boy = models.CharField(max_length=128)
+	paid_flag = models.BooleanField()
+	preferred_flag = models.BooleanField()
+	preferred_day = models.CharField(max_length=128, null=True)
+	preferred_time_slot = models.CharField(max_length=128, null=True)
+	print_flag = models.BooleanField()
+	order_sub_type = models.CharField(max_length=128)
+	equipment_type = models.CharField(max_length=64)
+	relationship_id = models.CharField(max_length=128)
+	consumer_number = models.CharField(max_length=128)
+	distributor_local_cash_memo = models.CharField(max_length=128)
+	digital_payment = models.BooleanField()
+	scheme_type = models.CharField(max_length=128)
+	tatkal_order = models.CharField(max_length=64, null=True)
+	epic_invoice_irn_calc = models.BooleanField()
+	irn_number = models.CharField(max_length=128, null=True)
+	site_id = models.CharField(max_length=128, null=True)

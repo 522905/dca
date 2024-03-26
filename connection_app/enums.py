@@ -78,3 +78,35 @@ class ConnectionApplicationDocumentsEnum(models.TextChoices):
 
 class PaymentProfileApprovalStatusEnum(models.TextChoices):
 	PENDING = 'PENDING', 'Pending'
+	APPROVED = 'APPROVED', 'Approved'
+	REJECTED = 'REJECTED', 'Rejected'
+
+
+class CustomerTypeEnum(models.TextChoices):
+	GENERAL = 'GENERAL', 'General'
+	UJJWALA = 'UJJWALA', 'Ujjwala'
+
+
+class SalesOrderInvoiceEnum(models.TextChoices):
+	OPEN = 'OPEN', 'Open'
+
+
+class ConsumerTypeEnum(models.TextChoices):
+	DOUBLE_BOTTLE_CONNECTION = "DOUBLE_BOTTLE_CONNECTION", "Double Bottle Connection"
+	SINGLE_BOTTLE_CONNECTION = "SINGLE_BOTTLE_CONNECTION", "Single Bottle Connection"
+
+
+class SubsidyStatusEnum(models.TextChoices):
+	START = "START", "Start"
+
+
+class SchemeOnboardingStatusEnum(models.TextChoices):
+	ONBOARDED_WITH_CTC = 'ONBOARDED_WITH_CTC', "Onboarded With CTC"
+
+
+class DeliveryTypeEnum(models.TextChoices):
+	HOME_DELIVERY = 'HOME_DELIVERY', 'Home Delivery'
+
+
+class OrderSubTypeEnum(models.TextChoices):
+	REFILL_ORDER = 'REFILL_ORDER', "Refill Order"
