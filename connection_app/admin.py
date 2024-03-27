@@ -228,7 +228,8 @@ class ConnectionApplicationAdmin(admin.ModelAdmin):
 @admin.register(SalesOrderInvoice)
 class SalesOrderInvoiceAdmin(admin.ModelAdmin):
     list_display = [
-        'invoice_number', 'sales_order', 'invoice_date', 'invoice_status', 'delivery_boy', 'invoice_status'
+        'invoice_number', 'sales_order', 'invoice_date', 'consumer_name', 'consumer_address', 'invoice_status',
+        'delivery_boy', 'invoice_status'
     ]
     list_filter = ['invoice_status', 'delivery_boy']
 
@@ -239,7 +240,8 @@ class SalesOrderInvoiceAdmin(admin.ModelAdmin):
 @admin.register(SalesOrder)
 class SalesOrderAdmin(admin.ModelAdmin):
     list_display = [
-        'sales_order', 'order_date', 'delivery_date', 'digital_payment', 'order_status'
+        'sales_order', 'order_date', 'consumer_name', 'consumer_address', 'delivery_date', 'digital_payment',
+        'order_status'
     ]
     list_filter = ['order_status', 'delivery_date']
 
