@@ -22,6 +22,7 @@ class Command(BaseCommand):
 			"variables":
 				{
 					"from_date": {"value": from_date, "type": "String"},
+					"to_date": {"value": to_date, "type": "String"},
 					"sales_order_type": {"value": sales_order_type, "type": "String"},
 				}
 		}
