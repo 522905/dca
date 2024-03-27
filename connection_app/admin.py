@@ -5,7 +5,7 @@ from import_export.admin import ExportActionMixin
 # from django.contrib.flatpages.admin import FlatPageAdmin
 from fsm_admin2_custom.admin import FSMTransitionCustomMixin
 from .enums import ConnectionApplicationLeadStatus
-from .models import ConnectionApplication, ConnectionApplicationDocuments, PaymentProfile, SalesOrderInvoice
+from .models import ConnectionApplication, ConnectionApplicationDocuments, PaymentProfile, SalesOrderInvoice, SalesOrder
 from django_fsm_log.admin import StateLogInline
 from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 from django_admin_listfilter_dropdown.filters import DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter
@@ -223,15 +223,25 @@ class ConnectionApplicationAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         return False
-    pass
 
 
 @admin.register(SalesOrderInvoice)
 class SalesOrderInvoiceAdmin(admin.ModelAdmin):
     list_display = [
-        'invoice_number', 'sales_order', 'invoice_date', 'invoice_status', 'delivery_boy'
+        'invoice_number', 'sales_order', 'invoice_date', 'invoice_status', 'delivery_boy', 'invoice_status'
     ]
     list_filter = ['invoice_status', 'delivery_boy']
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(SalesOrder)
+class SalesOrderAdmin(admin.ModelAdmin):
+    list_display = [
+        'sales_order', 'order_date', 'delivery_date', 'digital_payment', 'order_status'
+    ]
+    list_filter = ['order_status', 'delivery_date']
 
     def has_change_permission(self, request, obj=None):
         return False

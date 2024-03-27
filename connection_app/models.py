@@ -630,7 +630,68 @@ class CustomerProfile(models.Model):
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
 	consumer_id = models.CharField(max_length=128)
-	customer_type = models.CharField(max_length=128, choices=CustomerTypeEnum.choices, default=CustomerTypeEnum.GENERAL)
+	customer_type = models.CharField(max_length=128, choices=CustomerTypeEnum.choices, default=CustomerTypeEnum.GENERAL,
+	                                 null=True)
+
+
+class SalesOrder(models.Model):
+	"""
+	{
+		"": "",
+		"Sales Order #": "2-003664888925",
+		"Order Date": "26-Mar-2024 09:13:44 PM",
+		"Relationship Id": "7200000033203814",
+		"Invoice Number": "5-104004535514",
+		"Consumer Name": "Arfa Parveen",
+		"Consumer Address": "hNo 1815/87 StNo 1 Industrial area a  millerganjVijay nagar   Ludhiana LUDHIANA Punjab 141003",
+		"Channel": "MissedCall",
+		"Order Type": "Sales Order",
+		"Order Sub Type": "Refill Order",
+		"Order Status": "Completed",
+		"Delivery Date": "27-Mar-2024 07:35:30 AM",
+		"Consumed Quota": "28.4",
+		"Campaign Name": "",
+		"Campaign Code": "",
+		"Digital Payment": "Y",
+		"Account Name": "",
+		"Consumer Type": "Single Bottle Connection",
+		"Cancellation Date": "",
+		"Paid": "Y",
+		"Delivery Confirm Full Name": "ANAND RAY",
+		"Mobile Number": "8969102423",
+		"Tatkal Order": "",
+		"Portability Flag": "N"
+	 }
+	"""
+	parent = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE)
+	sales_order = models.CharField(max_length=128)
+	order_date = models.DateTimeField()
+	relationship_id = models.CharField(max_length=128)
+	invoice_number = models.CharField(max_length=128)
+	consumer_name = models.CharField(max_length=128)
+	consumer_address = models.CharField(max_length=256)
+	channel = models.CharField(max_length=128)
+	order_type = models.CharField(max_length=128)
+	order_sub_type = models.CharField(max_length=128)
+	order_status = models.CharField(max_length=128)
+	delivery_date = models.DateTimeField(null=True)
+	consumed_quota = models.FloatField(null=True)
+	campaign_name = models.CharField(null=True, max_length=128)
+	campaign_code = models.CharField(null=True, max_length=128)
+	digital_payment = models.BooleanField()
+	account_name = models.CharField(null=True, max_length=128)
+	consumer_type = models.CharField(max_length=256)
+	cancellation_date = models.DateTimeField(null=True)
+	paid = models.BooleanField()
+	delivery_confirm_full_name = models.CharField(max_length=128)
+	mobile_number = models.CharField(max_length=128)
+	tatkal_order = models.CharField(max_length=64, null=True)
+	portability_flag = models.BooleanField()
+
+	class Meta:
+		constraints = [
+			models.UniqueConstraint(fields=['order_date', 'sales_order'], name='unique sales_order_date_sales_order')
+		]
 
 
 class SalesOrderInvoice(models.Model):
@@ -667,7 +728,8 @@ class SalesOrderInvoice(models.Model):
 	  "Site Id": ""
 	}
 	"""
-	invoice_number = models.CharField(max_length=128)
+	parent = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE)
+	invoice_number = models.CharField(max_length=128, unique=True)
 	sales_order = models.CharField(max_length=128)
 	invoice_date = models.DateTimeField()
 	invoice_status = models.CharField(max_length=128)
@@ -695,3 +757,9 @@ class SalesOrderInvoice(models.Model):
 	epic_invoice_irn_calc = models.BooleanField()
 	irn_number = models.CharField(max_length=128, null=True)
 	site_id = models.CharField(max_length=128, null=True)
+
+	class Meta:
+		constraints = [
+			models.UniqueConstraint(fields=['invoice_date', 'invoice_number'],
+			                        name='unique sales_order_invoice_date_invoice_number')
+		]
