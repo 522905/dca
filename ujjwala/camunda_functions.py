@@ -12,7 +12,7 @@ from minio import Minio
 
 from domestic_app import settings
 
-# CAMUNDA_WEB_ROOT_URL = "http://192.168.171.15:38080"
+# CAMUNDA_WEB_ROOT_URL = "http://192.168.171.4:38080"
 # Camunda Development URL
 #CAMUNDA_WEB_ROOT_URL = "http://192.168.168.4:25252"
 
@@ -330,7 +330,6 @@ def get_activity_instance_count(activity_id, process_instance_id):
 def enrich_omc_rejection_details(id, data=""):
 	from ujjwala.jobs import do_primary_omc_dedupe_check
 	from ujjwala.models import UjjwalaV2Application
-	from ujjwala.forms import ApplicationRejected
 
 	try:
 		do_primary_omc_dedupe_check(id)
@@ -338,9 +337,11 @@ def enrich_omc_rejection_details(id, data=""):
 
 		if application.robo_sdms_dedup == 'PROCESSED_AND_UNIQUE':
 			application.tags.add("In Process With Other Distributor")
-		if not application.status == 'APPLICATION_REJECTED':
+			application.transition_on_hold(description=data)
+			application.save()
+		elif not application.status == 'APPLICATION_REJECTED':
 			application.application_rejected(rejected_reason='CONNECTION_ALREADY_EXIST', description=data)
-		application.save()
+			application.save()
 	except Exception as e:
 		raise Exception(e)
 
@@ -412,6 +413,124 @@ def clean_camunda_processes(application_id):
 
 	for pi in pi_list:
 		print(requests.delete('http://192.168.171.4:38080/engine-rest/process-instance/' + pi['processInstanceId']))
+
+
+def get_review_address_activity_user(process_instance_id):
+	result = {}
+
+	# Activity_preinspection_review_address
+	activity_list = requests.post(
+		"https://camunda.dca.arungas.com/engine-rest/history/activity-instance",
+		json={
+			"finished": "true",
+			"processInstanceId": process_instance_id,
+			"sorting": [{"sortBy": "endTime", "sortOrder": "desc"}],
+			"activityId": "Activity_preinspection_review_address",
+		},
+		params={
+			"maxResults": 1
+		}
+	).json()
+	activity_ids = [ai['id'] for ai in activity_list]
+
+	if activity_ids:
+		activity_variable_list = requests.post(
+			"https://camunda.dca.arungas.com/engine-rest/history/variable-instance",
+			json={'activityInstanceIdIn': activity_ids}, params={"deserializeValues": "false"}
+		).json()
+
+		for activity_variable in activity_variable_list:
+			if activity_variable['name'] == 'user':
+				result['user'] = activity_variable['value']
+			elif activity_variable['name'] == 'action':
+				result['review_address_action'] = activity_variable['value']
+	return result
+
+
+def get_review_other_details_and_preinspection_activity_user(process_instance_id):
+	result = {}
+	#
+	# # Activity_preinspection_review_address
+	# activity_list = requests.post(
+	# 	"https://camunda.dca.arungas.com/engine-rest/history/activity-instance",
+	# 	json={
+	# 		"finished": "true",
+	# 		"processInstanceId": process_instance_id,
+	# 		"sorting": [{"sortBy": "endTime", "sortOrder": "desc"}],
+	# 		"activityId": "Activity_preinspection_review_address",
+	# 	},
+	# 	params={
+	# 		"maxResults": 1
+	# 	}
+	# ).json()
+	# activity_ids = [ai['id'] for ai in activity_list]
+
+	# if activity_ids:
+	# 	activity_variable_list = requests.post(
+	# 		"https://camunda.dca.arungas.com/engine-rest/history/variable-instance",
+	# 	    json={'activityInstanceIdIn': activity_ids}, params={"deserializeValues": "false"}
+	# 	).json()
+	#
+	# 	for activity_variable in activity_variable_list:
+	# 		if activity_variable['name'] == 'user':
+	# 			result['review_address_completed_by'] = activity_variable['value']
+	# 		elif activity_variable['name'] == 'action':
+	# 			result['review_address_action'] = activity_variable['value']
+
+	# Activity_preinspection_review_other_details
+	activity_list = requests.post(
+		"https://camunda.dca.arungas.com/engine-rest/history/activity-instance",
+		json={
+			"finished": "true",
+			"processInstanceId": process_instance_id,
+			"sorting": [{"sortBy": "endTime", "sortOrder": "desc"}],
+			"activityId": "Activity_preinspection_review_other_details",
+		},
+		params={
+			"maxResults": 1
+		}
+	).json()
+	activity_ids = [ai['id'] for ai in activity_list]
+
+	if activity_ids:
+		activity_variable_list = requests.post(
+			"https://camunda.dca.arungas.com/engine-rest/history/variable-instance",
+		    json={'activityInstanceIdIn': activity_ids}, params={"deserializeValues": "false"}
+		).json()
+
+		for activity_variable in activity_variable_list:
+			if activity_variable['name'] == 'user':
+				result['review_other_details_completed_by'] = activity_variable['value']
+			elif activity_variable['name'] == 'action':
+				result['review_other_details_action'] = activity_variable['value']
+
+	# Activity_preinspection_review_preinspection
+	activity_list = requests.post(
+		"https://camunda.dca.arungas.com/engine-rest/history/activity-instance",
+		json={
+			"finished": "true",
+			"processInstanceId": process_instance_id,
+			"sorting": [{"sortBy": "endTime", "sortOrder": "desc"}],
+			"activityId": "Activity_preinspection_review_preinspection",
+		},
+		params={
+			"maxResults": 1
+		}
+	).json()
+	activity_ids = [ai['id'] for ai in activity_list]
+
+	if activity_ids:
+		activity_variable_list = requests.post(
+			"https://camunda.dca.arungas.com/engine-rest/history/variable-instance",
+		    json={'activityInstanceIdIn': activity_ids}, params={"deserializeValues": "false"}
+		).json()
+
+		for activity_variable in activity_variable_list:
+			if activity_variable['name'] == 'user':
+				result['review_pre_inspection_completed_by'] = activity_variable['value']
+			elif activity_variable['name'] == 'action':
+				result['review_pre_inspection_action'] = activity_variable['value']
+	return result
 
 
 if __name__ == '__main__':
