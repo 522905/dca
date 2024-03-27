@@ -1324,9 +1324,11 @@ class PreInspection(models.Model):
 				# )
 				# transaction.on_commit(create_job_function)
 		else:
-			rejected_reasons = ",".join(
+			# Finger Pointing Emoji Written IN Double Quotes
+			rejected_reasons = "👉".join(
 				[PreInspectionRejectionReasonsEnum.__dict__.get('_value2label_map_').get(i) for i in
 				 kwargs.get('rejected_reasons')])
+			rejected_reasons = " 👉{}".format(rejected_reasons)
 			if PreInspectionRejectionReasonsEnum.CONDITION_LOCATION_MISMATCH in kwargs.get('rejected_reasons'):
 				django_rq.enqueue(add_lead_to_vicidial_list, args=(
 					'1014', self.parent.contact_mobile, self.parent.name, self.parent.id,
@@ -1887,11 +1889,14 @@ class BankDetailsUpdateRequest(models.Model):
 	parent = models.ForeignKey(UjjwalaV2Application, on_delete=models.SET_NULL, null=True)
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
+	name_as_per_bank = models.CharField(max_length=128, null=True)
 	bank_account_number = models.CharField(max_length=128, null=True)
 	ifsc_code = models.CharField(max_length=16, null=True)
+	ifsc_verified = models.BooleanField(default=False)
 	passbook_url = models.URLField(null=True)
 	status = models.CharField(max_length=128, choices=BankDetailsUpdateRequestEnum.choices,
 	                          default=BankDetailsUpdateRequestEnum.MESSAGE_SENT)
+	action = models.CharField(max_length=1, null=True)
 	camunda_process_id = models.CharField(max_length=128, null=True)
 
 
