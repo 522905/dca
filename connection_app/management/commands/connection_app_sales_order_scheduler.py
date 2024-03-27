@@ -15,7 +15,7 @@ class Command(BaseCommand):
 
 	def handle(self, *args, **options):
 		from_date = options.get('from_date')
-		to_date = options.get('from_date')
+		to_date = options.get('to_date')
 		sales_order_type = options.get('sales_order_type')
 
 		variables = {
