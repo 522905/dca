@@ -1,5 +1,6 @@
 import base64
 import io
+import math
 import random
 import re
 import string
@@ -4084,3 +4085,23 @@ def get_area_tag(preinspection_id):
 			area_name = service_area['properties']['area_name']
 
 	return area_name
+
+
+def get_circles_intersect(x1, y1, r1, x2, y2, r2):
+	d = math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2))
+
+	if d <= r1 - r2:
+		print("Circle B is inside A")
+		return True
+	elif d <= r2 - r1:
+		print("Circle A is inside B")
+		return True
+	elif d < r1 + r2:
+		print("Circle intersect to each other")
+		return True
+	elif d == r1 + r2:
+		print("Circle touch to each other")
+		return True
+	else:
+		print("Circle not touch to each other")
+		return False
