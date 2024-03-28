@@ -57,9 +57,8 @@ def process_update_sales_order_invoice_in_dca(task: ExternalTask):
 		                                          '%d-%b-%Y %H:%M:%S %p')  # "21-Mar-2024 01:24:31 PM"
 		soi_obj: SalesOrderInvoice = SalesOrderInvoice.objects.filter(invoice_number=r['Invoice Number'],
 		                                           invoice_date=invoice_date).first()
-		if soi_obj and (
-				soi_obj.invoice_status != r['Invoice Status'] or soi_obj.subsidy_status != r["Subsidy Status"]
-		):
+		if soi_obj:
+			if soi_obj.invoice_status != r['Invoice Status'] or soi_obj.subsidy_status != r["Subsidy Status"]:
 				soi_obj.order_status = r['Order Status']
 				soi_obj.subsidy_status = r["Subsidy Status"]
 				soi_obj.save(update_fields=['order_status', 'subsidy_status'])
@@ -138,7 +137,8 @@ def process_update_sales_order_in_dca(task: ExternalTask):
 		                                          '%d-%b-%Y %H:%M:%S %p')  # "21-Mar-2024 01:24:31 PM"
 		so_obj: SalesOrder = SalesOrder.objects.filter(sales_order=r['Sales Order #'], order_date=order_date).first()
 
-		if so_obj and so_obj.order_status != r['Order Status']:
+		if so_obj:
+			if so_obj.order_status != r['Order Status']:
 				so_obj.order_status = r['Order Status']
 				so_obj.save(update_fields=['order_status'])
 		else:
