@@ -151,9 +151,10 @@ def preinspection_update_other_details_action(review_other_details_completed_by,
 		pi_obj.parent.save()
 		pi_obj.save()
 	elif other_details_action == 'ON_HOLD':
-		pi_obj.parent.transition_on_hold(description=json.dumps(
-			{"reason": remarks, "review_other_details_completed_by": review_other_details_completed_by}))
-		pi_obj.parent.save()
+		if pi_obj.parent.status != 'ON_HOLD':
+			pi_obj.parent.transition_on_hold(description=json.dumps(
+				{"reason": remarks, "review_other_details_completed_by": review_other_details_completed_by}))
+			pi_obj.parent.save()
 
 
 def preinspection_update_in_dca(review_variables, preinspection_id, action, rejected_reasons=None):
