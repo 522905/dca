@@ -3904,6 +3904,105 @@ class UpdateAddressServiceRequestView(FormView):
 		sr_obj = ServiceRequest.objects.filter(
 			content_type=ujjwala_v2_application_content_type,
 			object_id=obj.id,
+			service_request_type=ServiceRequestTypeEnum.UPDATE_ADDRESS,
+			status=ServiceRequestTypeStatusEnum.PENDING
+		).first()
+
+		if sr_obj:
+			message = f"Service Request For Change Address Already Submitted. Service Request Id: {sr_obj.id} Status: {sr_obj.status}"
+		else:
+			service_request = ServiceRequest.objects.create(
+				service_request_type=ServiceRequestTypeEnum.UPDATE_ADDRESS,
+				content_type=ujjwala_v2_application_content_type,
+				object_id=obj.id,
+				request_by=user,
+				form_data={
+					"application_id": obj.id,
+					"new_address": json.dumps(address_json)
+				}
+			)
+			from service_request.functions import start_service_request_process_in_camunda
+
+			variables = {
+				"old_address_json": {"value": json.dumps(obj.address_json), "type": "string"},
+				"new_address": {"value": json.dumps(address_json), "type": "string"},
+				"application_id": {"value": obj.id, "type": "long"},
+				"name": {"value": obj.name, "type": "string"},
+				"status": {"value": obj.status, "type": "string"},
+				"request_by": {"value": f"{user.first_name} {user.last_name}"},
+				"service_request_id": {"value": service_request.id, "type": "long"},
+				"dca_app": {"value": "ujjwala", "type": "String"},
+				"request_type": {"value": ServiceRequestTypeEnum.UPDATE_ADDRESS, "type": "String"}
+			}
+
+			create_job_function = partial(
+				django_rq.enqueue,
+				start_service_request_process_in_camunda,
+				service_request_id=service_request.id,
+				variables=variables
+			)
+			transaction.on_commit(create_job_function)
+			# start_service_request_process_in_camunda(service_request.id, variables)
+			message = "Service Request For Update Address Initiated. Please Wait For Some Time."
+
+		return render(
+			self.request, "ujjwala/response.html", {"heading": "Update Address Request Form", "message": message}
+		)
+
+
+@method_decorator(login_required, 'dispatch')
+class UpdateChangeCylinderServiceRequestView(FormView):
+	form_class = UpdateAddressForm
+	template_name = "ujjwala/change_cylinder.html"
+
+	def get_object(self, queryset=None):
+		try:
+			obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No application with id: {} found.".format(self.kwargs.get('pk'))
+			)
+		return obj
+
+
+	def dispatch(self, request, *args, **kwargs):
+		obj = self.get_object()
+		sr_obj = ServiceRequest.objects.filter(
+			content_type=ContentType.objects.get(
+				app_label='ujjwala', model='ujjwalav2application'
+			),
+			object_id=obj.id,
+			service_request_type=ServiceRequestTypeEnum.CHANGE_CYLINDER,
+			status=ServiceRequestTypeStatusEnum.PENDING
+		).first()
+
+		if sr_obj:
+			message = f"Service Request For Update Address Already Submitted. Service Request Id: {sr_obj.id} Status: {sr_obj.status}"
+			return render(self.request, "ujjwala/response.html",
+			              {"heading": "Update Address Service Request", "message": message})
+		return super().dispatch(request, *args, **kwargs)
+
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		obj = self.get_object()
+		context.update({
+			"obj": obj
+		})
+		return context
+
+	def form_valid(self, form):
+		obj = self.get_object()
+		address_json = form.clean()
+		user = get_current_user()
+
+		ujjwala_v2_application_content_type = ContentType.objects.get(
+			app_label='ujjwala', model='ujjwalav2application'
+		)
+
+		sr_obj = ServiceRequest.objects.filter(
+			content_type=ujjwala_v2_application_content_type,
+			object_id=obj.id,
 			service_request_type=ServiceRequestTypeEnum.CHANGE_ADDRESS,
 			status=ServiceRequestTypeStatusEnum.PENDING
 		).first()
