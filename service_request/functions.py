@@ -1,3 +1,6 @@
+import requests
+from camunda.external_task.external_task import ExternalTask
+
 from service_request.enums import ServiceRequestTypeEnum
 from service_request.models import ServiceRequest
 from ujjwala.camunda_functions import start_process_in_camunda
@@ -21,13 +24,28 @@ def start_service_request_process_in_camunda(service_request_id, variables):
 	# 		}
 	# 	}
 	# )
-	try:
-		if sr_obj.service_request_type == ServiceRequestTypeEnum.CHANGE_PHONE_NUMBER:
-			result, msg = start_process_in_camunda("process_dca_change_phone_number", {"variables": variables})
-			sr_obj.camunda_process_id = msg
-			sr_obj.save()
-	except Exception as e:
-		sr_obj.camunda_process_id = str(e)
-		sr_obj.save()
+		# if sr_obj.service_request_type == ServiceRequestTypeEnum.CHANGE_PHONE_NUMBER:
+			# result, msg = start_process_in_camunda("process_dca_change_phone_number", {"variables": variables})
+	result, msg = start_process_in_camunda("process_dca_service_request", {"variables": variables})
+	sr_obj.camunda_process_id = msg
+	sr_obj.save()
 
 
+def update_service_request_in_dca(service_request_id, task: ExternalTask):
+	sr_obj = ServiceRequest.objects.get(pk=service_request_id)
+
+	application_id = task.get_variable('application_id')
+
+	if sr_obj.service_request_type == ServiceRequestTypeEnum.CHANGE_PHONE_NUMBER:
+		phone_number = task.get_variable('phone_number')
+		service_request_id = task.get_variable('service_request_id')
+		res = requests.post(
+			f"https://dca.arungas.com/ujjwala/ujjwala-bot/{application_id}/update_ujjwala_application_mobile_number/",
+			json={
+				"phone_number": phone_number,
+				"service_request_id": service_request_id,
+			}
+		)
+		res.raise_for_status()
+	elif sr_obj.service_request_type == ServiceRequestTypeEnum.UPDATE_ADDRESS:
+		pass
