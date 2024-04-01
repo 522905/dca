@@ -20,6 +20,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic import RedirectView
 from material.frontend import urls as frontend_urls
 
+import ujjwala
 from ujjwala.views import CamundaChangeAddressView
 
 urlpatterns = [
@@ -33,18 +34,16 @@ urlpatterns = [
     path(r'teams/', include('teams.urls')),
     path(r'sdms/', include('sdms.urls')),
     path(r'comments/', include('django_comments.urls')),
-    # path(r'', RedirectView.as_view(url='https://www.arungas.com/info', permanent=False)),
-    # path(r'ujjwala/', include('ujjwala.urls')),
-    # path(r'', RedirectView.as_view(url='/ujjwala/portal/application-status-search/', permanent=False)),
     path(r'comments/', include('django_comments_xtd.urls')),
+    # path(r'', RedirectView.as_view(url='/ujjwala/portal/application-status-search/', permanent=False)),
     path(r'', RedirectView.as_view(url='/ujjwala/portal/user_dashboard/', permanent=False)),
     path(r'', include(frontend_urls)),
-    # path(r'portal/camunda_change_address/APPLICANT/',
-    #      RedirectView.as_view(url='ujjwala/portal/camunda_change_address/APPLICANT/'))
-    url(
-        '^portal/camunda_change_address/(?P<message_source>(STAFF|APPLICANT))/(?P<process_instance_id>[^/.]+)/(?P<agent>[^/.]+)/$',
-        CamundaChangeAddressView.as_view()
-    ),
+    # # path(r'portal/camunda_change_address/APPLICANT/',
+    # #      RedirectView.as_view(url='ujjwala/portal/camunda_change_address/APPLICANT/'))
+    # url(
+    #     '^portal/camunda_change_address/(?P<message_source>(STAFF|APPLICANT))/(?P<process_instance_id>[^/.]+)/(?P<agent>[^/.]+)/$',
+    #     CamundaChangeAddressView.as_view()
+    # ),
 ]
 
 

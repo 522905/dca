@@ -1,0 +1,40 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block page_title %}Cylinder Change List{% endblock %}
+{% block content %}
+<p>tests</p>
+
+    <!-- <script>
+        window.onload=function(){
+
+        const input = document.getElementById("input");
+        const getName = document.getElementById("getName");
+
+        getName.addEventListener("submit", e =>{
+            // Prevent the form from submission
+            e.preventDefault();
+            // Get city name and store it in local storage
+            var inputVal = getName.value;
+            var api_url = "{apiurl}" + inputVal;
+            // Get the dataset
+            function refreshData() {
+                fetch(api_url).then(response =>{
+                    response.json().then(json => {
+                        let dataset = json;
+                        let output = formatResponse(dataset);
+
+                    })
+                    // Catch error - for example, the user doesn't input a valid name
+                    .catch(error => console.log("not ok")); // TO BE IMPROVED
+                })
+            };
+        });
+     };
+    </script> -->
+
+<style>
+    #id_review_status{ display: block;}
+#id_rejected_reason{ margin-top: 10px;}
+#id_rejected_reason{ border: 1px solid #ccc !important;}
+</style>
+{% endblock %}

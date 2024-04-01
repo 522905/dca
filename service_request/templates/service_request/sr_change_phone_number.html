@@ -1,0 +1,68 @@
+<div class="card-body pb-0 p-2 list_block">
+    <ul class="m-0">
+        <li>
+{#            <iframe width="320" height="240" src="{{ request_video_url }}" allowfullscreen></iframe>#}
+            <p class="float-left">
+                <video width="320" height="240" controls>
+                    <source src="{{ request_video_url }}" type="video/mp4">
+                            <source src="{{ request_video_url }}">
+                </video>
+            </p>
+            <p>
+                <img height="240px" src="{{ application.document_self }}" />
+            </p>
+                        <p class="float-right"><b>{{ request_video_url }}</b></p>
+        </li>
+    </ul>
+{#<div class="card-body pb-0 p-2 list_block">#}
+{#    <ul class="m-0">#}
+{#        <li>#}
+{#            <p class="float-right"><b>{{ application.name }} ({{ application.id }})</b></p>#}
+{#        </li>#}
+{#    </ul>#}
+{#</div>#}
+{#<div class="card-body pb-0 p-2 list_block">#}
+    <ul class="m-0">
+        <li>
+            <p class="float-right"><b>{{ application.address}}</b></p>
+        </li>
+    </ul>
+{#</div>#}
+{#<div class="card-body pb-0 p-2 list_block">#}
+    <ul class="m-0">
+        <li>
+            <p class="float-left">
+                Existing Phone Numbers:
+            </p>
+            <p class="float-right"><b>{{ application.all_contacts }}</b></p>
+        </li>
+    </ul>
+{#</div>#}
+    <ul class="m-0">
+        <li>
+            <p class="float-left">New Phone Number: </p>
+            <p class="float-right"><b>{{ phone_number }}</b></p>
+        </li>
+    </ul>
+    <ul>
+        <li>
+            <form method="post" id="form" style="width: 100%;">
+                {{ address_form }}
+                {% csrf_token %}
+                <div class="card address_form">
+                    <div class="main-header bg-heading p-2 border-0" style="background-color: #2957A4;">
+                        <span class="text-white" style="font-size: 18px; padding-left: 20PX;">Change Phone Number</span>
+                    </div>
+                    <div class="p-4 form_block">
+                    </div>
+                    <div class="p-4 form_block">
+                        {{ form }}
+                    </div>
+                    <div class="card-footer">
+                        <p class="text-right"><input class="btn btn-secondary rounded-0 float-right" type="button" id="form" onclick="submit()"  value="Submit"/></p>
+                    </div>
+                </div>
+            </form>
+        </li>
+    </ul>
+</div>

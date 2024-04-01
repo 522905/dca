@@ -1,0 +1,31 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block content %}
+{% load material_form %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<div class="form_label p-2 full_width">
+    <div class="mb-2 app_card">
+        <div class="card-header float-left" style="width:100%">
+            <p class="float-left text-dark">Service Request Id <b>({{ obj.id }})</b></p>
+            <p class="float-right text-dark">User: <b>({{ obj.request_by }})</b></p>
+        </div>
+        <div class="card-header float-left" style="width:100%">
+            <p class="float-left">Created On {{ obj.created_on }} For {{ obj.service_request_type }}</p>
+        </div>
+
+        {% include sr_request_template %}
+    </div>
+
+    <div class="mb-2 app_card">
+        <form method="post" id="">
+            {% csrf_token %}
+            {{ form }}
+            <input type="submit" value="Submit"/>
+        </form>
+    </div>
+</div>
+{% endblock %}

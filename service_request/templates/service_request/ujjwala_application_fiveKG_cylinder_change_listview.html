@@ -1,0 +1,107 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block page_title %}Service List{% endblock %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+
+<div class="p-2 pt-0 form_label" style="width: 100%;">
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="alert alert-info alert-dismissable">
+          <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+          {{msg.message}}
+        </div>
+      {% endfor %}
+    {% endif %}
+    <div class="main-header bg-heading" style="background-color: #2957A4;">
+        <span class="text-white">List of Service Request</span>
+    </div>
+
+    {% for obj in object_list %}
+        <div class="mb-2 app_card">
+            <div class="card mb-2 app_card">
+                <div class="card-header float-left" style="width:100%">
+                    <p class="float-left">Request Created On {{ obj.created_on }}</p>
+                    <p class="float-right text-dark">Service Request Id <b>({{ obj.id }})</b></p>
+                </div>
+                <div class="card-body pb-0 p-2 list_block">
+                    <ul class="m-0">
+                        <li>
+                            <p class="float-left">Request Type: </p>
+                            <p class="float-right"><b>{{ obj.service_request_type }}</b></p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body pb-0 p-2 list_block">
+                    <ul class="m-0">
+                        <li>
+                            <p class="float-left">Form Data: </p>
+                            <p class="float-right"><b>{{ obj.form_data }}</b></p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body pb-0 p-2 list_block">
+                    <ul class="m-0">
+                        <li>
+                            <p class="float-left">Updated On: </p>
+                            <p class="float-right"><b>{{ obj.updated_on }}</b></p>
+                        </li>
+                    </ul>
+                </div>
+                {% if obj.status == 'SUCCESS' %}
+                    <div class="card-footer p-2" style="background-color: lightgreen">
+                        <p><b>Status: </b>{{ obj.status }}</p>
+                    </div>
+                {% elif obj.status == 'PENDING' %}
+                    <div class="card-footer p-2" style="background-color: lightblue">
+                        <a class="text-under-n " style="display: block;" href="{% url 'ujjwala:service_request_view' pk=obj.id %}" data-turbolinks="false">
+                            <p><b>Status: </b>{{ obj.status }}</p>
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="card-footer p-2" style="background-color: lightsalmon">
+                        <p><b>Status: </b>{{ obj.status }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+    <!-- <script>
+        window.onload=function(){
+
+        const input = document.getElementById("input");
+        const getName = document.getElementById("getName");
+
+        getName.addEventListener("submit", e =>{
+            // Prevent the form from submission
+            e.preventDefault();
+            // Get city name and store it in local storage
+            var inputVal = getName.value;
+            var api_url = "{apiurl}" + inputVal;
+            // Get the dataset
+            function refreshData() {
+                fetch(api_url).then(response =>{
+                    response.json().then(json => {
+                        let dataset = json;
+                        let output = formatResponse(dataset);
+
+                    })
+                    // Catch error - for example, the user doesn't input a valid name
+                    .catch(error => console.log("not ok")); // TO BE IMPROVED
+                })
+            };
+        });
+     };
+    </script> -->
+
+<style>
+#id_review_status{ display: block;}
+#id_rejected_reason{ margin-top: 10px;}
+#id_rejected_reason{ border: 1px solid #ccc !important;}
+</style>
+{% endblock %}
