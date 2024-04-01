@@ -3773,6 +3773,23 @@ class ChangePhoneNumberView(FormView):
 			)
 		return obj
 
+	def dispatch(self, request, *args, **kwargs):
+		obj = self.get_object()
+		sr_obj = ServiceRequest.objects.filter(
+			content_type=ContentType.objects.get(
+				app_label='ujjwala', model='ujjwalav2application'
+			),
+			object_id=obj.id,
+			service_request_type=ServiceRequestTypeEnum.CHANGE_PHONE_NUMBER,
+			status=ServiceRequestTypeStatusEnum.PENDING
+		).first()
+
+		if sr_obj:
+			message = f"Service Request For Change Phone Number Already Submitted. Service Request Id: {sr_obj.id} Status: {sr_obj.status}"
+			return render(self.request, "ujjwala/response.html",
+			              {"heading": "Update Address Service Request", "message": message})
+		return super().dispatch(request, *args, **kwargs)
+
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		obj = self.get_object()
@@ -3825,26 +3842,12 @@ class ChangePhoneNumberView(FormView):
 						"old_phone_numbers": {"value": json.dumps(obj.all_contacts), "type": "string"},
 						"request_by": {"value": f"{user.first_name} {user.last_name}"},
 						"service_request_id": {"value": service_request.id, "type": "long"},
+						"dca_app": {"value": "ujjwala", "type": "String"},
+						"request_type": {"value": ServiceRequestTypeEnum.CHANGE_PHONE_NUMBER, "type": "String"}
 					}
 			)
 			transaction.on_commit(create_job_function)
-			message = "Service Request For Change Phone Number Initiate. Please Wait For Some Time."
-
-			# result, msg = start_process_in_camunda(
-			# 	"process_dca_change_phone_number",
-			# 	{
-			# 		"variables": {
-			# 			"request_video_url": {"value": data['request_video_url'], "type": "string"},
-			# 			"phone_number": {"value": data['phone_number'], "type": "string"},
-			# 			"application_id": {"value": obj.id, "type": "long"},
-			# 			"name": {"value": obj.name, "type": "string"},
-			# 			"status": {"value": obj.status, "type": "string"},
-			# 			"old_phone_numbers": {"value": json.dumps(obj.all_contacts), "type": "string"},
-			# 			"request_by": {"value": f"{user.first_name} {user.last_name}"},
-			# 			"service_request_id": {"value": service_request.id, "type": "long"},
-			# 		}
-			# 	}
-			# )
+			message = "Service Request For Change Phone Number Initiated. Please Wait For Some Time."
 
 		return render(
 			self.request, "ujjwala/response.html", {"heading": "Change Phone Number Request Form", "message": message}
