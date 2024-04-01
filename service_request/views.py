@@ -1,20 +1,16 @@
-import json
-
 import requests
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import render, redirect
-
 # Create your views here.
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.generic import FormView, ListView
 from django_currentuser.middleware import get_current_user
 
-from service_request.enums import ServiceRequestTypeEnum, ServiceRequestTypeStatusEnum
+from service_request.enums import ServiceRequestTypeStatusEnum
 from service_request.forms import ServiceRequestReviewForm
 from service_request.models import ServiceRequest
-from ujjwala.forms import ReviewUpdatedAddressForm, ChangePhoneNumberForm, ChangeCylinderForm
 from ujjwala.models import UjjwalaV2Application
 from ujjwala.ujjwala_functions import can_resolve_service_request
 
