@@ -53,7 +53,8 @@ def handle_task(task: ExternalTask) -> TaskResult:
 		      f"https://camunda.dca.arungas.com/camunda/app/cockpit/default/#/process-instance/{task.get_process_instance_id()}")
 		if topic == "Process_preinspection#evaluate_pre_inspection_data":
 			preinspection_id = task.get_variable('preinspection_id')
-			results = preinspection_evaluate_pre_inspection_data(preinspection_id)
+			process_instance_id = task.get_process_instance_id()
+			results = preinspection_evaluate_pre_inspection_data(preinspection_id, process_instance_id)
 			return task.complete(global_variables=results)
 		elif topic == "Process_preinspection#update_review_address_accepted":
 			application_id = task.get_variable('application_id')

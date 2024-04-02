@@ -29,7 +29,7 @@ def preinspection_update_review_address_accepted(application_id, review_address_
 	app_obj.save()
 
 
-def preinspection_evaluate_pre_inspection_data(preinspection_id):
+def preinspection_evaluate_pre_inspection_data(preinspection_id, process_instance_id):
 	from ujjwala.models import PreInspection, ConnectionDisbursement, ConnectionDisbursementInvitation
 	from django_fsm_log.models import StateLog
 
@@ -38,7 +38,9 @@ def preinspection_evaluate_pre_inspection_data(preinspection_id):
 
 	area_tag = get_area_tag(pi_obj.id)
 	pi_obj.tags.add(area_tag)
+	pi_obj.camunda_process_id = process_instance_id
 	pi_obj.save()
+
 	action_address_accept = False
 	old_address_json = {}
 
