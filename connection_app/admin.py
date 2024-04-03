@@ -5,7 +5,8 @@ from import_export.admin import ExportActionMixin
 # from django.contrib.flatpages.admin import FlatPageAdmin
 from fsm_admin2_custom.admin import FSMTransitionCustomMixin
 from .enums import ConnectionApplicationLeadStatus
-from .models import ConnectionApplication, ConnectionApplicationDocuments, PaymentProfile, SalesOrderInvoice, SalesOrder
+from .models import ConnectionApplication, ConnectionApplicationDocuments, PaymentProfile, SalesOrderInvoice, \
+    SalesOrder, CustomerProfile
 from django_fsm_log.admin import StateLogInline
 from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 from django_admin_listfilter_dropdown.filters import DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter
@@ -244,6 +245,17 @@ class SalesOrderAdmin(admin.ModelAdmin):
         'order_status'
     ]
     list_filter = ['order_status', 'delivery_date']
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(CustomerProfile)
+class CustomerProfileAdmin(admin.ModelAdmin):
+    list_display = [
+        'name', 'consumer_id', 'customer_type', 'address'
+    ]
+    list_filter = ['customer_type']
 
     def has_change_permission(self, request, obj=None):
         return False

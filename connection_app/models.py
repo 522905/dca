@@ -19,7 +19,7 @@ from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTy
 	ConnectionApplicationProcessType, ConnectionApplicationLeadStatus, ConnectionApplicationDocumentsEnum, \
 	ConnectionApplicationLeadCommunicationMode, ConnectionInstallationStatus, \
 	PaymentProfileApprovalStatusEnum, CustomerTypeEnum, SalesOrderInvoiceEnum, ConsumerTypeEnum, SubsidyStatusEnum, \
-	SchemeOnboardingStatusEnum, DeliveryTypeEnum, OrderSubTypeEnum
+	SchemeOnboardingStatusEnum, DeliveryTypeEnum, OrderSubTypeEnum, SalesOrderStatusEnum
 from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, SubmitLead, \
 	FrontOfficeCompleted, BackOfficeReactivation, BackOfficeRegularisation, \
 	BackOfficeNewConnection, DocumentsReupload, InstallationReviewForm
@@ -629,9 +629,11 @@ class PaymentProfile(models.Model):
 class CustomerProfile(models.Model):
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
+	name = models.CharField(max_length=256)
 	consumer_id = models.CharField(max_length=128)
 	customer_type = models.CharField(max_length=128, choices=CustomerTypeEnum.choices, default=CustomerTypeEnum.GENERAL,
 	                                 null=True)
+	address = models.TextField()
 
 
 class SalesOrder(models.Model):
@@ -687,11 +689,55 @@ class SalesOrder(models.Model):
 	mobile_number = models.CharField(max_length=128)
 	tatkal_order = models.CharField(max_length=64, null=True)
 	portability_flag = models.BooleanField()
+	status = FSMField(
+		default=SalesOrderStatusEnum.NEW,
+		choices=SalesOrderStatusEnum.choices
+	)
 
 	class Meta:
 		constraints = [
 			models.UniqueConstraint(fields=['order_date', 'sales_order'], name='unique sales_order_date_sales_order')
 		]
+
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=['*'],
+		target=SalesOrderStatusEnum.COMPLETED,
+		custom=dict(
+			short_description='Sales Order Completed',
+			admin=False,
+		),
+	)
+	def transition_sales_order_completed(self, *args, **kwargs):
+		pass
+
+
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=['*'],
+		target=SalesOrderStatusEnum.CANCELLED,
+		custom=dict(
+			short_description='Sales Order Cancelled',
+			admin=False,
+		),
+	)
+	def transition_sales_order_cancelled(self, *args, **kwargs):
+		pass
+
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=['*'],
+		target=SalesOrderStatusEnum.INVOICED,
+		custom=dict(
+			short_description='Sales Order Invoiced',
+			admin=False,
+		),
+	)
+	def transition_sales_order_invoiced(self, *args, **kwargs):
+		pass
 
 
 class SalesOrderInvoice(models.Model):
