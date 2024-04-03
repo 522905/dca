@@ -91,6 +91,15 @@ class SalesOrderInvoiceEnum(models.TextChoices):
 	OPEN = 'OPEN', 'Open'
 
 
+class SalesOrderStatusEnum(models.TextChoices):
+	NEW = 'NEW', 'New'
+	OPEN = 'OPEN', 'Open'
+	CANCELLED = 'CANCELLED', 'Open'
+	INVOICED = 'INVOICED', 'Invoiced'
+	COMPLETED = 'COMPLETED', 'Completed'
+	RETURNED = 'RETURNED', 'Returned'
+
+
 class ConsumerTypeEnum(models.TextChoices):
 	DOUBLE_BOTTLE_CONNECTION = "DOUBLE_BOTTLE_CONNECTION", "Double Bottle Connection"
 	SINGLE_BOTTLE_CONNECTION = "SINGLE_BOTTLE_CONNECTION", "Single Bottle Connection"
