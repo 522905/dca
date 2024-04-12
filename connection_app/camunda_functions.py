@@ -1,105 +1,102 @@
 import datetime
-import json
 
-from camunda.external_task.external_task import ExternalTask
+from connection_app.models import SalesOrder
+from ujjwala.camunda_functions import start_process_in_camunda_v2, is_process_exist_in_camunda
 
-def get_customer_profile(consumer_id):
+
+def get_customer_profile(consumer_id, name, address):
 	from connection_app.models import CustomerProfile
 
 	cp_obj = CustomerProfile.objects.filter(consumer_id=consumer_id).first()
 
 	if not cp_obj:
-		cp_obj = CustomerProfile.objects.create(consumer_id=consumer_id)
+		cp_obj = CustomerProfile.objects.create(
+			consumer_id=consumer_id,
+			name=name,
+			address=address
+		)
+
+	variables = {
+		"variables":
+			{
+				"sdms_task": {"value": "read_customer_profile", "type": "String"},
+				"consumer_id": {"value": cp_obj.consumer_id, "type": "String"},
+			}
+		}
+
+	res, pid = start_process_in_camunda_v2('Process_domestic_app', variables=variables)
+	if res == 200:
+		cp_obj.camunda_process_instance_id = pid
+		cp_obj.save()
+	print(res)
 
 	return cp_obj
 
 
-def process_update_sales_order_invoice_in_dca(task: ExternalTask):
+def start_process_fetch_sales_order_details_from_sdms(so_id):
+	from connection_app.models import SalesOrder
+
+	so_obj: SalesOrder = SalesOrder.objects.get(pk=so_id)
+
+	result = is_process_exist_in_camunda('cb0cbe24-f241-11ee-b887-0242ac140002', 'sales_order_id', so_obj.id)
+
+	if result == 0:
+		variables = {
+			"variables":
+				{
+					"sales_order_id": {"value": so_obj.id, "type": "Long"},
+					"sales_order_number": {"value": so_obj.sales_order, "type": "String"},
+					"order_status": {"value": so_obj.order_status, "type": "String"}
+				}
+			}
+		res, pid = start_process_in_camunda_v2('process_fetch_sales_order_details_from_sdms', variables=variables)
+		if res == 200:
+			so_obj.camunda_process_instance_id = pid
+			so_obj.save()
+		print(res)
+
+
+def create_sales_order(so):
 	"""
-		{
-		  "": "",
-		  "Invoice Number": "5-103991627817",
-		  "Sales Order #": "2-003653125558",
-		  "Invoice date": "21-Mar-2024 01:24:31 PM",
-		  "Invoice Status": "Open",
-		  "Consumer Name": "Sham Lal",
-		  "Consumer Type": "Double Bottle Connection",
-		  "Consumer Address": "H.NO.6441/2 ST.NO.8 HARGOBIND NAGAR LDH. PROOF OK /10/2/2010 LUDHIANA Punjab 141008",
-		  "Subsidy Status": "Start",
-		  "Scheme Onboarding Status": "Onboarded With CTC",
-		  "Delivery Type": "Home Delivery",
-		  "Service Area": "KIDWAI NGR RANJIT NGR AMAR PUR",
-		  "Delivery Boy": "ARUN YADAV",
-		  "Paid Flag": "N",
-		  "Preferred Flag": "N",
-		  "Preferred Day": "",
-		  "Preferrred Time Slot": "",
-		  "Print Flag": "N",
-		  "Order Sub Type": "Refill Order",
-		  "Equipment Type": "14.2",
-		  "Relationship Id": "7500000068250924",
-		  "Consumer Number": "7568250924",
-		  "Distributor Local Cash Memo#": "305948243100193364",
-		  "Digital Payment": "N",
-		  "Scheme Type": "General",
-		  "Tatkal Order": "",
-		  "EPIC Invoice IRN Calc": "N",
-		  "IRN Number": "",
-		  "Site Id": ""
-		}
-		"""
-	from connection_app.models import SalesOrderInvoice, CustomerProfile
+		Create Sales Order In Connection App For Given Sales Order Object From SDMS
+	"""
+	from connection_app.models import SalesOrder
 
-	data = json.loads(task.get_variable('result'))['data']
+	cp_obj = get_customer_profile(so["Relationship Id"], so["Consumer Name"], so["Consumer Address"])
 
-	for r in data:
-		invoice_date = datetime.datetime.strptime(r["Invoice date"],
-		                                          '%d-%b-%Y %H:%M:%S %p')  # "21-Mar-2024 01:24:31 PM"
-		soi_obj: SalesOrderInvoice = SalesOrderInvoice.objects.filter(invoice_number=r['Invoice Number'],
-		                                           invoice_date=invoice_date).first()
-		if soi_obj:
-			if soi_obj.invoice_status != r['Invoice Status'] or soi_obj.subsidy_status != r["Subsidy Status"]:
-				soi_obj.order_status = r['Order Status']
-				soi_obj.subsidy_status = r["Subsidy Status"]
-				soi_obj.save(update_fields=['order_status', 'subsidy_status'])
-		else:
-			cp_obj = get_customer_profile(r["Consumer Number"])
-
-			soi_obj = SalesOrderInvoice.objects.create(
-				parent=cp_obj,
-				invoice_number=r["Invoice Number"],
-				sales_order=r["Sales Order #"],
-				invoice_date=invoice_date,
-				invoice_status=r["Invoice Status"],
-				consumer_name=r["Consumer Name"],
-				consumer_type=r["Consumer Type"],
-				consumer_address=r["Consumer Address"],
-				subsidy_status=r["Subsidy Status"],
-				scheme_onboarding_status=r["Scheme Onboarding Status"],
-				delivery_type=r["Delivery Type"],
-				service_area=r["Service Area"],
-				delivery_boy=r["Delivery Boy"],
-				paid_flag=True if r["Paid Flag"] == "Y" else False,
-				preferred_flag=True if r["Preferred Flag"] == "Y" else False,
-				preferred_day=r["Preferred Day"],
-				preferred_time_slot=r["Preferrred Time Slot"],
-				print_flag=True if r["Print Flag"] == "Y" else False,
-				order_sub_type=r["Order Sub Type"],
-				equipment_type=r['Equipment Type'],
-				relationship_id=r["Relationship Id"],
-				consumer_number=r["Consumer Number"],
-				distributor_local_cash_memo=r["Distributor Local Cash Memo#"],
-				digital_payment=True if r["Digital Payment"] == "Y" else False,
-				scheme_type=r["Scheme Type"],
-				tatkal_order=r["Tatkal Order"],
-				epic_invoice_irn_calc=True if r["EPIC Invoice IRN Calc"] == "Y" else False,
-				irn_number=r["IRN Number"],
-				site_id=r["Site Id"]
-			)
-			print(soi_obj)
+	so_obj = SalesOrder.objects.create(
+		parent=cp_obj,
+		sales_order=so["Sales Order #"],
+		order_date=datetime.datetime.strptime(so["Order Date"], '%d-%b-%Y %H:%M:%S %p'),
+		relationship_id=so["Relationship Id"],
+		invoice_number=so["Invoice Number"],
+		consumer_name=so["Consumer Name"],
+		consumer_address=so["Consumer Address"],
+		channel=so['Channel'],
+		order_type=so['Order Type'],
+		order_sub_type=so['Order Sub Type'],
+		order_status=so['Order Status'],
+		delivery_date=datetime.datetime.strptime(so['Delivery Date'], '%d-%b-%Y %H:%M:%S %p') if so[
+			'Delivery Date'] else None,
+		consumed_quota=float(so['Consumed Quota']) if so['Consumed Quota'] else None,
+		campaign_name=so['Campaign Name'],
+		campaign_code=so['Campaign Code'],
+		digital_payment=True if so['Digital Payment'] == 'Y' else False,
+		account_name=so['Account Name'],
+		consumer_type=so['Consumer Type'],
+		cancellation_date=datetime.datetime.strptime(so['Cancellation Date'], '%d-%b-%Y %H:%M:%S %p') if so[
+			'Cancellation Date'] else None,
+		paid_flag=True if so['Paid'] == 'Y' else False,
+		delivery_confirm_full_name=so['Delivery Confirm Full Name'],
+		mobile_number=so['Mobile Number'],
+		tatkal_order=so['Tatkal Order'],
+		portability_flag=True if so['Portability Flag'] else False
+	)
+	print(so_obj)
+	return so_obj
 
 
-def process_update_sales_order_in_dca(task: ExternalTask):
+def process_update_sales_order_completed_today(sales_order_completed):
 	"""
 		{
 			"": "",
@@ -128,48 +125,179 @@ def process_update_sales_order_in_dca(task: ExternalTask):
 			"Portability Flag": "N"
 		 }
 	"""
-	from connection_app.models import SalesOrder, CustomerProfile
+	from connection_app.models import SalesOrder
 
-	data = json.loads(task.get_variable('result'))['data']
-
-	for r in data:
-		order_date = datetime.datetime.strptime(r["Order Date"],
-		                                          '%d-%b-%Y %H:%M:%S %p')  # "21-Mar-2024 01:24:31 PM"
-		so_obj: SalesOrder = SalesOrder.objects.filter(sales_order=r['Sales Order #'], order_date=order_date).first()
+	for so_complete in sales_order_completed:
+		so_obj: SalesOrder = SalesOrder.objects.filter(
+			sales_order=so_complete['Sales Order #'],
+			order_date=datetime.datetime.strptime(so_complete["Order Date"], '%d-%b-%Y %H:%M:%S %p')
+		).first()
 
 		if so_obj:
-			if so_obj.order_status != r['Order Status']:
-				so_obj.order_status = r['Order Status']
-				so_obj.save(update_fields=['order_status'])
+			if so_obj.order_status != so_complete['Order Status']:
+				start_process_fetch_sales_order_details_from_sdms(so_obj.id)
 		else:
-			cp_obj = get_customer_profile(r["Relationship Id"])
+			so_obj = create_sales_order(so_complete)
+			start_process_fetch_sales_order_details_from_sdms(so_obj.id)
 
-			so_obj = SalesOrder.objects.create(
-				parent=cp_obj,
-				sales_order=r["Sales Order #"],
-				order_date=order_date,
-				relationship_id=r["Relationship Id"],
-				invoice_number=r["Invoice Number"],
-				consumer_name=r["Consumer Name"],
-				consumer_address=r["Consumer Address"],
-				channel=r['Channel'],
-				order_type=r['Order Type'],
-				order_sub_type=r['Order Sub Type'],
-				order_status=r['Order Status'],
-				delivery_date=datetime.datetime.strptime(r['Delivery Date'], '%d-%b-%Y %H:%M:%S %p') if r[
-					'Delivery Date'] else None,
-				consumed_quota=float(r['Consumed Quota']) if r['Consumed Quota'] else None,
-				campaign_name=r['Campaign Name'],
-				campaign_code=r['Campaign Code'],
-				digital_payment=True if r['Digital Payment'] == 'Y' else False,
-				account_name=r['Account Name'],
-				consumer_type=r['Consumer Type'],
-				cancellation_date=datetime.datetime.strptime(r['Cancellation Date'], '%d-%b-%Y %H:%M:%S %p') if r[
-					'Cancellation Date'] else None,
-				paid=True if r['Paid'] == 'Y' else False,
-				delivery_confirm_full_name=r['Delivery Confirm Full Name'],
-				mobile_number=r['Mobile Number'],
-				tatkal_order=r['Tatkal Order'],
-				portability_flag=True if r['Portability Flag'] else False
-			)
-			print(so_obj)
+
+def process_update_sales_order_in_dca(sales_order_list):
+	"""
+		{
+			"": "",
+			"Sales Order #": "2-003664888925",
+			"Order Date": "26-Mar-2024 09:13:44 PM",
+			"Relationship Id": "7200000033203814",
+			"Invoice Number": "5-104004535514",
+			"Consumer Name": "Arfa Parveen",
+			"Consumer Address": "hNo 1815/87 StNo 1 Industrial area a  millerganjVijay nagar   Ludhiana LUDHIANA Punjab 141003",
+			"Channel": "MissedCall",
+			"Order Type": "Sales Order",
+			"Order Sub Type": "Refill Order",
+			"Order Status": "Completed",
+			"Delivery Date": "27-Mar-2024 07:35:30 AM",
+			"Consumed Quota": "28.4",
+			"Campaign Name": "",
+			"Campaign Code": "",
+			"Digital Payment": "Y",
+			"Account Name": "",
+			"Consumer Type": "Single Bottle Connection",
+			"Cancellation Date": "",
+			"Paid": "Y",
+			"Delivery Confirm Full Name": "ANAND RAY",
+			"Mobile Number": "8969102423",
+			"Tatkal Order": "",
+			"Portability Flag": "N"
+		 }
+	"""
+	for so in sales_order_list:
+		so_obj: SalesOrder = SalesOrder.objects.filter(
+			sales_order=so['Sales Order #'],
+			order_date=datetime.datetime.strptime(so["Order Date"], '%d-%b-%Y %H:%M:%S %p')
+		).first()
+
+		if so_obj:
+			if so_obj.order_status != so['Order Status']:
+				start_process_fetch_sales_order_details_from_sdms(so_obj.id)
+		else:
+			so_obj = create_sales_order(so)
+			start_process_fetch_sales_order_details_from_sdms(so_obj.id)
+
+
+def update_sales_order_details_in_dca(sales_order_id, sales_order_details, existing_order_status):
+	"""
+	{
+	  "sales_order": "2-003678554023",
+	  "order_type": "Sales Order",
+	  "order_sub_type": "Refill Order",
+	  "order_status": "Invoiced",
+	  "order_date": "01-Apr-2024 09:21:40 PM",
+	  "channel": "MissedCall",
+	  "channel_ref": "2284935308605915",
+	  "price_list": "IOCL LPG Price List",
+	  "total_due_amount": "Rs.830.00",
+	  "order_total": "Rs.830.00",
+	  "total_payment_amount": "Rs.0.00",
+	  "attempted_during_pdt_daytime": "N",
+	  "indenting_po_number": "04012024212140",
+	  "zone_distributor_id": "",
+	  "scheme_opted": "Default Opt In",
+	  "delivery_type": "Home Delivery",
+	  "delivery_date": "",
+	  "dac_flag": "N",
+	  "portability_flag": "N",
+	  "sub_channel": "",
+	  "booked_by": "",
+	  "qc_due": "N",
+	  "relationship_id": "7200000034018379",
+	  "consumer_name": "Shallu .",
+	  "account_name": "",
+	  "consumer_address": "DcaId-13383 Room No 0 Floor No Ground Floor  House No 330/1 Street No 0 Salem Tabri,Neta Ji Near Shera Vali Mata Mandir  Ward No 25 Post Office Salem Tabri   Ludhiana LUDHIANA Punjab 141008",
+	  "scheme_onboarding_status": "Onboarded With CTC",
+	  "subsidy_status": "Start",
+	  "consumed_quota": "14.2",
+	  "smart_card_num": "",
+	  "perferred_day": "",
+	  "preferred_time_slot": "",
+	  "preferred_flag": "N",
+	  "isi_mark_ho_plate": "",
+	  "burner_type": "",
+	  "cancellation_reason": "",
+	  "cancellation_date": "",
+	  "dac_disable_reason": "",
+	  "campaign_code": "",
+	  "campaign_name": "",
+	  "distributor_name": "ARUN INDANE PROP LUDHIANA ENT.",
+	  "service_area": "SHIVPURI",
+	  "delivery_boy_login": "0000305948_34",
+	  "delivery_boy_full_name": "YOGESH GUPTA",
+	  "otp": "",
+	  "delivery_confirmation_type": "",
+	  "delivery_confirmed_by": "",
+	  "delivery_confirm_full_name": " ",
+	  "error_message": "",
+	  "paid_flag": "N",
+	  "digital_payment": "N",
+	  "subsidized": "N",
+	  "subsidized_on_invoice_gen": "Y",
+	  "cancel_source": "",
+	  "dac_disable_by": "",
+	  "tatkal_flag": "",
+	  "ship_to_address": "DcaId-13383 Room No 0 Floor No Ground Floor  House No 330/1 Street No 0 Salem Tabri,Neta Ji Near Shera Vali Mata Mandir  Ward No 25 Post Office Salem Tabri   Ludhiana LUDHIANA Punjab 141008"
+	}
+	"""
+	from connection_app.models import SalesOrder
+
+	so = sales_order_details.pop('sales_order')
+
+	so_new_details: dict = sales_order_details
+
+	new_order_status = so_new_details.pop('order_status')
+
+	so_new_details['order_date'] = datetime.datetime.strptime(
+		so_new_details['order_date'], '%d-%b-%Y %H:%M:%S %p') if so_new_details[
+		'order_date'] else None
+
+	so_new_details['cancellation_date'] = datetime.datetime.strptime(
+		so_new_details['cancellation_date'], '%d-%b-%Y %H:%M:%S %p') if so_new_details[
+		'cancellation_date'] else None
+	so_new_details['delivery_date'] = datetime.datetime.strptime(
+		so_new_details['delivery_date'], '%d-%b-%Y %H:%M:%S %p') if so_new_details[
+		'delivery_date'] else None
+
+	so_new_details['total_due_amount'] = float(
+		so_new_details['total_due_amount'].replace('Rs.', '').replace(",", ""))
+	so_new_details['order_total'] = float(
+		so_new_details['order_total'].replace('Rs.', '').replace(",", ""))
+	so_new_details['total_payment_amount'] = float(
+		so_new_details['total_payment_amount'].replace('Rs.', '').replace(",", ""))
+
+	so_new_details['consumed_quota'] = 0 if so_new_details['consumed_quota'] == "" else float(
+		so_new_details['consumed_quota'])
+
+	so_new_details['paid_flag'] = True if so_new_details['paid_flag'] == 'Y' else False
+	so_new_details['digital_payment'] = True if so_new_details['digital_payment'] == 'Y' else False
+	so_new_details['subsidized'] = True if so_new_details['subsidized'] == 'Y' else False
+	so_new_details['subsidized_on_invoice_gen'] = True if so_new_details[
+		                                                      'subsidized_on_invoice_gen'] == 'Y' else False
+	so_new_details['attempted_during_pdt_daytime'] = True if so_new_details[
+		                                                         'attempted_during_pdt_daytime'] == 'Y' else False
+	so_new_details['preferred_flag'] = True if so_new_details['preferred_flag'] == 'Y' else False
+	so_new_details['isi_mark_ho_plate'] = True if so_new_details['isi_mark_ho_plate'] == 'Y' else False
+	so_new_details['dac_flag'] = True if so_new_details['dac_flag'] == 'Y' else False
+	so_new_details['portability_flag'] = True if so_new_details['portability_flag'] == 'Y' else False
+	so_new_details['tatkal_order'] = True if so_new_details.get('tatkal_flag') == 'Y' else False
+	so_new_details['qc_due'] = True if so_new_details.get('qc_due') == 'Y' else False
+
+	SalesOrder.objects.filter(pk=sales_order_id).update(**so_new_details)
+	so_obj = SalesOrder.objects.get(pk=sales_order_id)
+	if not new_order_status == existing_order_status:
+		if new_order_status == 'Cancelled':
+			so_obj.transition_sales_order_cancelled(
+				description="{} - {}".format(so_obj.cancellation_date, so_obj.cancellation_reason))
+		elif new_order_status == 'Completed':
+			so_obj.transition_sales_order_completed()
+		elif new_order_status == 'Invoiced':
+			so_obj.transition_sales_order_invoiced()
+		so_obj.save()
+	print(so_obj)

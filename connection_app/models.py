@@ -588,20 +588,20 @@ class PaymentProfile(models.Model):
 			"Case Num": "1-38288458",
 			"Closed Date": "",
 			"Created Date": "14-Nov-2023 12:45:51 AM",
-		    "Name As Per Bank": "Laddi",
-		    "Name As On Relationship": "Laddi Devi",
-		    "Name As Per Bank Response": "",
-		    "Name Match": "N",
-		    "Distributor Code": "0000305948",
-		    "Distributor Name": "ARUN INDANE PROP LUDHIANA ENT.",
-		    "Comments": "",
-		    "Relationship Id": "7200000026714114",
-		    "Payment Profile Id": "1-8NKUKSUI",
-		    "Account Id": "1-8NKUKSTQ",
-		    "Status": "Open",
-		    "Contact Id": "1-8NKUKST1",
-		    "Type": "Bank Verification Approval",
-		    "PFMS Payment Method": "ACTC"
+			"Name As Per Bank": "Laddi",
+			"Name As On Relationship": "Laddi Devi",
+			"Name As Per Bank Response": "",
+			"Name Match": "N",
+			"Distributor Code": "0000305948",
+			"Distributor Name": "ARUN INDANE PROP LUDHIANA ENT.",
+			"Comments": "",
+			"Relationship Id": "7200000026714114",
+			"Payment Profile Id": "1-8NKUKSUI",
+			"Account Id": "1-8NKUKSTQ",
+			"Status": "Open",
+			"Contact Id": "1-8NKUKST1",
+			"Type": "Bank Verification Approval",
+			"PFMS Payment Method": "ACTC"
 		}
 	"""
 	case_num = models.CharField(max_length=128)
@@ -622,7 +622,7 @@ class PaymentProfile(models.Model):
 	profile_type = models.CharField(max_length=256)
 	pfms_payment_method = models.CharField(max_length=128)
 	approval_status = models.CharField(max_length=128, choices=PaymentProfileApprovalStatusEnum.choices,
-	                          default=PaymentProfileApprovalStatusEnum.PENDING)
+                        default=PaymentProfileApprovalStatusEnum.PENDING)
 	action = models.CharField(max_length=1, null=True)
 
 
@@ -632,8 +632,88 @@ class CustomerProfile(models.Model):
 	name = models.CharField(max_length=256)
 	consumer_id = models.CharField(max_length=128)
 	customer_type = models.CharField(max_length=128, choices=CustomerTypeEnum.choices, default=CustomerTypeEnum.GENERAL,
-	                                 null=True)
-	address = models.TextField()
+                               null=True)
+	address = models.TextField(null=True)
+	relationship_type = models.CharField(max_length=128, null=True)
+	consumer_no = models.FloatField(null=True)
+	dob = models.DateField(null=True)
+	kyc_level = models.CharField(max_length=128, null=True)
+	contact_status = models.CharField(max_length=128, null=True)
+	ucm_id = models.CharField(max_length=128, null=True)
+	relationship_channel = models.CharField(max_length=128, null=True)
+	relationship_start_date = models.DateField(null=True)
+	ekyc_flag = models.BooleanField(null=True)
+	ekyc_date = models.DateTimeField(null=True)
+	auth_type = models.CharField(max_length=128, null=True)
+	customer_segment = models.CharField(max_length=128, null=True)
+	kyc_approval_date = models.DateTimeField(null=True)
+	fleet_marketing = models.BooleanField(null=True)
+	kyc_approval_flag = models.BooleanField(null=True)
+	otp_verification = models.CharField(max_length=128, null=True)
+	first_name = models.CharField(max_length=128, null=True)
+	last_name = models.CharField(max_length=128, null=True)
+	gender = models.CharField(max_length=128, null=True)
+	account_name = models.CharField(max_length=128, null=True)
+	primary_account_address = models.TextField(null=True)
+	dealer_code = models.CharField(max_length=128, null=True)
+	distributor_code = models.CharField(max_length=128, null=True)
+	distributor_name = models.CharField(max_length=128, null=True)
+	mobile_number = models.CharField(max_length=128, null=True)
+	email_addresss = models.CharField(max_length=256, null=True)
+	employee_code = models.CharField(max_length=128, null=True)
+	vip_flag = models.BooleanField(null=True)
+	vip_description = models.CharField(max_length=128, null=True)
+	old_vip_description = models.CharField(max_length=128, null=True)
+	cancel_reason = models.CharField(max_length=128, null=True)
+	cancel_remarks = models.TextField(null=True)
+	delivery_type = models.CharField(max_length=128, null=True)
+	service_area = models.CharField(max_length=128, null=True)
+	relationship_status = models.CharField(max_length=128, null=True)
+	relationship_sub_status = models.CharField(max_length=128, null=True)
+	waitlist_status = models.CharField(max_length=128, null=True)
+	kyc_date = models.DateTimeField(null=True)
+	kyc_status = models.CharField(max_length=128, null=True)
+	application_id = models.CharField(max_length=128, null=True)
+	subsidy_status = models.CharField(max_length=128, null=True)
+	nic_status = models.CharField(max_length=128, null=True)
+	omc_status = models.CharField(max_length=128, null=True)
+	revalidated = models.BooleanField(null=True)
+	ftl_reseller_flag = models.BooleanField(null=True)
+	tcs_flag = models.BooleanField(null=True)
+	pan_number = models.CharField(max_length=128, null=True)
+	multiple_connection_blocking_reason = models.TextField(null=True)
+	release_date = models.DateTimeField(null=True)
+	intimation_release_date = models.DateTimeField(null=True)
+	mandatory_inspection_due_date = models.DateField(null=True)
+	last_inspection_date = models.DateField(null=True)
+	mi_refusal_flag = models.BooleanField(null=True)
+	mi_refusal_date = models.DateTimeField(null=True)
+	tube_change_date = models.DateField(null=True)
+	tube_change_due_date = models.DateField(null=True)
+	suspend_deact_date = models.DateTimeField(null=True)
+	suspend_reason = models.CharField(max_length=256, null=True)
+	tight_joint_replacement_flag = models.BooleanField(null=True)
+	tight_joint_replacement_date = models.DateTimeField(null=True)
+	approval_rejection_comments = models.TextField(null=True)
+	group_member_status = models.CharField(max_length=128, null=True)
+	consumer_category = models.CharField(max_length=128, null=True)
+	scheme = models.CharField(max_length=256, null=True)
+	scheme_type = models.CharField(max_length=256, null=True)
+	scheme_sub_type = models.CharField(max_length=256, null=True)
+	ujjwala_category = models.CharField(max_length=256, null=True)
+	priority = models.BooleanField(null=True)
+	consumer_type = models.CharField(max_length=256, null=True)
+	products = models.CharField(max_length=256, null=True)
+	no_of_flats = models.IntegerField(null=True)
+	parent_consumer_id = models.CharField(max_length=128, null=True)
+	scheme_opted = models.CharField(max_length=128, null=True)
+	asset_count = models.IntegerField(null=True)
+	migrant = models.BooleanField(null=True)
+	scheme_onbaording_status = models.CharField(max_length=128, null=True)
+	contact_identities = models.JSONField(null=True)
+	phones = models.JSONField(null=True)
+	ekyc_details = models.JSONField(null=True)
+	camunda_process_instance_id = models.TextField(max_length=128, null=True, blank=True)
 
 
 class SalesOrder(models.Model):
@@ -667,41 +747,80 @@ class SalesOrder(models.Model):
 	"""
 	parent = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE)
 	sales_order = models.CharField(max_length=128)
-	order_date = models.DateTimeField()
-	relationship_id = models.CharField(max_length=128)
-	invoice_number = models.CharField(max_length=128)
-	consumer_name = models.CharField(max_length=128)
-	consumer_address = models.CharField(max_length=256)
-	channel = models.CharField(max_length=128)
-	order_type = models.CharField(max_length=128)
-	order_sub_type = models.CharField(max_length=128)
-	order_status = models.CharField(max_length=128)
-	delivery_date = models.DateTimeField(null=True)
-	consumed_quota = models.FloatField(null=True)
-	campaign_name = models.CharField(null=True, max_length=128)
-	campaign_code = models.CharField(null=True, max_length=128)
-	digital_payment = models.BooleanField()
-	account_name = models.CharField(null=True, max_length=128)
-	consumer_type = models.CharField(max_length=256)
-	cancellation_date = models.DateTimeField(null=True)
-	paid = models.BooleanField()
-	delivery_confirm_full_name = models.CharField(max_length=128)
-	mobile_number = models.CharField(max_length=128)
-	tatkal_order = models.CharField(max_length=64, null=True)
-	portability_flag = models.BooleanField()
-	status = FSMField(
-		default=SalesOrderStatusEnum.NEW,
+	order_type = models.CharField(max_length=128, null=True)
+	order_sub_type = models.CharField(max_length=128, null=True)
+	order_status = FSMField(
+		default=SalesOrderStatusEnum.NOT_UPDATED,
 		choices=SalesOrderStatusEnum.choices
 	)
+	order_date = models.DateTimeField()
+	channel = models.CharField(max_length=128, null=True)
+	channel_ref = models.CharField(max_length=128, null=True)
+	relationship_id = models.CharField(max_length=128, null=True)
+	invoice_number = models.CharField(max_length=128, null=True)
+	consumer_name = models.CharField(max_length=128)
+	consumer_address = models.CharField(max_length=256, null=True)
+	price_list = models.CharField(max_length=256, null=True)
+	total_due_amount = models.FloatField(null=True)
+	total_payment_amount = models.FloatField(null=True)
+	attempted_during_pdt_daytime = models.BooleanField(null=True)
+	indenting_po_number = models.CharField(max_length=128, null=True)
+	zone_distributor_id = models.CharField(max_length=256, null=True)
+	scheme_opted = models.CharField(max_length=128, null=True)
+	order_total = models.FloatField(null=True)
+	delivery_type = models.CharField(max_length=128, null=True)
+	delivery_date = models.DateTimeField(null=True)
+	dac_flag = models.BooleanField(null=True)
+	portability_flag = models.BooleanField(null=True)
+	sub_channel = models.CharField(max_length=128, null=True)
+	booked_by = models.CharField(max_length=256, null=True)
+	qc_due = models.BooleanField(null=True)
+	consumed_quota = models.FloatField(null=True)
+	account_name = models.CharField(null=True, max_length=128)
+	consumer_type = models.CharField(max_length=256, null=True)
+	mobile_number = models.CharField(max_length=128, null=True)
+	tatkal_order = models.CharField(max_length=64, null=True)
+	scheme_onboarding_status = models.CharField(max_length=128, null=True)
+	subsidy_status = models.CharField(max_length=128, null=True)
+	smart_card_num = models.CharField(max_length=128, null=True)
+	perferred_day = models.CharField(max_length=128, null=True)
+	preferred_time_slot = models.CharField(max_length=128, null=True)
+	preferred_flag = models.BooleanField(null=True)
+	isi_mark_ho_plate = models.BooleanField(null=True)
+	burner_type = models.CharField(max_length=128, null=True)
+	cancellation_reason = models.CharField(max_length=256, null=True)
+	cancellation_date = models.DateTimeField(null=True)
+	dac_disable_reason = models.CharField(max_length=128, null=True)
+	campaign_code = models.CharField(null=True, max_length=128)
+	campaign_name = models.CharField(null=True, max_length=128)
+	distributor_name = models.CharField(null=True, max_length=256)
+	service_area = models.CharField(null=True, max_length=128)
+	delivery_boy_login = models.CharField(null=True, max_length=256)
+	delivery_boy_full_name = models.CharField(null=True, max_length=256)
+	otp = models.CharField(null=True, max_length=64)
+	delivery_confirmation_type = models.CharField(null=True, max_length=256)
+	delivery_confirmed_by = models.CharField(null=True, max_length=256)
+	delivery_confirm_full_name = models.CharField(null=True, max_length=256)
+	error_message = models.TextField(null=True, max_length=256)
+	paid_flag = models.BooleanField(null=True)
+	digital_payment = models.BooleanField(null=True)
+	subsidized = models.BooleanField(null=True)
+	subsidized_on_invoice_gen = models.BooleanField(null=True)
+	cancel_source = models.CharField(null=True, max_length=128)
+	dac_disable_by = models.CharField(null=True, max_length=128)
+	ship_to_address = models.TextField(null=True)
+	camunda_process_instance_id = models.CharField(max_length=128, null=True)
+	extra_data = models.JSONField(null=True)
 
 	class Meta:
 		constraints = [
 			models.UniqueConstraint(fields=['order_date', 'sales_order'], name='unique sales_order_date_sales_order')
 		]
 
+	@fsm_log_description
 	@fsm_log_by
 	@transition(
-		field=status,
+		field=order_status,
 		source=['*'],
 		target=SalesOrderStatusEnum.COMPLETED,
 		custom=dict(
@@ -712,10 +831,10 @@ class SalesOrder(models.Model):
 	def transition_sales_order_completed(self, *args, **kwargs):
 		pass
 
-
+	@fsm_log_description
 	@fsm_log_by
 	@transition(
-		field=status,
+		field=order_status,
 		source=['*'],
 		target=SalesOrderStatusEnum.CANCELLED,
 		custom=dict(
@@ -726,9 +845,10 @@ class SalesOrder(models.Model):
 	def transition_sales_order_cancelled(self, *args, **kwargs):
 		pass
 
+	@fsm_log_description
 	@fsm_log_by
 	@transition(
-		field=status,
+		field=order_status,
 		source=['*'],
 		target=SalesOrderStatusEnum.INVOICED,
 		custom=dict(
@@ -743,35 +863,35 @@ class SalesOrder(models.Model):
 class SalesOrderInvoice(models.Model):
 	"""
 	{
-	  "": "",
-	  "Invoice Number": "5-103991627817",
-	  "Sales Order #": "2-003653125558",
-	  "Invoice date": "21-Mar-2024 01:24:31 PM",
-	  "Invoice Status": "Open",
-	  "Consumer Name": "Sham Lal",
-	  "Consumer Type": "Double Bottle Connection",
-	  "Consumer Address": "H.NO.6441/2 ST.NO.8 HARGOBIND NAGAR LDH. PROOF OK /10/2/2010 LUDHIANA Punjab 141008",
-	  "Subsidy Status": "Start",
-	  "Scheme Onboarding Status": "Onboarded With CTC",
-	  "Delivery Type": "Home Delivery",
-	  "Service Area": "KIDWAI NGR RANJIT NGR AMAR PUR",
-	  "Delivery Boy": "ARUN YADAV",
-	  "Paid Flag": "N",
-	  "Preferred Flag": "N",
-	  "Preferred Day": "",
-	  "Preferrred Time Slot": "",
-	  "Print Flag": "N",
-	  "Order Sub Type": "Refill Order",
-	  "Equipment Type": "14.2",
-	  "Relationship Id": "7500000068250924",
-	  "Consumer Number": "7568250924",
-	  "Distributor Local Cash Memo#": "305948243100193364",
-	  "Digital Payment": "N",
-	  "Scheme Type": "General",
-	  "Tatkal Order": "",
-	  "EPIC Invoice IRN Calc": "N",
-	  "IRN Number": "",
-	  "Site Id": ""
+"": "",
+"Invoice Number": "5-103991627817",
+"Sales Order #": "2-003653125558",
+"Invoice date": "21-Mar-2024 01:24:31 PM",
+"Invoice Status": "Open",
+"Consumer Name": "Sham Lal",
+"Consumer Type": "Double Bottle Connection",
+"Consumer Address": "H.NO.6441/2 ST.NO.8 HARGOBIND NAGAR LDH. PROOF OK /10/2/2010 LUDHIANA Punjab 141008",
+"Subsidy Status": "Start",
+"Scheme Onboarding Status": "Onboarded With CTC",
+"Delivery Type": "Home Delivery",
+"Service Area": "KIDWAI NGR RANJIT NGR AMAR PUR",
+"Delivery Boy": "ARUN YADAV",
+"Paid Flag": "N",
+"Preferred Flag": "N",
+"Preferred Day": "",
+"Preferrred Time Slot": "",
+"Print Flag": "N",
+"Order Sub Type": "Refill Order",
+"Equipment Type": "14.2",
+"Relationship Id": "7500000068250924",
+"Consumer Number": "7568250924",
+"Distributor Local Cash Memo#": "305948243100193364",
+"Digital Payment": "N",
+"Scheme Type": "General",
+"Tatkal Order": "",
+"EPIC Invoice IRN Calc": "N",
+"IRN Number": "",
+"Site Id": ""
 	}
 	"""
 	parent = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE)
@@ -807,5 +927,5 @@ class SalesOrderInvoice(models.Model):
 	class Meta:
 		constraints = [
 			models.UniqueConstraint(fields=['invoice_date', 'invoice_number'],
-			                        name='unique sales_order_invoice_date_invoice_number')
+		                      name='unique sales_order_invoice_date_invoice_number')
 		]

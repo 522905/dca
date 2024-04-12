@@ -1758,6 +1758,10 @@ def is_member_of_disbursement_drive(user):
 		return False
 
 
+def can_review_disbursement_form_abc_permission(user):
+	return user.has_perm('ujjwala.can_review_disbursement_form_abc')
+
+
 def get_current_user_disbursement_drive(user):
 	from ujjwala.models import DisbursementDrive
 

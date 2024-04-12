@@ -229,7 +229,7 @@ class ConnectionApplicationAdmin(admin.ModelAdmin):
 @admin.register(SalesOrderInvoice)
 class SalesOrderInvoiceAdmin(admin.ModelAdmin):
     list_display = [
-        'invoice_number', 'sales_order', 'invoice_date', 'consumer_name', 'consumer_address', 'invoice_status',
+        'id', 'invoice_number', 'sales_order', 'invoice_date', 'consumer_name', 'consumer_address', 'invoice_status',
         'delivery_boy', 'invoice_status'
     ]
     list_filter = ['invoice_status', 'delivery_boy']
@@ -241,10 +241,15 @@ class SalesOrderInvoiceAdmin(admin.ModelAdmin):
 @admin.register(SalesOrder)
 class SalesOrderAdmin(admin.ModelAdmin):
     list_display = [
-        'sales_order', 'order_date', 'consumer_name', 'consumer_address', 'delivery_date', 'digital_payment',
+        'id', 'sales_order', 'order_date', 'consumer_name', 'consumer_address', 'delivery_date', 'digital_payment',
         'order_status'
     ]
     list_filter = ['order_status', 'delivery_date']
+
+    fsm_fields = ['order_status', ]
+    inlines = [
+        StateLogInline
+    ]
 
     def has_change_permission(self, request, obj=None):
         return False
@@ -253,7 +258,7 @@ class SalesOrderAdmin(admin.ModelAdmin):
 @admin.register(CustomerProfile)
 class CustomerProfileAdmin(admin.ModelAdmin):
     list_display = [
-        'name', 'consumer_id', 'customer_type', 'address'
+        'id', 'name', 'consumer_id', 'customer_type'
     ]
     list_filter = ['customer_type']
 

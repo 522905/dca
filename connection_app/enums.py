@@ -92,12 +92,12 @@ class SalesOrderInvoiceEnum(models.TextChoices):
 
 
 class SalesOrderStatusEnum(models.TextChoices):
-	NEW = 'NEW', 'New'
-	OPEN = 'OPEN', 'Open'
-	CANCELLED = 'CANCELLED', 'Open'
-	INVOICED = 'INVOICED', 'Invoiced'
-	COMPLETED = 'COMPLETED', 'Completed'
-	RETURNED = 'RETURNED', 'Returned'
+	NOT_UPDATED = 'Not Updated', 'Not Updated'
+	OPEN = 'Open', 'Open'
+	CANCELLED = 'Cancelled', 'Cancelled'
+	INVOICED = 'Invoiced', 'Invoiced'
+	COMPLETED = 'Completed', 'Completed'
+	RETURNED = 'Returned', 'Returned'
 
 
 class ConsumerTypeEnum(models.TextChoices):

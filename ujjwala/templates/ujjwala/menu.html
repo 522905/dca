@@ -71,9 +71,10 @@
             </div>
             <ul class="sub-menu">
 {#                <li><a href="{% url 'ujjwala:connection_disbursement_list' %}" data-turbolinks="false">1 - Applicant Walk In </a></li>#}
-                <li><a href="{% url 'ujjwala:connection_disbursement_review_form_abc_list' %}" data-turbolinks="false">1 - Accept Legal Documents </a></li>
+                {% if user|has_disbursement_review_abc_form_permission %}
+                    <li><a href="{% url 'ujjwala:connection_disbursement_review_form_abc_list' %}" data-turbolinks="false">1 - Accept Legal Documents </a></li>
+                {% endif %}
                 <li><a href="{% url 'ujjwala:connection_disbursement_sv_label_print_list' %}" data-turbolinks="false">2 - SV Label Print </a></li>
-
             </ul>
         </li>
         {% endif %}

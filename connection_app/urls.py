@@ -7,17 +7,19 @@ from email.mime import application
 from django.views import generic
 from rest_framework import routers
 
-from connection_app.viewsets import ConnectionApplicationViewSet
+from connection_app.viewsets import ConnectionApplicationViewSet, ConnectionApplicationAPIViewSet
 
 from . import views
 
 
 router = routers.DefaultRouter()
 router.register(r'connection-application', ConnectionApplicationViewSet)
+router.register(r'connection-application-api', ConnectionApplicationAPIViewSet, basename="connection_application_api")
 
 
 urlpatterns = [
     path('', views.index),
+    path('web-form/', views.web_form_view),
     path('connection-application/start/', views.index),
     url(
         '^connection-application/(?P<pk>[^/.]+)/status/$',
