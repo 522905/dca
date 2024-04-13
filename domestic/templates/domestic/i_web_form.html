@@ -1,0 +1,6 @@
+{% extends "material/frontend/base_module.html" %}
+{% block content %}
+{% load static %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<iframe src="{% url 'domestic:web_form' %}" frameborder="0" style="height:calc(100vh - 102px);" width="100%"></iframe>
+{% endblock %}
