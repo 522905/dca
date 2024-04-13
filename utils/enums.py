@@ -144,3 +144,29 @@ class PreInspectionStatusEnum(models.TextChoices):
 	ACCEPTED = 'ACCEPTED', 'Accepted'
 	REUPLOAD = 'REUPLOAD', 'Reupload'
 	REJECTED = 'REJECTED', 'Rejected'
+
+
+class InstallationTypeEnum(models.TextChoices):
+	SELF = 'SELF', 'Self'
+	MECHANIC = 'MECHANIC', 'Mechanic'
+
+
+class ConnectionDisbursementStatusEnum(models.TextChoices):
+	LEGAL_DOCUMENTS_PENDING = 'LEGAL_DOCUMENTS_PENDING', 'Legal Documents Not Uploaded (Upload Pending)'
+	LEGAL_DOCUMENTS_REVIEW = 'LEGAL_DOCUMENTS_REVIEW', 'Legal Documents In Review (Review Pending)'
+	LEGAL_DOCUMENTS_ACCEPTED = 'LEGAL_DOCUMENTS_ACCEPTED', 'Legal Documents Accepted'
+	OTP_VERIFIED = 'OTP_VERIFIED', 'Otp Verified'
+	SV_LABEL_PRINT = 'SV_LABEL_PRINT', 'Social Media Photo Pending'
+	SOCIAL_MEDIA_UPDATES = 'SOCIAL_MEDIA_UPDATES', 'Material Delivery (OTP & Photo Pending)'
+	MATERIAL_DELIVERY_OTP_VERIFIED = 'MATERIAL_DELIVERY_OTP_VERIFIED', 'Material Delivery (OTP Done, Photo Pending)'
+	FIRST_DELIVERY_OTP_VERIFIED = 'SINGLE_DELIVERY_OTP_VERIFIED', 'Single Delivery OTP Verified (OTP Done, Photo Pending)'
+	SECOND_DELIVERY_OTP_VERIFIED = 'SECOND_DELIVERY_OTP_VERIFIED', 'Second Delivery OTP Verified (OTP Done, Photo Pending)'
+	MATERIAL_DELIVERED = 'MATERIAL_DELIVERED', 'Material Delivered'
+	SINGLE_CYLINDER_DELIVERED = 'SINGLE_CYLINDER_DELIVERED', 'Single Cylinder Delivered'
+	INSTALLATION_MAIN_GATE = 'INSTALLATION_MAIN_GATE', 'Installation Main Gate'
+	INSTALLATION_KITCHEN_PHOTO = 'INSTALLATION_KITCHEN_PHOTO', 'Installation Kitchen Photo'
+	INSTALLATION_UPLOADED = 'INSTALLATION_UPLOADED', 'Installation Uploaded'
+	INSTALLATION_REJECTED = 'INSTALLATION_REJECTED', 'Installation Rejected'
+	INSTALLATION_ACCEPTED = 'INSTALLATION_ACCEPTED', 'Installation Accepted'
+	FIRST_CYLINDER_DELIVERED = 'FIRST_CYLINDER_DELIVERED', 'First Cylinder Delivered'
+	SECOND_CYLINDER_DELIVERED = 'SECOND_CYLINDER_DELIVERED', 'Second Cylinder Delivered'
