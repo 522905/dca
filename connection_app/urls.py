@@ -1,16 +1,10 @@
 # Routers provide an easy way of automatically determining the URL conf.
 from django.conf.urls import url
 from django.urls import path, include
-from django.contrib import admin
-from email.mime import application
-
-from django.views import generic
 from rest_framework import routers
 
 from connection_app.viewsets import ConnectionApplicationViewSet, ConnectionApplicationAPIViewSet
-
 from . import views
-
 
 router = routers.DefaultRouter()
 router.register(r'connection-application', ConnectionApplicationViewSet)
@@ -45,6 +39,9 @@ urlpatterns = [
         '^installation-gleam-complete/$',
         views.installation_upload_process_gleam_entry_gate_completed,
         name="application_installation_gleam_complete"
-    ), 
+    ),
+    path('post-inspection/', views.PostInspectionListView.as_view(), name="post_inspection_list"),
+    path('post-inspection/start/', views.PostInspectionStartFormView.as_view(), name="post_inspection_start"),
+    url('^post-inspection/(?P<pk>[^/.]+)/$', views.PostInspectionView.as_view(), name="post_inspection_form_view"),
     path('', include(router.urls)),
 ]

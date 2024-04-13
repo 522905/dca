@@ -1,4 +1,6 @@
+import datetime
 import io
+from functools import partial
 
 import django_rq
 import requests
@@ -6,24 +8,28 @@ import track
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.db import models
+from django.db import models, transaction
 from django.template import loader
 from django.utils.safestring import mark_safe
 from django_currentuser.middleware import get_current_user
 from django_fsm import transition, FSMField, GET_STATE
 from django_fsm_log.decorators import fsm_log_description, fsm_log_by
 from minio import Minio
+from taggit.managers import TaggableManager
+
 from communication_log.jobs import move_sv_doc_file_tus_to_minio, move_files_to_minio_processing
 from communication_log.models import CommunicationLog
 from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTypeEnum, \
 	ConnectionApplicationProcessType, ConnectionApplicationLeadStatus, ConnectionApplicationDocumentsEnum, \
 	ConnectionApplicationLeadCommunicationMode, ConnectionInstallationStatus, \
 	PaymentProfileApprovalStatusEnum, CustomerTypeEnum, SalesOrderInvoiceEnum, ConsumerTypeEnum, SubsidyStatusEnum, \
-	SchemeOnboardingStatusEnum, DeliveryTypeEnum, OrderSubTypeEnum, SalesOrderStatusEnum
+	SchemeOnboardingStatusEnum, DeliveryTypeEnum, OrderSubTypeEnum, SalesOrderStatusEnum, InspectionTypeEnum, \
+	PostInspectionStatusEnum
 from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, SubmitLead, \
 	FrontOfficeCompleted, BackOfficeReactivation, BackOfficeRegularisation, \
 	BackOfficeNewConnection, DocumentsReupload, InstallationReviewForm
 from domestic_app.utils import get_minio_public_url
+from ujjwala.camunda_functions import start_process_in_camunda_v2
 
 minio_client = Minio(
 	settings.MINIO_API_ENDPOINT,
@@ -635,7 +641,7 @@ class CustomerProfile(models.Model):
                                null=True)
 	address = models.TextField(null=True)
 	relationship_type = models.CharField(max_length=128, null=True)
-	consumer_no = models.FloatField(null=True)
+	consumer_no = models.CharField(max_length=128, null=True)
 	dob = models.DateField(null=True)
 	kyc_level = models.CharField(max_length=128, null=True)
 	contact_status = models.CharField(max_length=128, null=True)
@@ -714,6 +720,228 @@ class CustomerProfile(models.Model):
 	phones = models.JSONField(null=True)
 	ekyc_details = models.JSONField(null=True)
 	camunda_process_instance_id = models.TextField(max_length=128, null=True, blank=True)
+	latitude = models.CharField(max_length=128, null=True, blank=True)
+	longitude = models.CharField(max_length=128, null=True, blank=True)
+
+
+class CustomerProfileDocuments(models.Model):
+	parent = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, related_name='documents', null=True)
+	type = models.CharField(max_length=25, choices=ConnectionApplicationDocumentsEnum.choices)
+	link = models.URLField()
+	valid_size = models.BooleanField(default=False, null=True, blank=True)
+
+
+class PostInspection(models.Model):
+	parent = models.OneToOneField(
+		CustomerProfile, on_delete=models.PROTECT, related_name='post_inspection'
+	)
+	created_on = models.DateTimeField(auto_now_add=True, null=True)
+	updated_on = models.DateTimeField(auto_now=True, null=True)
+	latitude = models.CharField(max_length=32, null=True, blank=True)
+	longitude = models.CharField(max_length=32, null=True, blank=True)
+	address_json = models.JSONField(null=True)
+	mobile_number = models.CharField(max_length=12, null=True)
+	accuracy = models.CharField(max_length=24, null=True, blank=True)
+	mechanic = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
+	submitted_on = models.DateTimeField(null=True)
+	type = models.CharField(max_length=32, choices=InspectionTypeEnum.choices, default=InspectionTypeEnum.MECHANIC)
+	status = FSMField(
+		default=PostInspectionStatusEnum.CHANGE_ADDRESS,
+		choices=PostInspectionStatusEnum.choices
+	)
+	camunda_process_id = models.CharField(max_length=128, null=True, blank=True)
+	camunda_error_message = models.TextField(null=True, blank=True)
+	rejected_reasons = models.JSONField(null=True, blank=True)
+	address_updated = models.BooleanField(default=False)
+	tags = TaggableManager()
+
+	def mechanic_name(self):
+		if self.mechanic:
+			return self.mechanic.get_full_name()
+		else:
+			return self.parent.name
+
+	def document_kitchen_photo(self):
+		return self.documents.filter(type=ConnectionApplicationDocumentsEnum.KITCHEN_PHOTO).first().link
+
+	def document_main_gate_photo(self):
+		return self.documents.filter(type=ConnectionApplicationDocumentsEnum.MAIN_GATE).first().link
+
+	# @fsm_log_description
+	# @fsm_log_by
+	# @transition(
+	# 	field=status,
+	# 	source=[
+	# 		PostInspectionStatusEnum.ALLOCATED,
+	# 		PostInspectionStatusEnum.OTP_VERIFIED,
+	# 		PostInspectionStatusEnum.CHANGE_ADDRESS,
+	# 		PostInspectionStatusEnum.KITCHEN_PHOTO,
+	# 		PostInspectionStatusEnum.PREVIEW_INSPECTION,
+	# 		PostInspectionStatusEnum.REUPLOAD,
+	# 		PostInspectionStatusEnum.REJECTED,
+	# 		PostInspectionStatusEnum.SAFETY_AUDIO,
+	# 		PostInspectionStatusEnum.REDO,
+	# 	],
+	# 	target=GET_STATE(
+	# 		lambda self, **kwargs: \
+	# 				PostInspectionStatusEnum.CHANGE_ADDRESS \
+	# 						if kwargs.get('convert_to_type') == 'self' \
+	# 						else PostInspectionStatusEnum.ALLOCATED,
+	# 		states=[
+	# 			PostInspectionStatusEnum.CHANGE_ADDRESS,
+	# 			PostInspectionStatusEnum.ALLOCATED
+	# 		]
+	# 	),
+	# 	custom=dict(short_description='Convert Inspection Type', admin=False),
+	# )
+	# def convert_inspection_type(self, convert_to_type='', *args, **kwargs):
+	# 	if convert_to_type == 'mech':
+	# 		self.type = InspectionTypeEnum.MECHANIC
+	# 		self.mechanic = get_current_user()
+	# 	else:
+	# 		self.type = InspectionTypeEnum.SELF
+	# 		self.mechanic = None
+	#
+	# 	self.documents.all().delete()
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=[
+			PostInspectionStatusEnum.REJECTED,
+			PostInspectionStatusEnum.REDO,
+		],
+		target=PostInspectionStatusEnum.CHANGE_ADDRESS,
+		custom=dict(short_description='Verify Otp', admin=False),
+	)
+	def transition_post_inspection_otp_verified(self, *args, **kwargs):
+		# Deleting existing documents
+		if self.status == PostInspectionStatusEnum.REJECTED:
+			self.documents.all().delete()
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=[
+			PostInspectionStatusEnum.CHANGE_ADDRESS,
+		],
+		target=PostInspectionStatusEnum.KITCHEN_PHOTO,
+		custom=dict(short_description='Change Address', admin=False),
+	)
+	def transition_post_inspection_changed_address(self, *args, **kwargs):
+		pass
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=[
+			PostInspectionStatusEnum.KITCHEN_PHOTO,
+		],
+		target=PostInspectionStatusEnum.PREVIEW_INSPECTION,
+		custom=dict(short_description='Upload Main Gate Pic & Location', admin=False),
+	)
+	def transition_post_inspection_kitchen_photo_uploaded(self, *args, **kwargs):
+		self.documents.filter(
+			type=ConnectionApplicationDocumentsEnum.KITCHEN_PHOTO
+		).delete()
+
+		self.documents.create(
+			type=ConnectionApplicationDocumentsEnum.KITCHEN_PHOTO,
+			link=kwargs.get('link')
+		)
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=PostInspectionStatusEnum.PREVIEW_INSPECTION,
+		target=PostInspectionStatusEnum.SUBMITTED,
+		custom=dict(short_description='Submit Pre-Inspection', admin=False),
+	)
+	def transition_pre_inspection_submit(self, *args, **kwargs):
+		self.documents.filter(
+			type=ConnectionApplicationDocumentsEnum.MAIN_GATE
+		).delete()
+
+		self.documents.create(
+			type=ConnectionApplicationDocumentsEnum.MAIN_GATE,
+			link=kwargs.get('link')
+		)
+
+		if self.type == InspectionTypeEnum.SELF:
+			self.mechanic = None
+		else:
+			self.mechanic = get_current_user()
+		self.submitted_on = datetime.datetime.now()
+		self.save()
+
+		# start_process_in_camunda_v2('Process_preinspection', variables)
+		create_camunda_preinspection_review_function = partial(
+			start_process_in_camunda_v2,
+			process_definition_key='Process_preinspection',
+			variables={"variables": {"preinspection_id": {"value": self.id, "type": "String"}}}
+		)
+		transaction.on_commit(create_camunda_preinspection_review_function)
+
+	# @fsm_log_description
+	# @fsm_log_by
+	# @transition(
+	# 	field=status,
+	# 	source=PostInspectionStatusEnum.SUBMITTED,
+	# 	target=GET_STATE(
+	# 		lambda self, **kwargs: \
+	# 				PostInspectionStatusEnum.ACCEPTED \
+	# 						if kwargs.get("review_status") == 'ACCEPTED' \
+	# 						else PostInspectionStatusEnum.REJECTED,
+	# 		states=[
+	# 			PostInspectionStatusEnum.ACCEPTED,
+	# 			PostInspectionStatusEnum.REJECTED
+	# 		]
+	# 	),
+	# 	custom=dict(
+	# 		short_description='Pre-Inspection Review', admin=False, form=PreInspectionReviewAdminForm
+	# 	),
+	# )
+	# def pre_inspection_review(self, *args, **kwargs):
+	# 	if kwargs.get('review_status') == 'ACCEPTED':
+	# 		self.parent.latitude = self.latitude
+	# 		self.parent.longitude = self.longitude
+	# 		self.parent.accuracy = self.accuracy
+	# 		self.parent.save()
+	# 	else:
+	# 		# Finger Pointing Emoji Written IN Double Quotes
+	# 		rejected_reasons = "👉".join(
+	# 			[PreInspectionRejectionReasonsEnum.__dict__.get('_value2label_map_').get(i) for i in
+	# 			 kwargs.get('rejected_reasons')])
+	# 		rejected_reasons = " 👉{}".format(rejected_reasons)
+	# 		if PreInspectionRejectionReasonsEnum.CONDITION_LOCATION_MISMATCH in kwargs.get('rejected_reasons'):
+	# 			django_rq.enqueue(add_lead_to_vicidial_list, args=(
+	# 				'1014', self.parent.contact_mobile, self.parent.name, self.parent.id,
+	# 			))
+	# 		else:
+	# 			django_rq.enqueue(add_lead_to_vicidial_list, args=(
+	# 				'1012', self.parent.contact_mobile, self.parent.name, self.parent.id,
+	# 			))
+	# 		self.parent.event_whatsapp_pre_inspection_reject(self.id, rejected_reasons)
+
+
+class PostInspectionDocuments(models.Model):
+	parent = models.ForeignKey(PostInspection, on_delete=models.CASCADE, related_name='documents', null=True)
+	type = models.CharField(max_length=32, choices=ConnectionApplicationDocumentsEnum.choices)
+	compressed = models.BooleanField(default=False)
+	file_size = models.CharField(max_length=16, default='0')
+	link = models.URLField(null=True, blank=True)
+	# Fields To Store Original Tus Link
+	original_link = models.URLField(null=True, blank=True)
+
+	def download_links(self):
+		html = '''
+		<a href="{}" target="blank">View File</a>
+		'''.format(self.link)
+		return mark_safe(html)
 
 
 class SalesOrder(models.Model):

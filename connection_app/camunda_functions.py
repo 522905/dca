@@ -1,5 +1,7 @@
 import datetime
 
+import arrow
+
 from connection_app.models import SalesOrder
 from ujjwala.camunda_functions import start_process_in_camunda_v2, is_process_exist_in_camunda
 
@@ -21,6 +23,7 @@ def get_customer_profile(consumer_id, name, address):
 			{
 				"sdms_task": {"value": "read_customer_profile", "type": "String"},
 				"consumer_id": {"value": cp_obj.consumer_id, "type": "String"},
+				"customer_profile_id": {"value": cp_obj.id, "type": "Long"}
 			}
 		}
 
@@ -301,3 +304,310 @@ def update_sales_order_details_in_dca(sales_order_id, sales_order_details, exist
 			so_obj.transition_sales_order_invoiced()
 		so_obj.save()
 	print(so_obj)
+
+
+def update_customer_profile_in_dca(relationship_details, customer_profile_id):
+	"""
+		{
+		  "relationship_type": "LPG",
+		  "consumer_no": "7225434466",
+		  "dob": "10-Mar-1989",
+		  "kyc_level": "6",
+		  "contact_status": "Active",
+		  "ucm_id": "1-85NWJMTD",
+		  "relationship_channel": "SDMS",
+		  "relationship_start_date": "10-Aug-2022",
+		  "ekyc_flag": "Y",
+		  "ekyc_date": "02-Jul-2022 02:24:17 PM",
+		  "auth_type": "",
+		  "customer_segment": "",
+		  "kyc_approval_date": "",
+		  "fleet_marketing": "N",
+		  "kyc_approval_flag": "N",
+		  "otp_verification": "",
+		  "first_name": "Kiranjeet",
+		  "last_name": "Kaur",
+		  "gender": "Female",
+		  "account_name": "",
+		  "primary_account_address": "Room No 1 Floor No Ground Floor House No 12358 Street No 2 Tibba Road Kabir Nagar Near Beas Satsang Ghar Ward No 8 Post Office Basti Jodawal   Ludhiana LUDHIANA Punjab 141007",
+		  "dealer_code": "",
+		  "distributor_code": "0000305948",
+		  "distributor_name": "ARUN INDANE PROP LUDHIANA ENT.",
+		  "mobile_number": "7837521390",
+		  "email_addresss": "",
+		  "employee_code": "",
+		  "vip_flag": "N",
+		  "vip_description": "",
+		  "old_vip_description": "",
+		  "cancel_reason": "",
+		  "cancel_remarks": "",
+		  "delivery_type": "Home Delivery",
+		  "service_area": "TIBBA ROAD",
+		  "relationship_status": "ACTIVE",
+		  "relationship_sub_status": "ACTIVE",
+		  "waitlist_status": "SV Issued",
+		  "kyc_date": "16-Jul-2022 08:20:21 AM",
+		  "kyc_status": "Registered",
+		  "application_id": "76-0000023022154",
+		  "subsidy_status": "Start",
+		  "nic_status": "Cleared",
+		  "omc_status": "OMC Clear",
+		  "revalidated": "N",
+		  "ftl_reseller_flag": "N",
+		  "tcs_flag": "N",
+		  "pan_number": "",
+		  "multiple_connection_blocking_reason": "",
+		  "release_date": "",
+		  "intimation_release_date": "",
+		  "mandatory_inspection_due_date": "10-Aug-2027",
+		  "last_inspection_date": "",
+		  "mi_refusal_flag": "N",
+		  "mi_refusal_date": "",
+		  "tube_change_date": "10-Aug-2022",
+		  "tube_change_due_date": "01-Jun-2027",
+		  "suspend_deact_date": "",
+		  "suspend_reason": "",
+		  "tight_joint_replacement_flag": "N",
+		  "tight_joint_replacement_date": "",
+		  "approval_rejection_comments": "",
+		  "group_member_status": "",
+		  "consumer_category": "Domestic",
+		  "scheme": "Central Govt Scheme",
+		  "scheme_type": "Ujjwala - Extended",
+		  "scheme_sub_type": "UJJWALA2",
+		  "ujjwala_category": "14 point declaration -Others",
+		  "priority": "N",
+		  "consumer_type": "Double Bottle Connection",
+		  "products": "Ujjwala - 5 Kg DBC Package",
+		  "no_of_flats": "0",
+		  "parent_consumer_id": "",
+		  "scheme_opted": "Default Opt In",
+		  "asset_count": "2",
+		  "migrant": "Yes",
+		  "scheme_onbaording_status": "Onboarded With CTC",
+		  "contact_identities": [
+		    {
+		      "": "",
+		      "Identity Type": "INTERNAL-UJJWALA",
+		      "Identity Method": "ANNEXURE 1",
+		      "Identity Num": "4379",
+		      "Comments": "",
+		      "Identity Status": "Active",
+		      "Aadhar Status": "",
+		      "Issue Date": "",
+		      "State of Issue": "",
+		      "NPCI Batch Date": "",
+		      "NPCI Batch Id": "",
+		      "Verif Flag": "",
+		      "Mode of Verification": "",
+		      "Verification Date": "",
+		      "Verification/Issuing Authority": "",
+		      "Seeding Date": "11-Jul-2022",
+		      "CTC Date": "",
+		      "NPCIL Verif Status": "",
+		      "Identity Source": "",
+		      "NPCI Resp Date Time": "",
+		      "ContactFileSrcPath": "",
+		      "ContactFileSrcType": "",
+		      "Profile Image Active": "N"
+		    },
+		    {
+		      "": "",
+		      "Identity Type": "INTERNAL-UJJWALA",
+		      "Identity Method": "14 Point Exclusion Declaration",
+		      "Identity Num": "4379",
+		      "Comments": "",
+		      "Identity Status": "Active",
+		      "Aadhar Status": "",
+		      "Issue Date": "",
+		      "State of Issue": "",
+		      "NPCI Batch Date": "",
+		      "NPCI Batch Id": "",
+		      "Verif Flag": "",
+		      "Mode of Verification": "",
+		      "Verification Date": "",
+		      "Verification/Issuing Authority": "",
+		      "Seeding Date": "11-Jul-2022",
+		      "CTC Date": "",
+		      "NPCIL Verif Status": "",
+		      "Identity Source": "",
+		      "NPCI Resp Date Time": "",
+		      "ContactFileSrcPath": "",
+		      "ContactFileSrcType": "",
+		      "Profile Image Active": "N"
+		    },
+		    {
+		      "": "",
+		      "Identity Type": "POA-POI",
+		      "Identity Method": "Aadhaar(UID)",
+		      "Identity Num": "xxxxxxxx6884",
+		      "Comments": "",
+		      "Identity Status": "Active",
+		      "Aadhar Status": "CTC",
+		      "Issue Date": "",
+		      "State of Issue": "",
+		      "NPCI Batch Date": "",
+		      "NPCI Batch Id": "",
+		      "Verif Flag": "Y",
+		      "Mode of Verification": "",
+		      "Verification Date": "17-Jun-2023",
+		      "Verification/Issuing Authority": "",
+		      "Seeding Date": "",
+		      "CTC Date": "17-Jun-2023",
+		      "NPCIL Verif Status": "CTC",
+		      "Identity Source": "",
+		      "NPCI Resp Date Time": "17-Jun-2023 12:00:00 AM",
+		      "ContactFileSrcPath": "1-630064071306",
+		      "ContactFileSrcType": "URL",
+		      "Profile Image Active": "N"
+		    },
+		    {
+		      "": "",
+		      "Identity Type": "PROFILE IMAGE",
+		      "Identity Method": "PROFILE IMAGE",
+		      "Identity Num": "xxxxxxxxx4379",
+		      "Comments": "",
+		      "Identity Status": "Active",
+		      "Aadhar Status": "",
+		      "Issue Date": "",
+		      "State of Issue": "",
+		      "NPCI Batch Date": "",
+		      "NPCI Batch Id": "",
+		      "Verif Flag": "Y",
+		      "Mode of Verification": "",
+		      "Verification Date": "",
+		      "Verification/Issuing Authority": "",
+		      "Seeding Date": "",
+		      "CTC Date": "",
+		      "NPCIL Verif Status": "",
+		      "Identity Source": "",
+		      "NPCI Resp Date Time": "",
+		      "ContactFileSrcPath": "",
+		      "ContactFileSrcType": "",
+		      "Profile Image Active": "N"
+		    }
+		  ],
+		  "phones": [
+		    {
+		      "": "",
+		      "Primary": "Y",
+		      "Active Flag": "",
+		      "Phone #": "7837521390",
+		      "Use Type": "",
+		      "Phone Type": "Mobile",
+		      "Description": "1-81G3VOUH",
+		      "Consumer Id": "",
+		      "Verify OTP": "",
+		      "Verified Flag": "Y",
+		      "Contact Phone Status": "Active"
+		    },
+		    {
+		      "": "",
+		      "Primary": "N",
+		      "Active Flag": "",
+		      "Phone #": "7889283509",
+		      "Use Type": "",
+		      "Phone Type": "Mobile",
+		      "Description": "1-9OF5DP2R",
+		      "Consumer Id": "",
+		      "Verify OTP": "",
+		      "Verified Flag": "Y",
+		      "Contact Phone Status": "New"
+		    },
+		    {
+		      "": "",
+		      "Primary": "N",
+		      "Active Flag": "",
+		      "Phone #": "9815938017",
+		      "Use Type": "",
+		      "Phone Type": "Mobile",
+		      "Description": "1-9OFG48I9",
+		      "Consumer Id": "",
+		      "Verify OTP": "",
+		      "Verified Flag": "Y",
+		      "Contact Phone Status": "Active"
+		    }
+		  ],
+		  "ekyc_details": [
+		    {
+		      "": "",
+		      "eKYC Num": "1-630064071322",
+		      "Created On": "02-Jul-2022 02:24:18 PM",
+		      "eKYC Type": "KYC",
+		      "eKYC Sub Type": "Fresh KYC",
+		      "eKYC Status": "Closed",
+		      "Aadhar Number": "xxxxxxxx6884",
+		      "Organization": "ARUN INDANE PROP LUDHIANA ENT.",
+		      "First Name": "Kiranjeet",
+		      "Last Name": "Kaur",
+		      "Aadhar Seeding": "N",
+		      "Channel": "Mobility",
+		      "Authentication Type": "",
+		      "Created By": ""
+		    }
+		  ]
+		}
+	"""
+	from connection_app.models import CustomerProfile
+
+	relationship_details['dob'] = datetime.datetime.strptime(relationship_details['dob'], "%d-%b-%Y") if \
+		relationship_details['dob'] else None
+
+	relationship_details['relationship_start_date'] = datetime.datetime.strptime(
+		relationship_details['relationship_start_date'], "%d-%b-%Y") if \
+		relationship_details['relationship_start_date'] else None
+	relationship_details['ekyc_date'] = datetime.datetime.strptime(relationship_details['ekyc_date'],
+	                                                               '%d-%b-%Y %H:%M:%S %p') if \
+		relationship_details['ekyc_date'] else None
+	relationship_details['kyc_approval_date'] = datetime.datetime.strptime(relationship_details['kyc_approval_date'],
+	                                                               '%d-%b-%Y %H:%M:%S %p') if \
+		relationship_details['kyc_approval_date'] else None
+
+	relationship_details['kyc_date'] = datetime.datetime.strptime(relationship_details['kyc_date'],
+	                                                               '%d-%b-%Y %H:%M:%S %p') if \
+		relationship_details['kyc_date'] else None
+	relationship_details['release_date'] = datetime.datetime.strptime(relationship_details['release_date'],
+	                                                               '%d-%b-%Y %H:%M:%S %p') if \
+		relationship_details['release_date'] else None
+	relationship_details['intimation_release_date'] = datetime.datetime.strptime(
+		relationship_details['intimation_release_date'],
+		'%d-%b-%Y %H:%M:%S %p') if \
+		relationship_details['intimation_release_date'] else None
+	relationship_details['mandatory_inspection_due_date'] = datetime.datetime.strptime(
+		relationship_details['mandatory_inspection_due_date'], "%d-%b-%Y") if \
+		relationship_details['mandatory_inspection_due_date'] else None
+	relationship_details['last_inspection_date'] = datetime.datetime.strptime(
+		relationship_details['last_inspection_date'], "%d-%b-%Y") if \
+		relationship_details['last_inspection_date'] else None
+	relationship_details['mi_refusal_date'] = datetime.datetime.strptime(
+		relationship_details['mi_refusal_date'], "%d-%b-%Y") if \
+		relationship_details['mi_refusal_date'] else None
+	relationship_details['tube_change_date'] = datetime.datetime.strptime(
+		relationship_details['tube_change_date'], "%d-%b-%Y") if \
+		relationship_details['tube_change_date'] else None
+	relationship_details['tube_change_due_date'] = datetime.datetime.strptime(
+		relationship_details['tube_change_due_date'], "%d-%b-%Y") if \
+		relationship_details['tube_change_due_date'] else None
+	relationship_details['suspend_deact_date'] = datetime.datetime.strptime(
+		relationship_details['suspend_deact_date'], "%d-%b-%Y") if \
+		relationship_details['suspend_deact_date'] else None
+	relationship_details['tight_joint_replacement_date'] = datetime.datetime.strptime(
+		relationship_details['tight_joint_replacement_date'], "%d-%b-%Y") if \
+		relationship_details['tight_joint_replacement_date'] else None
+
+	relationship_details['ekyc_flag'] = True if relationship_details['ekyc_flag'] == 'Y' else False
+	relationship_details['fleet_marketing'] = True if relationship_details['fleet_marketing'] == 'Y' else False
+	relationship_details['kyc_approval_flag'] = True if relationship_details['kyc_approval_flag'] == 'Y' else False
+	relationship_details['vip_flag'] = True if relationship_details['vip_flag'] == 'Y' else False
+	relationship_details['revalidated'] = True if relationship_details['revalidated'] == 'Y' else False
+	relationship_details['ftl_reseller_flag'] = True if relationship_details['ftl_reseller_flag'] == 'Y' else False
+	relationship_details['tcs_flag'] = True if relationship_details['tcs_flag'] == 'Y' else False
+	relationship_details['mi_refusal_flag'] = True if relationship_details['mi_refusal_flag'] == 'Y' else False
+	relationship_details['tight_joint_replacement_flag'] = True if relationship_details[
+		                                                               'tight_joint_replacement_flag'] == 'Y' else False
+	relationship_details['priority'] = True if relationship_details['priority'] == 'Y' else False
+	relationship_details['migrant'] = True if relationship_details['migrant'] == 'Yes' else False
+
+	relationship_details['no_of_flats'] = int(relationship_details['no_of_flats']) if relationship_details[
+		'no_of_flats'] else 0
+	CustomerProfile.objects.filter(pk=customer_profile_id).update(**relationship_details)

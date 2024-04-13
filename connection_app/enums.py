@@ -46,6 +46,31 @@ class ConnectionTypeEnum(models.TextChoices):
 	DOUBLE = 'DOUBLE', 'Double'
 
 
+class InspectionTypeEnum(models.TextChoices):
+	SELF = 'SELF', 'Self'
+	MECHANIC = 'MECHANIC', 'Mechanic'
+
+
+class PostInspectionStatusEnum(models.TextChoices):
+	ALLOCATED = 'ALLOCATED', 'Allocated'
+	OTP_VERIFIED = 'OTP_VERIFIED', 'Otp Verified'
+	CHANGE_ADDRESS = 'CHANGE_ADDRESS', 'Change Address'
+	KITCHEN_PHOTO = 'KITCHEN_PHOTO', 'Kitchen Photo'
+	SAFETY_AUDIO = 'SAFETY_AUDIO', 'Safety Audio'
+	PREVIEW_INSPECTION = 'PREVIEW_INSPECTION', 'Preview Inspection'
+	SUBMITTED = 'SUBMITTED', 'Submitted'
+	ACCEPTED = 'ACCEPTED', 'Accepted'
+	REUPLOAD = 'REUPLOAD', 'Reupload'
+	REJECTED = 'REJECTED', 'Rejected'
+	REDO = 'REDO', 'Redo'
+
+
+class HouseTypeEnum(models.TextChoices):
+	OWNHOUSE = 'OWNHOUSE', 'Own House'
+	RENT = 'RENT', 'Rent'
+	VEHRA = 'VEHRA', 'Vehra'
+
+
 class ConnectionApplicationDocumentsEnum(models.TextChoices):
 	UID_FRONT = 'UID_FRONT', 'UID - Aadhar Card Front'
 	UID_BACK = 'UID_BACK', 'UID - Aadhar Card Back'
@@ -55,6 +80,7 @@ class ConnectionApplicationDocumentsEnum(models.TextChoices):
 	SV = 'SV', 'Subscription Voucher'
 	CONNECTION_DETAIL = 'CONNECTION_DETAIL', 'Connection Detail'
 	KITCHEN_PHOTO = 'KITCHEN_PHOTO', 'Kitchen Photo'
+	MAIN_GATE = 'MAIN_GATE', 'Main Gate'
 
 	@classmethod
 	def get_skipped_additional_choices(cls):
