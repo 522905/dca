@@ -65,6 +65,7 @@ class PostInspectionListView(ListView):
 		).order_by('-submitted_on')
 
 
+@method_decorator(login_required, 'dispatch')
 @method_decorator(csrf_exempt, 'dispatch')
 class PostInspectionView(FormView):
 	model = PostInspection

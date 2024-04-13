@@ -6,7 +6,7 @@ from import_export.admin import ExportActionMixin
 from fsm_admin2_custom.admin import FSMTransitionCustomMixin
 from .enums import ConnectionApplicationLeadStatus
 from .models import ConnectionApplication, ConnectionApplicationDocuments, PaymentProfile, SalesOrderInvoice, \
-    SalesOrder, CustomerProfile
+    SalesOrder, CustomerProfile, PostInspection
 from django_fsm_log.admin import StateLogInline
 from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 from django_admin_listfilter_dropdown.filters import DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter
@@ -244,7 +244,10 @@ class SalesOrderAdmin(admin.ModelAdmin):
         'id', 'sales_order', 'order_date', 'consumer_name', 'consumer_address', 'delivery_date', 'digital_payment',
         'order_status'
     ]
-    list_filter = ['order_status', 'delivery_date']
+    list_filter = [
+        ('created_on', DateRangeFilter),
+        ('updated_on', DateRangeFilter),
+    ]
 
     fsm_fields = ['order_status', ]
     inlines = [
@@ -261,6 +264,24 @@ class CustomerProfileAdmin(admin.ModelAdmin):
         'id', 'name', 'consumer_id', 'customer_type'
     ]
     list_filter = ['customer_type']
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(PostInspection)
+class PostInspectionAdmin(admin.ModelAdmin):
+    list_display = [
+        'id', 'parent', 'created_on', 'updated_on', 'customer_name', 'status',
+    ]
+
+    list_filter = [
+        ('created_on', DateRangeFilter),
+        ('updated_on', DateRangeFilter),
+    ]
+
+    def customer_name(self, obj):
+        return obj.parent.name
 
     def has_change_permission(self, request, obj=None):
         return False
