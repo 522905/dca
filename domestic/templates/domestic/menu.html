@@ -1,3 +1,5 @@
+{% load connection_app_utils %}
+
 {% if user.is_authenticated %}
     <div class="sidebar">
         <ul class="nav-links">
@@ -13,19 +15,21 @@
                     <span class="link_name">Customer Profile</span>
                 </a>
             </li>
-            <li>
-                <div class="iocn-link">
-                <a href="#" data-turbolinks="false">
-                    <i class='bx bx-collection' ></i>
-                    <span class="link_name">Post Inspection</span>
-                </a>
-                <i class='bx bxs-chevron-down arrow' ></i>
-                </div>
-                <ul class="sub-menu">
-                    <li><a href="{% url 'post_inspection_list' %}" data-turbolinks="false">View Post Inspection</a></li>
-                    <li><a href="{% url 'post_inspection_start' %}" data-turbolinks="false">Start New Post Inspection</a></li>
-                </ul>
-            </li>
+            {% if user|has_post_inspection_permission %}
+                <li>
+                    <div class="iocn-link">
+                        <a href="#" data-turbolinks="false">
+                            <i class='bx bx-collection' ></i>
+                            <span class="link_name">Post Inspection</span>
+                        </a>
+                        <i class='bx bxs-chevron-down arrow' ></i>
+                    </div>
+                    <ul class="sub-menu">
+                        <li><a href="{% url 'post_inspection_list' %}" data-turbolinks="false">View Post Inspection</a></li>
+                        <li><a href="{% url 'post_inspection_start' %}" data-turbolinks="false">Start New Post Inspection</a></li>
+                    </ul>
+                </li>
+            {% endif %}
             {% if user.is_authenticated %}
                 <li>
                     <a href="{% url 'logout' %}" >

@@ -755,6 +755,11 @@ class PostInspection(models.Model):
 	address_updated = models.BooleanField(default=False)
 	tags = TaggableManager()
 
+	class Meta:
+		permissions = (
+			("can_do_post_inspection", "Can Do Post Inspection"),
+		)
+
 	def mechanic_name(self):
 		if self.mechanic:
 			return self.mechanic.get_full_name()
@@ -766,43 +771,6 @@ class PostInspection(models.Model):
 
 	def document_main_gate_photo(self):
 		return self.documents.filter(type=ConnectionApplicationDocumentsEnum.MAIN_GATE).first().link
-
-	# @fsm_log_description
-	# @fsm_log_by
-	# @transition(
-	# 	field=status,
-	# 	source=[
-	# 		PostInspectionStatusEnum.ALLOCATED,
-	# 		PostInspectionStatusEnum.OTP_VERIFIED,
-	# 		PostInspectionStatusEnum.CHANGE_ADDRESS,
-	# 		PostInspectionStatusEnum.KITCHEN_PHOTO,
-	# 		PostInspectionStatusEnum.PREVIEW_INSPECTION,
-	# 		PostInspectionStatusEnum.REUPLOAD,
-	# 		PostInspectionStatusEnum.REJECTED,
-	# 		PostInspectionStatusEnum.SAFETY_AUDIO,
-	# 		PostInspectionStatusEnum.REDO,
-	# 	],
-	# 	target=GET_STATE(
-	# 		lambda self, **kwargs: \
-	# 				PostInspectionStatusEnum.CHANGE_ADDRESS \
-	# 						if kwargs.get('convert_to_type') == 'self' \
-	# 						else PostInspectionStatusEnum.ALLOCATED,
-	# 		states=[
-	# 			PostInspectionStatusEnum.CHANGE_ADDRESS,
-	# 			PostInspectionStatusEnum.ALLOCATED
-	# 		]
-	# 	),
-	# 	custom=dict(short_description='Convert Inspection Type', admin=False),
-	# )
-	# def convert_inspection_type(self, convert_to_type='', *args, **kwargs):
-	# 	if convert_to_type == 'mech':
-	# 		self.type = InspectionTypeEnum.MECHANIC
-	# 		self.mechanic = get_current_user()
-	# 	else:
-	# 		self.type = InspectionTypeEnum.SELF
-	# 		self.mechanic = None
-	#
-	# 	self.documents.all().delete()
 
 	@fsm_log_description
 	@fsm_log_by
@@ -861,7 +829,7 @@ class PostInspection(models.Model):
 		target=PostInspectionStatusEnum.SUBMITTED,
 		custom=dict(short_description='Submit Pre-Inspection', admin=False),
 	)
-	def transition_pre_inspection_submit(self, *args, **kwargs):
+	def transition_post_inspection_submitted(self, *args, **kwargs):
 		self.documents.filter(
 			type=ConnectionApplicationDocumentsEnum.MAIN_GATE
 		).delete()
