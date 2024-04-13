@@ -1,0 +1,71 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block page_title %}Post-Installation Allocated List{% endblock %}
+{% block content %}
+
+    <link rel="stylesheet" href="{% static '/css/style.css' %}" >
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+
+    <div class="p-2 pt-0 form_label" style="width: 100%;">
+        <div class="main-header bg-heading" style="background-color: #2957A4;">
+            <span class="text-white">List of Post-Inspection-Drill Allocated</span>
+        </div>
+        {% for obj in object_list %}
+            <div class="card mb-2 app_card list_block">
+        {#        <a href="{% url 'ujjwala:pre_inspection_form_view' type='mech' pk=obj.id %}" data-turbolinks="false">#}
+                    <div class="card-header">
+                        <p class="text-center"><b>{{ obj.status }}</b> <br>
+                            Submitted On <b>{{ obj.submitted_on }}</b></p>
+                    </div>
+                    <div class="card-body pb-0 p-2">
+                        <ul class="m-0">
+                            <li>
+                                <p class="float-left">Application Id ({{ obj.parent_id }})</p>
+                                <p class="float-right">Pre Inspection Id({{ obj.id }})</p>
+                            </li>
+                            <li>
+                                <p class="float-left">Name</p>
+                                <p class="float-right">{{ obj.parent.name }}</p>
+                            </li>
+                            {% for contact in  obj.parent.all_contacts %}
+                            <li class="contact_link">
+                                <p class="float-left">Phone  {{ forloop.counter }}</p>
+                                <p class="float-right">
+                                    <b> <a href="tel:{{ contact }}" onclick="return true;">{{ contact }}</a></b>
+                                </p>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+        {#        </a>#}
+                <div class="card-footer p-2">
+                    <p><b>Address: </b>{{ obj.parent.formatted_address }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <table>
+        <tr>
+            <td colspan="2">
+                <div class="pagination">
+                    <span class="step-links">
+                        {% if page_obj.has_previous %}
+                            <a href="?page=1">&laquo; first</a>
+                            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                        {% endif %}
+                        <span class="current">
+                            <input class="searchfield" id="searchbox" type="search" placeholder="Search..."/>
+                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                        </span>
+
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}">next</a>
+                            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                        {% endif %}
+                    </span>
+                </div>
+            </td>
+        </tr>
+    </table>
+{% endblock %}
