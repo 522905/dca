@@ -12,7 +12,7 @@ from django.contrib.admin.widgets import AdminDateWidget
 
 from communication_log.models import CommunicationLog
 from connection_app.enums import ConnectionApplicationProcessType, ConnectionApplicationLeadStatus, \
-	ConnectionApplicationDocumentsEnum, HouseTypeEnum, PostInspectionStatusEnum
+	ConnectionApplicationDocumentsEnum, HouseTypeEnum, PostInspectionStatusEnum, PostInspectionActivityTypeEnum
 from domestic_app import settings
 from inactive_customers.models import InactiveCustomer
 from otp.models import Otp
@@ -188,10 +188,7 @@ class InstallationReviewForm(forms.Form):
 		return data
 
 
-class ChangeAddressForm(forms.Form):
-	update_address = forms.BooleanField(
-		widget=forms.CheckboxInput, label='Click To Change Address', required=False
-	)
+class UpdateAddressForm(forms.Form):
 	house_type = forms.ChoiceField(
 		widget=forms.Select,
 		choices=HouseTypeEnum.choices,
@@ -235,7 +232,7 @@ class ChangeAddressForm(forms.Form):
 	def save(self):
 		data = self.cleaned_data
 		obj = self.post_inspection
-		data['address_json'] = {
+		obj.address_json = {
 			"house_type": data.get('house_type', ''),
 			"house_no": data.get('house_no', ''),
 			"room_no": data.get('room_no', ''),
@@ -247,10 +244,33 @@ class ChangeAddressForm(forms.Form):
 			"post_office": data.get('post_office', ''),
 			"pincode": data.get('pincode', '')
 		}
-		obj.address_json = data['address_json']
 		obj.mobile_number = data['mobile_number']
-		obj.transition_post_inspection_changed_address(by=get_current_user(), description=data['address_json'])
 		obj.save()
+
+		post_inspection_activity_obj = self.post_inspection.activities.get(
+			activity_type=PostInspectionActivityTypeEnum.ADDRESS_UPDATE)
+		post_inspection_activity_obj.completed = True
+		post_inspection_activity_obj.completed_by = get_current_user()
+		post_inspection_activity_obj.data = data
+		post_inspection_activity_obj.save()
+
+
+class PostInspectionForm(forms.Form):
+
+	def __init__(self, post_inspection, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.post_inspection = post_inspection
+
+	def clean(self):
+		data = self.cleaned_data
+
+		for activity in self.post_inspection.activities.all():
+			if not activity.completed:
+				raise forms.ValidationError(f"Activity: {activity.activity_type} is not completed.")
+
+		self.post_inspection.mechanic = get_current_user()
+		self.post_inspection.save()
+		return data
 
 
 class KitchenPostInspectionForm(forms.Form):
@@ -264,11 +284,23 @@ class KitchenPostInspectionForm(forms.Form):
 
 	def save(self):
 		data = self.cleaned_data
-		self.post_inspection.transition_post_inspection_kitchen_photo_uploaded(
-			link=data['kitchen_photo'],
-			by=get_current_user(),
+
+		self.post_inspection.documents.filter(
+			type=ConnectionApplicationDocumentsEnum.KITCHEN_PHOTO
+		).delete()
+
+		self.post_inspection.documents.create(
+			type=ConnectionApplicationDocumentsEnum.KITCHEN_PHOTO,
+			link=data.get('link')
 		)
 		self.post_inspection.save()
+
+		post_inspection_activity_obj = self.post_inspection.activities.get(
+			activity_type=PostInspectionActivityTypeEnum.KITCHEN_PHOTO_UPDATE)
+		post_inspection_activity_obj.completed = True
+		post_inspection_activity_obj.completed_by = get_current_user()
+		post_inspection_activity_obj.data = data
+		post_inspection_activity_obj.save()
 
 
 class PreviewPostInspectionForm(forms.Form):
@@ -300,33 +332,107 @@ class PreviewPostInspectionForm(forms.Form):
 		self.post_inspection.longitude = data['longitude']
 		self.post_inspection.accuracy = data['accuracy']
 
+		data = self.cleaned_data
 
-		self.post_inspection.transition_post_inspection_submitted(
-			link=data['main_gate'],
-			by=get_current_user(),
-			description="Latitude: {}, Longitude: {}, Accuracy: {}".format(
-				data['latitude'], data['longitude'], data['accuracy'])
+		self.post_inspection.documents.filter(
+			type=ConnectionApplicationDocumentsEnum.MAIN_GATE
+		).delete()
+
+		self.post_inspection.documents.create(
+			type=ConnectionApplicationDocumentsEnum.MAIN_GATE,
+			link=data.get('link')
 		)
 		self.post_inspection.save()
 
-	def get_form_initial(self, step):
-		init_data = self.initial_dict.get(step, {})
-		if step == 'customer_kitchen_form':
-			init_data.update({'customer_profile_id': self.kwargs.get('pk')})
-		return init_data
-
-	def get_context_data(self, *args, **kwargs):
-		con = super().get_context_data(*args, **kwargs)
-
-		from connection_app.models import CustomerProfile
-		cp_obj = CustomerProfile.objects.filter(id=self.kwargs.get('pk')).first()
-		con.update({
-			"obj": cp_obj
-		})
-		return con
+		post_inspection_activity_obj = self.post_inspection.activities.get(
+			activity_type=PostInspectionActivityTypeEnum.MAIN_GATE_PHOTO_UPDATE)
+		post_inspection_activity_obj.completed = True
+		post_inspection_activity_obj.completed_by = get_current_user()
+		post_inspection_activity_obj.data = data
+		post_inspection_activity_obj.save()
 
 
 class PostInspectionStartForm(forms.Form):
 	form_type = forms.CharField(widget=forms.HiddenInput, initial='initial_form')
 	consumer_id = forms.CharField(required=False)
 	mobile_number = forms.CharField(required=False)
+
+
+class UIDPostInspectionForm(forms.Form):
+	uid_front_photo = forms.CharField(
+		widget=forms.TextInput, label='Front Photo', required=True
+	)
+
+	uid_back_photo = forms.CharField(
+		widget=forms.TextInput, label='Front Photo', required=True
+	)
+
+	def __init__(self, post_inspection=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.post_inspection = post_inspection
+
+	def save(self):
+		data = self.cleaned_data
+
+		from connection_app.models import CustomerProfile, CustomerProfileDocuments
+
+		customer_profile: CustomerProfile = self.post_inspection.parent
+
+		cpd_obj = CustomerProfileDocuments.objects.filter(parent=customer_profile,
+		                                                  type=ConnectionApplicationDocumentsEnum.UID_FRONT).first()
+		if not cpd_obj:
+			CustomerProfileDocuments.objects.create(
+				parent=self.post_inspection.parent,
+				type=ConnectionApplicationDocumentsEnum.UID_FRONT,
+				link=data['uid_front_photo']
+			)
+
+		cpd_obj = CustomerProfileDocuments.objects.filter(parent=customer_profile,
+	                                                  type=ConnectionApplicationDocumentsEnum.UID_BACK).first()
+
+		if not cpd_obj:
+			CustomerProfileDocuments.objects.create(
+				parent=self.post_inspection.parent,
+				type=ConnectionApplicationDocumentsEnum.UID_BACK,
+				link=data['uid_back_photo']
+			)
+
+		post_inspection_activity_obj = self.post_inspection.activities.get(
+			activity_type=PostInspectionActivityTypeEnum.UID_PHOTO_UPDATE)
+		post_inspection_activity_obj.completed = True
+		post_inspection_activity_obj.completed_by = get_current_user()
+		post_inspection_activity_obj.data = data
+		post_inspection_activity_obj.save()
+
+
+class ProfilePhotoPostInspectionForm(forms.Form):
+	profile_photo = forms.CharField(
+		widget=forms.TextInput, label='Profile Photo', required=True
+	)
+
+	def __init__(self, post_inspection=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.post_inspection = post_inspection
+
+	def save(self):
+		data = self.cleaned_data
+
+		from connection_app.models import CustomerProfile, CustomerProfileDocuments
+
+		customer_profile: CustomerProfile = self.post_inspection.parent
+
+		cpd_obj = CustomerProfileDocuments.objects.filter(parent=customer_profile,
+		                                                  type=ConnectionApplicationDocumentsEnum.CUSTOMER_PHOTO).first()
+		if not cpd_obj:
+			CustomerProfileDocuments.objects.create(
+				parent=self.post_inspection.parent,
+				type=ConnectionApplicationDocumentsEnum.CUSTOMER_PHOTO,
+				link=data['profile_photo']
+			)
+
+		post_inspection_activity_obj = self.post_inspection.activities.get(
+			activity_type=PostInspectionActivityTypeEnum.PROFILE_PHOTO_UPDATE)
+		post_inspection_activity_obj.completed = True
+		post_inspection_activity_obj.completed_by = get_current_user()
+		post_inspection_activity_obj.data = data
+		post_inspection_activity_obj.save()

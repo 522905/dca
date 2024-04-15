@@ -43,5 +43,30 @@ urlpatterns = [
     path('post-inspection/', views.PostInspectionListView.as_view(), name="post_inspection_list"),
     path('post-inspection/start/', views.PostInspectionStartFormView.as_view(), name="post_inspection_start"),
     url('^post-inspection/(?P<pk>[^/.]+)/$', views.PostInspectionView.as_view(), name="post_inspection_form_view"),
+    url(
+        '^post-inspection/address-update/(?P<pk>[^/.]+)/$',
+        views.PostInspectionAddressUpdateView.as_view(),
+        name="post_inspection_address_update"
+    ),
+    url(
+        '^post-inspection/kitchen-photo-update/(?P<pk>[^/.]+)/$',
+        views.PostInspectionKitchenPhotoUpdateView.as_view(),
+        name="post_inspection_kitchen_photo_update"
+    ),
+    url(
+        '^post-inspection/main-gate-photo-update/(?P<pk>[^/.]+)/$',
+        views.PostInspectionMainGatePhotoUpdateView.as_view(),
+        name="post_inspection_main_gate_photo_update"
+    ),
+    url(
+        '^post-inspection/uid-photo-update/(?P<pk>[^/.]+)/$',
+        views.PostInspectionUIDPhotoUpdateView.as_view(),
+        name="post_inspection_uid_photo_update"
+    ),
+    url(
+        '^post-inspection/profile-photo-update/(?P<pk>[^/.]+)/$',
+        views.PostInspectionProfilePhotoUpdateView.as_view(),
+        name="post_inspection_profile_photo_update"
+    ),
     path('', include(router.urls)),
 ]

@@ -24,7 +24,7 @@ from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTy
 	ConnectionApplicationLeadCommunicationMode, ConnectionInstallationStatus, \
 	PaymentProfileApprovalStatusEnum, CustomerTypeEnum, SalesOrderInvoiceEnum, ConsumerTypeEnum, SubsidyStatusEnum, \
 	SchemeOnboardingStatusEnum, DeliveryTypeEnum, OrderSubTypeEnum, SalesOrderStatusEnum, InspectionTypeEnum, \
-	PostInspectionStatusEnum
+	PostInspectionStatusEnum, PostInspectionActivityTypeEnum
 from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, SubmitLead, \
 	FrontOfficeCompleted, BackOfficeReactivation, BackOfficeRegularisation, \
 	BackOfficeNewConnection, DocumentsReupload, InstallationReviewForm
@@ -731,6 +731,15 @@ class CustomerProfileDocuments(models.Model):
 	valid_size = models.BooleanField(default=False, null=True, blank=True)
 
 
+class PostInspectionActivity(models.Model):
+	activity_type = models.CharField(max_length=25, choices=PostInspectionActivityTypeEnum.choices)
+	created_on = models.DateTimeField(auto_now_add=True, null=True)
+	completed = models.BooleanField(default=False)
+	completed_on = models.DateTimeField(auto_now=True, null=True)
+	completed_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
+	data = models.JSONField(null=True)
+
+
 class PostInspection(models.Model):
 	parent = models.OneToOneField(
 		CustomerProfile, on_delete=models.PROTECT, related_name='post_inspection'
@@ -752,8 +761,8 @@ class PostInspection(models.Model):
 	camunda_process_id = models.CharField(max_length=128, null=True, blank=True)
 	camunda_error_message = models.TextField(null=True, blank=True)
 	rejected_reasons = models.JSONField(null=True, blank=True)
-	address_updated = models.BooleanField(default=False)
 	tags = TaggableManager()
+	activities = models.ManyToManyField(PostInspectionActivity)
 
 	class Meta:
 		permissions = (
@@ -777,123 +786,97 @@ class PostInspection(models.Model):
 	@transition(
 		field=status,
 		source=[
-			PostInspectionStatusEnum.REJECTED,
-			PostInspectionStatusEnum.REDO,
+			PostInspectionStatusEnum.STARTED,
+			PostInspectionStatusEnum.REJECTED
 		],
-		target=PostInspectionStatusEnum.CHANGE_ADDRESS,
-		custom=dict(short_description='Verify Otp', admin=False),
-	)
-	def transition_post_inspection_otp_verified(self, *args, **kwargs):
-		# Deleting existing documents
-		if self.status == PostInspectionStatusEnum.REJECTED:
-			self.documents.all().delete()
-
-	@fsm_log_description
-	@fsm_log_by
-	@transition(
-		field=status,
-		source=[
-			PostInspectionStatusEnum.CHANGE_ADDRESS,
-		],
-		target=PostInspectionStatusEnum.KITCHEN_PHOTO,
-		custom=dict(short_description='Change Address', admin=False),
-	)
-	def transition_post_inspection_changed_address(self, *args, **kwargs):
-		pass
-
-	@fsm_log_description
-	@fsm_log_by
-	@transition(
-		field=status,
-		source=[
-			PostInspectionStatusEnum.KITCHEN_PHOTO,
-		],
-		target=PostInspectionStatusEnum.PREVIEW_INSPECTION,
-		custom=dict(short_description='Upload Main Gate Pic & Location', admin=False),
-	)
-	def transition_post_inspection_kitchen_photo_uploaded(self, *args, **kwargs):
-		self.documents.filter(
-			type=ConnectionApplicationDocumentsEnum.KITCHEN_PHOTO
-		).delete()
-
-		self.documents.create(
-			type=ConnectionApplicationDocumentsEnum.KITCHEN_PHOTO,
-			link=kwargs.get('link')
-		)
-
-	@fsm_log_description
-	@fsm_log_by
-	@transition(
-		field=status,
-		source=PostInspectionStatusEnum.PREVIEW_INSPECTION,
 		target=PostInspectionStatusEnum.SUBMITTED,
-		custom=dict(short_description='Submit Pre-Inspection', admin=False),
+		custom=dict(short_description='Post Inspection Submitted', admin=False),
 	)
 	def transition_post_inspection_submitted(self, *args, **kwargs):
-		self.documents.filter(
-			type=ConnectionApplicationDocumentsEnum.MAIN_GATE
-		).delete()
-
-		self.documents.create(
-			type=ConnectionApplicationDocumentsEnum.MAIN_GATE,
-			link=kwargs.get('link')
-		)
-
-		if self.type == InspectionTypeEnum.SELF:
-			self.mechanic = None
-		else:
-			self.mechanic = get_current_user()
-		self.submitted_on = datetime.datetime.now()
-		self.save()
-
-		# start_process_in_camunda_v2('Process_preinspection', variables)
-		create_camunda_preinspection_review_function = partial(
-			start_process_in_camunda_v2,
-			process_definition_key='Process_preinspection',
-			variables={"variables": {"preinspection_id": {"value": self.id, "type": "String"}}}
-		)
-		transaction.on_commit(create_camunda_preinspection_review_function)
+		if self.status == PostInspectionStatusEnum.REJECTED:
+			self.documents.all().delete()
 
 	# @fsm_log_description
 	# @fsm_log_by
 	# @transition(
 	# 	field=status,
-	# 	source=PostInspectionStatusEnum.SUBMITTED,
-	# 	target=GET_STATE(
-	# 		lambda self, **kwargs: \
-	# 				PostInspectionStatusEnum.ACCEPTED \
-	# 						if kwargs.get("review_status") == 'ACCEPTED' \
-	# 						else PostInspectionStatusEnum.REJECTED,
-	# 		states=[
-	# 			PostInspectionStatusEnum.ACCEPTED,
-	# 			PostInspectionStatusEnum.REJECTED
-	# 		]
-	# 	),
-	# 	custom=dict(
-	# 		short_description='Pre-Inspection Review', admin=False, form=PreInspectionReviewAdminForm
-	# 	),
+	# 	source=[
+	# 		PostInspectionStatusEnum.REJECTED,
+	# 		PostInspectionStatusEnum.REDO,
+	# 	],
+	# 	target=PostInspectionStatusEnum.CHANGE_ADDRESS,
+	# 	custom=dict(short_description='Verify Otp', admin=False),
 	# )
-	# def pre_inspection_review(self, *args, **kwargs):
-	# 	if kwargs.get('review_status') == 'ACCEPTED':
-	# 		self.parent.latitude = self.latitude
-	# 		self.parent.longitude = self.longitude
-	# 		self.parent.accuracy = self.accuracy
-	# 		self.parent.save()
+	# def transition_post_inspection_otp_verified(self, *args, **kwargs):
+	# 	# Deleting existing documents
+	# 	if self.status == PostInspectionStatusEnum.REJECTED:
+	# 		self.documents.all().delete()
+	#
+	# @fsm_log_description
+	# @fsm_log_by
+	# @transition(
+	# 	field=status,
+	# 	source=[
+	# 		PostInspectionStatusEnum.CHANGE_ADDRESS,
+	# 	],
+	# 	target=PostInspectionStatusEnum.KITCHEN_PHOTO,
+	# 	custom=dict(short_description='Change Address', admin=False),
+	# )
+	# def transition_post_inspection_changed_address(self, *args, **kwargs):
+	# 	pass
+	#
+	# @fsm_log_description
+	# @fsm_log_by
+	# @transition(
+	# 	field=status,
+	# 	source=[
+	# 		PostInspectionStatusEnum.KITCHEN_PHOTO,
+	# 	],
+	# 	target=PostInspectionStatusEnum.PREVIEW_INSPECTION,
+	# 	custom=dict(short_description='Upload Main Gate Pic & Location', admin=False),
+	# )
+	# def transition_post_inspection_kitchen_photo_uploaded(self, *args, **kwargs):
+	# 	self.documents.filter(
+	# 		type=ConnectionApplicationDocumentsEnum.KITCHEN_PHOTO
+	# 	).delete()
+	#
+	# 	self.documents.create(
+	# 		type=ConnectionApplicationDocumentsEnum.KITCHEN_PHOTO,
+	# 		link=kwargs.get('link')
+	# 	)
+	#
+	# @fsm_log_description
+	# @fsm_log_by
+	# @transition(
+	# 	field=status,
+	# 	source=PostInspectionStatusEnum.PREVIEW_INSPECTION,
+	# 	target=PostInspectionStatusEnum.SUBMITTED,
+	# 	custom=dict(short_description='Submit Pre-Inspection', admin=False),
+	# )
+	# def transition_post_inspection_submitted(self, *args, **kwargs):
+	# 	self.documents.filter(
+	# 		type=ConnectionApplicationDocumentsEnum.MAIN_GATE
+	# 	).delete()
+	#
+	# 	self.documents.create(
+	# 		type=ConnectionApplicationDocumentsEnum.MAIN_GATE,
+	# 		link=kwargs.get('link')
+	# 	)
+	#
+	# 	if self.type == InspectionTypeEnum.SELF:
+	# 		self.mechanic = None
 	# 	else:
-	# 		# Finger Pointing Emoji Written IN Double Quotes
-	# 		rejected_reasons = "👉".join(
-	# 			[PreInspectionRejectionReasonsEnum.__dict__.get('_value2label_map_').get(i) for i in
-	# 			 kwargs.get('rejected_reasons')])
-	# 		rejected_reasons = " 👉{}".format(rejected_reasons)
-	# 		if PreInspectionRejectionReasonsEnum.CONDITION_LOCATION_MISMATCH in kwargs.get('rejected_reasons'):
-	# 			django_rq.enqueue(add_lead_to_vicidial_list, args=(
-	# 				'1014', self.parent.contact_mobile, self.parent.name, self.parent.id,
-	# 			))
-	# 		else:
-	# 			django_rq.enqueue(add_lead_to_vicidial_list, args=(
-	# 				'1012', self.parent.contact_mobile, self.parent.name, self.parent.id,
-	# 			))
-	# 		self.parent.event_whatsapp_pre_inspection_reject(self.id, rejected_reasons)
+	# 		self.mechanic = get_current_user()
+	# 	self.submitted_on = datetime.datetime.now()
+	# 	self.save()
+	#
+	# 	# start_process_in_camunda_v2('Process_preinspection', variables)
+	# 	create_camunda_preinspection_review_function = partial(
+	# 		start_process_in_camunda_v2,
+	# 		process_definition_key='Process_preinspection',
+	# 		variables={"variables": {"preinspection_id": {"value": self.id, "type": "String"}}}
+	# 	)
+	# 	transaction.on_commit(create_camunda_preinspection_review_function)
 
 
 class PostInspectionDocuments(models.Model):

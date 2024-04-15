@@ -12,6 +12,14 @@ class ConnectionApplicationProcessType(models.TextChoices):
 	REACTIVATION = 'REACTIVATION', 'Re-Activation'
 
 
+class PostInspectionActivityTypeEnum(models.TextChoices):
+	KITCHEN_PHOTO_UPDATE = 'KITCHEN_PHOTO', 'Kitchen Photo',
+	MAIN_GATE_PHOTO_UPDATE = 'MAIN_GATE_PHOTO', 'Main Gate Photo',
+	ADDRESS_UPDATE = 'ADDRESS_UPDATE', 'Address Update'
+	PROFILE_PHOTO_UPDATE = 'PROFILE_PHOTO_UPDATE', 'Profile Photo Update'
+	UID_PHOTO_UPDATE = 'UID_PHOTO_UPDATE', 'UID Photo Update'
+
+
 class ConnectionApplicationLeadStatus(models.TextChoices):
 	EDIT_APPLICATION = 'EDIT_APPLICATION', 'Edit Application',
 	SUBMITTED = 'SUBMITTED', 'Submitted',
@@ -63,6 +71,7 @@ class PostInspectionStatusEnum(models.TextChoices):
 	REUPLOAD = 'REUPLOAD', 'Reupload'
 	REJECTED = 'REJECTED', 'Rejected'
 	REDO = 'REDO', 'Redo'
+	STARTED = 'STARTED', 'Started'
 
 
 class HouseTypeEnum(models.TextChoices):

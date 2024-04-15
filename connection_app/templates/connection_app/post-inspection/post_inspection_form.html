@@ -1,0 +1,163 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% load material_form %}
+{% block page_title %}Post Inspection Form - {{ customer_profile.name }} ({{ customer_profile.id}}){% endblock %}
+{% block content %}
+    <link rel="stylesheet" href="{% static '/css/style.css' %}" >  
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    {% comment %} <link rel="stylesheet" href="https://themesdesign.in/tailwick/html/assets/css/tailwind2.css"> {% endcomment %}
+    <style>
+        .hidden-field{ display: none;}
+        .form_label .card{ width: 100%;  }
+        .address_form label{ margin-bottom: 5px; }
+        #address_form .form_block input{ padding-left:5px; border-radius: 3px; border: 1px solid #ccc; width: 100%; line-height: 40px; }
+        .form_block label{ float: left; width: 100%; }
+        .first_block{ vertical-align: top;}
+        .address_grid{ font-size:12px; font-weight:600;}
+        .address_grid td{ padding:5px 10px; }
+        .address_grid td:last-child{ color:#666;}
+        .btn-border{ background:trasparent; }
+        #pre_inspection_form { width:600px;}
+        .uid_block ul li { display:inline-block; width:48%;  }
+    </style>
+    <div id="pre_inspection_form" class="row m-0 p-2">
+        <div class="card-header border" style="width:100%;">
+            <p>Consumer Id: {{ customer_profile.consumer_id }}</p>
+        </div>
+        <div class="border pt-0 mt-0 " style="width: 100%;" >
+            <table  class="table table-bordered mb-0">
+                <tr>
+                    <td><p>Profile Photo</p></td>
+                    <td><p>Aadhar Photos</p></td>
+                </tr>
+                <tr class="first_block">
+                    <td>
+                        {%  if profile_photo_update.completed %}
+                        <a href="{{ profile_photo_update.data.profile_photo }}">
+                            <img src="{{ profile_photo_update.data.profile_photo }}" style="height: 100px;" alt="Profile Photo">
+                        </a>
+                        {% else %}
+                            <p>
+                                <a href="{% url 'post_inspection_profile_photo_update' pk=post_inspection.id %}" data-turbolinks="false" class="btn btn-outline-primary">Update Profile Photo</a>
+                            </p>
+                        {% endif %}
+                    </td>
+                    <td class="uid_block">
+                        <ul>
+                            <li>
+                                {%  if uid_photo_update.completed %}
+                                <a href="{{ uid_photo_update.data.uid_front_photo }}">
+                                    <img src="{{ uid_photo_update.data.uid_front_photo }}" style="height: 100px; padding:5px;" alt="UID Front">
+                                </a>
+                                <p>UID Back Front Photo</p>
+                                {% else %}
+                                    <p>
+                                        <a href="{% url 'post_inspection_uid_photo_update' pk=post_inspection.id %}" data-turbolinks="false" class="btn btn-outline-primary">Update Aadhar Photos</a>
+                                    </p>
+                                {% endif %}
+                            </li>
+                            <li>
+                                {%  if uid_photo_update.completed %}
+                                    <a href="{{ uid_photo_update.data.uid_back_photo }}">
+                                        <img src="{{ uid_photo_update.data.uid_back_photo }}" style="height: 100px; width: 100px; padding:5px;" alt="UID Back">
+                                    </a>
+                                    <p>UID Back Photo</p>
+                                {% endif %}
+                            </li>
+                        </ul>
+                      
+                    </td>
+                </tr>
+            </table>
+          
+            <div class="pt-0 mt-0 address_block" style="width: 100%;">
+                <div class="card-header">
+                    <p>Address</p>
+                </div>
+                {%  if address_update.completed %}
+                <div id="basic_tables" class="address_grid">
+                    <table role="grid" class="gridjs-table" style="height: auto;">
+                        <tbody class="gridjs-tbody">
+                            <tr class="gridjs-tr">
+                                <td data-column-id="name" class="gridjs-td">House Type</td>
+                                <td data-column-id="email" class="gridjs-td">{{address_update.data.house_type}}</td>
+                            </tr>
+                            <tr class="gridjs-tr">
+                                <td data-column-id="name" class="gridjs-td">Floor</td>
+                                <td data-column-id="email" class="gridjs-td">{{address_update.data.floor}}</td>
+                            </tr>
+                            <tr class="gridjs-tr">
+                                <td data-column-id="name" class="gridjs-td">Room No.</td>
+                                <td data-column-id="phoneNumber" class="gridjs-td">{{address_update.data.room_no}}</td>
+                            </tr>
+                            <tr class="gridjs-tr">
+                                <td data-column-id="name" class="gridjs-td">House No.</td>
+                                <td data-column-id="phoneNumber" class="gridjs-td">{{address_update.data.house_no}}</td>
+                            </tr>
+                            <tr class="gridjs-tr">
+                                <td data-column-id="name" class="gridjs-td">Street No.</td>
+                                <td data-column-id="email" class="gridjs-td">{{address_update.data.street_no}}</td>
+                            </tr>
+                            <tr class="gridjs-tr">
+                                <td data-column-id="name" class="gridjs-td">Pincode</td>
+                                <td data-column-id="email" class="gridjs-td">{{address_update.data.pincode}}</td>
+                            </tr>
+                            <tr class="gridjs-tr">
+                                <td data-column-id="name" class="gridjs-td">Village</td>
+                                <td data-column-id="email" class="gridjs-td">{{address_update.data.village}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                    <p class="p-2">
+                        <a href="{% url 'post_inspection_address_update' pk=post_inspection.id %}" data-turbolinks="false" class="btn btn-outline-primary">Update Address</a>
+                    </p>
+                {% endif %}
+                <table class="table table-bordered mb-0 ">
+                    <tr>
+                        <th><p>Kitchen Photo</p></th>
+                        <th><p>Main Gate Photo</p></th>
+                    </tr>
+                    <tr>
+                        <td>
+                            {%  if kitchen_photo_update.completed %}
+                            <a href="{{ kitchen_photo_update.data.kitchen_photo }}">
+                                <img src="{{ kitchen_photo_update.data.kitchen_photo }}" style="height: 100px;" alt="Kitchen Photo">
+                            </a>
+                            {% else %}
+                                <p>
+                                    <a href="{% url 'post_inspection_kitchen_photo_update' pk=post_inspection.id %}" data-turbolinks="false" class="btn btn-outline-primary">Update Kitchen Photo</a>
+                                </p>
+                            {% endif %}
+                        </td>
+                        <td>  
+                            {%  if main_gate_photo_update.completed %}
+                                <a href="{{ main_gate_photo_update.data.main_gate }}">
+                                    <img src="{{ main_gate_photo_update.data.main_gate }}" style="height: 100px;" alt="Main Gate Photo">
+                                </a>
+                                <p>Google Map Will Be Here</p>
+                            {% else %}
+                                <p>
+                                    <a href="{% url 'post_inspection_main_gate_photo_update' pk=post_inspection.id %}" data-turbolinks="false" class="btn btn-outline-primary">Update Main Gate Photo</a>
+                                </p>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="card-footer" style="float:left; width:100%">
+                <form method="post" id="form" style="width: 100%;">
+                    {% csrf_token %}
+                    {% form form=form %}{% endform %}
+                    <p class="text-right"><input class="btn btn-secondary rounded-0 float-right" type="button" id="form" onclick="submit()"  value="Submit"/></p>
+                </form>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}
+<style>
+    #basic_tables t{ }
+</style>
