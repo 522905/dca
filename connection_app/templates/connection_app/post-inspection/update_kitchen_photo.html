@@ -1,5 +1,8 @@
 {% extends "material/frontend/base_module.html" %}
 {% load static %}
+{% block page_title %}<span style="font-size:16px;">Update Kitchen Photo</span> 
+    <b style=" color:#f3e9df;">({{ customer_profile.id}}) {{ customer_profile.name }} </b>
+{% endblock %}  
 {% block content %}
 <link rel="stylesheet" href="{% static '/css/style.css' %}" >
 <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css" >
@@ -11,51 +14,27 @@
 
 {#<script src="{% static '/js/location_2022_07_15.js' %}"></script>#}
 <div class="main p-2 pt-0 form_label">
-    <span><b>Referral User: {{ referral_user.username }}</b></span>
     <form method="post" id="upload_sign_and_submit_form">
-{#        {% csrf_token %}#}
-        <div class="main-header bg-heading" style="background-color: #2957A4;">
-            <span class="text-white">Fill Pre-Suraksha-Drill</span>
-        </div>
-        <div class="card">
-            {{form.form_type}}
-            {{form.application_id}}
-            {{form.name}}
-            <div class="form-group input_form" style="margin-bottom: 0 !important;">
-                <div class="main-header bg-heading" style="border-radius:0;background-color: #ff5c6c !important; display: block; width: 100%;">
-                    <i class="fa fa-hand-o-right mr-2" style="color: white; font-size:18px"></i><span class="text-white">महत्वपूर्ण जानकारी</span>
-                </div>
-                <div class="row p-2 m-0" style="background-color: #efefef;">
-                    <div class="col-6 pl-0">
-                        <p style="color: #2957A4; font-weight: bold; margin-bottom: 20px !important;">किचन  फोटो इस तरहा से खिचे की 
-                            आपके किचन की फोटो साफ़ दिखाई दे| फोटो पर क्लिक करें ओर इस तरहा की फोटो खींचे| 
-                    </div>
-                    <div class="col-6 p-0">
-                        <a href="https://arungas.com/public/ujwalla/Kitchen-Photo.png" target="_blank" style="border:1px solid #ccc; display:block; padding: 5px; ">
-                            <img src="https://arungas.com/public/ujwalla/Kitchen-Photo.png" style=" width:100%; object-fit: contain; margin:0 auto; display: block;" >
-                            <span style="display:block;background-color: #000; color: #fff; padding: 5px;">उदाहरण के लिए फोटो</span>
-                        </a>
-                    </div>
-                </div>
-                <div class="row m-0 p-3">
-                    <div class="col-sm-12 photo_block p-0 pt-2">
+        {#{% csrf_token %}#}
+        <div class="photo_block p-0">
+            <div class="card">
+                {{form.form_type}}
+                {{form.application_id}}
+                {{form.name}}
+                <div class="form-group input_form" style="margin-bottom: 0 !important;">
+                    <div class="card-header border-bottom">
                         <span class="hidden_field">{{ form.kitchen_photo }}</span>
-                        <label>Photo of customer with kitchen<br>(रसोईघर के साथ ग्राहक की तस्वीर)</label>
+                        <label class="text-left m-0 p-0">Kitchen Photo</label>
                     </div>
-                    <div class="row">
-                        <div class="col-12 photo_block p-0  pt-2">
-                            <p id="kitchen_photo"></p>
-                            {{ form.kitchen_photo.errors }}
-                        </div>
-                    </div>
+                    <p id="kitchen_photo" class="p-2"></p>
+                    {{ form.kitchen_photo.errors }}
                 </div>
+                <div class="card-footer p-2">
+                    <input class="btn btn-success rounded-3 float-right" type="submit"  value="अगला पेज">
+                </div>
+                
             </div>
-            <div class="card-footer">
-                <input class="btn btn-success rounded-3" type="submit"  value="अगला पेज">
-            </div>
-            
         </div>
-        
     </form>
     <div id="add_location"></div>
 </div>

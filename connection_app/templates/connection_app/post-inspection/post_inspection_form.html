@@ -21,141 +21,107 @@
         .uid_block ul li { display:inline-block; width:48%;  }
     </style>
     <div id="pre_inspection_form" class="row m-0 p-2">
-        <div class="card-header border" style="width:100%;">
-            <p>Consumer Id: {{ customer_profile.consumer_id }}</p>
-        </div>
-        <div class="border pt-0 mt-0 " style="width: 100%;" >
-            <table  class="table table-bordered mb-0">
-                <tr>
-                    <td><p>Profile Photo</p></td>
-                    <td><p>Aadhar Photos</p></td>
-                </tr>
-                <tr class="first_block">
-                    <td>
-                        {%  if profile_photo_update.completed %}
-                        <a href="{{ profile_photo_update.data.profile_photo }}">
-                            <img src="{{ profile_photo_update.data.profile_photo }}" style="height: 100px;" alt="Profile Photo">
-                        </a>
-                        {% else %}
-                            <p>
-                                <a href="{% url 'post_inspection_profile_photo_update' pk=post_inspection.id %}" data-turbolinks="false" class="btn btn-outline-primary">Update Profile Photo</a>
-                            </p>
-                        {% endif %}
-                    </td>
-                    <td class="uid_block">
-                        <ul>
-                            <li>
-                                {%  if uid_photo_update.completed %}
-                                <a href="{{ uid_photo_update.data.uid_front_photo }}">
-                                    <img src="{{ uid_photo_update.data.uid_front_photo }}" style="height: 100px; padding:5px;" alt="UID Front">
-                                </a>
-                                <p>UID Back Front Photo</p>
-                                {% else %}
-                                    <p>
-                                        <a href="{% url 'post_inspection_uid_photo_update' pk=post_inspection.id %}" data-turbolinks="false" class="btn btn-outline-primary">Update Aadhar Photos</a>
-                                    </p>
-                                {% endif %}
-                            </li>
-                            <li>
-                                {%  if uid_photo_update.completed %}
-                                    <a href="{{ uid_photo_update.data.uid_back_photo }}">
-                                        <img src="{{ uid_photo_update.data.uid_back_photo }}" style="height: 100px; width: 100px; padding:5px;" alt="UID Back">
-                                    </a>
-                                    <p>UID Back Photo</p>
-                                {% endif %}
-                            </li>
-                        </ul>
-                      
-                    </td>
-                </tr>
-            </table>
-          
-            <div class="pt-0 mt-0 address_block" style="width: 100%;">
-                <div class="card-header">
-                    <p>Address</p>
-                </div>
-                {%  if address_update.completed %}
-                <div id="basic_tables" class="address_grid">
-                    <table role="grid" class="gridjs-table" style="height: auto;">
-                        <tbody class="gridjs-tbody">
-                            <tr class="gridjs-tr">
-                                <td data-column-id="name" class="gridjs-td">House Type</td>
-                                <td data-column-id="email" class="gridjs-td">{{address_update.data.house_type}}</td>
-                            </tr>
-                            <tr class="gridjs-tr">
-                                <td data-column-id="name" class="gridjs-td">Floor</td>
-                                <td data-column-id="email" class="gridjs-td">{{address_update.data.floor}}</td>
-                            </tr>
-                            <tr class="gridjs-tr">
-                                <td data-column-id="name" class="gridjs-td">Room No.</td>
-                                <td data-column-id="phoneNumber" class="gridjs-td">{{address_update.data.room_no}}</td>
-                            </tr>
-                            <tr class="gridjs-tr">
-                                <td data-column-id="name" class="gridjs-td">House No.</td>
-                                <td data-column-id="phoneNumber" class="gridjs-td">{{address_update.data.house_no}}</td>
-                            </tr>
-                            <tr class="gridjs-tr">
-                                <td data-column-id="name" class="gridjs-td">Street No.</td>
-                                <td data-column-id="email" class="gridjs-td">{{address_update.data.street_no}}</td>
-                            </tr>
-                            <tr class="gridjs-tr">
-                                <td data-column-id="name" class="gridjs-td">Pincode</td>
-                                <td data-column-id="email" class="gridjs-td">{{address_update.data.pincode}}</td>
-                            </tr>
-                            <tr class="gridjs-tr">
-                                <td data-column-id="name" class="gridjs-td">Village</td>
-                                <td data-column-id="email" class="gridjs-td">{{address_update.data.village}}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                    <p class="p-2">
-                        <a href="{% url 'post_inspection_address_update' pk=post_inspection.id %}" data-turbolinks="false" class="btn btn-outline-primary">Update Address</a>
-                    </p>
-                {% endif %}
-                <table class="table table-bordered mb-0 ">
-                    <tr>
-                        <th><p>Kitchen Photo</p></th>
-                        <th><p>Main Gate Photo</p></th>
-                    </tr>
-                    <tr>
-                        <td>
-                            {%  if kitchen_photo_update.completed %}
-                            <a href="{{ kitchen_photo_update.data.kitchen_photo }}">
-                                <img src="{{ kitchen_photo_update.data.kitchen_photo }}" style="height: 100px;" alt="Kitchen Photo">
+        <table class="table table-bordered">
+            <tr>
+                <th colspan="2">Consumer Id: {{ customer_profile.consumer_id }} </th>
+
+            </tr>
+            <tr>
+                <td><p>Profile Photo</p></td>
+                <td>
+                    {%  if profile_photo_update.completed %}
+                    <a href="{{ profile_photo_update.data.profile_photo }}">
+                        <img src="{{ profile_photo_update.data.profile_photo }}" style="height: 100px;" alt="Profile Photo">
+                    </a>
+                    {% else %}
+                        <p>
+                            <a href="{% url 'post_inspection_profile_photo_update' pk=post_inspection.id %}" data-turbolinks="false" class="">Update Profile Photo</a>
+                        </p>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td><p>Aadhar Photos</p></td>
+                <td class="uid_block">
+                    <ul class="m-0">
+                        <li>
+                            {%  if uid_photo_update.completed %}
+                            <a href="{{ uid_photo_update.data.uid_front_photo }}">
+                                <img src="{{ uid_photo_update.data.uid_front_photo }}" style="height: 100px; padding:5px;" alt="UID Front">
                             </a>
+                            <p>UID Back Front Photo</p>
                             {% else %}
                                 <p>
-                                    <a href="{% url 'post_inspection_kitchen_photo_update' pk=post_inspection.id %}" data-turbolinks="false" class="btn btn-outline-primary">Update Kitchen Photo</a>
+                                    <a href="{% url 'post_inspection_uid_photo_update' pk=post_inspection.id %}" data-turbolinks="false" class="">Update Aadhar Photos</a>
                                 </p>
                             {% endif %}
-                        </td>
-                        <td>  
-                            {%  if main_gate_photo_update.completed %}
+                        </li>
+                        <li>
+                            {%  if uid_photo_update.completed %}
+                                <a href="{{ uid_photo_update.data.uid_back_photo }}">
+                                    <img src="{{ uid_photo_update.data.uid_back_photo }}" style="height: 100px; width: 100px; padding:5px;" alt="UID Back">
+                                </a>
+                                <p>UID Back Photo</p>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td><p>Kitchen Photo</p></td>
+                <td>
+                    {%  if kitchen_photo_update.completed %}
+                    <a href="{{ kitchen_photo_update.data.kitchen_photo }}">
+                        <img src="{{ kitchen_photo_update.data.kitchen_photo }}" style="height: 100px;" alt="Kitchen Photo">
+                    </a>
+                    {% else %}
+                        <p>
+                            <a href="{% url 'post_inspection_kitchen_photo_update' pk=post_inspection.id %}" data-turbolinks="false" class="">Update Kitchen Photo</a>
+                        </p>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td><p>Main Gate Photo</p></td>
+                <td>
+                    {%  if main_gate_photo_update.completed %}
                                 <a href="{{ main_gate_photo_update.data.main_gate }}">
                                     <img src="{{ main_gate_photo_update.data.main_gate }}" style="height: 100px;" alt="Main Gate Photo">
                                 </a>
                                 <p>Google Map Will Be Here</p>
                             {% else %}
                                 <p>
-                                    <a href="{% url 'post_inspection_main_gate_photo_update' pk=post_inspection.id %}" data-turbolinks="false" class="btn btn-outline-primary">Update Main Gate Photo</a>
+                                    <a href="{% url 'post_inspection_main_gate_photo_update' pk=post_inspection.id %}" data-turbolinks="false" class="">Update Main Gate Photo</a>
                                 </p>
                             {% endif %}
-                        </td>
-                    </tr>
-                </table>
-            </div>
+                </td>
+            </tr>
+            <tr>
+                <td><p>Address</p></td>
+                <td>
+                    {%  if address_update.completed %}
+                    <p>House Type {{address_update.data.house_type}},Floor {{address_update.data.floor}}, Room No. {{address_update.data.room_no}},
+                        House No. {{address_update.data.house_no}}, Street No. {{address_update.data.street_no}}, Pincode {{address_update.data.pincode}},
+                        Village {{address_update.data.village}}
+                    </p>
+                    {% else %}
+                    <p>
+                        <a href="{% url 'post_inspection_address_update' pk=post_inspection.id %}" data-turbolinks="false" class="">Update Address</a>
+                    </p>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th colspan="2" class="card-footer">
+                    <form method="post" id="form" style="width: 100%;">
+                        {% csrf_token %}
+                        {% form form=form %}{% endform %}
+                        <p class="text-right"><input class="btn btn-secondary float-right" type="button" id="form" onclick="submit()"  value="Submit"/></p>
+                    </form>
+                </th>
+            </tr>
 
-            <div class="card-footer" style="float:left; width:100%">
-                <form method="post" id="form" style="width: 100%;">
-                    {% csrf_token %}
-                    {% form form=form %}{% endform %}
-                    <p class="text-right"><input class="btn btn-secondary rounded-0 float-right" type="button" id="form" onclick="submit()"  value="Submit"/></p>
-                </form>
-            </div>
-
-        </div>
+        </table>
     </div>
 {% endblock %}
 <style>

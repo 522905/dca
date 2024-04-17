@@ -1,5 +1,8 @@
 {% extends "material/frontend/base_module.html" %}
 {% load static %}
+{% block page_title %}<span style="font-size:16px;">Update Main Gate Photo</span> 
+    <b style=" color:#f3e9df;">({{ customer_profile.id}}) {{ customer_profile.name }} </b>
+{% endblock %}  
 {% block content %}
 <link rel="stylesheet" href="{% static '/css/style.css' %}" >
 <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css" >
@@ -7,43 +10,26 @@
 <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap"
     rel="stylesheet">
 <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
+<style>
+    .overlay_location_outer{ display:none;}
+</style>
 
 <div class="main p-2 pt-0 form_label">
-    <span><b>Referral User: {{ referral_user.username }}</b></span>
     <form method="post" id="">
 {#        {% csrf_token %}#}
-        <div class="card">
-            <div class="row mb-2 m-0">
-                <div class="main-header bg-heading" style="border-radius:0;background-color: #ff5c6c !important; display: block; width: 100%;">
-                    <i class="fa fa-hand-o-right mr-2" style="color: white; font-size:18px"></i><span class="text-white">महत्वपूर्ण जानकारी</span>
-                </div>
-                <div class="row p-2 m-0" style="background-color: #efefef;">
-                    <div class="col-6 pl-0">
-                        <p style="color: #2957A4; font-weight: bold; margin-bottom: 20px !important;">मेन गेट की फोटो इस तरहा से खिचे| 
-                            आपके मेन गेट की फोटो साफ़ दिखाई दे| फोटो पर क्लिक करें ओर इस तरहा की फोटो खींचे| 
-                            <a  href="https://arungas.com/public/ujwalla/main-gate-photo.png" target="_blank"></a>
-                        </p>
-                    </div>
-                    <div class="col-6 p-0">
-                        <a href="https://arungas.com/public/ujwalla/main-gate-photo.png" target="_blank" style="border:1px solid #ccc; display:block; padding: 5px; ">
-                            <img src="https://arungas.com/public/ujwalla/main-gate-photo.png" style=" width:100%; object-fit: contain; margin:0 auto; display: block;" >
-                            <span style="display:block;background-color: #000; color: #fff; padding: 5px;">उदाहरण के लिए फोटो</span>
-                        </a>
-                    </div>
-                  
-                </div>
-                <div class="col-sm-12 photo_block mt-2">
-                    <span class="hidden-field">{{ form.main_gate }}</span>
-                    <label>Photo of Main Gate with customer<br> (ग्राहक के साथ मेन गेट का फोटो)</label>
-
-                    <p id="main_gate"></p>
-                    {{ form.main_gate.errors }}
-                </div>
-            </div>
-            <hr style="display: block; width:100%;">
-            <div>
+<div class="photo_block p-0">
+            <div class="card">
                 {{form.form_type}}
                 {{form.application_id}}
+                {{form.name}}
+                <div class="form-group input_form" style="margin-bottom: 0 !important;">
+                    <div class="card-header border-bottom">
+                        <span class="hidden_field">{{ form.main_gate }}</span>
+                        <label class="text-left m-0 p-0">Main Gate Photo</label>
+                    </div>
+                    <p id="main_gate" class="p-2"></p>
+                    {{ form.main_gate.errors }}
+                </div>
                 <div class="photo_block">
                     <div class="main-header bg-heading" style="border-radius:0;background-color: #ff5c6c !important; display: block; width: 100%;">
                         <i class="fa fa-hand-o-right mr-2" style="color: white; font-size:18px"></i><span class="text-white">महत्वपूर्ण जानकारी</span>
@@ -60,7 +46,7 @@
                         </div>
                     </div>
                     <div class="col-sm-6">
-                        <div class="allowLocationNav">
+                        <div class="allowLocationNav p-2">
                             <button type="button" class="btn btn-primary" onClick="allowLocationNav();">
                                 कैप्चर लोकेशन
                             </button>
@@ -71,13 +57,12 @@
                         <p class="text-danger mt-2" style="font-weight: 500;" id="map_error_msg"></p>
                     </div>
                 </div>
-              
-                
-            </div>
-            <div class="card-footer float-right">
-                <input class="btn btn-success float-right rounded-0" type="submit" value="फॉर्म जमा करें" />
+                <div class="card-footer p-2">
+                    <input class="btn btn-success float-right rounded-0" type="submit" value="Submit" />
+                </div>
             </div>
         </div>
+
     </form>
     <div id="add_location"></div>
 </div>
