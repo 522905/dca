@@ -90,6 +90,7 @@ class PostInspectionStartFormView(FormView):
 					messages.add_message(
 						self.request, messages.ERROR, "No customer found for given mobile number"
 					)
+				return redirect('post_inspection_start')
 			else:
 				messages.add_message(
 					self.request, messages.ERROR, "No customer found for given consumer id"
