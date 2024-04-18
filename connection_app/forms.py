@@ -212,12 +212,12 @@ class UpdateAddressForm(forms.Form):
 	village = forms.CharField(
 		widget=forms.TextInput, label='Village', required=True
 	)
-	ward_no = forms.CharField(
-		widget=forms.TextInput, label='Ward No', required=True
-	)
-	post_office = forms.CharField(
-		widget=forms.TextInput, label='Post Office', required=True
-	)
+	# ward_no = forms.CharField(
+	# 	widget=forms.TextInput, label='Ward No', required=True
+	# )
+	# post_office = forms.CharField(
+	# 	widget=forms.TextInput, label='Post Office', required=True
+	# )
 	pincode = forms.CharField(
 		widget=forms.TextInput, label='Pin Code', required=True
 	)
@@ -240,8 +240,8 @@ class UpdateAddressForm(forms.Form):
 			"street_no": data.get('street_no', ''),
 			"landmark": data.get('landmark', ''),
 			"village": data.get('village', ''),
-			"ward_no": data.get('ward_no', ''),
-			"post_office": data.get('post_office', ''),
+			# "ward_no": data.get('ward_no', ''),
+			# "post_office": data.get('post_office', ''),
 			"pincode": data.get('pincode', '')
 		}
 		obj.mobile_number = data['mobile_number']
