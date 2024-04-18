@@ -282,7 +282,7 @@ class PostInspectionKitchenPhotoUpdateView(FormView):
 class PostInspectionMainGatePhotoUpdateView(FormView):
 	model = PostInspection
 	template_name = 'connection_app/post-inspection/update_main_gate_photo.html'
-	form_class = KitchenPostInspectionForm
+	form_class = PreviewPostInspectionForm
 	success_url = '.'
 
 	def dispatch(self, request, *args, **kwargs):
