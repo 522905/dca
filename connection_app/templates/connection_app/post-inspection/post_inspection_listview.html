@@ -2,34 +2,129 @@
 {% load static %}
 {% block page_title %}Post-Installation List - {{ user.first_name }} {{ user.last_name }}{% endblock %}
 {% block content %}
+<style>
+    .post_inspection tr td{ padding:5px 0;}
+    .post_inspection tr td{ text-align: center !important; margin: 0; padding:5px;}
+</style>
     <link rel="stylesheet" href="{% static '/css/style.css' %}" >
     <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
     <div class="p-2 pt-0 form_label" style="width: 100%;">
-        {% for obj in object_list %}
-            <a href="{% url 'post_inspection_form_view' pk=obj.pk %}">
-                <div class="card mb-2 app_card list_block">
-                    <div class="card-header">
-                        <ul class="m-0">
-                            <li>
-                                <p class="float-left">{{ obj.parent.name }} ({{ obj.parent_id }})</p>
-                                <p class="float-right">{{ obj.get_status_display }} ({{ obj.id }})</p>
-                            </li>
-                        </ul>
+        <div class="card">
+            {% for obj in object_list %}
+                <a href="{% url 'post_inspection_form_view' pk=obj.pk %}">
+                    <div class="app_card list_block">
+                        <div class="card-body pb-0 p-2 card-header" style="float: left; width: 100%;">
+                            <ul class="m-0">
+                                <li>
+                                    <p class="float-left">{{ obj.parent.name }} ({{ obj.parent_id }})</p>
+                                    <p class="float-right">{{ obj.parent.distributor_name }}</p>
+                                </li>
+                            </ul>
+                            <ul class="m-0">
+                                <li>
+                                    <p class="float-left">Mobile: {{ obj.parent.mobile_number }}</p>
+                                    <p class="float-right">Consumer Id: {{ obj.parent.consumer_id }}</p>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <table class="table border-top post_inspection m-0">
+                            <tr>
+                                <td>
+                                    Kitchen
+                                    <p>
+                                    {% if obj.kitchen_photo_updated %}
+                                        <i class="fa fa-check-square text-success" aria-hidden="true"></i>
+                                    {% else %}
+                                        <i class="fa fa-times text-danger"></i>
+                                    {% endif %}
+                                    </p>
+                                </td>
+                                <td>
+                                    Main gate
+                                    <p>
+                                    {% if obj.main_gate_photo_updated %}
+                                        <i class="fa fa-check-square text-success" aria-hidden="true"></i>
+                                    {% else %}
+                                        <i class="fa fa-times text-danger"></i>
+                                    {% endif %}
+                                    </p>
+                                </td>
+                            <td>
+                                    Address
+                                    <p>
+                                    {% if obj.address_updated %}
+                                        <i class="fa fa-check-square text-success" aria-hidden="true"></i>
+                                    {% else %}
+                                        <i class="fa fa-times text-danger"></i>
+                                    {% endif %}
+                                    </p>
+                                </td>
+
+                                </td>
+                            <td>Suraksha Pipe
+                                    <p>
+                                    {% if obj.suraksha_pipe_updated %}
+                                        <i class="fa fa-check-square text-success" aria-hidden="true"></i>
+                                    {% else %}
+                                        <i class="fa fa-times text-danger"></i>
+                                    {% endif %}
+                                    </p>
+
+                                </td>
+                            <td>Profile Photo
+                                    <p>
+                                    {% if obj.profile_photo_updated %}
+                                        <i class="fa fa-check-square text-success" aria-hidden="true"></i>
+                                    {% else %}
+                                        <i class="fa fa-times text-danger"></i>
+                                    {% endif %}
+                                    </p>
+                                </td>
+
+                            <td>UID Photos
+                                    <p>
+                                    {% if obj.uid_photo_updated %}
+                                        <i class="fa fa-check-square text-success" aria-hidden="true"></i>
+                                    {% else %}
+                                        <i class="fa fa-times text-danger"></i>
+                                    {% endif %}
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
                     </div>
-                    <div class="card-body pb-0 p-2">
-                        <ul class="m-0">
-                            <li>
-                                <p class="float-left">Mobile: {{ obj.parent.mobile_number }}</p>
-                                <p class="float-right">Consumer Id: {{ obj.parent.consumer_id }}</p>
-                            </li>
-                        </ul>
-                    </div>
+                </a>
+            {% endfor %}
+            <div class="card-footer">
+                <div aria-label="Page navigation example" style="display: block;"> 
+                    <ul class="pagination m-0 p-0"  style="display: block; text-align: center;">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="#" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                        <span class="sr-only">Previous</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="page-item"><a class="page-link" href="#">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</a></li>
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="#" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                        <span class="sr-only">Next</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    </ul>
                 </div>
-            </a>
-        {% endfor %}
+            </div>
+        </div>
     </div>
-    <table>
+   
+    {% comment %} <table>
         <tr>
             <td colspan="2">
                 <div class="pagination">
@@ -50,5 +145,5 @@
                 </div>
             </td>
         </tr>
-    </table>
+    </table> {% endcomment %}
 {% endblock %}

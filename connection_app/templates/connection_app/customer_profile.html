@@ -1,0 +1,145 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block page_title %}Customer Profile - {{ obj.name }} ({{ obj.id }}){% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+{% if obj %}
+    <div class="p-2 pt-0 form_label application_form" style="width: 100%;">
+        <div class="card">
+            <div class="status_block">
+                <div class="main-header">
+                    <span class="text-black"><input type="button" value="Back" onclick="history.back()" /> Customer Profile Id: </span>
+{#                    <span class="float-right"><b><a data-turbolinks="false" href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">{{ obj.id }}</a></b></span>#}
+                    <span class="float-right"><b><a data-turbolinks="false" href="{% url 'admin:connection_app_customerprofile_change' object_id=obj.id %}">{{ obj.id }}</a></b></span>
+                </div>
+            </div>
+            <div class="card-body pb-0 p-0 list_block">
+                <div class="row m-0">
+                    <div class="col-8 p-0">
+                        <table>
+                            <tr>
+                                <td>Name: <b>{{ obj.name }}</b>
+                                    <br>Address: <b>{{ obj.primary_account_address }}</b>
+                                    <p>Phone: <b>{{ obj.mobile_number }}</b></p>
+                                    <p>Consumer Id: <b>{{ obj.consumer_id }}</b></p>
+                                    <p>Location: <a href="https://www.google.com/maps/@{{ obj.latitude }},{{ obj.longitude }},15z"><b>{{ obj.latitude }},{{ obj.longitude }}</b></a></p>
+                                    <p>Relationship Status: <b>{{ obj.relationship_status }}</b></p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-4 p-0">
+                        <img class="p-1" src="{{ obj.document_self }}" style="height: 125px; object-fit:contain; width: 100%;">
+                    </div>
+                </div>
+            </div>
+            <div class="status_block">
+                <div class="main-header">
+                    <span class="">Documents:</b></span>
+                </div>
+                <table class="table table-bordred" style="margin-bottom: 0;">
+                    <tr>
+                        <td colspan="2">
+                            <div style="overflow: scroll; display: flex;">
+                                {% for doc in obj.documents.all %}
+                                    <div>
+                                        <a href="{{ doc.link }}">
+                                            <img class="p-1" src="{{ doc.link }}" style="height: 100px; object-fit:contain; width: 100%;" alt="{{ doc.type }}">
+                                        </a>
+                                        <p style="text-align: center">{{ doc.get_type_display }}</p>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% for fm in obj.family_members.all %}
+                        <tr><td colspan="2">Family Members {{ fm.name }} {{ fm.dob }} {{ fm.relation }}: </td></tr>
+                        <tr>
+                            <td colspan="2">
+                                <div style="overflow: scroll; display: flex;">
+                                    <div>
+                                        <a href="{{ fm.uid_front_link }}">
+                                            <img class="p-1" src="{{ fm.uid_front_link }}" style="height: 100px; object-fit:contain; width: 100%;" alt="{{ doc.type }}">
+                                        </a>
+                                        <p style="text-align: center">Front UID</p>
+                                    </div>
+                                    <div>
+                                        <a href="{{ fm.uid_back_link }}">
+                                            <img class="p-1" src="{{ fm.uid_back_link }}" style="height: 100px; object-fit:contain; width: 100%;" alt="{{ doc.type }}">
+                                        </a>
+                                        <p style="text-align: center">Back UID</p>`
+                                    </div>
+                                </div>
+                            </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                <table>
+                    <tr class="card-header">
+                        <th style="font-weight:bold"><b>Post-Inspection Status:</b> </th>
+                        <th>
+                            {% if obj.pre_inspection %}
+                                {{obj.pre_inspection.get_status_display}}
+                                {{ obj.pre_inspection.rejected_reason }}
+                            {% endif %}
+                        </th>
+                    </tr>
+                    <tr>
+                        <td colspan="2" >
+                            <div style="overflow: scroll; display: flex;">
+                                {% if obj.pre_inspection %}
+                                    {% for doc in obj.pre_inspection.documents.all %}
+                                        {% if doc.type != 'PHYSICAL_LEGAL_DOCUMENT' and doc.type != 'SAFETY_AUDIO' %}
+                                            <div>
+                                                <a href="{{ doc.link }}">
+                                                    <img class="p-1" src="{{ doc.link }}" style="height: 150px; object-fit:contain; width: 100%;" alt="{{ doc.type }}">
+                                                </a>
+                                                <br>
+                                                <p style="text-align: center">{{ doc.get_type_display }}</p>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <div style="overflow: scroll; display: flex;">
+                                {% if obj.connection_disbursement %}
+                                    {% for doc in obj.connection_disbursement.documents.all %}
+                                        <div>
+                                            <a href="{{ doc.link }}">
+                                                <img class="p-1" src="{{ doc.link }}" style="height: 100px; object-fit:contain; width: 100%;" alt="{{ doc.type }}">
+                                            </a>
+                                            <p style="text-align: center">{{ doc.get_type_display }}</p>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+       
+    </div>
+{% endif %}
+<style>
+    .status_block .main-header{
+        border-top: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+        border-radius: 0;
+        background-color: #efefef;
+        font-weight: bold;
+        font-size: 14px;
+    }
+    .text_link{ text-decoration: underline; font-weight: bold !important;}
+    .application_form .list_block th, .application_form .list_block td, .status_block th,.application_form .list_block td { font-size: 0.9rem;}
+    .table.table-bordred:last-child tr{ border-bottom: transparent;}
+    .search_form input{ padding: 0 10px !important; width: 96% !important;  }
+    .link_wh:hover{ text-decoration: underline !important;}
+</style>
+{% endblock %}

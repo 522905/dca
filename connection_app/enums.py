@@ -13,11 +13,12 @@ class ConnectionApplicationProcessType(models.TextChoices):
 
 
 class PostInspectionActivityTypeEnum(models.TextChoices):
-	KITCHEN_PHOTO_UPDATE = 'KITCHEN_PHOTO', 'Kitchen Photo',
-	MAIN_GATE_PHOTO_UPDATE = 'MAIN_GATE_PHOTO', 'Main Gate Photo',
+	KITCHEN_PHOTO_UPDATE = 'KITCHEN_PHOTO_UPDATE', 'Kitchen Photo Update',
+	MAIN_GATE_PHOTO_UPDATE = 'MAIN_GATE_PHOTO_UPDATE', 'Main Gate Photo Update',
 	ADDRESS_UPDATE = 'ADDRESS_UPDATE', 'Address Update'
 	PROFILE_PHOTO_UPDATE = 'PROFILE_PHOTO_UPDATE', 'Profile Photo Update'
 	UID_PHOTO_UPDATE = 'UID_PHOTO_UPDATE', 'UID Photo Update'
+	SURAKSHA_PIPE_UPDATE = 'SURAKSHA_PIPE_UPDATE', 'Suraksha Pipe Update'
 
 
 class ConnectionApplicationLeadStatus(models.TextChoices):
@@ -90,6 +91,7 @@ class ConnectionApplicationDocumentsEnum(models.TextChoices):
 	CONNECTION_DETAIL = 'CONNECTION_DETAIL', 'Connection Detail'
 	KITCHEN_PHOTO = 'KITCHEN_PHOTO', 'Kitchen Photo'
 	MAIN_GATE = 'MAIN_GATE', 'Main Gate'
+	SURAKSHA_PIPE_PHOTO = 'SURAKSHA_PIPE_PHOTO', 'Suraksha Pipe Photo'
 
 	@classmethod
 	def get_skipped_additional_choices(cls):

@@ -16,7 +16,7 @@
         .address_grid{ font-size:12px; font-weight:600;}
         .address_grid td{ padding:5px 10px; }
         .address_grid td:last-child{ color:#666;}
-        .btn-border{ background:trasparent; }
+        .btn-border{ background:transparent; }
         #pre_inspection_form { width:600px;}
         .uid_block ul li { display:inline-block; width:48%;  }
     </style>
@@ -85,15 +85,29 @@
                 <td><p>Main Gate Photo</p></td>
                 <td>
                     {%  if main_gate_photo_update.completed %}
-                                <a href="{{ main_gate_photo_update.data.main_gate }}">
-                                    <img src="{{ main_gate_photo_update.data.main_gate }}" style="height: 100px;" alt="Main Gate Photo">
-                                </a>
-                                <p>Google Map Will Be Here</p>
-                            {% else %}
-                                <p>
-                                    <a href="{% url 'post_inspection_main_gate_photo_update' pk=post_inspection.id %}" data-turbolinks="false" class="">Update Main Gate Photo</a>
-                                </p>
-                            {% endif %}
+                        <a href="{{ main_gate_photo_update.data.main_gate_photo }}">
+                            <img src="{{ main_gate_photo_update.data.main_gate_photo }}" style="height: 100px;" alt="Main Gate Photo">
+                        </a>
+                        <p>Google Map Will Be Here</p>
+                    {% else %}
+                        <p>
+                            <a href="{% url 'post_inspection_main_gate_photo_update' pk=post_inspection.id %}" data-turbolinks="false" class="">Update Main Gate Photo</a>
+                        </p>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td><p>Suraksha Pipe Photo</p></td>
+                <td>
+                    {%  if suraksha_pipe_update.completed %}
+                        <a href="{{ suraksha_pipe_update.data.suraksha_pipe }}">
+                            <img src="{{ suraksha_pipe_update.data.suraksha_pipe_photo }}" style="height: 100px;" alt="Main Gate Photo">
+                        </a>
+                    {% else %}
+                        <p>
+                            <a href="{% url 'post_inspection_suraksha_pipe_update' pk=post_inspection.id %}" data-turbolinks="false" class="">Update Suraksha Pipe</a>
+                        </p>
+                    {% endif %}
                 </td>
             </tr>
             <tr>

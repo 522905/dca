@@ -80,6 +80,7 @@ class ConnectionApplication(models.Model):
 		max_length=25, choices=ConnectionApplicationLeadCommunicationMode.choices, null=True, blank=True
 	)
 	last_execution_state = models.CharField(max_length=50, null=True, blank=True)
+	customer_profile = models.ForeignKey("connection_app.CustomerProfile", on_delete=models.CASCADE, null=True)
 
 	# def status(request):
 	# 	status = Status.objects.all()
@@ -795,6 +796,24 @@ class PostInspection(models.Model):
 	def transition_post_inspection_submitted(self, *args, **kwargs):
 		if self.status == PostInspectionStatusEnum.REJECTED:
 			self.documents.all().delete()
+
+	def kitchen_photo_updated(self):
+		return self.activities.get(activity_type=PostInspectionActivityTypeEnum.KITCHEN_PHOTO_UPDATE).completed
+
+	def main_gate_photo_updated(self):
+		return self.activities.get(activity_type=PostInspectionActivityTypeEnum.MAIN_GATE_PHOTO_UPDATE).completed
+
+	def profile_photo_updated(self):
+		return self.activities.get(activity_type=PostInspectionActivityTypeEnum.PROFILE_PHOTO_UPDATE).completed
+
+	def uid_photo_updated(self):
+		return self.activities.get(activity_type=PostInspectionActivityTypeEnum.UID_PHOTO_UPDATE).completed
+
+	def address_updated(self):
+		return self.activities.get(activity_type=PostInspectionActivityTypeEnum.ADDRESS_UPDATE).completed
+
+	def suraksha_pipe_updated(self):
+		return self.activities.get(activity_type=PostInspectionActivityTypeEnum.SURAKSHA_PIPE_UPDATE).completed
 
 	# @fsm_log_description
 	# @fsm_log_by

@@ -179,13 +179,16 @@ class InstallationReviewForm(forms.Form):
 		required=True
 	)
 
+
+class CustomerProfileSearchForm(forms.Form):
+	consumer_id = forms.CharField(required=False)
+	mobile_number = forms.CharField(required=False)
+	# profile_id = forms.CharField(required=False, widget=forms.NumberInput)
+
 	def clean(self):
 		data = self.cleaned_data
-		if not data.get('verified'):
-			data['documents_required_for_reupload'] = json.dumps([ConnectionApplicationDocumentsEnum.KITCHEN_PHOTO])
-		else:
-			data['documents_required_for_reupload'] = '[]'
-		return data
+		if not data.get('consumer_id') and not data.get('mobile_number'):
+			raise forms.ValidationError("Please enter one of 'Consumer Id' or 'Mobile Number'")
 
 
 class UpdateAddressForm(forms.Form):
@@ -256,7 +259,6 @@ class UpdateAddressForm(forms.Form):
 
 
 class PostInspectionForm(forms.Form):
-
 	def __init__(self, post_inspection, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.post_inspection = post_inspection
@@ -432,6 +434,49 @@ class ProfilePhotoPostInspectionForm(forms.Form):
 
 		post_inspection_activity_obj = self.post_inspection.activities.get(
 			activity_type=PostInspectionActivityTypeEnum.PROFILE_PHOTO_UPDATE)
+		post_inspection_activity_obj.completed = True
+		post_inspection_activity_obj.completed_by = get_current_user()
+		post_inspection_activity_obj.data = data
+		post_inspection_activity_obj.save()
+
+
+class SurakshaPipePostInspectionForm(forms.Form):
+	to_be_billed = forms.ChoiceField(
+		label="To Be Billed ?",
+		required=True,
+		help_text="",
+		choices=[
+			('', '-- Select To Be Billed --'),
+			('YES', 'Yes'),
+			('NO', 'No')
+		]
+	)
+	suraksha_pipe_photo = forms.CharField(
+		widget=forms.TextInput, label='Suraksha Pipe Photo', required=True
+	)
+
+	def __init__(self, post_inspection=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.post_inspection = post_inspection
+
+	def save(self):
+		data = self.cleaned_data
+
+		from connection_app.models import CustomerProfile, CustomerProfileDocuments
+
+		customer_profile: CustomerProfile = self.post_inspection.parent
+
+		cpd_obj = CustomerProfileDocuments.objects.filter(parent=customer_profile,
+		                                                  type=ConnectionApplicationDocumentsEnum.SURAKSHA_PIPE_PHOTO).first()
+		if not cpd_obj:
+			CustomerProfileDocuments.objects.create(
+				parent=self.post_inspection.parent,
+				type=ConnectionApplicationDocumentsEnum.SURAKSHA_PIPE_PHOTO,
+				link=data['suraksha_pipe_photo']
+			)
+
+		post_inspection_activity_obj = self.post_inspection.activities.get(
+			activity_type=PostInspectionActivityTypeEnum.SURAKSHA_PIPE_UPDATE)
 		post_inspection_activity_obj.completed = True
 		post_inspection_activity_obj.completed_by = get_current_user()
 		post_inspection_activity_obj.data = data

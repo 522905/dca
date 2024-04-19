@@ -1,0 +1,103 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block page_title %}<span style="font-size:16px;">Update Profile Photo</span> 
+    <b style=" color:#f3e9df;">({{ customer_profile.id}}) {{ customer_profile.name }} </b>
+{% endblock %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://arungas.com/public/ujwalla/css/signature-pad.css">
+<script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
+<style>
+    #id_to_be_billed { display: block !important;}
+    #id_suraksha_pipe_photo{ margin-top:10px;}
+</style>
+<div class="main p-2 pt-0 form_label">
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="card p-2">
+            <div class="form-group input_form" style="margin-bottom: 0 !important;">
+                <div class="row m-0">
+                    <div class="col-sm-12 photo_block p-0">
+                        <label class="text-center m-0 p-0">{{ form.to_be_billed.label }}</label>
+                        <span>{{ form.to_be_billed }}</span>
+                    </div>
+
+                    <div class="col-sm-12 photo_block p-0">
+                        <div class="card-header border-bottom">
+                            <span class="hidden_field">{{ form.suraksha_pipe_photo }}</span>
+                            <label class="text-center m-0 p-0">Suraksha Pipe Photo</label>
+                        </div>
+                        <p id="suraksha_pipe_photo" class="p-2"></p>
+                        {{ form.profile_photo.errors }}
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer p-2">
+                <input class="btn btn-primary rounded-3 float-right" type="submit"  value="Submit"/>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    $(document).ready(function() {
+        allowLocationNav();
+        ensureLocationAccess();
+        
+    });
+    window.surakshaPipePhotoUppy = new Uppy.Core({
+		debug: true,
+		autoProceed: true,
+		restrictions: {
+			maxFileSize: 50000000,
+			maxNumberOfFiles: 1,
+			minNumberOfFiles: 1,
+			allowedFileTypes: ['image/*'],
+		}
+	})
+    .use(Uppy.Dashboard, {
+        trigger: '#suraksha_pipe_photo',
+        inline: true,
+        target: '#suraksha_pipe_photo',
+        showProgressDetails: true,
+        note: 'Images and video only, 2–3 files, up to 10 MB',
+        height: 200,
+        metaFields: [],
+        id: 'profile_photo',
+        waitForThumbnailsBeforeUpload: true,
+        doneButtonHandler: () => {
+            // this.uppy.reset()
+            // this.requestCloseModal()
+        },
+        showRemoveButtonAfterComplete: true,
+        theme: 'light',
+        locale: {
+            strings: {
+                dropPasteFiles: 'फोटो अपलोड करने के लिए यहाँ पर क्लिक करे %{browseFiles}',
+                done: '-',
+                uploadComplete: 'अपलोड पूरा हो गया है',
+                complete: 'पूरा हुआ',
+            }
+        },
+    })
+    .use(Uppy.Compressor, {
+        quality: 0.92,
+        maxWidth: 2048,
+        resize: 'contain',
+        limit: 10,
+    })
+
+    .use(Uppy.Tus, {
+        endpoint: 'https://tus.dca.arungas.com/files/',
+    })
+    surakshaPipePhotoUppy.on('complete', result => {
+		$('#id_suraksha_pipe_photo').val(result.successful[0].uploadURL);
+	})
+
+</script>
+{% endblock %}

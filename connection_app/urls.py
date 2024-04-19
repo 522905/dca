@@ -68,5 +68,20 @@ urlpatterns = [
         views.PostInspectionProfilePhotoUpdateView.as_view(),
         name="post_inspection_profile_photo_update"
     ),
+    url(
+        '^post-inspection/suraksha-pipe-update/(?P<pk>[^/.]+)/$',
+        views.PostInspectionSurakshaPipeUpdateView.as_view(),
+        name="post_inspection_suraksha_pipe_update"
+    ),
+    path(
+        'customer-profile-search/',
+        views.CustomerProfileSearchView.as_view(),
+        name="customer_profile_search"
+    ),
+    url(
+        '^customer-profile/(?P<pk>[^/.]+)/$',
+        views.CustomerProfileView.as_view(),
+        name="customer_profile"
+    ),
     path('', include(router.urls)),
 ]

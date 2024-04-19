@@ -1,47 +1,61 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import DetailView, ListView, FormView
+from django.views.generic import DetailView, ListView, FormView, TemplateView
 from django_currentuser.middleware import get_current_user
 
 from connection_app.enums import PostInspectionStatusEnum, InspectionTypeEnum, PostInspectionActivityTypeEnum
 from connection_app.forms import UpdateAddressForm, PostInspectionStartForm, PreviewPostInspectionForm, \
-	KitchenPostInspectionForm, PostInspectionForm, UIDPostInspectionForm, ProfilePhotoPostInspectionForm
+	KitchenPostInspectionForm, PostInspectionForm, UIDPostInspectionForm, ProfilePhotoPostInspectionForm, \
+	SurakshaPipePostInspectionForm, CustomerProfileSearchForm
 from connection_app.models import ConnectionApplication, PostInspection, CustomerProfile
 from ujjwala.forms import KitchenPreInspectionForm
 
 
 def installation_upload_process_gleam_entry_gate(request):
-    application_id = request.GET.get("application_id")
-    response = render(request, 'connection_app/fblike.html')
-    response.set_cookie('application_id_cookie', application_id)
-    return response
+	application_id = request.GET.get("application_id")
+	response = render(request, 'connection_app/fblike.html')
+	response.set_cookie('application_id_cookie', application_id)
+	return response
 
 
 def installation_upload_process_gleam_entry_gate_completed(request):
-    application_id = request.COOKIES.get('application_id_cookie')
-    return redirect('installation_start', pk=application_id)
+	application_id = request.COOKIES.get('application_id_cookie')
+	return redirect('installation_start', pk=application_id)
 
 
 def index(request):
-    return render(request, 'connection_app/index.html')
+	return render(request, 'connection_app/index.html')
+
+
+def web_form_view(request):
+	return render(request, "connection_app/web_form.html")
+
+	# def get_context_data(self, **kwargs):
+	#     context_data = super().get(**kwargs)
+	#     form_fill_area_list = FormFillArea.objects.all()
+	#     context_data = context_data.update({
+	#         "form_fill_area_list": form_fill_area_list
+	#     })
+	#     return context_data
 
 
 class ApplicationStatusView(DetailView):
-    model = ConnectionApplication
+	model = ConnectionApplication
 
-    def get_template_names(self):
-        return 'connection_app/status.html'
+	def get_template_names(self):
+		return 'connection_app/status.html'
 
 
 class ApplicationReuploadView(DetailView):
-    model = ConnectionApplication
+	model = ConnectionApplication
 
-    def get_template_names(self):
-        return 'connection_app/pendingdata.html'
+	def get_template_names(self):
+		return 'connection_app/pendingdata.html'
 
 
 class ApplicationInstallationView(DetailView):
@@ -110,6 +124,7 @@ class PostInspectionStartFormView(FormView):
 			pi_obj.activities.create(activity_type=PostInspectionActivityTypeEnum.PROFILE_PHOTO_UPDATE)
 			pi_obj.activities.create(activity_type=PostInspectionActivityTypeEnum.ADDRESS_UPDATE)
 			pi_obj.activities.create(activity_type=PostInspectionActivityTypeEnum.UID_PHOTO_UPDATE)
+			pi_obj.activities.create(activity_type=PostInspectionActivityTypeEnum.SURAKSHA_PIPE_UPDATE)
 			pi_obj.save()
 
 		return redirect('post_inspection_form_view', pk=pi_obj.pk)
@@ -174,6 +189,8 @@ class PostInspectionView(FormView):
 				activity_type=PostInspectionActivityTypeEnum.KITCHEN_PHOTO_UPDATE).first(),
 			'main_gate_photo_update': post_inspection.activities.filter(
 				activity_type=PostInspectionActivityTypeEnum.MAIN_GATE_PHOTO_UPDATE).first(),
+			'suraksha_pipe_update': post_inspection.activities.filter(
+				activity_type=PostInspectionActivityTypeEnum.SURAKSHA_PIPE_UPDATE).first()
 		})
 		return context
 
@@ -188,6 +205,12 @@ class PostInspectionAddressUpdateView(FormView):
 
 	def dispatch(self, request, *args, **kwargs):
 		post_inspection = self.get_object()
+		if post_inspection.activities.filter(
+			activity_type=PostInspectionActivityTypeEnum.ADDRESS_UPDATE).first().completed:
+			return render(
+				self.request, "domestic/response.html",
+				{"heading": "Post Inspection", "message": "Address Already Updated".format(kwargs.get('pk'))}
+			)
 		if post_inspection.status in (
 				PostInspectionStatusEnum.SUBMITTED,
 				PostInspectionStatusEnum.ACCEPTED,
@@ -210,9 +233,6 @@ class PostInspectionAddressUpdateView(FormView):
 	def form_valid(self, form):
 		form.save()
 		return redirect('post_inspection_form_view', pk=self.get_object().pk)
-
-	def form_invalid(self, form):
-		print("Error")
 
 	def get_form_kwargs(self):
 		kwargs = super().get_form_kwargs()
@@ -239,6 +259,12 @@ class PostInspectionKitchenPhotoUpdateView(FormView):
 
 	def dispatch(self, request, *args, **kwargs):
 		post_inspection = self.get_object()
+		if post_inspection.activities.filter(
+			activity_type=PostInspectionActivityTypeEnum.KITCHEN_PHOTO_UPDATE).first().completed:
+			return render(
+				self.request, "domestic/response.html",
+				{"heading": "Post Inspection", "message": "Kitchen Photo Already Updated".format(kwargs.get('pk'))}
+			)
 		if post_inspection.status in (
 				PostInspectionStatusEnum.SUBMITTED,
 				PostInspectionStatusEnum.ACCEPTED,
@@ -287,6 +313,12 @@ class PostInspectionMainGatePhotoUpdateView(FormView):
 
 	def dispatch(self, request, *args, **kwargs):
 		post_inspection = self.get_object()
+		if post_inspection.activities.filter(
+			activity_type=PostInspectionActivityTypeEnum.MAIN_GATE_PHOTO_UPDATE).first().completed:
+			return render(
+				self.request, "domestic/response.html",
+				{"heading": "Post Inspection", "message": "Main Gate Photo Already Updated".format(kwargs.get('pk'))}
+			)
 		if post_inspection.status in (
 				PostInspectionStatusEnum.SUBMITTED,
 				PostInspectionStatusEnum.ACCEPTED,
@@ -335,6 +367,12 @@ class PostInspectionUIDPhotoUpdateView(FormView):
 
 	def dispatch(self, request, *args, **kwargs):
 		post_inspection = self.get_object()
+		if post_inspection.activities.filter(
+			activity_type=PostInspectionActivityTypeEnum.UID_PHOTO_UPDATE).first().completed:
+			return render(
+				self.request, "domestic/response.html",
+				{"heading": "Post Inspection", "message": "UID Photos Already Updated".format(kwargs.get('pk'))}
+			)
 		if post_inspection.status in (
 				PostInspectionStatusEnum.SUBMITTED,
 				PostInspectionStatusEnum.ACCEPTED,
@@ -383,6 +421,12 @@ class PostInspectionProfilePhotoUpdateView(FormView):
 
 	def dispatch(self, request, *args, **kwargs):
 		post_inspection = self.get_object()
+		if post_inspection.activities.filter(
+			activity_type=PostInspectionActivityTypeEnum.PROFILE_PHOTO_UPDATE).first().completed:
+			return render(
+				self.request, "domestic/response.html",
+				{"heading": "Post Inspection", "message": "Profile Photo Already Updated".format(kwargs.get('pk'))}
+			)
 		if post_inspection.status in (
 				PostInspectionStatusEnum.SUBMITTED,
 				PostInspectionStatusEnum.ACCEPTED,
@@ -419,3 +463,110 @@ class PostInspectionProfilePhotoUpdateView(FormView):
 			'customer_profile': self.get_object().parent,
 		})
 		return context
+
+
+@method_decorator(login_required, 'dispatch')
+@method_decorator(csrf_exempt, 'dispatch')
+class PostInspectionSurakshaPipeUpdateView(FormView):
+	model = PostInspection
+	template_name = 'connection_app/post-inspection/update_suraksha_pipe.html'
+	form_class = SurakshaPipePostInspectionForm
+	success_url = '.'
+
+	def dispatch(self, request, *args, **kwargs):
+		post_inspection = self.get_object()
+		if post_inspection.activities.filter(
+			activity_type=PostInspectionActivityTypeEnum.SURAKSHA_PIPE_UPDATE).first().completed:
+			return render(
+				self.request, "domestic/response.html",
+				{"heading": "Post Inspection", "message": "Suraksha Pipe Already Updated".format(kwargs.get('pk'))}
+			)
+
+		if post_inspection.status in (
+				PostInspectionStatusEnum.SUBMITTED,
+				PostInspectionStatusEnum.ACCEPTED,
+		):
+			return render(self.request, 'connection_app/post-inspection/post_inspection_status.html', context={
+				'post_inspection': post_inspection
+			})
+		return super().dispatch(request, *args, **kwargs)
+
+	def get_object(self, queryset=None):
+		try:
+			obj = PostInspection.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No %(verbose_name)s found matching the query" %
+				{'verbose_name': queryset.model._meta.verbose_name}
+			)
+		return obj
+
+	def form_valid(self, form):
+		form.save()
+		return redirect('post_inspection_form_view', pk=self.get_object().pk)
+
+	def form_invalid(self, form):
+		print(form.errors)
+		return redirect('post_inspection_form_view', pk=self.get_object().pk)
+
+	def get_form_kwargs(self):
+		kwargs = super().get_form_kwargs()
+		kwargs['post_inspection'] = self.get_object()
+		return kwargs
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		post_inspection = self.get_object()
+		context.update({
+			'post_inspection': post_inspection,
+			'customer_profile': self.get_object().parent,
+		})
+		return context
+
+
+@method_decorator(login_required, 'dispatch')
+class CustomerProfileSearchView(FormView):
+	template_name = "connection_app/customer_profile_search.html"
+	form_class = CustomerProfileSearchForm
+
+	def form_valid(self, form):
+		data = form.cleaned_data
+
+		cp_obj = None
+		if data.get('consumer_id'):
+			cp_obj = CustomerProfile.objects.filter(consumer_id=data.get('consumer_id')).first()
+		elif data.get('mobile_number'):
+			cp_obj = CustomerProfile.objects.filter(mobile_number=data.get('mobile_number')).first()
+		# elif data.get('customer_profile_id'):
+		# 	cp_obj = CustomerProfile.objects.filter(pk=data.get('customer_profile_id')).first()
+
+		if not cp_obj:
+			messages.add_message(
+				self.request, messages.ERROR, "No Record Found For Given Consumer Id or Mobile Number"
+			)
+			return HttpResponseRedirect(".")
+
+		return redirect('customer_profile', pk=cp_obj.pk)
+
+
+@method_decorator(login_required, 'dispatch')
+class CustomerProfileView(TemplateView):
+	template_name = 'connection_app/customer_profile.html'
+
+	def get_object(self, queryset=None):
+		try:
+			obj = CustomerProfile.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No Customer Profile Exist For Given Id"
+			)
+		return obj
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		obj = self.get_object()
+		context.update({
+			"obj": obj,
+		})
+		return context
+
