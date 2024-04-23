@@ -944,6 +944,8 @@ class SalesOrder(models.Model):
 	 }
 	"""
 	parent = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE)
+	created_on = models.DateTimeField(auto_now_add=True)
+	updated_on = models.DateTimeField(auto_now=True)
 	sales_order = models.CharField(max_length=128)
 	order_type = models.CharField(max_length=128, null=True)
 	order_sub_type = models.CharField(max_length=128, null=True)
