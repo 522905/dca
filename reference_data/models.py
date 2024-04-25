@@ -24,3 +24,8 @@ class RTGSList(models.Model):
 
 class CommentX(XtdComment):
 	comment_type = models.CharField(max_length=52, choices=CommentTypeEnum.choices, default=CommentTypeEnum.OTHERS)
+
+
+class ServiceType(models.Model):
+	name = models.CharField(max_length=48)
+	description = models.CharField(max_length=128)
