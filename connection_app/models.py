@@ -24,11 +24,12 @@ from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTy
 	ConnectionApplicationLeadCommunicationMode, ConnectionInstallationStatus, \
 	PaymentProfileApprovalStatusEnum, CustomerTypeEnum, SalesOrderInvoiceEnum, ConsumerTypeEnum, SubsidyStatusEnum, \
 	SchemeOnboardingStatusEnum, DeliveryTypeEnum, OrderSubTypeEnum, SalesOrderStatusEnum, InspectionTypeEnum, \
-	PostInspectionStatusEnum, PostInspectionActivityTypeEnum
+	PostInspectionStatusEnum, PostInspectionActivityTypeEnum, LeadStatusEnum
 from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, SubmitLead, \
 	FrontOfficeCompleted, BackOfficeReactivation, BackOfficeRegularisation, \
 	BackOfficeNewConnection, DocumentsReupload, InstallationReviewForm
 from domestic_app.utils import get_minio_public_url
+from reference_data.models import ServiceType
 from ujjwala.camunda_functions import start_process_in_camunda_v2
 
 minio_client = Minio(
@@ -1063,35 +1064,35 @@ class SalesOrder(models.Model):
 class SalesOrderInvoice(models.Model):
 	"""
 	{
-"": "",
-"Invoice Number": "5-103991627817",
-"Sales Order #": "2-003653125558",
-"Invoice date": "21-Mar-2024 01:24:31 PM",
-"Invoice Status": "Open",
-"Consumer Name": "Sham Lal",
-"Consumer Type": "Double Bottle Connection",
-"Consumer Address": "H.NO.6441/2 ST.NO.8 HARGOBIND NAGAR LDH. PROOF OK /10/2/2010 LUDHIANA Punjab 141008",
-"Subsidy Status": "Start",
-"Scheme Onboarding Status": "Onboarded With CTC",
-"Delivery Type": "Home Delivery",
-"Service Area": "KIDWAI NGR RANJIT NGR AMAR PUR",
-"Delivery Boy": "ARUN YADAV",
-"Paid Flag": "N",
-"Preferred Flag": "N",
-"Preferred Day": "",
-"Preferrred Time Slot": "",
-"Print Flag": "N",
-"Order Sub Type": "Refill Order",
-"Equipment Type": "14.2",
-"Relationship Id": "7500000068250924",
-"Consumer Number": "7568250924",
-"Distributor Local Cash Memo#": "305948243100193364",
-"Digital Payment": "N",
-"Scheme Type": "General",
-"Tatkal Order": "",
-"EPIC Invoice IRN Calc": "N",
-"IRN Number": "",
-"Site Id": ""
+		"": "",
+		"Invoice Number": "5-103991627817",
+		"Sales Order #": "2-003653125558",
+		"Invoice date": "21-Mar-2024 01:24:31 PM",
+		"Invoice Status": "Open",
+		"Consumer Name": "Sham Lal",
+		"Consumer Type": "Double Bottle Connection",
+		"Consumer Address": "H.NO.6441/2 ST.NO.8 HARGOBIND NAGAR LDH. PROOF OK /10/2/2010 LUDHIANA Punjab 141008",
+		"Subsidy Status": "Start",
+		"Scheme Onboarding Status": "Onboarded With CTC",
+		"Delivery Type": "Home Delivery",
+		"Service Area": "KIDWAI NGR RANJIT NGR AMAR PUR",
+		"Delivery Boy": "ARUN YADAV",
+		"Paid Flag": "N",
+		"Preferred Flag": "N",
+		"Preferred Day": "",
+		"Preferrred Time Slot": "",
+		"Print Flag": "N",
+		"Order Sub Type": "Refill Order",
+		"Equipment Type": "14.2",
+		"Relationship Id": "7500000068250924",
+		"Consumer Number": "7568250924",
+		"Distributor Local Cash Memo#": "305948243100193364",
+		"Digital Payment": "N",
+		"Scheme Type": "General",
+		"Tatkal Order": "",
+		"EPIC Invoice IRN Calc": "N",
+		"IRN Number": "",
+		"Site Id": ""
 	}
 	"""
 	parent = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE)
@@ -1129,3 +1130,16 @@ class SalesOrderInvoice(models.Model):
 			models.UniqueConstraint(fields=['invoice_date', 'invoice_number'],
 		                      name='unique sales_order_invoice_date_invoice_number')
 		]
+
+
+class Lead(models.Model):
+	parent = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, null=True)
+	created_on = models.DateTimeField(auto_now_add=True)
+	updated_on = models.DateTimeField(auto_now=True)
+	name = models.CharField(max_length=128)
+	mobile_number = models.CharField(max_length=10)
+	generated_by = models.ForeignKey(User, on_delete=models.CASCADE)
+	service_type = models.ForeignKey(ServiceType, on_delete=models.CASCADE)
+	due_on = models.DateTimeField(null=True)
+	follow_up_on = models.DateTimeField(null=True)
+	status = models.CharField(max_length=128, choices=LeadStatusEnum.choices, default=LeadStatusEnum.GENERATED)

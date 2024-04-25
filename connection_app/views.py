@@ -5,14 +5,15 @@ from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import DetailView, ListView, FormView, TemplateView
+from django.views.generic import DetailView, ListView, FormView, TemplateView, RedirectView
 from django_currentuser.middleware import get_current_user
 
 from connection_app.enums import PostInspectionStatusEnum, InspectionTypeEnum, PostInspectionActivityTypeEnum
 from connection_app.forms import UpdateAddressForm, PostInspectionStartForm, PreviewPostInspectionForm, \
 	KitchenPostInspectionForm, PostInspectionForm, UIDPostInspectionForm, ProfilePhotoPostInspectionForm, \
-	SurakshaPipePostInspectionForm, CustomerProfileSearchForm
-from connection_app.models import ConnectionApplication, PostInspection, CustomerProfile
+	SurakshaPipePostInspectionForm, CustomerProfileSearchForm, GenerateLeadForm, GenerateNonCustomerLeadForm
+from connection_app.models import ConnectionApplication, PostInspection, CustomerProfile, Lead
+from reference_data.models import ServiceType
 from ujjwala.forms import KitchenPreInspectionForm
 
 
@@ -564,9 +565,95 @@ class CustomerProfileView(TemplateView):
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
-		obj = self.get_object()
+		obj: CustomerProfile = self.get_object()
 		context.update({
 			"obj": obj,
 		})
 		return context
 
+
+@method_decorator(login_required, 'dispatch')
+@method_decorator(csrf_exempt, 'dispatch')
+class GenerateLeadFormView(FormView):
+	model = CustomerProfile
+	template_name = 'connection_app/generate_lead_form.html'
+	form_class = GenerateLeadForm
+	success_url = '.'
+
+	def get_object(self, queryset=None):
+		try:
+			obj = CustomerProfile.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No %(verbose_name)s found matching the query" %
+				{'verbose_name': queryset.model._meta.verbose_name}
+			)
+		return obj
+
+	def form_valid(self, form):
+		data = form.cleaned_data
+		customer_profile = self.get_object()
+		for service_type in data['service_list']:
+			Lead.objects.create(
+				parent=self.get_object(),
+				generated_by=get_current_user(),
+				service_type=ServiceType.objects.get(name=service_type),
+				name=customer_profile.name,
+				mobile_number=customer_profile.mobile_number
+			)
+		messages.add_message(self.request, messages.INFO,
+		                     message="Generated Lead Successfully For {}".format(", ".join(data['service_list'])))
+		return redirect("customer_profile", pk=self.get_object().pk)
+
+	def get_form_kwargs(self):
+		kwargs = super().get_form_kwargs()
+		kwargs['service_type_choices'] = tuple(ServiceType.objects.all().values_list('name', 'name'))
+		return kwargs
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context.update({
+			'customer_profile': self.get_object(),
+		})
+		return context
+
+
+@method_decorator(login_required, 'dispatch')
+@method_decorator(csrf_exempt, 'dispatch')
+class GenerateNonCustomerLeadFormView(FormView):
+	template_name = 'connection_app/generate_non_customer_lead_form.html'
+	form_class = GenerateNonCustomerLeadForm
+	success_url = '.'
+
+	def form_valid(self, form):
+		data = form.cleaned_data
+		for service_type in data['service_list']:
+			Lead.objects.create(
+				parent=self.get_object(),
+				generated_by=get_current_user(),
+				service_type=ServiceType.objects.get(name=service_type),
+				name=data['name'],
+				mobile_number=data['mobile_number']
+			)
+		messages.add_message(self.request, messages.INFO,
+		                     message="Generated Lead Successfully For {}".format(", ".join(data['service_list'])))
+		return redirect("customer_profile", pk=self.get_object().pk)
+
+	def get_form_kwargs(self):
+		kwargs = super().get_form_kwargs()
+		kwargs['service_type_choices'] = tuple(ServiceType.objects.all().values_list('name', 'name'))
+		return kwargs
+
+
+@method_decorator(login_required, 'dispatch')
+class DashboardView(TemplateView):
+	template_name = "connection_app/dashboard.html"
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		user = get_current_user()
+
+		context.update({
+			"user": user
+		})
+		return context

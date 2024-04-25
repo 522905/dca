@@ -1,6 +1,7 @@
 # Routers provide an easy way of automatically determining the URL conf.
 from django.conf.urls import url
 from django.urls import path, include
+from django.views.generic import RedirectView
 from rest_framework import routers
 
 from connection_app.viewsets import ConnectionApplicationViewSet, ConnectionApplicationAPIViewSet
@@ -12,7 +13,7 @@ router.register(r'connection-application-api', ConnectionApplicationAPIViewSet, 
 
 
 urlpatterns = [
-    path('', views.index),
+    path('', views.DashboardView.as_view(), name='index'),
     path('web-form/', views.web_form_view),
     path('connection-application/start/', views.index),
     url(
@@ -83,5 +84,14 @@ urlpatterns = [
         views.CustomerProfileView.as_view(),
         name="customer_profile"
     ),
-    path('', include(router.urls)),
+    url(
+        '^generate-lead-form/(?P<pk>[^/.]+)/$',
+        views.GenerateLeadFormView.as_view(),
+        name="generate_lead_form"
+    ),
+    path(
+        'generate-non-customer-lead-form/',
+        views.GenerateNonCustomerLeadFormView.as_view(),
+        name="generate_non_customer_lead_form"
+    ),
 ]

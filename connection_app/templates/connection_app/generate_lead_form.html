@@ -1,0 +1,48 @@
+{% extends "material/frontend/base_module.html" %}
+{% load material_form %}
+{% load static %}
+{% block page_title %}<span style="font-size:16px;">Update Kitchen Photo</span>
+    <b style=" color:#f3e9df;">{{ customer_profile.name }} ({{ customer_profile.id}})  </b>
+{% endblock %}
+{% block content %}
+    <link rel="stylesheet" href="{% static '/css/style.css' %}" >
+    <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css" >
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://arungas.com/public/ujwalla/css/signature-pad.css">
+    <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
+    <style>
+        #upload_sign_and_submit_form .checkbox-field .col{ display: block; width: 100%;}
+        .row.checkbox-field{ width:100%; display: block; margin:0;}
+        .col.s12{ display: block; width: 100%; }
+        .col.s12 label{ display: block; width: 100%; background-color: ;}
+       
+    </style>
+    <div class="main p-2 pt-0 form_label">
+        <div class="card">
+            <div class="row m-0">
+                <div class="col-8 p-2">
+                    <p><b> Phone:</b>{{ customer_profile.Phone }} </p>
+                    <p><b> Address:</b> {{ customer_profile.primary_account_address }}</p>
+                </div>
+                <div class="col-4 p-2">
+                    <img class="p-1" src="{{ customer_profile.document_self }}" style="height: 125px; object-fit:contain; width: 100%;">
+                </div>
+                
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <p>Select Services</p>
+            </div>
+            <form method="post" id="upload_sign_and_submit_form">
+                {% csrf_token %}
+                {% form form=form %}{% endform %}
+                <div class="border-top">
+                    <input class="btn m-2 btn-success rounded-3 float-right" type="submit"  value="Generate Lead">
+                </div>
+            </form>
+            <div id="add_location"></div>
+        </div>
+    </div>
+{% endblock %}

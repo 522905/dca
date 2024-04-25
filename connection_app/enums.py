@@ -156,3 +156,11 @@ class DeliveryTypeEnum(models.TextChoices):
 
 class OrderSubTypeEnum(models.TextChoices):
 	REFILL_ORDER = 'REFILL_ORDER', "Refill Order"
+
+
+class LeadStatusEnum(models.TextChoices):
+	GENERATED = 'GENERATED', 'Generated',
+	DUE_ON = 'DUE_ON', 'Due On',
+	FOLLOW_UP = 'FOLLOW_UP', 'Follow Up',
+	IN_PROGRESS = 'IN_PROGRESS', 'In Progress'
+	COMPLETED = 'COMPLETED', 'Completed'

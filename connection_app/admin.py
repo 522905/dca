@@ -245,8 +245,8 @@ class SalesOrderAdmin(admin.ModelAdmin):
         'order_status'
     ]
     list_filter = [
-        ('created_on', DateRangeFilter),
-        ('updated_on', DateRangeFilter),
+        ('order_date', DateRangeFilter),
+        # ('updated_on', DateRangeFilter),
     ]
 
     fsm_fields = ['order_status', ]

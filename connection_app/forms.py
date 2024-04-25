@@ -481,3 +481,37 @@ class SurakshaPipePostInspectionForm(forms.Form):
 		post_inspection_activity_obj.completed_by = get_current_user()
 		post_inspection_activity_obj.data = data
 		post_inspection_activity_obj.save()
+
+
+class GenerateLeadForm(forms.Form):
+	service_list = forms.MultipleChoiceField(
+		widget=forms.CheckboxSelectMultiple(attrs={'class': 'choice_block'}),
+		required=True,
+		label="",
+		help_text="",
+		choices=[
+			('', '-- Select Services --'),
+		]
+	)
+
+	def __init__(self, service_type_choices=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.fields['service_list'].choices = service_type_choices
+
+
+class GenerateNonCustomerLeadForm(forms.Form):
+	name = forms.CharField(max_length=128)
+	mobile_number = forms.CharField(max_length=10)
+	service_list = forms.MultipleChoiceField(
+		widget=forms.CheckboxSelectMultiple(attrs={'class': 'choice_block'}),
+		required=True,
+		label="",
+		help_text="",
+		choices=[
+			('', '-- Select Services --'),
+		]
+	)
+
+	def __init__(self, service_type_choices=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.fields['service_list'].choices = service_type_choices
