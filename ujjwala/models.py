@@ -29,7 +29,8 @@ from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMo
 	ConnectionDisbursementStatusEnum, PreInspectionTypeEnum, SchemeOnboardingStatusEnum, NicClearedCustomerRemarksEnum, \
 	DisbursementDriveStatusEnum, InstallationTypeEnum, product_quantity_map, UjjwalaV2ApplicationAvailabilityStatus, \
 	UjjwalaV2ApplicationAvailabilityChannel, UjjwalaProductEnum, SDMSMobileNumberEnum, FilledByFilterEnum, \
-	SVSDMSStatusEnum, PreInspectionRejectionReasonsEnum, UjjwalaSearchLogEnum, BankDetailsUpdateRequestEnum
+	SVSDMSStatusEnum, PreInspectionRejectionReasonsEnum, UjjwalaSearchLogEnum, BankDetailsUpdateRequestEnum, \
+	ChangeCylinderTypeRequestStatusEnum
 from ujjwala.forms import ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
 	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm, NewRelationCreated, \
@@ -136,6 +137,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	address_verified_by = models.CharField(max_length=256, null=True, blank=True)
 	address_verified_on = models.DateTimeField(null=True, blank=True)
 	sdms_address_version = models.CharField(default=2, max_length=32)
+	customer_profile = models.ForeignKey("connection_app.CustomerProfile", on_delete=models.CASCADE, null=True)
 
 	class Meta:
 		permissions = (
@@ -1948,9 +1950,19 @@ class UjjwalaSearchLog(models.Model):
 	activity_datetime = models.DateTimeField()
 
 
+class ChangeCylinderTypeRequest(models.Model):
+	parent = models.ForeignKey(UjjwalaV2Application, on_delete=models.PROTECT)
+	created_on = models.DateTimeField(auto_now_add=True)
+	updated_on = models.DateTimeField(auto_now=True)
+	pos = models.ForeignKey(User, on_delete=models.PROTECT)
+	status = FSMField(
+		default=ChangeCylinderTypeRequestStatusEnum.DRAFTED,
+		choices=ChangeCylinderTypeRequestStatusEnum.choices
+	)
+
+
 def dummy():
-	from ujjwala.models import FamilyMembers
+	from ujjwala.models import FamilyMembers, UjjwalaV2Application
 
 	for obj in FamilyMembers.objects.filter(uid_front_link__contains='tus.', uid_back_link__contains='tus.'):
 		print(obj.id)
-
