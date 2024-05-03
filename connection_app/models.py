@@ -667,6 +667,7 @@ class CustomerProfile(models.Model):
 	distributor_code = models.CharField(max_length=128, null=True)
 	distributor_name = models.CharField(max_length=128, null=True)
 	mobile_number = models.CharField(max_length=128, null=True)
+	mobile_number_2 = models.CharField(max_length=128, null=True)
 	email_addresss = models.CharField(max_length=256, null=True)
 	employee_code = models.CharField(max_length=128, null=True)
 	vip_flag = models.BooleanField(null=True)
@@ -797,6 +798,8 @@ class PostInspection(models.Model):
 	def transition_post_inspection_submitted(self, *args, **kwargs):
 		if self.status == PostInspectionStatusEnum.REJECTED:
 			self.documents.all().delete()
+		self.mechanic = kwargs.get('mechanic')
+		self.submitted_on = datetime.datetime.now()
 
 	def kitchen_photo_updated(self):
 		return self.activities.get(activity_type=PostInspectionActivityTypeEnum.KITCHEN_PHOTO_UPDATE).completed
@@ -1143,3 +1146,9 @@ class Lead(models.Model):
 	due_on = models.DateTimeField(null=True)
 	follow_up_on = models.DateTimeField(null=True)
 	status = models.CharField(max_length=128, choices=LeadStatusEnum.choices, default=LeadStatusEnum.GENERATED)
+
+
+class BookSalesOrder(models.Model):
+	customer_profile = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE)
+	camunda_process_id = models.CharField(max_length=128, null=True)
+
