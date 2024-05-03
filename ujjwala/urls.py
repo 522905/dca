@@ -291,6 +291,11 @@ urlpatterns = [
         name="change_phone_number"
     ),
     url(
+        '^portal/change_cylinder_type/(?P<pk>[^/.]+)/$',
+        views.ChangeCylinderTypeView.as_view(),
+        name="change_cylinder_type"
+    ),
+    url(
         '^portal/upload_uid_for_kyc/(?P<pk>[^/.]+)/$',
         views.UploadUIDForEKYCView.as_view(),
         name="upload_uid_for_kyc"

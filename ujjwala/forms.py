@@ -20,7 +20,7 @@ from ujjwala.communication_functions import send_whatsapp_message, send_sms
 from ujjwala.enums import UjjwalaV2ApplicationStatus, ConnectionDisbursementStatusEnum, \
 	RejectionTypeEnum, PreInspectionTypeEnum, RoboSdmsDedeupStatusEnum, NicClearedCustomerRemarksEnum, \
 	PrintDocumentsTypeEnum, InstallationTypeEnum, UjjwalaProductEnum, product_quantity_map, SDMSMobileNumberEnum, \
-	PreInspectionRejectionReasonsEnum, HouseTypeEnum
+	PreInspectionRejectionReasonsEnum, HouseTypeEnum, CylinderTypeEnum
 from ujjwala.models import UjjwalaApplicationDocumentsEnum
 from ujjwala.ujjwala_functions import __get_ref_no__, id_generator, valid_file_uploaded, send_otp_using_channel, \
 	is_pre_inspection_applicable
@@ -44,6 +44,60 @@ class ChangePhoneNumberForm(forms.Form):
 	phone_number = forms.CharField(
 		widget=forms.TextInput, label='Phone Number', required=True
 	)
+
+	def clean(self):
+		data = super(ChangePhoneNumberForm, self).clean()
+		if data.get('review_status', '') == 'REJECTED' and not data['rejected_reason']:
+			raise forms.ValidationError("Please enter a reason for rejection.")
+		data.update({
+			'description': '{} - {}: {}'.format(
+				data.get('review_status'), data.get('rejected_reason'), data.get('description', '')
+			)
+		})
+		return data
+
+
+class ChangeCylinderTypeForm(forms.Form):
+	change_cylinder_type = forms.ChoiceField(
+			label="Change Cylinder Type To 14.2 Kg ?",
+			required=True,
+			help_text="",
+			choices=[
+				('', '-- Select Change Cylinder Type To 14.2 Kg --'),
+				('YES', 'Yes'),
+				('NO', 'No')
+			]
+		)
+
+
+# class ChangeCylinderForm(forms.Form):
+# 	review_status = forms.ChoiceField(
+# 		label="Select Review Status ?",
+# 		required=True,
+# 		help_text="",
+# 		choices=[
+# 			('', '-- Select Review Status --'),
+# 			('ACCEPTED', 'Accepted'),
+# 			('REJECTED', 'Rejected')
+# 		]
+# 	)
+# 	rejected_reason = forms.CharField(
+# 		widget=forms.TextInput, max_length=255, label='Rejected Reason', required=False
+# 	)
+# 	description = forms.CharField(
+# 		widget=forms.Textarea, label='Remarks', required=False
+# 	)
+#
+# 	def clean(self):
+# 		data = super(ChangePhoneNumberForm, self).clean
+# 		if data.get('review_status', '') == 'REJECTED' and not data['rejected_reason']:
+# 			raise forms.ValidationError("Please enter a reason for rejection.")
+# 		data.update({
+# 			'description': '{} - {}: {}'.format(
+# 				data.get('review_status'), data.get('rejected_reason'), data.get('description', '')
+# 			)
+# 		})
+# 		return data
 
 
 class UploadUIDForEKYCForm(forms.Form):

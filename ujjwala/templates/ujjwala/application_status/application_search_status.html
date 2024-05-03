@@ -90,7 +90,7 @@ body .form_label a i{ float: right;}
                             <img class="p-1" src="{{ obj.document_self }}" style="height: 150px; object-fit:contain; width: 100%;">
                         </div>
                         <div class="col-12 p-0 eky_block">
-                                <table>
+                            <table>
 {#                                    <tr>#}
 {#                                        <td>#}
 {#                                            <p><b>Tags :</b></p>#}
@@ -103,36 +103,36 @@ body .form_label a i{ float: right;}
 {#                                            </ul>#}
 {#                                        </td>#}
 {#                                    </tr>#}
-                                    <tr>
-                                        {% if not obj.ekyc_cleared %}
-                                            <td colspan="2">
-                                                <p style="font-size: 12pt">Aadhar No. : <b><span id="myLabel">{{ obj.self_uid_no_formatted }}</span></b> 
-                                                    <button class="button copy_icon" onclick="copyToClipboard()"><i class="fa-solid fa-copy"></i></button>
-                                                </p>
-                                                
-                                            </td>
-                                            <td colspan="2">
-                                                {% if obj.consumer_id %}
-                                                    <p>
-                                                        <a href="{% url 'ujjwala:get_ekyc_status_from_sdms' pk=obj.id %}" class="btn btn-success float-left text-white">Fetch E-KYC Status From IOCL</a>
-                                                    </p>
-
-                                                {% endif %}
-                                            </td>
-
-                                        {% endif %}
-                                    </tr>
-                                    {% if obj.ekyc_last_attempt_log %}
-                                        <tr>
-                                            <td colspan="2">
+                                <tr>
+                                    {% if not obj.ekyc_cleared %}
+                                        <td colspan="2">
+                                            <p style="font-size: 12pt">Aadhar No. : <b><span id="myLabel">{{ obj.self_uid_no_formatted }}</span></b> 
+                                                <button class="button copy_icon" onclick="copyToClipboard()"><i class="fa-solid fa-copy"></i></button>
+                                            </p>
+                                            
+                                        </td>
+                                        <td colspan="2">
+                                            {% if obj.consumer_id %}
                                                 <p>
-                                                    {{ obj.ekyc_last_attempt_log }}
+                                                    <a href="{% url 'ujjwala:get_ekyc_status_from_sdms' pk=obj.id %}" class="btn btn-success float-left text-white">Fetch E-KYC Status From IOCL</a>
                                                 </p>
-                                            </td>
-                                        </tr>
+
+                                            {% endif %}
+                                        </td>
+
                                     {% endif %}
-                                </table>
-                            </div>
+                                </tr>
+                                {% if obj.ekyc_last_attempt_log %}
+                                    <tr>
+                                        <td colspan="2">
+                                            <p>
+                                                {{ obj.ekyc_last_attempt_log }}
+                                            </p>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </table>
+                        </div>
                     </div>
                 </div>
                 <div class="status_block">
@@ -222,9 +222,16 @@ body .form_label a i{ float: right;}
                                 <td>
                                     {% if obj.status == 'READY_FOR_DISBURSEMENT' %}
                                         {% if obj.ekyc_cleared and obj.address_verified %}
-                                            <a href="https://dca.arungas.com/ujjwala/portal/disbursement/list/?application_id={{ obj.id }}" class="text-white btn btn-success float-right">Create Walk-In</a>
+                                            {% if invitation  %}
+                                                <a href="https://dca.arungas.com/ujjwala/portal/disbursement/list/?application_id={{ obj.id }}" class="text-white btn btn-success float-right">Create Walk-In</a>
+                                            {% else %}
+                                                <p>SV Not Generated Expected After Election - Please Wait</p>
+                                            {% endif %}
+                                        {% else %}
+                                            <p>कृपया EKYC Status और Address Verify  Complete करें, फिर Walk-In बनाएं</p>
                                         {% endif %} 
-                                    {% endif %}                                                      </td>
+                                    {% endif %}                                                      
+                                </td>
                                 <td  class="link_updation">
                                     <a class="text_link" href="{% url 'ujjwala:change_phone_number' pk=obj.id %}">
                                         <span style="color:cornflowerblue">Change Phone Number Request</span>
@@ -238,9 +245,13 @@ body .form_label a i{ float: right;}
                                         <span style="color:cornflowerblue">Update Bank Details</span>
                                         <i class="fa fa-pencil text-primary" aria-hidden="true"></i>
                                     </a>
+                                    {% if obj.customer_profile.products == 'Ujjwala - 5 Kg DBC Package' %}
+                                        <a class="text_link" href="{% url 'ujjwala:change_cylinder_type' pk=obj.id %}">
+                                            <span style="color:cornflowerblue">Change Cylinder Type Request</span>
+                                            <i class="fa fa-pencil text-primary" aria-hidden="true"></i>
+                                        </a>
+                                    {% endif %}
                                 </td>
-                                
-                               
                             </tr>
 {#                        <tr>#}
 {#                            <th>Consumer Id: {{ obj.consumer_id }}</th>#}

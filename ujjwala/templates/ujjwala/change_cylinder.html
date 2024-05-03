@@ -1,0 +1,56 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% load material_form %}
+{% block page_title %}Service Request - Change Cylinder Type{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+
+<style>
+
+    .hidden-field{ display: none;}
+    .form_label .card{ width: 100%;  }
+    .address_form label{ margin-bottom: 5px; }
+    #address_form .form_block input{ padding-left:5px; border-radius: 3px; border: 1px solid #ccc; width: 100%; line-height: 40px; }
+    .form_block label{ float: left; width: 100%; }
+	#id_change_cylinder_type{ display: block !important;}
+</style>
+<div id="address_form" class="row m-0 form_label p-2 ">
+    <div class="card card-profile pt-0 mt-0 " style="width: 100%;" >
+		<div class="row justify-content-center m-0" style="width: 100%; margin: 0 auto !important; padding: 10px;">
+			<div style="width: 30%; float:left">
+				<div class="card-profile-image">
+					<a href="#">
+						<img style="width:100%; max-height: 150px;" src="{{obj.document_self}}">
+					</a>
+				</div>
+			</div>
+			<div style="width: 70%; float:right">
+				<div class="card-body pt-0">
+					<div class="text-left">
+						<h5 class="h5">{{ obj.name }}({{ obj.id }})<span class="font-weight-light"></span></h5>
+						<div class="h6 font-weight-300">{{ obj.contact_mobile }}</div>
+						<div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
+							{{ obj.formatted_address }}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="m-0">
+			<form method="post" id="form" style="width: 100%;">
+				{% csrf_token %}
+				<div class="address_form">
+					<div class="m-2">
+						{{ form }}
+					</div>
+					<div class="card-footer" style="float: left; width: 100%;">
+						<p class="text-right"><input class="btn btn-secondary rounded-0 float-right" type="submit" id="form" value="Submit"/></p>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+   
+</div>
+{% endblock %}
