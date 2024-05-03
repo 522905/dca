@@ -8,8 +8,13 @@ product_quantity_map = {
 
 
 class UjjwalaProductEnum(models.TextChoices):
-	# UJJWALA_5_KG = 'UJJWALA_5_KG', 'Ujjwala - 5 Kg DBC Package'
+	UJJWALA_5_KG = 'UJJWALA_5_KG', 'Ujjwala - 5 Kg DBC Package'
 	UJJWALA_14_KG = 'UJJWALA_14_KG', 'Ujjwala - 14 Kg SBC Package'
+
+
+class CylinderTypeEnum(models.TextChoices):
+	KG_5 = 'KG_5', '5 KG'
+	KG_14_2 = 'KG_14_2', '14.2 KG'
 
 
 class UjjwalaSearchLogEnum(models.TextChoices):
@@ -125,6 +130,11 @@ class RoboSdmsDedeupStatusEnum(models.TextChoices):
 	PROCESS_MANUAL = 'PROCESS_MANUAL', 'Process Manual'
 	IOCL_INVESTIGATION_REQUIRED = 'IOCL_INVESTIGATION_REQUIRED', 'Iocl Investigation Required'
 	ENRICH_REJECTION_DETAILS = 'ENRICH_REJECTION_DETAILS', 'Enrich Rejection Details'
+
+
+class ChangeCylinderTypeRequestStatusEnum(models.TextChoices):
+	DRAFTED = 'DRAFTED', 'Drafted'
+	COMPLETED = 'COMPLETED', 'Completed'
 
 
 class UjjwalaV2ApplicationAvailabilityStatus(models.TextChoices):
