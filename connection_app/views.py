@@ -75,9 +75,11 @@ class PostInspectionListView(ListView):
 	permission = 'has_view_permission'
 
 	def get_queryset(self):
-		return PostInspection.objects.filter(
-			mechanic=get_current_user()
-		).order_by('-submitted_on')
+		user: User = get_current_user()
+		filters = {}
+		if not user.is_superuser:
+			filters.update({'mechanic': user})
+		return PostInspection.objects.filter(**filters).order_by('-submitted_on')
 
 
 @method_decorator(login_required, 'dispatch')
@@ -105,12 +107,12 @@ class PostInspectionStartFormView(FormView):
 					messages.add_message(
 						self.request, messages.ERROR, "No customer found for given mobile number"
 					)
-				return redirect('post_inspection_start')
+					return redirect('connection_app:post_inspection_start')
 			else:
 				messages.add_message(
 					self.request, messages.ERROR, "No customer found for given consumer id"
 				)
-				return redirect('post_inspection_start')
+				return redirect('connection_app:post_inspection_start')
 
 		pi_obj = PostInspection.objects.filter(parent=customer_profile).first()
 		if not pi_obj:
