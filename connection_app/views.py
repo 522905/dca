@@ -163,7 +163,6 @@ class PostInspectionView(FormView):
 		return obj
 
 	def form_valid(self, form):
-		form.save()
 		return HttpResponseRedirect(self.get_success_url())
 
 	def form_invalid(self, form):

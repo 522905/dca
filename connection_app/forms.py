@@ -1,23 +1,12 @@
-import datetime
 import json
-import string
 
-import track
 from django import forms
-from django.contrib.contenttypes.models import ContentType
 from django.forms import NumberInput
-from django.utils import timezone
 from django_currentuser.middleware import get_current_user
-from django.contrib.admin.widgets import AdminDateWidget
 
-from communication_log.models import CommunicationLog
 from connection_app.enums import ConnectionApplicationProcessType, ConnectionApplicationLeadStatus, \
-	ConnectionApplicationDocumentsEnum, HouseTypeEnum, PostInspectionStatusEnum, PostInspectionActivityTypeEnum
-from domestic_app import settings
+	ConnectionApplicationDocumentsEnum, HouseTypeEnum, PostInspectionActivityTypeEnum, PostInspectionStatusEnum
 from inactive_customers.models import InactiveCustomer
-from otp.models import Otp
-from otp.serializer import __get_ref_no__, id_generator
-from ujjwala.communication_functions import send_whatsapp_message, send_sms
 
 
 class SubmitLead(forms.Form):
@@ -270,7 +259,8 @@ class PostInspectionForm(forms.Form):
 			if not activity.completed:
 				raise forms.ValidationError(f"Activity: {activity.activity_type} is not completed.")
 
-		self.post_inspection.mechanic = get_current_user()
+		# self.post_inspection.mechanic = get_current_user()
+		self.post_inspection.transition_post_inspection_submitted(mechanic=get_current_user())
 		self.post_inspection.save()
 		return data
 
