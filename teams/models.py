@@ -78,3 +78,4 @@ class UserProfile(models.Model):
 class UserProfileDocuments(models.Model):
 	parent = models.ForeignKey(UserProfile, on_delete=models.PROTECT)
 	type = models.CharField(max_length=128, choices=UserProfileDocumentsEnum.choices)
+	link = models.URLField()
