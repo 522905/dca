@@ -8,3 +8,8 @@ class UserProfileTypeEnum(models.TextChoices):
 	MANAGER = 'MANAGER', 'Manager'
 	VOLUNTEER = 'VOLUNTEER', 'Volunteer'
 
+
+class UserProfileDocumentsEnum(models.TextChoices):
+	PROFILE_PHOTO = 'PROFILE_PHOTO', 'Profile Photo'
+	VEHICLE_PHOTO = 'VEHICLE_PHOTO', 'Vehicle Photo'
+

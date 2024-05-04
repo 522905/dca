@@ -4,7 +4,7 @@ from djgeojson.fields import PointField, PolygonField
 from organizations.models import Organization
 from treenode.models import TreeNodeModel
 
-from teams.enums import UserProfileTypeEnum
+from teams.enums import UserProfileTypeEnum, UserProfileDocumentsEnum
 
 
 class LocationTypeEnum(models.TextChoices):
@@ -19,6 +19,7 @@ class ServiceLocations(models.Model):
 	type = models.CharField(max_length=25, choices=LocationTypeEnum.choices)
 	start_working_hours = models.TimeField()
 	end_working_hours = models.TimeField()
+	# phone_numbers = models.JSONField(null=True, blank=True)
 	address = models.TextField()
 	enabled = models.BooleanField(default=True)
 	entry_point = PointField()
@@ -70,4 +71,10 @@ class ServiceAreaHex(models.Model):
 class UserProfile(models.Model):
 	user = models.OneToOneField(User, on_delete=models.PROTECT)
 	type = models.CharField(max_length=32, choices=UserProfileTypeEnum.choices)
-	photo = models.URLField()
+	vehicle_no = models.CharField(max_length=10, null=True, blank=True)
+	phone_number = models.CharField(max_length=10, null=True, blank=True)
+
+
+class UserProfileDocuments(models.Model):
+	parent = models.ForeignKey(UserProfile, on_delete=models.PROTECT)
+	type = models.CharField(max_length=128, choices=UserProfileDocumentsEnum.choices)
