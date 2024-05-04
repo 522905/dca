@@ -1,0 +1,171 @@
+
+{% load i18n admin_urls static admin_modify %}
+
+<script type="text/javascript">
+// $.fn.formset.defaults = {
+//     prefix: 'form',                  // The form prefix for your django formset
+//     formTemplate: null,              // The jQuery selection cloned to generate new form instances
+//     addText: 'add another',          // Text for the add link
+//     deleteText: 'remove',            // Text for the delete link
+//     addCssClass: 'add-row',          // CSS class applied to the add link
+//     deleteCssClass: 'delete-row',    // CSS class applied to the delete link
+//     formCssClass: 'dynamic-form',    // CSS class applied to each form in a formset
+//     extraClasses: [],                // Additional CSS classes, which will be applied to each form in turn
+//     keepFieldValues: '',             // jQuery selector for fields whose values should be kept when the form is cloned
+//     added: null,                     // Function called each time a new form is added
+//     removed: null                    // Function called each time a form is deleted
+// };
+
+</script>
+
+<div class="js-inline-admin-formset inline-group" id="{{ inline_admin_formset.formset.prefix }}-group"
+     data-inline-type="tabular"
+     data-inline-formset="{{ inline_admin_formset.inline_formset_data }}">
+  <div class="tabular inline-related {% if forloop.last %}last-related{% endif %}">
+{{ inline_admin_formset.formset.management_form }}
+<fieldset class="module {{ inline_admin_formset.classes }}">
+   {% if inline_admin_formset.formset.max_num == 1 %}
+     <h2>{{ inline_admin_formset.opts.verbose_name|capfirst }}</h2>
+   {% else %}
+     <h2>{{ inline_admin_formset.opts.verbose_name_plural|capfirst }}</h2>
+   {% endif %}
+   {{ inline_admin_formset.formset.non_form_errors }}
+   <table>
+     <thead><tr>
+       <th></th>
+       <th></th>
+       <th class="original"></th>
+     {% for field in inline_admin_formset.fields %}
+       <th class="column-{{ field.name }}{% if field.required %} required{% endif %}{% if field.widget.is_hidden %} hidden{% endif %}">{{ field.label|capfirst }}
+       {% if field.help_text %}<img src="{% static "admin/img/icon-unknown.svg" %}" class="help help-tooltip" width="10" height="10" alt="({{ field.help_text|striptags }})" title="{{ field.help_text|striptags }}">{% endif %}
+       </th>
+     {% endfor %}
+     {% if inline_admin_formset.formset.can_delete and inline_admin_formset.has_delete_permission %}<th>{% translate "Delete?" %}</th>{% endif %}
+     </tr></thead>
+     <tbody>
+     {% for inline_admin_form in inline_admin_formset %}
+        {% if inline_admin_form.form.non_field_errors %}
+        <tr class="row-form-errors">
+          <td colspan="{{ inline_admin_form|cell_count }}">{{ inline_admin_form.form.non_field_errors }}</td>
+        </tr>
+        {% endif %}
+        <tr class="form-row {% if inline_admin_form.original or inline_admin_form.show_url %}has_original{% endif %}{% if forloop.last and inline_admin_formset.has_add_permission %} empty-form{% endif %}"
+             id="{{ inline_admin_formset.formset.prefix }}-{% if not forloop.last %}{{ forloop.counter0 }}{% else %}empty{% endif %}">
+            <td class="original">
+              {% if inline_admin_form.original or inline_admin_form.show_url %}
+              <p>
+                {% if inline_admin_form.original %}
+                {{ inline_admin_form.original }}
+
+                {% if inline_admin_form.model_admin.show_change_link and inline_admin_form.model_admin.has_registered_model %}
+                <a href="{% url inline_admin_form.model_admin.opts|admin_urlname:'change' inline_admin_form.original.pk|admin_urlquote %}" class="{% if inline_admin_formset.has_change_permission %}inlinechangelink{% else %}inlineviewlink{% endif %}">{% if inline_admin_formset.has_change_permission %}{% translate "Change" %}{% else %}{% translate "View" %}{% endif %}</a>{% endif %}
+                {% endif %}
+
+                {% if inline_admin_form.show_url %}<a href="{{ inline_admin_form.absolute_url }}">{% translate "View on site" %}</a>{% endif %}
+                </p>
+                {% endif %}
+
+                {% if inline_admin_form.needs_explicit_pk_field %}{{ inline_admin_form.pk_field.field }}{% endif %}
+                {% if inline_admin_form.fk_field %}{{ inline_admin_form.fk_field.field }}{% endif %}
+            </td>
+            <td class="field-parent">
+              {{ inline_admin_form.form.parent }}
+            </td>
+            <td class="field-type">
+              {{ inline_admin_form.form.type }}
+            </td>
+
+            <td>
+              <span id="{{ inline_admin_formset.formset.prefix }}-{% if not forloop.last %}{{ forloop.counter0 }}{% else %}__prefix__{% endif %}-uppy" class="uppy-upload">
+              </span>
+            </td>
+
+            <td class="field-link">
+              {{inline_admin_form.form.link}}
+                <!-- <p class="url">Currently: <a href="{{inline_admin_form.form.link.value}}">
+                  inline_admin_form.form.link.value
+                  </a>
+                </p> -->
+            </td>
+            {% if inline_admin_formset.formset.can_delete and inline_admin_formset.has_delete_permission %}
+            <td class="delete">{% if inline_admin_form.original %}{{ inline_admin_form.deletion_field.field }}{% endif %}</td>
+            {% endif %}
+        </tr>
+     {% endfor %}
+     </tbody>
+   </table>
+</fieldset>
+  </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<link href="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.css" rel="stylesheet">
+<script src="https://releases.transloadit.com/uppy/v2.4.1/uppy.min.js"></script>
+
+  <script>
+
+
+function add_uppy_handler(id, value_target) {
+
+  window[id] = new Uppy.Core({
+        debug: true,
+        autoProceed: true,
+        restrictions: {
+          maxFileSize: 50000000,
+          maxNumberOfFiles: 1,
+          minNumberOfFiles: 1,
+          allowedFileTypes: ['image/*'],
+          //requiredMetaFields: ['caption'],
+        }
+      })
+        .use(Uppy.Dashboard, {
+          trigger: `#${id}`,
+          inline: true,
+          target: `#${id}`,
+          showProgressDetails: true,
+          note: 'Images and video only, 2–3 files, up to 10 MB',
+          height: 250,
+          metaFields: [],
+          id: `${id}`,
+          browserBackButtonClose: false
+        })
+        .use(Uppy.Tus, {
+          endpoint: 'https://tus.dca.arungas.com/files/',
+        });
+      window[id].on('complete', result => {
+        $(value_target).val(result.successful[0]['uploadURL']);
+        console.log('successful files:', result.successful)
+        console.log('failed files:', result.failed)
+      })
+}
+
+
+    $(document).ready(function () {
+
+      django.jQuery(document).on('formset:added', function(event, $row, formsetName) {
+        console.log([event, $row, formsetName]);
+        row_id = $row[0].id.split('-')[1];
+        uppy_id = `{{ inline_admin_formset.formset.prefix }}-${row_id}-uppy`;
+        target_id = `[name="{{ inline_admin_formset.formset.prefix }}-${row_id}-link"]`;
+        add_uppy_handler(uppy_id, target_id);
+      });
+
+      django.jQuery(document).on('formset:removed', function(event, $row, formsetName) {
+        row_id = $row[0].id.split('-')[1];
+        uppy_id = `documents-${row_id}-uppy`;
+        window[uppy_id].close();
+        console.log([event, $row, formsetName]);
+      });
+
+
+
+    {% for inline_admin_form in inline_admin_formset %}
+    var upply_id = '{{ inline_admin_formset.formset.prefix }}-{% if not forloop.last %}{{ forloop.counter0 }}{% else %}empty{% endif %}-uppy';
+    var uppy_value_target = '[name="{{ inline_admin_formset.formset.prefix }}-{% if not forloop.last %}{{ forloop.counter0 }}{% else %}empty{% endif %}-link"]';
+    add_uppy_handler(upply_id, uppy_value_target);
+    {% endfor %}
+
+});
+  </script>
+<style>
+  .field-link p{ width:300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+</style>
+</div>

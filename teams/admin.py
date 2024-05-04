@@ -3,7 +3,7 @@ from leaflet.admin import LeafletGeoAdminMixin
 from treenode.admin import TreeNodeModelAdmin
 from treenode.forms import TreeNodeForm
 
-from .models import ServiceLocations, ServiceArea, ServiceAreaMechanic, FormFillArea, UserProfile
+from .models import ServiceLocations, ServiceArea, ServiceAreaMechanic, FormFillArea, UserProfile, UserProfileDocuments
 
 
 @admin.register(ServiceLocations)
@@ -60,6 +60,13 @@ class ServiceAreaAdmin(TreeNodeModelAdmin):
 #     list_filter = ('name',)
 #     inlines = (ServiceAreaMechanicLineAdmin,)
 
+
+class UserProfileDocumentsInline(admin.TabularInline):
+    extra = 0
+    model = UserProfileDocuments
+    template = 'teams/admin/document-inline.html'
+
+
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = (
@@ -68,3 +75,6 @@ class UserProfileAdmin(admin.ModelAdmin):
         'type'
     )
     list_filter = ('type',)
+    inlines = [
+        UserProfileDocumentsInline
+    ]
