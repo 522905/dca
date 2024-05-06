@@ -92,6 +92,7 @@ class ConnectionApplicationDocumentsEnum(models.TextChoices):
 	KITCHEN_PHOTO = 'KITCHEN_PHOTO', 'Kitchen Photo'
 	MAIN_GATE = 'MAIN_GATE', 'Main Gate'
 	SURAKSHA_PIPE_PHOTO = 'SURAKSHA_PIPE_PHOTO', 'Suraksha Pipe Photo'
+	BANK_SUBSIDY_CERTIFICATE_PHOTO = 'BANK_SUBSIDY_CERTIFICATE_PHOTO', 'Bank Subsidy Certificate Photo'
 
 	@classmethod
 	def get_skipped_additional_choices(cls):
@@ -129,6 +130,7 @@ class SalesOrderInvoiceEnum(models.TextChoices):
 
 
 class SalesOrderStatusEnum(models.TextChoices):
+	INVOICING_IN_PROGRESS = 'Invoicing In Progress', 'Invoicing In Progress'
 	NOT_UPDATED = 'Not Updated', 'Not Updated'
 	OPEN = 'Open', 'Open'
 	CANCELLED = 'Cancelled', 'Cancelled'
