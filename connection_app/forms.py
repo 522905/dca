@@ -505,3 +505,14 @@ class GenerateNonCustomerLeadForm(forms.Form):
 	def __init__(self, service_type_choices=None, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.fields['service_list'].choices = service_type_choices
+
+
+class CustomerProfileDocumentUploadForm(forms.Form):
+	document_type = forms.ChoiceField(
+		choices=ConnectionApplicationDocumentsEnum.choices,
+		required=False,
+		disabled=True
+	)
+	document_link = forms.CharField(
+		widget=forms.HiddenInput, label='Document', required=True
+	)
