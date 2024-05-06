@@ -8,10 +8,9 @@ import track
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.db import models, transaction
+from django.db import models
 from django.template import loader
 from django.utils.safestring import mark_safe
-from django_currentuser.middleware import get_current_user
 from django_fsm import transition, FSMField, GET_STATE
 from django_fsm_log.decorators import fsm_log_description, fsm_log_by
 from minio import Minio
@@ -726,6 +725,10 @@ class CustomerProfile(models.Model):
 	latitude = models.CharField(max_length=128, null=True, blank=True)
 	longitude = models.CharField(max_length=128, null=True, blank=True)
 
+	def document_self(self):
+		sd = self.documents.filter(type=ConnectionApplicationDocumentsEnum.CUSTOMER_PHOTO).first()
+		return sd.link if sd else ''
+
 
 class CustomerProfileDocuments(models.Model):
 	parent = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, related_name='documents', null=True)
@@ -1015,6 +1018,7 @@ class SalesOrder(models.Model):
 	ship_to_address = models.TextField(null=True)
 	camunda_process_instance_id = models.CharField(max_length=128, null=True)
 	extra_data = models.JSONField(null=True)
+	auto_generated = models.BooleanField(default=False)
 
 	class Meta:
 		constraints = [

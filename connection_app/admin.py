@@ -242,11 +242,12 @@ class SalesOrderInvoiceAdmin(admin.ModelAdmin):
 class SalesOrderAdmin(admin.ModelAdmin):
     list_display = [
         'id', 'sales_order', 'order_date', 'consumer_name', 'consumer_address', 'delivery_date', 'digital_payment',
-        'order_status'
+        'order_status', 'auto_generated'
     ]
     list_filter = [
         ('order_date', DateRangeFilter),
         # ('updated_on', DateRangeFilter),
+        'auto_generated'
     ]
 
     fsm_fields = ['order_status', ]
