@@ -10,7 +10,9 @@
         <div class="card">
             <div class="status_block">
                 <div class="main-header">
-                    <span class="text-black"><input type="button" value="Back" onclick="history.back()" /> Customer Profile Id: </span>
+                    <span class="text-black back_button">
+                        <input class="btn btn-secondary" type="button" value="Back" onclick="history.back()" /> Consumer Id: {{ obj.consumer_id }}
+                    </span>
 {#                    <span class="float-right"><b><a data-turbolinks="false" href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">{{ obj.id }}</a></b></span>#}
                     <span class="float-right"><b><a data-turbolinks="false" href="{% url 'admin:connection_app_customerprofile_change' object_id=obj.id %}">{{ obj.id }}</a></b></span>
                 </div>
@@ -20,12 +22,14 @@
                     <div class="col-8 p-0">
                         <table>
                             <tr>
-                                <td>Name: <b>{{ obj.name }}</b>
-                                    <br>Address: <b>{{ obj.primary_account_address }}</b>
+                                <td>
+                                    <p>Relationship Status: <b>{{ obj.relationship_status }}</b><br>
+                                        <b> Address:</b>{{ obj.primary_account_address }}
                                     <p>Phone: <b>{{ obj.mobile_number }}</b></p>
-                                    <p>Consumer Id: <b>{{ obj.consumer_id }}</b></p>
-                                    <p>Location: <a href="https://www.google.com/maps/@{{ obj.latitude }},{{ obj.longitude }},15z"><b>{{ obj.latitude }},{{ obj.longitude }}</b></a></p>
-                                    <p>Relationship Status: <b>{{ obj.relationship_status }}</b></p>
+                                    <p>Location: <a href="https://www.google.com/maps/@{{ obj.latitude }},{{ obj.longitude }},15z">
+                                        {{ obj.latitude }},{{ obj.longitude }} <i class="fa fa-globe" style="color:steelblue; position: relative; top: 2px;" aria-hidden="true"></i></a>
+                                    </p>
+                                 </p>
                                 </td>
                             </tr>
                         </table>
@@ -37,7 +41,7 @@
             </div>
             <div class="status_block">
                 <div class="main-header">
-                    <span class="">Documents:</b></span>
+                    <span class=""><b>Documents:</b></span>
                 </div>
                 <table class="table table-bordred" style="margin-bottom: 0;">
                     <tr>
@@ -76,58 +80,112 @@
                     </tr>
                     {% endfor %}
                 </table>
-                <table>
+                <table class="post_inspection"> 
                     <tr class="card-header">
-                        <th style="font-weight:bold"><b>Post-Inspection Status:</b> </th>
-                        <th>
-                            {% if obj.pre_inspection %}
-                                {{obj.pre_inspection.get_status_display}}
-                                {{ obj.pre_inspection.rejected_reason }}
+                        <th colspan="6" style="font-weight:bold; padding-left: 10px;"><b>Post-Inspection Status:</b> </th>
+                    </tr>
+                    <tr >
+                        <td>
+                            Kitchen
+                            <p>
+                            {% if obj.post_inspection.kitchen_photo_updated %}
+                                <i class="fa fa-check-square text-success" aria-hidden="true"></i>
+                            {% else %}
+                                <i class="fa fa-times text-danger"></i>
                             {% endif %}
-                        </th>
+                            </p>
+                        </td>
+                        <td>
+                            Main gate
+                            <p>
+                            {% if obj.post_inspection.main_gate_photo_updated %}
+                                <i class="fa fa-check-square text-success" aria-hidden="true"></i>
+                            {% else %}
+                                <i class="fa fa-times text-danger"></i>
+                            {% endif %}
+                            </p>
+                        </td>
+                    <td>
+                            Address
+                            <p>
+                            {% if obj.post_inspection.address_updated %}
+                                <i class="fa fa-check-square text-success" aria-hidden="true"></i>
+                            {% else %}
+                                <i class="fa fa-times text-danger"></i>
+                            {% endif %}
+                            </p>
+                        </td>
+
+                        </td>
+                    <td>Suraksha Pipe
+                            <p>
+                            {% if obj.post_inspection.suraksha_pipe_updated %}
+                                <i class="fa fa-check-square text-success" aria-hidden="true"></i>
+                            {% else %}
+                                <i class="fa fa-times text-danger"></i>
+                            {% endif %}
+                            </p>
+
+                        </td>
+                    <td>Profile Photo
+                            <p>
+                            {% if obj.post_inspection.profile_photo_updated %}
+                                <i class="fa fa-check-square text-success" aria-hidden="true"></i>
+                            {% else %}
+                                <i class="fa fa-times text-danger"></i>
+                            {% endif %}
+                            </p>
+                        </td>
+
+                    <td>UID Photos
+                            <p>
+                            {% if obj.post_inspection.uid_photo_updated %}
+                                <i class="fa fa-check-square text-success" aria-hidden="true"></i>
+                            {% else %}
+                                <i class="fa fa-times text-danger"></i>
+                            {% endif %}
+                            </p>
+                        </td>
+                    </tr>
+                    <tr class="card-header">
+                        <th class="p-2" colspan="6" style="font-weight:bold; padding-left: 10px;"><b>Last Sales Order:</b> </th>
                     </tr>
                     <tr>
-                        <td colspan="2" >
-                            <div style="overflow: scroll; display: flex;">
-                                {% if obj.pre_inspection %}
-                                    {% for doc in obj.pre_inspection.documents.all %}
-                                        {% if doc.type != 'PHYSICAL_LEGAL_DOCUMENT' and doc.type != 'SAFETY_AUDIO' %}
-                                            <div>
-                                                <a href="{{ doc.link }}">
-                                                    <img class="p-1" src="{{ doc.link }}" style="height: 150px; object-fit:contain; width: 100%;" alt="{{ doc.type }}">
-                                                </a>
-                                                <br>
-                                                <p style="text-align: center">{{ doc.get_type_display }}</p>
-                                            </div>
-                                        {% endif %}
-                                    {% endfor %}
-                                {% endif %}
-                            </div>
+                        <td colspan="6" class="p-0">
+                            <table class="last_sale_order ">
+                                {% for so in obj.salesorder_set.all|slice:":4" %}
+                                    <tr>
+                                        <td>{{ so.order_date|date:'d-m-Y' }}</td>
+                                        <td>{{ so.invoice_number }}</td>
+                                        <td>{{ so.order_status }}</td>
+                                        <td>{{ so.delivery_type }}</td>
+                                        <td>{{ so.delivery_date|date:'d-m-Y' }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </table>
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="2">
-                            <div style="overflow: scroll; display: flex;">
-                                {% if obj.connection_disbursement %}
-                                    {% for doc in obj.connection_disbursement.documents.all %}
-                                        <div>
-                                            <a href="{{ doc.link }}">
-                                                <img class="p-1" src="{{ doc.link }}" style="height: 100px; object-fit:contain; width: 100%;" alt="{{ doc.type }}">
-                                            </a>
-                                            <p style="text-align: center">{{ doc.get_type_display }}</p>
-                                        </div>
-                                    {% endfor %}
-                                {% endif %}
-                            </div>
+                        <td colspan="2"><p>Bank Certificate Photo</p></td>
+                        <td colspan="4">
+                            <p style="float: right;">
+                                <a href="{% url 'customer_profile_document_upload'  pk=obj.pk %}" data-turbolinks="false" class="text_link text-primary">Update Bank Certificate Photo</a>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="6">
+                            <a class="btn btn-primary text-white float-right" href="{% url 'generate_lead_form' pk=obj.pk %}">Generate Lead</a>
                         </td>
                     </tr>
                 </table>
             </div>
         </div>
-       
     </div>
 {% endif %}
 <style>
+    .post_inspection tr td{ padding:5px 0;}
+    .post_inspection tr td{ text-align: center !important; margin: 0; padding:5px;}
     .status_block .main-header{
         border-top: 1px solid #ccc;
         border-bottom: 1px solid #ccc;
@@ -141,5 +199,9 @@
     .table.table-bordred:last-child tr{ border-bottom: transparent;}
     .search_form input{ padding: 0 10px !important; width: 96% !important;  }
     .link_wh:hover{ text-decoration: underline !important;}
+    .back_button input{ border:1px solid transparent; padding: 0 10px !important; margin: 0 0 10px 0 !important; cursor: pointer; margin-right:10px; padding: 5px 10px; 
+        height: 30px !important;}
+    body .form_label .back_button .btn { height: 30px !important; text-transform:capitalize; margin: 0 10px 0 0 !important; }  
+    .last_sale_order tr td{ font-size: 12px; font-weight: 600; padding:  ; }
 </style>
 {% endblock %}
