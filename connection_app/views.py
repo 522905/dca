@@ -5,16 +5,16 @@ from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import DetailView, ListView, FormView, TemplateView, RedirectView
+from django.views.generic import DetailView, ListView, FormView, TemplateView
 from django_currentuser.middleware import get_current_user
 
-from connection_app.enums import PostInspectionStatusEnum, InspectionTypeEnum, PostInspectionActivityTypeEnum
+from connection_app.enums import PostInspectionStatusEnum, InspectionTypeEnum, PostInspectionActivityTypeEnum, \
+	ConnectionApplicationDocumentsEnum
 from connection_app.forms import UpdateAddressForm, PostInspectionStartForm, PreviewPostInspectionForm, \
 	KitchenPostInspectionForm, PostInspectionForm, UIDPostInspectionForm, ProfilePhotoPostInspectionForm, \
-	SurakshaPipePostInspectionForm, CustomerProfileSearchForm, GenerateLeadForm, GenerateNonCustomerLeadForm
+	SurakshaPipePostInspectionForm, CustomerProfileSearchForm, GenerateLeadForm, GenerateNonCustomerLeadForm, CustomerProfileDocumentUploadForm
 from connection_app.models import ConnectionApplication, PostInspection, CustomerProfile, Lead
 from reference_data.models import ServiceType
-from ujjwala.forms import KitchenPreInspectionForm
 
 
 def installation_upload_process_gleam_entry_gate(request):
@@ -566,6 +566,7 @@ class CustomerProfileView(TemplateView):
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
+
 		obj: CustomerProfile = self.get_object()
 		context.update({
 			"obj": obj,
@@ -645,6 +646,55 @@ class GenerateNonCustomerLeadFormView(FormView):
 		kwargs['service_type_choices'] = tuple(ServiceType.objects.all().values_list('name', 'name'))
 		return kwargs
 
+
+@method_decorator(login_required, 'dispatch')
+@method_decorator(csrf_exempt, 'dispatch')
+class CustomerProfileDocumentUploadFormView(FormView):
+	template_name = 'connection_app/customer_profile_document_upload.html'
+	form_class = CustomerProfileDocumentUploadForm
+	success_url = '.'
+
+	def get_object(self, queryset=None):
+		try:
+			obj = CustomerProfile.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No %(verbose_name)s found matching the query" %
+				{'verbose_name': queryset.model._meta.verbose_name}
+			)
+		return obj
+
+	def dispatch(self, request, *args, **kwargs):
+		customer_profile = self.get_object()
+
+		if customer_profile.documents.filter(type=ConnectionApplicationDocumentsEnum.BANK_SUBSIDY_CERTIFICATE_PHOTO).first():
+			messages.add_message(self.request, messages.INFO,
+			                     f"Bank Subsidy Certificate Document Already Submitted.")
+			return redirect("customer_profile", pk=self.get_object().pk)
+		return super().dispatch(request, *args, **kwargs)
+
+	def form_valid(self, form):
+		data = form.cleaned_data
+
+		customer_profile = self.get_object()
+		customer_profile.documents.create(
+			type=data['document_type'], link=data['document_link']
+		)
+		messages.add_message(self.request, messages.INFO, f"{data['document_type']} Document Uploaded Successfully.")
+		return redirect("customer_profile", pk=self.get_object().pk)
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data()
+		context.update({
+			"customer_profile": self.get_object()
+		})
+		return context
+
+	def get_form_kwargs(self):
+		kwargs = super().get_form_kwargs()
+		kwargs['initial'] = {'document_type': ConnectionApplicationDocumentsEnum.BANK_SUBSIDY_CERTIFICATE_PHOTO}
+		return kwargs
+	
 
 @method_decorator(login_required, 'dispatch')
 class DashboardView(TemplateView):

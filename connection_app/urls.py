@@ -94,4 +94,9 @@ urlpatterns = [
         views.GenerateNonCustomerLeadFormView.as_view(),
         name="generate_non_customer_lead_form"
     ),
-]
+    url(
+        '^customer-profile/document-upload/(?P<pk>[^/.]+)/$',
+        views.CustomerProfileDocumentUploadFormView.as_view(),
+        name="customer_profile_document_upload"
+    ),
+] + router.urls

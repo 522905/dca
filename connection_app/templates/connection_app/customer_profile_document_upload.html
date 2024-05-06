@@ -1,0 +1,127 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block page_title %}<span style="font-size:16px;">Upload Document</span>
+    <b style=" color:#f3e9df;">({{ customer_profile.id}}) {{ customer_profile.name }} </b>
+{% endblock %}  
+{% block content %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://arungas.com/public/ujwalla/css/signature-pad.css">
+
+<script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
+
+{#<script src="{% static '/js/location_2022_07_15.js' %}"></script>#}
+<div class="main p-2 pt-0 form_label">
+    <form method="post" id="upload_sign_and_submit_form">
+        {#{% csrf_token %}#}
+        <div class="photo_block p-0">
+            <div class="card">
+                <div class="form-group input_form" style="margin-bottom: 0 !important;">
+                    <div class="card-header border-bottom">
+                        <span class="hidden_field">{{ form.bank_certificate_upload }}</span>
+                        <label class="text-right m-0 p-0">Bank Certificate Photo</label>
+                    </div>
+                    <div class="p-2 row">
+                        <div class="col-md-12">
+                            <span class="p-2">
+                            {{form.document_type.label}}
+                            </span>
+                            {{form.document_type}}
+                        </div>
+                    </div>
+                    {{ form.document_link }}
+                    <p id="document_photo" class="p-2"></p>
+                    {{ form.document_link.errors }}
+                </div>
+                <div class="card-footer p-2">
+                    <input class="btn btn-success rounded-3 float-right" type="submit"  value="Submit">
+                </div>
+                
+            </div>
+        </div>
+    </form>
+    <div id="add_location"></div>
+</div>
+
+
+{#<script src="{% static '/js/location_2022_07_15.js' %}"></script>#}
+<!-- <script src="{% static '/json/uppy-in.json' %}"></script> -->
+<script>
+    {#function readCookie(name) {#}
+    {#    name += '=';#}
+    {#    for (var ca = document.cookie.split(/;\s*/), i = ca.length - 1; i >= 0; i--)#}
+    {#        if (!ca[i].indexOf(name))#}
+    {#            return ca[i].replace(name, '');#}
+    {#}#}
+    {#debugger;#}
+    {#var referral = readCookie("referral_username");#}
+    {#if (referral){#}
+    {#    $("#referral_user").html(referral);#}
+    {#}#}
+    $(document).ready(function() {
+        allowLocationNav();
+        ensureLocationAccess();
+        
+    });
+    window.uploadDocument_photoUppy = new Uppy.Core({
+		debug: true,
+		autoProceed: true,
+		restrictions: {
+			maxFileSize: 50000000,
+			maxNumberOfFiles: 1,
+			minNumberOfFiles: 1,
+			allowedFileTypes: ['image/*'],
+		}
+	})
+    .use(Uppy.Dashboard, {
+        trigger: '#document_photo',
+        inline: true,
+        target: '#document_photo',
+        showProgressDetails: true,
+        note: 'Images and video only, 2–3 files, up to 10 MB',
+        height: 200,
+        metaFields: [],
+        id: 'document_photo',
+        waitForThumbnailsBeforeUpload: true,
+        doneButtonHandler: () => {
+            // this.uppy.reset()
+            // this.requestCloseModal()
+        },
+        showRemoveButtonAfterComplete: true,
+        theme: 'light',
+        locale: {
+            strings: {
+                dropPasteFiles: 'फोटो अपलोड करने के लिए यहाँ पर क्लिक करे %{browseFiles}',
+                done: '-',
+                uploadComplete: 'अपलोड पूरा हो गया है',
+                complete: 'पूरा हुआ',
+            }
+        },
+    })
+    .use(Uppy.Compressor, {
+        quality: 0.92,
+        maxWidth: 2048,
+        resize: 'contain',
+        limit: 10,
+    })
+
+    .use(Uppy.Tus, {
+        endpoint: 'https://tus.dca.arungas.com/files/',
+    })
+   uploadDocument_photoUppy.on('complete', result => {
+		$('#id_document_link').val(result.successful[0].uploadURL);
+	})
+
+  
+</script>
+<style>
+    #id_document_type{ display: block;}
+    select[name="document_type"]:disabled {
+        -webkit-user-select: none; /* Safari */
+        -ms-user-select: none; /* IE 10 and IE 11 */
+        user-select: none; /* Standard syntax */
+      }
+</style>
+{% endblock %}
