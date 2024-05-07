@@ -29,3 +29,10 @@ class CommentX(XtdComment):
 class ServiceType(models.Model):
 	name = models.CharField(max_length=48)
 	description = models.CharField(max_length=128)
+
+
+class Distributor(models.Model):
+	code = models.CharField(max_length=48)
+	name = models.CharField(max_length=128)
+	address = models.TextField()
+

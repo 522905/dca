@@ -3,7 +3,8 @@ from leaflet.admin import LeafletGeoAdminMixin
 from treenode.admin import TreeNodeModelAdmin
 from treenode.forms import TreeNodeForm
 
-from .models import ServiceLocations, ServiceArea, ServiceAreaMechanic, FormFillArea, UserProfile, UserProfileDocuments
+from .models import ServiceLocations, ServiceArea, ServiceAreaUserProfile, FormFillArea, UserProfile, \
+    UserProfileDocuments, SDMSUser
 
 
 @admin.register(ServiceLocations)
@@ -30,8 +31,8 @@ class FormFillAreaAdmin(admin.ModelAdmin):
     list_filter = ('name', 'service_location')
 
 
-class ServiceAreaMechanicLineAdmin(admin.TabularInline):
-    model = ServiceAreaMechanic
+class ServiceAreaUserProfileLineAdmin(admin.TabularInline):
+    model = ServiceAreaUserProfile
     extra = 1
 
 
@@ -48,7 +49,7 @@ class ServiceAreaAdmin(TreeNodeModelAdmin):
     # use TreeNodeForm to automatically exclude invalid parent choices
     form = TreeNodeForm
 
-    inlines = (ServiceAreaMechanicLineAdmin,)
+    inlines = (ServiceAreaUserProfileLineAdmin,)
 
 # @admin.register(ServiceArea)
 # class ServiceLocationsAdmin(admin.ModelAdmin):
@@ -67,6 +68,12 @@ class UserProfileDocumentsInline(admin.TabularInline):
     template = 'teams/admin/document-inline.html'
 
 
+class UserProfileSDMSUserInline(admin.TabularInline):
+    extra = 0
+    model = SDMSUser
+    # template = 'teams/admin/document-inline.html'
+
+
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = (
@@ -76,5 +83,5 @@ class UserProfileAdmin(admin.ModelAdmin):
     )
     list_filter = ('type',)
     inlines = [
-        UserProfileDocumentsInline
+        UserProfileDocumentsInline, UserProfileSDMSUserInline
     ]

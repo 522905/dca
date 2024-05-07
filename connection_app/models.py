@@ -1,6 +1,5 @@
 import datetime
 import io
-from functools import partial
 
 import django_rq
 import requests
@@ -21,15 +20,13 @@ from communication_log.models import CommunicationLog
 from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTypeEnum, \
 	ConnectionApplicationProcessType, ConnectionApplicationLeadStatus, ConnectionApplicationDocumentsEnum, \
 	ConnectionApplicationLeadCommunicationMode, ConnectionInstallationStatus, \
-	PaymentProfileApprovalStatusEnum, CustomerTypeEnum, SalesOrderInvoiceEnum, ConsumerTypeEnum, SubsidyStatusEnum, \
-	SchemeOnboardingStatusEnum, DeliveryTypeEnum, OrderSubTypeEnum, SalesOrderStatusEnum, InspectionTypeEnum, \
+	PaymentProfileApprovalStatusEnum, CustomerTypeEnum, SalesOrderStatusEnum, InspectionTypeEnum, \
 	PostInspectionStatusEnum, PostInspectionActivityTypeEnum, LeadStatusEnum
-from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, SubmitLead, \
-	FrontOfficeCompleted, BackOfficeReactivation, BackOfficeRegularisation, \
+from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, FrontOfficeCompleted, \
+	BackOfficeReactivation, BackOfficeRegularisation, \
 	BackOfficeNewConnection, DocumentsReupload, InstallationReviewForm
 from domestic_app.utils import get_minio_public_url
 from reference_data.models import ServiceType
-from ujjwala.camunda_functions import start_process_in_camunda_v2
 
 minio_client = Minio(
 	settings.MINIO_API_ENDPOINT,
@@ -583,7 +580,7 @@ class ConnectionApplication(models.Model):
 
 class ConnectionApplicationDocuments(models.Model):
 	parent = models.ForeignKey(ConnectionApplication, on_delete=models.CASCADE, related_name='documents', null=True)
-	type = models.CharField(max_length=25, choices=ConnectionApplicationDocumentsEnum.choices)
+	type = models.CharField(max_length=52, choices=ConnectionApplicationDocumentsEnum.choices)
 	link = models.URLField()
 	valid_size = models.BooleanField(default=False, null=True, blank=True)
 
@@ -732,7 +729,7 @@ class CustomerProfile(models.Model):
 
 class CustomerProfileDocuments(models.Model):
 	parent = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, related_name='documents', null=True)
-	type = models.CharField(max_length=25, choices=ConnectionApplicationDocumentsEnum.choices)
+	type = models.CharField(max_length=48, choices=ConnectionApplicationDocumentsEnum.choices)
 	link = models.URLField()
 	valid_size = models.BooleanField(default=False, null=True, blank=True)
 
