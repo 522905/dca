@@ -32,7 +32,7 @@ from reference_data.models import TokensExcluded
 from ujjwala.communication_functions import send_whatsapp_message, send_sms
 from ujjwala.enums import UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, ResidentialStatusEnum, \
 	MaritalStatusEnum, UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, RoboSdmsDedeupStatusEnum, \
-	PrintDocumentsTypeEnum, DisbursementDriveStatusEnum
+	PrintDocumentsTypeEnum, DisbursementDriveStatusEnum, ChangeCylinderTypeRequestStatusEnum
 from utils.global_functions import upload_file_to_minio_bucket, sign_data_base64
 from utils.qrcode import generate_base64_qr_code
 
@@ -4109,3 +4109,11 @@ def get_circles_intersect(x1, y1, r1, x2, y2, r2):
 	else:
 		print("Circle not touch to each other")
 		return False
+
+
+def evaluate_change_cylinder_type_requests():
+	from ujjwala.models import ChangeCylinderTypeRequest
+
+	for cctr_obj in ChangeCylinderTypeRequest.objects.filter(status=ChangeCylinderTypeRequestStatusEnum.DRAFTED):
+		if cctr_obj.parent.customer_profile.salesorder_set.count() == 4:
+			cctr_obj.transition_change_cylinder_type_request_scheduled()

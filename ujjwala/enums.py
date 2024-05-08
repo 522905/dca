@@ -134,6 +134,7 @@ class RoboSdmsDedeupStatusEnum(models.TextChoices):
 
 class ChangeCylinderTypeRequestStatusEnum(models.TextChoices):
 	DRAFTED = 'DRAFTED', 'Drafted'
+	SCHEDULED = 'SCHEDULED', 'Scheduled'
 	COMPLETED = 'COMPLETED', 'Completed'
 
 
