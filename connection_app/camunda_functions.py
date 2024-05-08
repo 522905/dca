@@ -1,9 +1,11 @@
 import datetime
 
 import arrow
+import django_rq
 
 from connection_app.models import SalesOrder
 from ujjwala.camunda_functions import start_process_in_camunda_v2, is_process_exist_in_camunda
+from ujjwala.ujjwala_functions import evaluate_change_cylinder_type_requests
 
 
 def get_customer_profile(consumer_id, name, address):
@@ -185,6 +187,8 @@ def process_update_sales_order_in_dca(sales_order_list):
 		else:
 			so_obj = create_sales_order(so)
 			start_process_fetch_sales_order_details_from_sdms(so_obj.id)
+	django_rq.enqueue(evaluate_change_cylinder_type_requests)
+
 
 
 def update_sales_order_details_in_dca(sales_order_id, sales_order_details, existing_order_status):
@@ -550,64 +554,157 @@ def update_customer_profile_in_dca(relationship_details, customer_profile_id):
 	"""
 	from connection_app.models import CustomerProfile
 
-	relationship_details['dob'] = datetime.datetime.strptime(relationship_details['dob'], "%d-%b-%Y") if \
-		relationship_details['dob'] else None
+	if not relationship_details['consumer_category']:
+		return True
+	else:
+		relationship_details['dob'] = datetime.datetime.strptime(relationship_details.get('dob'), "%d-%b-%Y") if \
+			relationship_details.get('dob') else None
 
-	relationship_details['relationship_start_date'] = datetime.datetime.strptime(
-		relationship_details['relationship_start_date'], "%d-%b-%Y") if \
-		relationship_details['relationship_start_date'] else None
-	relationship_details['ekyc_date'] = datetime.datetime.strptime(relationship_details['ekyc_date'],
-	                                                               '%d-%b-%Y %H:%M:%S %p') if \
-		relationship_details['ekyc_date'] else None
-	relationship_details['kyc_approval_date'] = datetime.datetime.strptime(relationship_details['kyc_approval_date'],
-	                                                               '%d-%b-%Y %H:%M:%S %p') if \
-		relationship_details['kyc_approval_date'] else None
+		relationship_details['relationship_start_date'] = datetime.datetime.strptime(
+			relationship_details['relationship_start_date'], "%d-%b-%Y") if \
+			relationship_details['relationship_start_date'] else None
+		relationship_details['ekyc_date'] = datetime.datetime.strptime(relationship_details['ekyc_date'],
+		                                                               '%d-%b-%Y %H:%M:%S %p') if \
+			relationship_details['ekyc_date'] else None
+		relationship_details['kyc_approval_date'] = datetime.datetime.strptime(relationship_details['kyc_approval_date'],
+		                                                               '%d-%b-%Y %H:%M:%S %p') if \
+			relationship_details['kyc_approval_date'] else None
 
-	relationship_details['kyc_date'] = datetime.datetime.strptime(relationship_details['kyc_date'],
-	                                                               '%d-%b-%Y %H:%M:%S %p') if \
-		relationship_details['kyc_date'] else None
-	relationship_details['release_date'] = datetime.datetime.strptime(relationship_details['release_date'],
-	                                                               '%d-%b-%Y %H:%M:%S %p') if \
-		relationship_details['release_date'] else None
-	relationship_details['intimation_release_date'] = datetime.datetime.strptime(
-		relationship_details['intimation_release_date'],
-		'%d-%b-%Y %H:%M:%S %p') if \
-		relationship_details['intimation_release_date'] else None
-	relationship_details['mandatory_inspection_due_date'] = datetime.datetime.strptime(
-		relationship_details['mandatory_inspection_due_date'], "%d-%b-%Y") if \
-		relationship_details['mandatory_inspection_due_date'] else None
-	relationship_details['last_inspection_date'] = datetime.datetime.strptime(
-		relationship_details['last_inspection_date'], "%d-%b-%Y") if \
-		relationship_details['last_inspection_date'] else None
-	relationship_details['mi_refusal_date'] = datetime.datetime.strptime(
-		relationship_details['mi_refusal_date'], "%d-%b-%Y") if \
-		relationship_details['mi_refusal_date'] else None
-	relationship_details['tube_change_date'] = datetime.datetime.strptime(
-		relationship_details['tube_change_date'], "%d-%b-%Y") if \
-		relationship_details['tube_change_date'] else None
-	relationship_details['tube_change_due_date'] = datetime.datetime.strptime(
-		relationship_details['tube_change_due_date'], "%d-%b-%Y") if \
-		relationship_details['tube_change_due_date'] else None
-	relationship_details['suspend_deact_date'] = datetime.datetime.strptime(
-		relationship_details['suspend_deact_date'], "%d-%b-%Y") if \
-		relationship_details['suspend_deact_date'] else None
-	relationship_details['tight_joint_replacement_date'] = datetime.datetime.strptime(
-		relationship_details['tight_joint_replacement_date'], "%d-%b-%Y") if \
-		relationship_details['tight_joint_replacement_date'] else None
+		relationship_details['kyc_date'] = datetime.datetime.strptime(relationship_details['kyc_date'],
+		                                                               '%d-%b-%Y %H:%M:%S %p') if \
+			relationship_details['kyc_date'] else None
+		relationship_details['release_date'] = datetime.datetime.strptime(relationship_details['release_date'],
+		                                                               '%d-%b-%Y %H:%M:%S %p') if \
+			relationship_details['release_date'] else None
+		relationship_details['intimation_release_date'] = datetime.datetime.strptime(
+			relationship_details['intimation_release_date'],
+			'%d-%b-%Y %H:%M:%S %p') if \
+			relationship_details['intimation_release_date'] else None
+		relationship_details['mandatory_inspection_due_date'] = datetime.datetime.strptime(
+			relationship_details['mandatory_inspection_due_date'], "%d-%b-%Y") if \
+			relationship_details['mandatory_inspection_due_date'] else None
+		relationship_details['last_inspection_date'] = datetime.datetime.strptime(
+			relationship_details['last_inspection_date'], "%d-%b-%Y") if \
+			relationship_details['last_inspection_date'] else None
+		relationship_details['mi_refusal_date'] = datetime.datetime.strptime(
+			relationship_details['mi_refusal_date'], "%d-%b-%Y") if \
+			relationship_details['mi_refusal_date'] else None
+		relationship_details['tube_change_date'] = datetime.datetime.strptime(
+			relationship_details['tube_change_date'], "%d-%b-%Y") if \
+			relationship_details['tube_change_date'] else None
+		relationship_details['tube_change_due_date'] = datetime.datetime.strptime(
+			relationship_details['tube_change_due_date'], "%d-%b-%Y") if \
+			relationship_details['tube_change_due_date'] else None
+		relationship_details['suspend_deact_date'] = datetime.datetime.strptime(
+			relationship_details['suspend_deact_date'], "%d-%b-%Y") if \
+			relationship_details['suspend_deact_date'] else None
+		relationship_details['tight_joint_replacement_date'] = datetime.datetime.strptime(
+			relationship_details['tight_joint_replacement_date'], "%d-%b-%Y") if \
+			relationship_details['tight_joint_replacement_date'] else None
 
-	relationship_details['ekyc_flag'] = True if relationship_details['ekyc_flag'] == 'Y' else False
-	relationship_details['fleet_marketing'] = True if relationship_details['fleet_marketing'] == 'Y' else False
-	relationship_details['kyc_approval_flag'] = True if relationship_details['kyc_approval_flag'] == 'Y' else False
-	relationship_details['vip_flag'] = True if relationship_details['vip_flag'] == 'Y' else False
-	relationship_details['revalidated'] = True if relationship_details['revalidated'] == 'Y' else False
-	relationship_details['ftl_reseller_flag'] = True if relationship_details['ftl_reseller_flag'] == 'Y' else False
-	relationship_details['tcs_flag'] = True if relationship_details['tcs_flag'] == 'Y' else False
-	relationship_details['mi_refusal_flag'] = True if relationship_details['mi_refusal_flag'] == 'Y' else False
-	relationship_details['tight_joint_replacement_flag'] = True if relationship_details[
-		                                                               'tight_joint_replacement_flag'] == 'Y' else False
-	relationship_details['priority'] = True if relationship_details['priority'] == 'Y' else False
-	relationship_details['migrant'] = True if relationship_details['migrant'] == 'Yes' else False
+		relationship_details['ekyc_flag'] = True if relationship_details['ekyc_flag'] == 'Y' else False
+		relationship_details['fleet_marketing'] = True if relationship_details['fleet_marketing'] == 'Y' else False
+		relationship_details['kyc_approval_flag'] = True if relationship_details['kyc_approval_flag'] == 'Y' else False
+		relationship_details['vip_flag'] = True if relationship_details['vip_flag'] == 'Y' else False
+		relationship_details['revalidated'] = True if relationship_details['revalidated'] == 'Y' else False
+		relationship_details['ftl_reseller_flag'] = True if relationship_details['ftl_reseller_flag'] == 'Y' else False
+		relationship_details['tcs_flag'] = True if relationship_details['tcs_flag'] == 'Y' else False
+		relationship_details['mi_refusal_flag'] = True if relationship_details['mi_refusal_flag'] == 'Y' else False
+		relationship_details['tight_joint_replacement_flag'] = True if relationship_details[
+			                                                               'tight_joint_replacement_flag'] == 'Y' else False
+		relationship_details['priority'] = True if relationship_details['priority'] == 'Y' else False
+		relationship_details['migrant'] = True if relationship_details['migrant'] == 'Yes' else False
 
-	relationship_details['no_of_flats'] = int(relationship_details['no_of_flats']) if relationship_details[
-		'no_of_flats'] else 0
-	CustomerProfile.objects.filter(pk=customer_profile_id).update(**relationship_details)
+		relationship_details['no_of_flats'] = int(relationship_details['no_of_flats']) if relationship_details[
+			'no_of_flats'] else 0
+		CustomerProfile.objects.filter(pk=customer_profile_id).update(**relationship_details)
+
+
+def update_booked_order_details_in_dca(sales_order_details, consumer_id, process_instance_id):
+	"""
+	order_status, sales_order_id, sales_order_number
+	"""
+	from connection_app.models import BookSalesOrder, SalesOrder
+
+	bso_obj = BookSalesOrder.objects.filter(camunda_process_id=process_instance_id).first()
+
+	if not bso_obj:
+		raise Exception("Book Sales Order Object Not Found.")
+
+	order_date = datetime.datetime.strptime(
+		sales_order_details['order_date'], '%d-%b-%Y %H:%M:%S %p') if sales_order_details[
+		'order_date'] else None
+
+	so_obj = SalesOrder.objects.create(
+		parent=bso_obj.customer_profile,
+		sales_order=sales_order_details['sales_order'],
+		relationship_id=sales_order_details['relationship_id'],
+		order_status=sales_order_details['order_status'],
+		order_date=order_date
+	)
+
+	so = sales_order_details.pop('sales_order')
+
+	so_new_details: dict = sales_order_details
+
+	# new_order_status = so_new_details.pop('order_status')
+
+	so_new_details['order_date'] = datetime.datetime.strptime(
+		so_new_details['order_date'], '%d-%b-%Y %H:%M:%S %p') if so_new_details[
+		'order_date'] else None
+
+	so_new_details['cancellation_date'] = datetime.datetime.strptime(
+		so_new_details['cancellation_date'], '%d-%b-%Y %H:%M:%S %p') if so_new_details[
+		'cancellation_date'] else None
+	so_new_details['delivery_date'] = datetime.datetime.strptime(
+		so_new_details['delivery_date'], '%d-%b-%Y %H:%M:%S %p') if so_new_details[
+		'delivery_date'] else None
+
+	so_new_details['total_due_amount'] = float(
+		so_new_details['total_due_amount'].replace('Rs.', '').replace(",", ""))
+	so_new_details['order_total'] = float(
+		so_new_details['order_total'].replace('Rs.', '').replace(",", ""))
+	so_new_details['total_payment_amount'] = float(
+		so_new_details['total_payment_amount'].replace('Rs.', '').replace(",", ""))
+
+	so_new_details['consumed_quota'] = 0 if so_new_details['consumed_quota'] == "" else float(
+		so_new_details['consumed_quota'])
+
+	so_new_details['paid_flag'] = True if so_new_details['paid_flag'] == 'Y' else False
+	so_new_details['digital_payment'] = True if so_new_details['digital_payment'] == 'Y' else False
+	so_new_details['subsidized'] = True if so_new_details['subsidized'] == 'Y' else False
+	so_new_details['subsidized_on_invoice_gen'] = True if so_new_details[
+		                                                      'subsidized_on_invoice_gen'] == 'Y' else False
+	so_new_details['attempted_during_pdt_daytime'] = True if so_new_details[
+		                                                         'attempted_during_pdt_daytime'] == 'Y' else False
+	so_new_details['preferred_flag'] = True if so_new_details['preferred_flag'] == 'Y' else False
+	so_new_details['isi_mark_ho_plate'] = True if so_new_details['isi_mark_ho_plate'] == 'Y' else False
+	so_new_details['dac_flag'] = True if so_new_details['dac_flag'] == 'Y' else False
+	so_new_details['portability_flag'] = True if so_new_details['portability_flag'] == 'Y' else False
+	so_new_details['tatkal_order'] = True if so_new_details.get('tatkal_flag') == 'Y' else False
+	so_new_details['qc_due'] = True if so_new_details.get('qc_due') == 'Y' else False
+	so_new_details['auto_generated'] = True
+
+	SalesOrder.objects.filter(pk=so_obj.id).update(**so_new_details)
+	# so_obj = SalesOrder.objects.get(pk=sales_order_id)
+	# if not new_order_status == existing_order_status:
+	# 	if new_order_status == 'Cancelled':
+	# 		so_obj.transition_sales_order_cancelled(
+	# 			description="{} - {}".format(so_obj.cancellation_date, so_obj.cancellation_reason))
+	# 	elif new_order_status == 'Completed':
+	# 		so_obj.transition_sales_order_completed()
+	# 	elif new_order_status == 'Invoiced':
+	# 		so_obj.transition_sales_order_invoiced()
+	# 	so_obj.save()
+	print(so_obj)
+	bso_obj.delete()
+
+
+def update_service_area_in_customer_profile(consumer_id, service_area):
+	from connection_app.models import CustomerProfile
+
+	cp_obj = CustomerProfile.objects.filter(consumer_id=consumer_id).first()
+
+	if cp_obj:
+		cp_obj.service_area = service_area
+		cp_obj.save()

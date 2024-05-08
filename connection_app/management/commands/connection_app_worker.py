@@ -1,3 +1,4 @@
+import json
 import traceback
 
 import requests
@@ -6,13 +7,18 @@ from camunda.external_task.external_task_worker import ExternalTaskWorker
 from django.core.management import BaseCommand
 
 from connection_app.camunda_functions import process_update_sales_order_in_dca, \
-	process_update_sales_order_invoice_in_dca
+	update_sales_order_details_in_dca, process_update_sales_order_completed_today, update_customer_profile_in_dca, \
+	update_booked_order_details_in_dca, update_service_area_in_customer_profile
 from domestic_app import settings
 from ujjwala.jobs import ensure_db_connection
 
 
 EXTERNAL_TASK_TO_SUBSCRIBE = [
 	'process_update_sales_order_in_dca#update',
+	'process_fetch_sales_order_details_from_sdms#update_in_dca',
+	'process_read_customer_profile_from_sdms#update_in_dca',
+	'process_domestic_app#update_booked_order_details_in_dca',
+	'service_area_update#verify_update_service_area_in_sdms',
 ]
 
 default_config = {
@@ -35,15 +41,37 @@ def handle_task(task: ExternalTask) -> TaskResult:
 		)
 
 		if topic == 'process_update_sales_order_in_dca#update':
-			sales_order_type = task.get_variable('sales_order_type')
+			sdms_task = task.get_variable('sdms_task')
 
-			if sales_order_type == 'sales_order_invoice':
-				process_update_sales_order_invoice_in_dca(task)
+			if sdms_task == 'fetch_sales_order_delivered_today':
+				sales_order_completed = json.loads(task.get_variable('sales_order_completed'))
+				process_update_sales_order_completed_today(sales_order_completed)
 				return task.complete()
-			elif sales_order_type == 'sales_order':
-				process_update_sales_order_in_dca(task)
+			elif sdms_task == 'fetch_sales_order':
+				sales_order_list = json.loads(task.get_variable('sales_order_list'))
+				process_update_sales_order_in_dca(sales_order_list)
 				return task.complete()
-
+		elif topic == 'process_fetch_sales_order_details_from_sdms#update_in_dca':
+			sales_order_details = json.loads(task.get_variable('sales_order_details'))
+			sales_order_id = task.get_variable('sales_order_id')
+			existing_order_status = task.get_variable('order_status')
+			update_sales_order_details_in_dca(sales_order_id, sales_order_details, existing_order_status)
+			return task.complete()
+		elif topic == 'process_read_customer_profile_from_sdms#update_in_dca':
+			relationship_details = json.loads(task.get_variable('relationship_details'))
+			customer_profile_id = task.get_variable('customer_profile_id')
+			update_customer_profile_in_dca(relationship_details, customer_profile_id)
+			return task.complete()
+		elif topic == 'process_domestic_app#update_booked_order_details_in_dca':
+			consumer_id = task.get_variable('consumer_id')
+			sales_order_details = json.loads(task.get_variable('sales_order_details'))
+			update_booked_order_details_in_dca(sales_order_details, consumer_id, task.get_process_instance_id())
+			return task.complete()
+		elif topic == 'service_area_update#verify_update_service_area_in_sdms':
+			return task.complete()
+			# consumer_id = task.get_variable('consumer_id')
+			# service_area = task.get_variable('service_area')
+			# update_service_area_in_customer_profile(consumer_id, service_area)
 	except Exception as e:
 		return task.failure(
 			str(e), traceback.format_exc(),
