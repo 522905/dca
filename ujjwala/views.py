@@ -408,6 +408,8 @@ class UjjwalaApplicationWebFormView(TemplateView):
 	#     return context_data
 
 
+
+
 @method_decorator(login_required, 'dispatch')
 class UjjwalaAddressReviewListView(ListView):
 	model = UjjwalaV2Application
@@ -837,7 +839,8 @@ class PreInspectionView(FormView):
 		if pre_inspection_obj.status in (
 				PreInspectionStatusEnum.CHANGE_ADDRESS,
 				PreInspectionStatusEnum.REJECTED,
-				PreInspectionStatusEnum.REDO
+				PreInspectionStatusEnum.REDO,
+
 		):
 			return self.pre_inspection_step0_template
 		elif pre_inspection_obj.status == PreInspectionStatusEnum.KITCHEN_PHOTO:
@@ -1071,7 +1074,7 @@ class UjjwalaApplicationStatusView(TemplateView):
 			if family_member:
 				application = family_member.parent
 		elif application_id:
-			application = qs.filter(id=application_id).first()
+			application: UjjwalaV2Application = qs.filter(id=application_id).first()
 
 		if application:
 			reject_reason = ujjwala_application_reject_reason_log(application.id)
@@ -2452,6 +2455,8 @@ class InstallationReviewListView(ListView):
 					request, messages.ERROR, "Application Id: {} not found".format(application_id)
 				)
 		return super().get(request, *args, **kwargs)
+	
+
 
 
 @method_decorator(login_required, 'dispatch')
@@ -3129,6 +3134,8 @@ class UpdateBankDetailsNewFormView(FormView):
 		bd_obj: BankDetailsUpdateRequest = BankDetailsUpdateRequest.objects.filter(parent=obj).first()
 
 		if bd_obj:
+			res = requests.get(f"https://ifsc.razorpay.com/{bd_obj.ifsc_code}")
+			bd_obj.ifsc_verified = True if res.status_code == 200 else False
 			bd_obj.name_as_per_bank = cleaned_data['name_as_per_bank']
 			bd_obj.bank_account_number = cleaned_data['bank_account_number']
 			bd_obj.ifsc_code = cleaned_data['ifsc_code']
@@ -3136,7 +3143,7 @@ class UpdateBankDetailsNewFormView(FormView):
 			bd_obj.status = BankDetailsUpdateRequestEnum.RECEIVED
 			bd_obj.save()
 
-			url = f"http://192.168.171.4:38080/engine-rest/message"
+			url = f"https://dca.arungas.com/engine-rest/message"
 
 			res = requests.post(url, json={
 				"messageName": "Message_payment_profile_update_bank_number_updated_received",
@@ -3238,6 +3245,7 @@ class PrintDocumentsView(FormView):
 		# )
 		# return HttpResponse(content=res)
 		return res
+	
 
 
 # @method_decorator(login_required, 'dispatch')
@@ -3923,13 +3931,15 @@ class UpdateAddressServiceRequestView(FormView):
 				request_by=user,
 				form_data={
 					"application_id": obj.id,
-					"new_address": json.dumps(address_json)
+					"new_address": address_json,
+					"old_address": obj.address_json,
+					"dca_app": "ujjwala",
 				}
 			)
 			from service_request.functions import start_service_request_process_in_camunda
 
 			variables = {
-				"old_address_json": {"value": json.dumps(obj.address_json), "type": "string"},
+				"old_address": {"value": json.dumps(obj.address_json), "type": "string"},
 				"new_address": {"value": json.dumps(address_json), "type": "string"},
 				"application_id": {"value": obj.id, "type": "long"},
 				"name": {"value": obj.name, "type": "string"},
@@ -4225,37 +4235,63 @@ class UjjwalaApplicationServiceRequestView(FormView):
 		context = super().get_context_data(**kwargs)
 		obj = self.get_object()
 		res = requests.get(
-			f"http://192.168.171.15:38080/engine-rest/process-instance/{obj.camunda_process_id}/variables")
+			f"https://dca.arungas.com/engine-rest/process-instance/{obj.camunda_process_id}/variables")
 		res.raise_for_status()
 
 		application = UjjwalaV2Application.objects.get(pk=obj.form_data.get('application_id'))
 		process_vars = res.json()
+
+		for k, v in process_vars.items():
+			context[k] = v['value']
+
 		context.update({
 			"obj": obj,
-			"request_video_url": process_vars['request_video_url']['value'],
-			"phone_number": process_vars['phone_number']['value'],
-			"request_by": process_vars['request_by']['value'],
-			"application": application
+			"application": application,
+			"sr_request_template": "ujjwala/service_request/sr_" + obj.service_request_type.lower() + ".html",
 		})
 		return context
+
+	def get_form_class(self):
+		obj = self.get_object()
+
+		if obj.service_request_type == ServiceRequestTypeEnum.UPDATE_ADDRESS:
+			return ReviewUpdatedAddressForm
+		elif obj.service_request_type == ServiceRequestTypeEnum.CHANGE_PHONE_NUMBER:
+			return ChangePhoneNumberForm
+		elif obj.service_request_type == ServiceRequestTypeEnum.CHANGE_CYLINDER_TO_14_2_KG:
+			return ChangeCylinderForm
+
+	def get_form_kwargs(self):
+		kwargs = super().get_form_kwargs()
+		obj = self.get_object()
+
+		if obj.service_request_type == ServiceRequestTypeEnum.UPDATE_ADDRESS:
+			kwargs['initial'] = json.loads(obj.form_data['new_address'])
+		# elif obj.service_request_type == ServiceRequestTypeEnum.CHANGE_PHONE_NUMBER:
+		# 	kwargs['initial'] = json.loads(obj.form_data)
+
+		return kwargs
 
 	def form_valid(self, form):
 		obj = self.get_object()
 		data = form.cleaned_data
-		if data['request_action'] == 'REJECTED':
+		if data['review_status'] == 'REJECTED':
 			obj.status = ServiceRequestTypeStatusEnum.REJECTED
 			obj.remarks = data['request_remarks']
-		elif data['request_action'] == 'APPROVED':
+		elif data['review_status'] == 'ACCEPTED':
 			obj.status = ServiceRequestTypeStatusEnum.SUCCESS
 		obj.save()
 
-		res = requests.get('http://192.168.171.15:38080/engine-rest/task',
+		res = requests.get('https://dca.arungas.com/engine-rest/task',
 		                   params={'processInstanceId': f'{obj.camunda_process_id}',
-		                           'taskDefinitionKey': 'Activity_dca_change_phone_number_verify_request'})
+		                           'taskDefinitionKey': 'Activity_verify_dca_service_request'})
+		# res = requests.get('https://dca.arungas.com/engine-rest/task',
+		#                    params={'processInstanceId': f'{obj.camunda_process_id}',
+		#                            'taskDefinitionKey': 'Activity_dca_change_phone_number_verify_request'})
 		res.raise_for_status()
 
 		res = requests.post(
-			f"http://192.168.171.15:38080/engine-rest/task/{res.json()[0]['id']}/submit-form",
+			f"https://dca.arungas.com/engine-rest/task/{res.json()[0]['id']}/submit-form",
             json={'variables': {}}
 		)
 		res.raise_for_status()
@@ -4272,17 +4308,18 @@ class CamundaChangeAddressView(FormView):
 
 	def dispatch(self, request, *args, **kwargs):
 		pi_id = kwargs.get('process_instance_id')
-		url = f'http://192.168.171.15:38080/engine-rest/process-instance/{pi_id}/activity-instances'
+		url = f'https://dca.arungas.com/engine-rest/process-instance/{pi_id}/activity-instances'
 		res = requests.get(url)
 		if res.status_code != 200:
 			return HttpResponse("Process Instance Could Not Found")
 
 		relevent_activity = False
 		for activity_instance in res.json()['childActivityInstances']:
-			if activity_instance['activityId'] not in ['Event_review_address_new_address_received', 'Event_new_address_received']:
+			if activity_instance['activityId'] in ['Event_review_address_new_address_received',
+			                                           'Event_new_address_received']:
 				relevent_activity = True
 		if not relevent_activity:
-			return HttpResponse(f"Process Instance: {activity_instance['name']}")
+			return HttpResponse(f"Process Instance: not in update address stage")
 
 		url = f"https://camunda.dca.arungas.com/engine-rest/process-instance/{pi_id}/variables?deserializeValues=false"
 		self.variables = requests.get(url).json()
@@ -4325,7 +4362,7 @@ class CamundaChangeAddressView(FormView):
 		else:
 			address_change_source = 'PREINSPECTION'
 
-		url = f"http://192.168.171.15:38080/engine-rest/message"
+		url = f"https://dca.arungas.com/engine-rest/message"
 		res = requests.post(url, json={
 			"messageName": "Message_review_addressnew_address_received" \
 				if address_change_source == 'BEFORE_EKYC' else 'Message_new_address_received',

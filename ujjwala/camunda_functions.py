@@ -12,7 +12,7 @@ from minio import Minio
 
 from domestic_app import settings
 
-# CAMUNDA_WEB_ROOT_URL = "http://192.168.171.4:38080"
+# CAMUNDA_WEB_ROOT_URL = "https://dca.arungas.com"
 # Camunda Development URL
 #CAMUNDA_WEB_ROOT_URL = "http://192.168.168.4:25252"
 
@@ -412,7 +412,7 @@ def clean_camunda_processes(application_id):
 	pi_list.extend(res.json())
 
 	for pi in pi_list:
-		print(requests.delete('http://192.168.171.4:38080/engine-rest/process-instance/' + pi['processInstanceId']))
+		print(requests.delete('https://dca.arungas.com/engine-rest/process-instance/' + pi['processInstanceId']))
 
 
 def get_review_address_activity_user(process_instance_id):
