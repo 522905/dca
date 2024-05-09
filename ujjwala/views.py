@@ -1082,7 +1082,17 @@ class UjjwalaApplicationStatusView(TemplateView):
 				parent=application, requested_by=get_current_user(), source=UjjwalaSearchLogEnum.WEB,
 				activity_datetime=datetime.datetime.now()
 			)
-			return render(request, self.template_name, context={'obj': application, 'rejected_reason': reject_reason})
+			invitation = None
+
+			cd_obj: ConnectionDisbursement = ConnectionDisbursement.objects.filter(parent=application).first()
+
+			if cd_obj:
+				invitation = cd_obj.invitation.first()
+			return render(
+				request, self.template_name, context={
+					'obj': application, 'rejected_reason': reject_reason, "invitation": invitation
+				}
+			)
 		else:
 			messages.add_message(
 				request, messages.ERROR, "Please Enter Contact Mobile Or Aadhaar Or Application Id To Search"
@@ -1092,10 +1102,11 @@ class UjjwalaApplicationStatusView(TemplateView):
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		user = get_current_user()
-		if not is_member_of_disbursement_drive(user):
-			return render(self.request, 'ujjwala/no_permissions.html')
+		# if not is_member_of_disbursement_drive(user):
+		# 	return render(self.request, 'ujjwala/no_permissions.html')
 
 		context.update({
+
 			"disbursement_user": True
 		})
 		return context
@@ -3143,7 +3154,7 @@ class UpdateBankDetailsNewFormView(FormView):
 			bd_obj.status = BankDetailsUpdateRequestEnum.RECEIVED
 			bd_obj.save()
 
-			url = f"https://dca.arungas.com/engine-rest/message"
+			url = f"https://camunda.dca.arungas.com/engine-rest/message"
 
 			res = requests.post(url, json={
 				"messageName": "Message_payment_profile_update_bank_number_updated_received",
@@ -4235,7 +4246,7 @@ class UjjwalaApplicationServiceRequestView(FormView):
 		context = super().get_context_data(**kwargs)
 		obj = self.get_object()
 		res = requests.get(
-			f"https://dca.arungas.com/engine-rest/process-instance/{obj.camunda_process_id}/variables")
+			f"https://camunda.dca.arungas.com/engine-rest/process-instance/{obj.camunda_process_id}/variables")
 		res.raise_for_status()
 
 		application = UjjwalaV2Application.objects.get(pk=obj.form_data.get('application_id'))
@@ -4282,16 +4293,16 @@ class UjjwalaApplicationServiceRequestView(FormView):
 			obj.status = ServiceRequestTypeStatusEnum.SUCCESS
 		obj.save()
 
-		res = requests.get('https://dca.arungas.com/engine-rest/task',
+		res = requests.get('https://camunda.dca.arungas.com/engine-rest/task',
 		                   params={'processInstanceId': f'{obj.camunda_process_id}',
 		                           'taskDefinitionKey': 'Activity_verify_dca_service_request'})
-		# res = requests.get('https://dca.arungas.com/engine-rest/task',
+		# res = requests.get('https://camunda.dca.arungas.com/engine-rest/task',
 		#                    params={'processInstanceId': f'{obj.camunda_process_id}',
 		#                            'taskDefinitionKey': 'Activity_dca_change_phone_number_verify_request'})
 		res.raise_for_status()
 
 		res = requests.post(
-			f"https://dca.arungas.com/engine-rest/task/{res.json()[0]['id']}/submit-form",
+			f"https://camunda.dca.arungas.com/engine-rest/task/{res.json()[0]['id']}/submit-form",
             json={'variables': {}}
 		)
 		res.raise_for_status()
@@ -4308,7 +4319,7 @@ class CamundaChangeAddressView(FormView):
 
 	def dispatch(self, request, *args, **kwargs):
 		pi_id = kwargs.get('process_instance_id')
-		url = f'https://dca.arungas.com/engine-rest/process-instance/{pi_id}/activity-instances'
+		url = f'https://camunda.dca.arungas.com/engine-rest/process-instance/{pi_id}/activity-instances'
 		res = requests.get(url)
 		if res.status_code != 200:
 			return HttpResponse("Process Instance Could Not Found")
@@ -4362,7 +4373,7 @@ class CamundaChangeAddressView(FormView):
 		else:
 			address_change_source = 'PREINSPECTION'
 
-		url = f"https://dca.arungas.com/engine-rest/message"
+		url = f"https://camunda.dca.arungas.com/engine-rest/message"
 		res = requests.post(url, json={
 			"messageName": "Message_review_addressnew_address_received" \
 				if address_change_source == 'BEFORE_EKYC' else 'Message_new_address_received',
