@@ -68,10 +68,10 @@ def handle_task(task: ExternalTask) -> TaskResult:
 			update_booked_order_details_in_dca(sales_order_details, consumer_id, task.get_process_instance_id())
 			return task.complete()
 		elif topic == 'service_area_update#verify_update_service_area_in_sdms':
+			consumer_id = task.get_variable('consumer_id')
+			service_area = task.get_variable('service_area')
+			update_service_area_in_customer_profile(consumer_id, service_area)
 			return task.complete()
-			# consumer_id = task.get_variable('consumer_id')
-			# service_area = task.get_variable('service_area')
-			# update_service_area_in_customer_profile(consumer_id, service_area)
 	except Exception as e:
 		return task.failure(
 			str(e), traceback.format_exc(),
