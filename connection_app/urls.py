@@ -99,4 +99,14 @@ urlpatterns = [
         views.CustomerProfileDocumentUploadFormView.as_view(),
         name="customer_profile_document_upload"
     ),
+    path(
+        'sales-order-list/',
+        views.SalesOrderListView.as_view(),
+        name="sales_order_list"
+    ),
+    url(
+        '^sales-order-view/(?P<pk>[^/.]+)/$',
+        views.SalesOrderDetailFormView.as_view(),
+        name="sales_order_detail_view"
+    ),
 ] + router.urls

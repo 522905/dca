@@ -1,5 +1,4 @@
 import datetime
-import json
 
 from django.http import JsonResponse
 from django.urls import reverse
@@ -143,3 +142,15 @@ class ConnectionApplicationAPIViewSet(viewsets.ViewSet):
                     pfms_payment_method=payment_profile.get("PFMS Payment Method"))
 
         return JsonResponse(data={"status": "Processed", "skipped_rows": skipped_rows})
+
+    @action(methods=['post'], detail=False, url_path='toggle_sales_order_view')
+    def toggle_sales_order_view(self, request, *args, **kwargs):
+        from connection_app.models import SalesOrder
+
+        sales_order_id = request.data.get('sales_order_id')
+        value = request.data.get('value')
+
+        so_obj = SalesOrder.objects.get(pk=sales_order_id)
+        so_obj.hide_from_view = value
+        so_obj.save()
+        return Response(data='OK', status=200)

@@ -721,6 +721,7 @@ class CustomerProfile(models.Model):
 	camunda_process_instance_id = models.TextField(max_length=128, null=True, blank=True)
 	latitude = models.CharField(max_length=128, null=True, blank=True)
 	longitude = models.CharField(max_length=128, null=True, blank=True)
+	do_not_auto_generate = models.BooleanField(default=False)
 
 	def document_self(self):
 		sd = self.documents.filter(type=ConnectionApplicationDocumentsEnum.CUSTOMER_PHOTO).first()
@@ -1016,6 +1017,7 @@ class SalesOrder(models.Model):
 	camunda_process_instance_id = models.CharField(max_length=128, null=True)
 	extra_data = models.JSONField(null=True)
 	auto_generated = models.BooleanField(default=False)
+	hide_from_view = models.BooleanField(default=False)
 
 	class Meta:
 		constraints = [

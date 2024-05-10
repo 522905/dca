@@ -1,0 +1,115 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block page_title %}<span style="font-size:16px;">Update Profile Photo</span> 
+    <b style=" color:#f3e9df;">({{ customer_profile.id}}) {{ customer_profile.name }} </b>
+{% endblock %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://arungas.com/public/ujwalla/css/signature-pad.css">
+<script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
+<style>
+    #id_cancel_sales_order { display: block !important;}
+    #id_suraksha_pipe_photo{ margin-top:10px;}
+</style>
+<div class="main p-2 pt-0 form_label">
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="p-2 pt-0 form_label" style="width: 100%;">
+   
+
+    {% for obj in object_list %}
+    <div class="card mb-2 app_card">
+        <div class="card-header pl-1">
+            <p class="float-left">
+                <a href="{% url 'connection_app:sales_order_detail_view' pk=obj.id %}" data-turbolinks="false">
+                <b>Sales Order No.</b>({{ obj.sales_order }}) <b class="text-danger">{{ obj.parent.name }}</b>
+                </a>
+            </p>
+        </div>
+        <div class="card-body pb-0 p-2 block">
+            <ul class="m-0 list-body">
+                <li>
+                    <p class="float-left">Mobile Number</p>
+                    <p class="float-right">
+                        <a href="tel:{{obj.mobile_number}}" data-turbolinks="false">
+                           <span class="text-primary" style="font-weight: 600;">({{ obj.mobile_number }})</span>
+                        </a>
+                    </p>
+                </li>
+                <li>
+                    <p class="float-left">Order Date</p>
+                    <p class="float-right">
+                        <span style="font-weight: 600;">({{ obj.order_date }})</span>
+                    </p>
+                </li>
+                
+            </ul>
+        </div>
+        <div class="card-footer p-2 block">
+            <p><b>Address:</b>  {{ obj.consumer_address }}</p>
+        </div>
+    </div>
+    <div class="card mb-2 app_card">
+        <div class="card-header pl-1">
+            <p class="float-left">
+                <a href="{% url 'connection_app:sales_order_detail_view' pk=obj.id %}" data-turbolinks="false">
+                <b>Sales Order No.</b>({{ obj.sales_order }}) <b class="text-danger">{{ obj.parent.name }}</b>
+                </a>
+            </p>
+        </div>
+        <div class="card-body pb-0 p-2 block">
+            <ul class="m-0 list-body">
+                <li>
+                    <p class="float-left">Mobile Number</p>
+                    <p class="float-right">
+                        <a href="tel:{{obj.mobile_number}}" data-turbolinks="false">
+                           <span class="text-primary" style="font-weight: 600;">({{ obj.mobile_number }})</span>
+                        </a>
+                    </p>
+                </li>
+                <li>
+                    <p class="float-left">Order Date</p>
+                    <p class="float-right">
+                        <span style="font-weight: 600;">({{ obj.order_date }})</span>
+                    </p>
+                </li>
+                
+            </ul>
+        </div>
+        <div class="card-footer p-2 block">
+            <p><b>Address:</b>  {{ obj.consumer_address }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+<style>
+    .block{ width:100%; float: left;}
+    .list-body { width:100%; float: left;}
+    .list-body li{ float: left; width: 100%;}
+    .float-left{ float: left;}
+    .float-right{ float: right;}
+    body{ font-size: Muli;}
+</style>
+<div class="card p-2">
+    <div class="form-group input_form" style="margin-bottom: 0 !important;">
+        <div class="row m-0">
+            <div class="col-sm-12 photo_block p-0">
+                <label class="text-center m-0 p-0">{{ form.cancel_sales_order.label }}</label>
+                <span>{{ form.cancel_sales_order }}</span>
+            </div> 
+        </div>
+    </div>
+    <div class="card-footer p-2">
+        <input class="btn btn-primary rounded-3 float-right" type="submit"  value="Submit"/>
+    </div>
+</div>
+    </form>
+</div>
+
+
+{% endblock %}

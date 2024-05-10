@@ -3,18 +3,22 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, ListView, FormView, TemplateView
+from django.views.generic.edit import ProcessFormView
 from django_currentuser.middleware import get_current_user
 
 from connection_app.enums import PostInspectionStatusEnum, InspectionTypeEnum, PostInspectionActivityTypeEnum, \
 	ConnectionApplicationDocumentsEnum
 from connection_app.forms import UpdateAddressForm, PostInspectionStartForm, PreviewPostInspectionForm, \
 	KitchenPostInspectionForm, PostInspectionForm, UIDPostInspectionForm, ProfilePhotoPostInspectionForm, \
-	SurakshaPipePostInspectionForm, CustomerProfileSearchForm, GenerateLeadForm, GenerateNonCustomerLeadForm, CustomerProfileDocumentUploadForm
-from connection_app.models import ConnectionApplication, PostInspection, CustomerProfile, Lead
+	SurakshaPipePostInspectionForm, CustomerProfileSearchForm, GenerateLeadForm, GenerateNonCustomerLeadForm, \
+	CustomerProfileDocumentUploadForm, SalesOrderDetailViewForm, SalesOrderListViewFilterForm
+from connection_app.models import ConnectionApplication, PostInspection, CustomerProfile, Lead, SalesOrder
 from reference_data.models import ServiceType
+from teams.models import UserProfile, SDMSUser
 
 
 def installation_upload_process_gleam_entry_gate(request):
@@ -708,3 +712,100 @@ class DashboardView(TemplateView):
 			"user": user
 		})
 		return context
+	
+
+@method_decorator(login_required, 'dispatch')
+class SalesOrderListView(ListView):
+	model = SalesOrder
+	template_name = 'connection_app/sales-order/sales_order_listview.html'
+
+	paginate_by = 20
+	permission = 'has_view_permission'
+	#
+	# def dispatch(self, request, *args, **kwargs):
+	# 	if request.method == 'POST':
+	# 		return redirect(reverse("connection_app:sales_order_list") + "?hide_from_view={}".format("on"))
+	# 	return super().dispatch(request, *args, **kwargs)
+
+	def get_queryset(self):
+		current_user = get_current_user()
+		qs = SalesOrder.objects.filter(auto_generated=True)
+
+		if self.request.GET.get('show_hidden_records') != 'on':
+			qs = qs.exclude(hide_from_view=True)
+
+		if current_user.is_superuser:
+			return qs
+
+		sdms_user: SDMSUser = SDMSUser.objects.filter(
+			parent__user=current_user,
+			distributor__name='Arun Indane'
+		).first()
+
+		if not sdms_user:
+			return SalesOrder.objects.none()
+
+		qs = qs.objects.filter(delivery_boy_login=sdms_user.delivery_boy_login)
+
+		return qs.order_by('order_date')
+
+
+	def get_context_data(self, *, object_list=None, **kwargs):
+		context = super().get_context_data(object_list=object_list, **kwargs)
+		context.update({
+			"filter_form": SalesOrderListViewFilterForm(
+				initial={'show_hidden_records': self.request.GET.get('show_hidden_records')})
+		})
+		return context
+
+ 
+@method_decorator(login_required, 'dispatch')
+@method_decorator(csrf_exempt, 'dispatch')
+class SalesOrderDetailFormView(FormView):
+	template_name = 'connection_app/sales-order/sales_order_detail_view.html'
+	form_class = SalesOrderDetailViewForm
+	success_url = '.'
+
+	def get_object(self, queryset=None):
+		try:
+			obj = SalesOrder.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No %(verbose_name)s found matching the query" %
+				{'verbose_name': queryset.model._meta.verbose_name}
+			)
+		return obj
+
+	def dispatch(self, request, *args, **kwargs):
+		# sales_order = self.get_object()
+
+		# if sales_order.documents.filter(type=ConnectionApplicationDocumentsEnum.BANK_SUBSIDY_CERTIFICATE_PHOTO).first():
+		# 	messages.add_message(self.request, messages.INFO,
+		# 	                     f"Bank Subsidy Certificate Document Already Submitted.")
+		# 	return redirect("customer_profile", pk=self.get_object().pk)
+		return super().dispatch(request, *args, **kwargs)
+
+	def form_valid(self, form):
+		# data = form.cleaned_data
+
+		# customer_profile = self.get_object()
+		# customer_profile.documents.create(
+		# 	type=data['document_type'], link=data['document_link']
+		# )
+		# messages.add_message(self.request, messages.INFO, f"{data['document_type']} Document Uploaded Successfully.")
+		return redirect("sales_order", pk=self.get_object().pk)
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data()
+		context.update({
+			"sales_order": self.get_object()
+		})
+		return context
+
+	def get_form_kwargs(self):
+		kwargs = super().get_form_kwargs()
+		# kwargs['initial'] = {'document_type': ConnectionApplicationDocumentsEnum.BANK_SUBSIDY_CERTIFICATE_PHOTO}
+		return kwargs
+	
+
+
