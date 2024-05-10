@@ -56,7 +56,31 @@
                     <p style="font-size: 13px"><i class="fa fa-address-card-o" style="font-size: 14px"></i> {{ obj.consumer_address }}</p>
                 </div>
             </div>
+
     {% endfor %}
+    <div>
+        <nav aria-label="Page Navingation">
+            {% if is_paginated %}
+                <ul class="pagination">
+                    {% if list_qs.has_previous %}
+                        <li class="page-item">
+                            <span><a class="page-link" href="?page={{ list_qs.previous_page_number }}">Previous</a></span>
+                        </li>
+                    {% endif %}
+                    <li class="page-item">
+                        <span>Page {{ list_qs.number }} of {{ list_qs.paginator.num_pages }}</span>
+                    </li>
+                    {% if list_qs.has_next %}
+                        <li class="page-item">
+                            <span><a class="page-link" href="?page={{ list_qs.next_page_number }}">Next</a></span>
+                        </li>
+                    {% endif %}
+                </ul>
+            {% else %}
+                Not Paginated
+            {% endif %}
+        </nav>
+    </div>
 </div>
 <style>
 .row{ margin:0;}
@@ -126,7 +150,7 @@
             // AJAX POST request
             $.ajax({
                 type: "POST",
-                url: "http://0.0.0.0:60613/connection-app/connection-application-api/toggle_sales_order_view/",
+                url: "/connection-app/connection-application-api/toggle_sales_order_view/",
                 data: postData,
                 success: function(response){
                     // Handle successful response
