@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -752,6 +753,19 @@ class SalesOrderListView(ListView):
 
 	def get_context_data(self, *, object_list=None, **kwargs):
 		context = super().get_context_data(object_list=object_list, **kwargs)
+		list_qs = self.get_queryset()
+		paginator = Paginator(list_qs, self.paginate_by)
+
+		page = self.request.GET.get('page')
+
+		try:
+			list_qs = paginator.page(page)
+		except PageNotAnInteger:
+			list_qs = paginator.page(1)
+		except EmptyPage:
+			list_qs = paginator.page(paginator.num_pages)
+		context['list_qs'] = list_qs
+
 		context.update({
 			"filter_form": SalesOrderListViewFilterForm(
 				initial={'show_hidden_records': self.request.GET.get('show_hidden_records')})
