@@ -516,3 +516,26 @@ class CustomerProfileDocumentUploadForm(forms.Form):
 	document_link = forms.CharField(
 		widget=forms.HiddenInput, label='Document', required=True
 	)
+
+
+class SalesOrderDetailViewForm(forms.Form):
+	cancel_sales_order = forms.ChoiceField(
+		label="cancel sales order ?",
+		required=True,
+		help_text="",
+		choices=[
+			('', '-- Select To be cancel sales order --'),
+			('YES', 'Yes'),
+			('NO', 'No')
+		]
+	)
+
+
+class SalesOrderListViewFilterForm(forms.Form):
+	show_hidden_records = forms.BooleanField(
+		widget=forms.CheckboxInput,
+		label="Show Hidden Records"
+	)
+
+	def clean(self):
+		pass
