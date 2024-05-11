@@ -1263,13 +1263,14 @@ class PreInspection(models.Model):
 		self.submitted_on = datetime.datetime.now()
 		self.save()
 
-		# start_process_in_camunda_v2('Process_preinspection', variables)
-		create_camunda_preinspection_review_function = partial(
-			start_process_in_camunda_v2,
-			process_definition_key='Process_preinspection',
-			variables={"variables": {"preinspection_id": {"value": self.id, "type": "String"}}}
-		)
-		transaction.on_commit(create_camunda_preinspection_review_function)
+		if self.parent.tags.filter(name='SV Generated 11032024').first():
+			# start_process_in_camunda_v2('Process_preinspection', variables)
+			create_camunda_preinspection_review_function = partial(
+				start_process_in_camunda_v2,
+				process_definition_key='Process_preinspection',
+				variables={"variables": {"preinspection_id": {"value": self.id, "type": "String"}}}
+			)
+			transaction.on_commit(create_camunda_preinspection_review_function)
 
 	@fsm_log_description
 	@fsm_log_by
