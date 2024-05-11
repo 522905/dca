@@ -3,6 +3,7 @@ import datetime
 import arrow
 import django_rq
 
+from connection_app.jobs import start_read_customer_profile
 from connection_app.models import SalesOrder
 from ujjwala.camunda_functions import start_process_in_camunda_v2, is_process_exist_in_camunda
 from ujjwala.ujjwala_functions import evaluate_change_cylinder_type_requests
@@ -19,22 +20,7 @@ def get_customer_profile(consumer_id, name, address):
 			name=name,
 			address=address
 		)
-
-	variables = {
-		"variables":
-			{
-				"sdms_task": {"value": "read_customer_profile", "type": "String"},
-				"consumer_id": {"value": cp_obj.consumer_id, "type": "String"},
-				"customer_profile_id": {"value": cp_obj.id, "type": "Long"}
-			}
-		}
-
-	res, pid = start_process_in_camunda_v2('Process_domestic_app', variables=variables)
-	if res == 200:
-		cp_obj.camunda_process_instance_id = pid
-		cp_obj.save()
-	print(res)
-
+		django_rq.enqueue(start_read_customer_profile, args=(cp_obj.id,))
 	return cp_obj
 
 
