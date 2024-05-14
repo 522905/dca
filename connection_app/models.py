@@ -21,12 +21,12 @@ from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTy
 	ConnectionApplicationProcessType, ConnectionApplicationLeadStatus, ConnectionApplicationDocumentsEnum, \
 	ConnectionApplicationLeadCommunicationMode, ConnectionInstallationStatus, \
 	PaymentProfileApprovalStatusEnum, CustomerTypeEnum, SalesOrderStatusEnum, InspectionTypeEnum, \
-	PostInspectionStatusEnum, PostInspectionActivityTypeEnum, LeadStatusEnum
+	PostInspectionStatusEnum, PostInspectionActivityTypeEnum, LeadStatusEnum, SalesOrderPortabilityStatusEnum
 from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, FrontOfficeCompleted, \
 	BackOfficeReactivation, BackOfficeRegularisation, \
 	BackOfficeNewConnection, DocumentsReupload, InstallationReviewForm
 from domestic_app.utils import get_minio_public_url
-from reference_data.models import ServiceType
+from reference_data.models import ServiceType, Distributor
 
 minio_client = Minio(
 	settings.MINIO_API_ENDPOINT,
@@ -1155,3 +1155,13 @@ class BookSalesOrder(models.Model):
 	customer_profile = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE)
 	camunda_process_id = models.CharField(max_length=128, null=True)
 
+
+class SalesOrderPortability(models.Model):
+	created_on = models.DateTimeField(auto_now_add=True)
+	updated_on = models.DateTimeField(auto_now=True)
+	sales_order_number = models.CharField(max_length=48)
+	user = models.ForeignKey(User, on_delete=models.PROTECT)
+	distributor = models.ForeignKey(Distributor, on_delete=models.PROTECT)
+	status = models.CharField(max_length=128, choices=SalesOrderPortabilityStatusEnum.choices,
+	                          default=SalesOrderPortabilityStatusEnum.DRAFTED)
+	camunda_process_id = models.CharField(max_length=128)
