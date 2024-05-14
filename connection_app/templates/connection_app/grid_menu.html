@@ -1,0 +1,38 @@
+{% extends "material/frontend/base_module.html" %}
+{% load material_form %}
+{% load static %}
+{% block page_title %}<span style="font-size:16px;">{{ menu.name }}</span>{% endblock %}
+{% block content %}
+    <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css" >
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
+    <link rel="stylesheet" href="{% static '/css/style.css' %}">
+    <style>
+    .btn-icon-text {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  </style>
+    <div class="p-2 pt-0 form_label application_form" style="width: 100%;">
+        <div class="card">
+            <div class="card-header">
+                <p>Choose an option:</p>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for menu_item in menu.items %}
+                        <div class="card-body" style="width: 175px">
+                            <a href="{{ menu_item.url }}" class="btn btn-primary btn-icon-text" style="height: 70px!important;">
+                                <i class="fa {{ menu_item.icon }}" style="font-size: 18px"></i>
+                                <span>{{ menu_item.name }}</span>
+                              </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
