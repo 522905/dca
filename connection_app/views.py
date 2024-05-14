@@ -220,7 +220,7 @@ class PostInspectionAddressUpdateView(FormView):
 		if post_inspection.activities.filter(
 			activity_type=PostInspectionActivityTypeEnum.ADDRESS_UPDATE).first().completed:
 			return render(
-				self.request, "domestic/response.html",
+				self.request, "connection_app/response.html",
 				{"heading": "Post Inspection", "message": "Address Already Updated".format(kwargs.get('pk'))}
 			)
 		if post_inspection.status in (
@@ -274,7 +274,7 @@ class PostInspectionKitchenPhotoUpdateView(FormView):
 		if post_inspection.activities.filter(
 			activity_type=PostInspectionActivityTypeEnum.KITCHEN_PHOTO_UPDATE).first().completed:
 			return render(
-				self.request, "domestic/response.html",
+				self.request, "connection_app/response.html",
 				{"heading": "Post Inspection", "message": "Kitchen Photo Already Updated".format(kwargs.get('pk'))}
 			)
 		if post_inspection.status in (
@@ -328,7 +328,7 @@ class PostInspectionMainGatePhotoUpdateView(FormView):
 		if post_inspection.activities.filter(
 			activity_type=PostInspectionActivityTypeEnum.MAIN_GATE_PHOTO_UPDATE).first().completed:
 			return render(
-				self.request, "domestic/response.html",
+				self.request, "connection_app/response.html",
 				{"heading": "Post Inspection", "message": "Main Gate Photo Already Updated".format(kwargs.get('pk'))}
 			)
 		if post_inspection.status in (
@@ -382,7 +382,7 @@ class PostInspectionUIDPhotoUpdateView(FormView):
 		if post_inspection.activities.filter(
 			activity_type=PostInspectionActivityTypeEnum.UID_PHOTO_UPDATE).first().completed:
 			return render(
-				self.request, "domestic/response.html",
+				self.request, "connection_app/response.html",
 				{"heading": "Post Inspection", "message": "UID Photos Already Updated".format(kwargs.get('pk'))}
 			)
 		if post_inspection.status in (
@@ -436,7 +436,7 @@ class PostInspectionProfilePhotoUpdateView(FormView):
 		if post_inspection.activities.filter(
 			activity_type=PostInspectionActivityTypeEnum.PROFILE_PHOTO_UPDATE).first().completed:
 			return render(
-				self.request, "domestic/response.html",
+				self.request, "connection_app/response.html",
 				{"heading": "Post Inspection", "message": "Profile Photo Already Updated".format(kwargs.get('pk'))}
 			)
 		if post_inspection.status in (
@@ -490,7 +490,7 @@ class PostInspectionSurakshaPipeUpdateView(FormView):
 		if post_inspection.activities.filter(
 			activity_type=PostInspectionActivityTypeEnum.SURAKSHA_PIPE_UPDATE).first().completed:
 			return render(
-				self.request, "domestic/response.html",
+				self.request, "connection_app/response.html",
 				{"heading": "Post Inspection", "message": "Suraksha Pipe Already Updated".format(kwargs.get('pk'))}
 			)
 
@@ -753,7 +753,7 @@ class SalesOrderListView(FilterView):
 
 	def get_queryset(self):
 		current_user = get_current_user()
-		qs = SalesOrder.objects.filter(auto_generated=True)
+		qs = SalesOrder.objects.filter(auto_generated=True).order_by('order_date')
 
 		if self.request.GET.get('show_hidden_records') != 'on':
 			qs = qs.exclude(hide_from_view=True)
