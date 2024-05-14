@@ -101,6 +101,7 @@ urlpatterns = [
     ),
     path(
         'sales-order-list/',
+        # views.SalesOrderListView.as_view(),
         views.SalesOrderListView.as_view(),
         name="sales_order_list"
     ),
@@ -109,4 +110,29 @@ urlpatterns = [
         views.SalesOrderDetailFormView.as_view(),
         name="sales_order_detail_view"
     ),
+    path(
+        'sales-order-portability/',
+        views.SalesOrderPortabilityFormView.as_view(),
+        name="sales_order_portability"
+    ),
+    path(
+        'sales-order-portability-list/',
+        views.SalesOrderPortabilityListView.as_view(),
+        name="sales_order_portability_list"
+    ),
+    path(
+        'sales-order-grid-menu-view/',
+        views.SalesOrderGridMenuView.as_view(),
+        name="sales_order_grid_menu_view"
+    ),
+    path(
+      'inspection-grid-menu-view/',
+      views.InspectionGridMenuView.as_view(),
+      name="inspection_grid_menu_view"
+    ),
+    path(
+      'customer-grid-menu-view/',
+      views.CustomerGridMenuView.as_view(),
+      name="customer_grid_menu_view"
+    )
 ] + router.urls
