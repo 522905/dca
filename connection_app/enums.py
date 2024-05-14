@@ -6,6 +6,13 @@ class ConnectionApplicationLeadCommunicationMode(models.TextChoices):
 	SMS = 'SMS', 'SMS'
 
 
+class SalesOrderPortabilityStatusEnum(models.TextChoices):
+	DRAFTED = 'DRAFTED', 'Drafted'
+	SCHEDULED = 'SCHEDULED', 'Scheduled'
+	COMPLETED = 'COMPLETED', 'Completed'
+	ERROR = 'ERROR', 'Error'
+
+
 class ConnectionApplicationProcessType(models.TextChoices):
 	NEW_CONNECTION = 'NEW_CONNECTION', 'New Connection',
 	REGULARISATION = 'REGULARISATION', 'Regularisation',

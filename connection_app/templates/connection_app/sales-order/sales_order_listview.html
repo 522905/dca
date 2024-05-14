@@ -3,28 +3,44 @@
 {% block page_title %}Sales Order List - Auto Generated{% endblock %}
 {% block content %}
 {% load material_form %}
-<link rel="stylesheet" href="{% static '/css/style.css' %}" >
-<link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<div class="p-2 pt-0 form_label" style="width: 100%;">
-{#action="{% url 'system:inventory_create' %}"#}
-    <form method="get" >
-        <div class="card">
-            <div class="card-header p-1">
-                <div class="row m-0">
-                    <div class="col-sm-8 p-0">
-                         {% form form=filter_form %}{% endform %}
-                    </div>
-                    <div class="col-sm-4 p-0 pr-2 pt-1">
-                         <input class="float-right" type="submit" value="Submit">
-                    </div>
+    <link rel="stylesheet" href="{% static '/css/style.css' %}" >
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <div class="p-2 pt-0 form_label" style="width: 100%;">
+        <form method="get" >
+            <div class="card">
+                <div class="card-header">
+                    <span><p><i class="fa fa-search"></i>Search</p></span>
+                </div>
+                <div class="card-body">
+                     {% form form=filter.form %}{% endform %}
+                </div>
+                <div class="card-footer">
+                     <input class="float-right" type="submit" value="Submit">
                 </div>
             </div>
-        </div>
-    </form>
-    {% for obj in object_list %}
+        </form>
+    </div>
+    <div class="p-2 pt-0 form_label" style="width: 100%;">
+        <div class="card-header">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
 
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+         </div>
+        {% for obj in object_list %}
             <div class="card mb-2 app_card" id="{{ obj.id }}_div">
                 <div class="card-header pl-2">
                     <p class="float-left">
@@ -56,32 +72,25 @@
                     <p style="font-size: 13px"><i class="fa fa-address-card-o" style="font-size: 14px"></i> {{ obj.consumer_address }}</p>
                 </div>
             </div>
+        {% endfor %}
+        <div class="card-footer">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
 
-    {% endfor %}
-    <div>
-        <nav aria-label="Page Navingation">
-            {% if is_paginated %}
-                <ul class="pagination">
-                    {% if list_qs.has_previous %}
-                        <li class="page-item">
-                            <span><a class="page-link" href="?page={{ list_qs.previous_page_number }}">Previous</a></span>
-                        </li>
-                    {% endif %}
-                    <li class="page-item">
-                        <span>Page {{ list_qs.number }} of {{ list_qs.paginator.num_pages }}</span>
-                    </li>
-                    {% if list_qs.has_next %}
-                        <li class="page-item">
-                            <span><a class="page-link" href="?page={{ list_qs.next_page_number }}">Next</a></span>
-                        </li>
-                    {% endif %}
-                </ul>
-            {% else %}
-                Not Paginated
-            {% endif %}
-        </nav>
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+         </div>
     </div>
-</div>
 <style>
 .row{ margin:0;}
     .block{ width:100%; float: left;}

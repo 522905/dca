@@ -1,3 +1,5 @@
+import django_filters
+import django_rq
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -8,18 +10,20 @@ from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, ListView, FormView, TemplateView
-from django.views.generic.edit import ProcessFormView
 from django_currentuser.middleware import get_current_user
+from django_filters.views import FilterView
 
 from connection_app.enums import PostInspectionStatusEnum, InspectionTypeEnum, PostInspectionActivityTypeEnum, \
 	ConnectionApplicationDocumentsEnum
 from connection_app.forms import UpdateAddressForm, PostInspectionStartForm, PreviewPostInspectionForm, \
 	KitchenPostInspectionForm, PostInspectionForm, UIDPostInspectionForm, ProfilePhotoPostInspectionForm, \
 	SurakshaPipePostInspectionForm, CustomerProfileSearchForm, GenerateLeadForm, GenerateNonCustomerLeadForm, \
-	CustomerProfileDocumentUploadForm, SalesOrderDetailViewForm, SalesOrderListViewFilterForm
-from connection_app.models import ConnectionApplication, PostInspection, CustomerProfile, Lead, SalesOrder
-from reference_data.models import ServiceType
-from teams.models import UserProfile, SDMSUser
+	CustomerProfileDocumentUploadForm, SalesOrderDetailViewForm, SalesOrderPortabilityForm
+from connection_app.jobs import start_sales_order_portability_process
+from connection_app.models import ConnectionApplication, PostInspection, CustomerProfile, Lead, SalesOrder, \
+	SalesOrderPortability
+from reference_data.models import ServiceType, Distributor
+from teams.models import SDMSUser
 
 
 def installation_upload_process_gleam_entry_gate(request):
@@ -35,6 +39,7 @@ def installation_upload_process_gleam_entry_gate_completed(request):
 
 
 def index(request):
+	# return RedirectView.as_view(url='/connection_app/portal/user_dashboard/', permanent=False)
 	return render(request, 'connection_app/index.html')
 
 
@@ -609,7 +614,7 @@ class GenerateLeadFormView(FormView):
 				mobile_number=customer_profile.mobile_number
 			)
 		messages.add_message(self.request, messages.INFO,
-		                     message="Generated Lead Successfully For {}".format(", ".join(data['service_list'])))
+							 message="Generated Lead Successfully For {}".format(", ".join(data['service_list'])))
 		return redirect("customer_profile", pk=self.get_object().pk)
 
 	def get_form_kwargs(self):
@@ -643,7 +648,7 @@ class GenerateNonCustomerLeadFormView(FormView):
 				mobile_number=data['mobile_number']
 			)
 		messages.add_message(self.request, messages.INFO,
-		                     message="Generated Lead Successfully For {}".format(", ".join(data['service_list'])))
+							 message="Generated Lead Successfully For {}".format(", ".join(data['service_list'])))
 		return redirect("customer_profile", pk=self.get_object().pk)
 
 	def get_form_kwargs(self):
@@ -674,7 +679,7 @@ class CustomerProfileDocumentUploadFormView(FormView):
 
 		if customer_profile.documents.filter(type=ConnectionApplicationDocumentsEnum.BANK_SUBSIDY_CERTIFICATE_PHOTO).first():
 			messages.add_message(self.request, messages.INFO,
-			                     f"Bank Subsidy Certificate Document Already Submitted.")
+								 f"Bank Subsidy Certificate Document Already Submitted.")
 			return redirect("customer_profile", pk=self.get_object().pk)
 		return super().dispatch(request, *args, **kwargs)
 
@@ -710,23 +715,41 @@ class DashboardView(TemplateView):
 		user = get_current_user()
 
 		context.update({
-			"user": user
+			"user": user,
+			"dashboard": [
+				{
+					"sales_order_portability": {}
+				}
+			]
+			# "sales_order_portability_queryset": SalesOrderPortability.objects.filter(user=get_current_user()),
+			# "sales_order_portability_status": SalesOrderPortabilityStatusEnum.choices
 		})
 		return context
-	
+
+
+class SalesOrderFilter(django_filters.FilterSet):
+	class Meta:
+		model = SalesOrder
+		fields = ['sales_order', 'consumer_name', 'hide_from_view']
+
 
 @method_decorator(login_required, 'dispatch')
-class SalesOrderListView(ListView):
+class SalesOrderListView(FilterView):
 	model = SalesOrder
 	template_name = 'connection_app/sales-order/sales_order_listview.html'
 
-	paginate_by = 20
+	paginate_by = 10
 	permission = 'has_view_permission'
-	#
-	# def dispatch(self, request, *args, **kwargs):
-	# 	if request.method == 'POST':
-	# 		return redirect(reverse("connection_app:sales_order_list") + "?hide_from_view={}".format("on"))
-	# 	return super().dispatch(request, *args, **kwargs)
+	filterset_class = SalesOrderFilter
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		queryset = self.get_queryset()
+		paginator = Paginator(queryset, self.paginate_by)
+		page_number = self.request.GET.get('page')
+		page_obj = paginator.get_page(page_number)
+		context['page_obj'] = page_obj
+		return context
 
 	def get_queryset(self):
 		current_user = get_current_user()
@@ -750,28 +773,6 @@ class SalesOrderListView(ListView):
 
 		return qs.order_by('order_date')
 
-
-	def get_context_data(self, *, object_list=None, **kwargs):
-		context = super().get_context_data(object_list=object_list, **kwargs)
-		list_qs = self.get_queryset()
-		paginator = Paginator(list_qs, self.paginate_by)
-
-		page = self.request.GET.get('page')
-
-		try:
-			list_qs = paginator.page(page)
-		except PageNotAnInteger:
-			list_qs = paginator.page(1)
-		except EmptyPage:
-			list_qs = paginator.page(paginator.num_pages)
-		context['list_qs'] = list_qs
-
-		context.update({
-			"filter_form": SalesOrderListViewFilterForm(
-				initial={'show_hidden_records': self.request.GET.get('show_hidden_records')})
-		})
-		return context
-
  
 @method_decorator(login_required, 'dispatch')
 @method_decorator(csrf_exempt, 'dispatch')
@@ -790,24 +791,12 @@ class SalesOrderDetailFormView(FormView):
 			)
 		return obj
 
-	def dispatch(self, request, *args, **kwargs):
-		# sales_order = self.get_object()
-
-		# if sales_order.documents.filter(type=ConnectionApplicationDocumentsEnum.BANK_SUBSIDY_CERTIFICATE_PHOTO).first():
-		# 	messages.add_message(self.request, messages.INFO,
-		# 	                     f"Bank Subsidy Certificate Document Already Submitted.")
-		# 	return redirect("customer_profile", pk=self.get_object().pk)
-		return super().dispatch(request, *args, **kwargs)
-
 	def form_valid(self, form):
-		# data = form.cleaned_data
-
-		# customer_profile = self.get_object()
-		# customer_profile.documents.create(
-		# 	type=data['document_type'], link=data['document_link']
-		# )
-		# messages.add_message(self.request, messages.INFO, f"{data['document_type']} Document Uploaded Successfully.")
-		return redirect("sales_order", pk=self.get_object().pk)
+		data = form.cleaned_data
+		so_obj = self.get_object()
+		so_obj.parent.do_not_auto_generate = data['cancel_auto_booking']
+		so_obj.parent.save()
+		return redirect("sales_order_list")
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data()
@@ -816,10 +805,170 @@ class SalesOrderDetailFormView(FormView):
 		})
 		return context
 
+
+@method_decorator(login_required, 'dispatch')
+@method_decorator(csrf_exempt, 'dispatch')
+class SalesOrderPortabilityFormView(FormView):
+	template_name = 'connection_app/sales-order/sales_order_portability.html'
+	form_class = SalesOrderPortabilityForm
+	success_url = '.'
+
+	def get_object(self, queryset=None):
+		try:
+			obj = SalesOrder.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No %(verbose_name)s found matching the query" %
+				{'verbose_name': queryset.model._meta.verbose_name}
+			)
+		return obj
+
+	def form_valid(self, form):
+		data = form.cleaned_data
+		sop_obj: SalesOrderPortability = SalesOrderPortability.objects.create(
+			sales_order_number=data['sales_order_number'],
+			user=get_current_user(),
+			distributor_id=data['distributor']
+		)
+		messages.add_message(self.request, messages.INFO,
+							 f"Sales Order Portability Request Initiated. Request Id: {sop_obj.pk}")
+		django_rq.enqueue(start_sales_order_portability_process, args=(sop_obj.id,))
+		return redirect("connection_app:sales_order_grid_menu_view")
+
 	def get_form_kwargs(self):
 		kwargs = super().get_form_kwargs()
-		# kwargs['initial'] = {'document_type': ConnectionApplicationDocumentsEnum.BANK_SUBSIDY_CERTIFICATE_PHOTO}
+		distributor_list = [('', 'Please Select Distributor')]
+		distributor_list.extend([
+				(obj.id, f"{obj.code} - {obj.name}") for obj in Distributor.objects.all()
+			])
+		kwargs['distributor_list'] = distributor_list
 		return kwargs
-	
 
 
+class CustomerGridMenuView(TemplateView):
+	template_name = 'connection_app/grid_menu.html'
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+
+		menu = {
+			"name": "Inspection",
+			"items": [
+				{
+					"name": "Customer Profile",
+					"icon": "fa-file-text",
+					"url": reverse("connection_app:customer_profile_search"),
+				},
+				{
+					"name": "Generate Lead",
+					"icon": "fa-file-text",
+					"url": reverse("connection_app:customer_profile_search"),
+				},
+			]
+		}
+
+		context.update({
+			"menu": menu
+		})
+		return context
+
+
+class InspectionGridMenuView(TemplateView):
+	template_name = 'connection_app/grid_menu.html'
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+
+		menu = {
+			"name": "Inspection",
+			"items": [
+				{
+					"name": "Start Post Inspection",
+					"icon": "fa-file-text",
+					"url": reverse("connection_app:post_inspection_start"),
+				},
+				{
+					"name": "Post Inspection List",
+					"icon": "fa-file-text",
+					"url": reverse("connection_app:post_inspection_list"),
+				},
+			]
+		}
+
+		context.update({
+			"menu": menu
+		})
+		return context
+
+
+class SalesOrderGridMenuView(TemplateView):
+	template_name = 'connection_app/grid_menu.html'
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+
+		menu = {
+			"name": "Sales Order",
+			"items": [
+				{
+					"name": "Sales Order List",
+					"icon": "fa-file-text",
+					"url": reverse("connection_app:sales_order_list"),
+				},
+				{
+					"name": "Invoice Sales Order",
+					"icon": "fa-file-text",
+					"url": reverse("connection_app:sales_order_portability"),
+				},
+				{
+					"name": "Portability List",
+					"icon": "fa-file-text",
+					"url": reverse("connection_app:sales_order_portability_list"),
+				}
+			]
+		}
+
+		context.update({
+			"menu": menu
+		})
+		return context
+
+
+@method_decorator(login_required, 'dispatch')
+class SalesOrderPortabilityListView(ListView):
+	model = SalesOrderPortability
+	template_name = 'connection_app/sales-order/sales_order_portability_listview.html'
+
+	paginate_by = 20
+	permission = 'has_view_permission'
+
+	#
+	# def dispatch(self, request, *args, **kwargs):
+	# 	if request.method == 'POST':
+	# 		return redirect(reverse("connection_app:sales_order_list") + "?hide_from_view={}".format("on"))
+	# 	return super().dispatch(request, *args, **kwargs)
+
+	def get_queryset(self):
+		current_user = get_current_user()
+
+		if current_user.is_superuser:
+			return SalesOrderPortability.objects.all()
+		else:
+			return SalesOrderPortability.objects.filter(user=get_current_user())
+
+	def get_context_data(self, *, object_list=None, **kwargs):
+		context = super().get_context_data(object_list=object_list, **kwargs)
+		list_qs = self.get_queryset()
+		paginator = Paginator(list_qs, self.paginate_by)
+
+		page = self.request.GET.get('page')
+
+		try:
+			list_qs = paginator.page(page)
+		except PageNotAnInteger:
+			list_qs = paginator.page(1)
+		except EmptyPage:
+			list_qs = paginator.page(paginator.num_pages)
+		context['list_qs'] = list_qs
+
+		return context

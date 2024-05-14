@@ -1,0 +1,78 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block page_title %}Sales Order List - Auto Generated{% endblock %}
+{% block content %}
+{% load material_form %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<div class="p-2 pt-0 form_label" style="width: 100%;">
+{#action="{% url 'system:inventory_create' %}"#}
+    <form method="get" >
+        <div class="card">
+            <div class="card-header p-1">
+                <div class="row m-0">
+                    <div class="col-sm-8 p-0">
+                         {% form form=filter_form %}{% endform %}
+                    </div>
+                    <div class="col-sm-4 p-0 pr-2 pt-1">
+                         <input class="float-right" type="submit" value="Submit">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    {% for obj in object_list %}
+
+            <div class="card mb-2 app_card" id="{{ obj.id }}_div">
+                <div class="card-header pl-2">
+                    <p class="float-left">
+                        <i class="fa fa-file-text"></i><a href="{% url 'connection_app:sales_order_detail_view' pk=obj.id %}" data-turbolinks="false"> {{ obj.sales_order_number }} - <b>{{ obj.status }}</b></a>
+                    </p>
+                    <p class="float-right">
+                        <i class='fa fa-user-circle'></i><b class="text-danger"> {{ obj.parent.name }}</b>
+                    </p>
+                </div>
+                <div class="card-body pb-0 p-2 block">
+                    <ul class="m-0 list-body">
+                        <li>
+                            <p class="float-right"><i class="fa fa-sharp fa-solid fa-phone"></i>
+                                <a href="tel:{{obj.parent.mobile_number}}" data-turbolinks="false">
+                                   <span class="text-primary" style="font-weight: 600;"> {{ obj.parent.mobile_number }}</span>
+                                </a>
+                            </p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-footer p-2 block">
+                    <p style="font-size: 13px"><i class="fa fa-address-card-o" style="font-size: 14px"></i> {{ obj.consumer_address }}</p>
+                </div>
+            </div>
+
+    {% endfor %}
+    <div>
+        <nav aria-label="Page Navingation">
+            {% if is_paginated %}
+                <ul class="pagination">
+                    {% if list_qs.has_previous %}
+                        <li class="page-item">
+                            <span><a class="page-link" href="?page={{ list_qs.previous_page_number }}">Previous</a></span>
+                        </li>
+                    {% endif %}
+                    <li class="page-item">
+                        <span>Page {{ list_qs.number }} of {{ list_qs.paginator.num_pages }}</span>
+                    </li>
+                    {% if list_qs.has_next %}
+                        <li class="page-item">
+                            <span><a class="page-link" href="?page={{ list_qs.next_page_number }}">Next</a></span>
+                        </li>
+                    {% endif %}
+                </ul>
+            {% else %}
+                Not Paginated
+            {% endif %}
+        </nav>
+    </div>
+</div>
+{% endblock %}

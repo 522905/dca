@@ -520,7 +520,7 @@ class CustomerProfileDocumentUploadForm(forms.Form):
 
 class SalesOrderDetailViewForm(forms.Form):
 	cancel_sales_order = forms.ChoiceField(
-		label="cancel sales order ?",
+		label="Cancel Sales Order ?",
 		required=True,
 		help_text="",
 		choices=[
@@ -529,13 +529,26 @@ class SalesOrderDetailViewForm(forms.Form):
 			('NO', 'No')
 		]
 	)
-
-
-class SalesOrderListViewFilterForm(forms.Form):
-	show_hidden_records = forms.BooleanField(
+	cancel_auto_booking = forms.BooleanField(
 		widget=forms.CheckboxInput,
-		label="Show Hidden Records"
+		label="Cancel Auto Book",
+		help_text="Cancel Auto Book Sales Order"
 	)
 
-	def clean(self):
-		pass
+
+class SalesOrderPortabilityForm(forms.Form):
+	sales_order_number = forms.CharField(
+		max_length=52, required=True
+	)
+	distributor = forms.ChoiceField(
+		label="Distributor",
+		required=True,
+		help_text="",
+		choices=[
+			('', '-- Select Distributor --'),
+		]
+	)
+
+	def __init__(self, distributor_list=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.fields['distributor'].choices = distributor_list
