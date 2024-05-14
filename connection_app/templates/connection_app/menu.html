@@ -4,43 +4,52 @@
      <div class="sidebar">
         <ul class="nav-links">
             <li class="submenu_level2">
-              <div class="submenu_L2wrap">
-                <a href="{% url 'connection_app:customer_profile_search' %}" data-turbolinks="false">
-                <span class="link_name">Customer Profile</span>
-                </a>
-              </div>
+                <a href="{% url 'connection_app:customer_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Customer</a>
             </li>
-            <li class="submenu_level2">
-              <div class="submenu_L2wrap">
-                <span class="link_name">Generate Lead</span>
-                <i class='bx bxs-chevron-down arrow' ></i>
-              </div>
-              <ul class="sub-menu submenu_Level3">
-                <li><a href="{% url 'connection_app:customer_profile_search' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i> For Customer</a></li>
-                <li><a href="{% url 'connection_app:generate_non_customer_lead_form' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i> For Non-Customer</a></li>
-              </ul>
-            </li>
+{#            <li class="submenu_level2">#}
+{#              <div class="submenu_L2wrap">#}
+{#                <a href="{% url 'connection_app:customer_profile_search' %}" data-turbolinks="false">#}
+{#                <span class="link_name">Customer Profile</span>#}
+{#                </a>#}
+{#              </div>#}
+{#            </li>#}
+{#            <li class="submenu_level2">#}
+{#              <div class="submenu_L2wrap">#}
+{#                <span class="link_name">Generate Lead</span>#}
+{#                <i class='bx bxs-chevron-down arrow' ></i>#}
+{#              </div>#}
+{#              <ul class="sub-menu submenu_Level3">#}
+{#                <li><a href="{% url 'connection_app:customer_profile_search' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i> For Customer</a></li>#}
+{#                <li><a href="{% url 'connection_app:generate_non_customer_lead_form' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i> For Non-Customer</a></li>#}
+{#              </ul>#}
+{#            </li>#}
             {% if user|has_post_inspection_permission %}
             <li class="submenu_level2">
-                <div class="submenu_L2wrap">  
-                    <span class="link_name">Post Inspection</span>
-                    <i class='bx bxs-chevron-down arrow' ></i>
-                </div>
-                <ul class="sub-menu submenu_Level3">
-                    <li><a href="{% url 'connection_app:post_inspection_list' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i> View Post Inspection</a></li>
-                    <li><a href="{% url 'connection_app:post_inspection_start' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i> Start New Post Inspection</a></li>
-                </ul>
+                <a href="{% url 'connection_app:inspection_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Inspection</a>
             </li>
+{#            <li class="submenu_level2">#}
+{#                <div class="submenu_L2wrap">  #}
+{#                    <span class="link_name">Post Inspection</span>#}
+{#                    <i class='bx bxs-chevron-down arrow' ></i>#}
+{#                </div>#}
+{#                <ul class="sub-menu submenu_Level3">#}
+{#                    <li><a href="{% url 'connection_app:post_inspection_list' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i> View Post Inspection</a></li>#}
+{#                    <li><a href="{% url 'connection_app:post_inspection_start' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i> Start New Post Inspection</a></li>#}
+{#                </ul>#}
+{#            </li>#}
             {% endif %}
             <li class="submenu_level2">
-              <div class="submenu_L2wrap">
-                <span class="link_name">Sales Order</span>
-                <i class='bx bxs-chevron-down arrow' ></i>
-              </div>
-              <ul class="sub-menu submenu_Level3">
-                <li><a href="{% url 'connection_app:sales_order_list' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Sales Order List</a></li>
-              </ul>
+                <a href="{% url 'connection_app:sales_order_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Sales Order</a>
             </li>
+{#              <div class="submenu_L2wrap">#}
+{#                <span class="link_name">Sales Order</span>#}
+{#              </div>#}
+{#              <ul class="sub-menu submenu_Level3">#}
+{#                <li><a href="{% url 'connection_app:sales_order_list' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Sales Order List</a></li>#}
+{#                <li><a href="{% url 'connection_app:sales_order_portability' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Portability</a></li>#}
+{#                <li><a href="{% url 'connection_app:sales_order_portability_list' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Portability List</a></li>#}
+{#              </ul>#}
+{#            </li>#}
         </ul>
      </div>
     <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
