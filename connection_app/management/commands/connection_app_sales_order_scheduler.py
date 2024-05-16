@@ -13,7 +13,7 @@ class Command(BaseCommand):
 	                                    '%d-%b-%Y'))
                 parser.add_argument('-td', '--to_date', type=str,
                                     default=datetime.datetime.today().strftime('%d-%b-%Y'))
-                parser.add_argument('-sot', '--sales_order_type', type=str, default='sales_order')
+                parser.add_argument('-sot', '--sales_order_type', type=str, default='fetch_sales_order')
 
         def handle(self, *args, **options):
                 from_date = options.get('from_date')
