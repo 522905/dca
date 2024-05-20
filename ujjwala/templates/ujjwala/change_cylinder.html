@@ -3,54 +3,111 @@
 {% load material_form %}
 {% block page_title %}Service Request - Change Cylinder Type{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="{% static '/css/style.css' %}" >
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static '/css/style.css' %}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <div class="row m-0 form_label p-2 ">
+        <div class="card card-profile pt-0 mt-0 " style="width: 100%;">
+            <div class="row justify-content-center m-0" style="width: 100%; margin: 0 auto !important; padding: 10px;">
+                <div style="width: 30%; float:left">
+                    <div class="card-profile-image">
+                        <a href="#">
+                            <img style="width:100%; max-height: 150px;" src="{{ obj.document_self }}">
+                        </a>
+                    </div>
+                </div>
 
-<style>
+                <div style="width: 70%; float:right">
+                    <div class="card-body pt-0">
+                        <div class="text-left">
+                            <h5 class="h5">{{ obj.name }}({{ obj.id }})<span class="font-weight-light"></span></h5>
+                            <div class="h6 font-weight-300">{{ obj.contact_mobile }}</div>
+                            <div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
+                                {{ obj.formatted_address }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if already_submitted %}
+                    <div class="card-header">
+                        <p>Status</p>
+                    </div>
+                    <div class="card-body">
+                        <p>Service Request For Change Cylinder Type Already Submitted.<br>Change
+                            Cylinder Type Service Request Id: {{ request_obj.id }} <br>Status: {{ request_obj.status }}</p>
+                    </div>
+                    {% if request_obj.status != 'COMPLETED' %}
+                        <div class="card-footer">
+                            <a href="{% url 'ujjwala:download_change_cylinder_type_form' pk=obj.pk %}" target="_blank"
+                               class="btn btn-success">Download Conversion Form</a>
+                        </div>
+                    {% endif %}
+            {% else %}
+                <form method="post" id="form" style="width: 100%;">
+                    {% csrf_token %}
+                    <div class="m-0">
+                        <div class="change_cylinder_type_form">
+                            <div class="m-2">
+                                {% form form=form %}{% endform %}
+                            </div>
+                            <div class="card-footer" style="float: left; width: 100%;">
+                                <p class="text-right"><input class="btn btn-secondary rounded-0 float-right"
+                                                             type="submit" value="Submit"/></p>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+    <script>
+        function initializeToggleEvents() {
+            const checkBoxChangePhoneNumber = document.querySelector('#id_change_phone_number');
+            const checkBoxChangeAddress = document.querySelector('#id_change_address');
+            const divNewPhoneNumber = document.querySelector('#id_new_phone_number_container');
 
-    .hidden-field{ display: none;}
-    .form_label .card{ width: 100%;  }
-    .address_form label{ margin-bottom: 5px; }
-    #address_form .form_block input{ padding-left:5px; border-radius: 3px; border: 1px solid #ccc; width: 100%; line-height: 40px; }
-    .form_block label{ float: left; width: 100%; }
-	#id_change_cylinder_type{ display: block !important;}
-</style>
-<div id="address_form" class="row m-0 form_label p-2 ">
-    <div class="card card-profile pt-0 mt-0 " style="width: 100%;" >
-		<div class="row justify-content-center m-0" style="width: 100%; margin: 0 auto !important; padding: 10px;">
-			<div style="width: 30%; float:left">
-				<div class="card-profile-image">
-					<a href="#">
-						<img style="width:100%; max-height: 150px;" src="{{obj.document_self}}">
-					</a>
-				</div>
-			</div>
-			<div style="width: 70%; float:right">
-				<div class="card-body pt-0">
-					<div class="text-left">
-						<h5 class="h5">{{ obj.name }}({{ obj.id }})<span class="font-weight-light"></span></h5>
-						<div class="h6 font-weight-300">{{ obj.contact_mobile }}</div>
-						<div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
-							{{ obj.formatted_address }}
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div class="m-0">
-			<form method="post" id="form" style="width: 100%;">
-				{% csrf_token %}
-				<div class="address_form">
-					<div class="m-2">
-						{{ form }}
-					</div>
-					<div class="card-footer" style="float: left; width: 100%;">
-						<p class="text-right"><input class="btn btn-secondary rounded-0 float-right" type="submit" id="form" value="Submit"/></p>
-					</div>
-				</div>
-			</form>
-		</div>
-	</div>
-   
-</div>
+            function toggleNewPhoneNumberDiv() {
+                if (checkBoxChangePhoneNumber.checked) {
+                    divNewPhoneNumber.style.display = 'block';
+                } else {
+                    divNewPhoneNumber.style.display = 'none';
+                }
+            }
+
+            function toggleChangeAddressElements() {
+                const elementsToToggle = [
+                    '#id_house_type_container',
+                    '#id_house_no_container',
+                    '#id_room_no_container',
+                    '#id_floor_container',
+                    '#id_street_no_container',
+                    '#id_landmark_container',
+                    '#id_village_container',
+                    '#id_ward_no_container',
+                    '#id_post_office_container',
+                    '#id_pincode_container'
+                ];
+
+                elementsToToggle.forEach(selector => {
+                    const element = document.querySelector(selector);
+                    if (element) {
+                        element.style.display = checkBoxChangeAddress.checked ? 'block' : 'none';
+                    }
+                });
+            }
+
+            checkBoxChangePhoneNumber.addEventListener('change', toggleNewPhoneNumberDiv);
+            checkBoxChangeAddress.addEventListener('change', toggleChangeAddressElements);
+
+            // Initialize the div state based on the checkbox state
+            toggleNewPhoneNumberDiv();
+            toggleChangeAddressElements();
+        }
+
+        // Execute on page load
+        document.addEventListener('DOMContentLoaded', initializeToggleEvents);
+
+        // Execute on turbolinks load (assuming turbolinks is being used)
+        document.addEventListener('turbolinks:load', initializeToggleEvents);
+    </script>
 {% endblock %}
