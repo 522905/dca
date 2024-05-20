@@ -1,0 +1,72 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block content %}
+    <link rel="stylesheet" href="{% static '/css/style.css' %}" >
+    <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css" >
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap"
+        rel="stylesheet">
+    <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
+
+    <div class="main p-2 pt-0 form_label">
+        <form method="post" id="">
+            {% csrf_token %}
+            <div class="card">
+                <div class="row mb-2 m-0">
+                    <div class="col-sm-12 photo_block mt-2">
+                        <span class="hidden-field">{{ form.sv_photo }}</span>
+                        <label>Photo of SV</label>
+                        <p id="sv_photo"></p>
+                        {{ form.main_gate.errors }}
+                    </div>
+                </div>
+                <div class="card-footer float-right">
+                    <input class="btn btn-success float-right rounded-0" type="submit" value="फॉर्म जमा करें" />
+                </div>
+            </div>
+        </form>
+    </div>
+    <script>
+         window.svPhotoUppy = new Uppy.Core({
+            debug: true,
+            autoProceed: true,
+            restrictions: {
+                maxFileSize: 50000000,
+                maxNumberOfFiles: 1,
+                minNumberOfFiles: 1,
+                allowedFileTypes: ['image/*'],
+            }
+        })
+        .use(Uppy.Dashboard, {
+            trigger: '#sv_photo',
+            inline: true,
+            target: '#sv_photo',
+            showProgressDetails: true,
+            note: 'Images and video only, 2–3 files, up to 10 MB',
+            height: 200,
+            metaFields: [],
+            id: 'sv_photo',
+            waitForThumbnailsBeforeUpload: true,
+            doneButtonHandler: () => {
+                // this.uppy.reset()
+                // this.requestCloseModal()
+            },
+            showRemoveButtonAfterComplete: true,
+            theme: 'light',
+            locale: {
+                strings: {
+                    dropPasteFiles: 'फोटो अपलोड करने के लिए यहाँ पर क्लिक करे %{browseFiles}',
+                    done: '-',
+                    uploadComplete: 'अपलोड पूरा हो गया है',
+                    complete: 'पूरा हुआ',
+                }
+            },
+        })
+        .use(Uppy.Tus, {
+            endpoint: 'https://tus.dca.arungas.com/files/',
+        })
+        svPhotoUppy.on('complete', result => {
+            $('#id_sv_photo').val(result.successful[0].uploadURL);
+        })
+    </script>
+{% endblock %}

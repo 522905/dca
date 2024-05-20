@@ -46,9 +46,11 @@ urlpatterns = [
     # path('portal/', generic.TemplateView.as_view(template_name="ujjwala/frontend.html"), name="index"),
 
     path('portal/web-form/', UjjwalaApplicationWebFormView.as_view(), name="web_form"),
+ 
     path('portal/i-web-form/', UjjwalaApplicationIframeWebFormView.as_view(), name="i_web_form"),
     path('portal/pre-inspection/', views.UjjwalaPreInspectionListView.as_view(), name="index"),
     path('portal/web-form-share/', views.ShareWebFormLink.as_view(), name="share_web_form_link"),
+
     url(
         '^portal/self-pre-inspection-share/(?P<pk>[^/.]+)/$',
         views.ShareSelfPreInspectionLink.as_view(),
@@ -121,6 +123,12 @@ urlpatterns = [
          views.InstallationReviewListView.as_view(),
          name="installation_review_list"
     ),
+
+    path('portal/installation/installation_review_list/',
+         views.InstallationReviewListView.as_view(),
+         name="eighteen_above_aadaar"
+    ),
+
 
 
     path('portal/print_documents/',
@@ -204,6 +212,19 @@ urlpatterns = [
         name="ujjwala_application_audit"
     ),
 
+    
+    path('portal/change-cylinder-type/list_view/',
+         views.ChangeCylinderTypeRequestListView.as_view(),
+         name="change_cylinder_request_list"
+    ),
+
+    url(
+        '^portal/change-cylinder-type/request/(?P<pk>[^/.]+)/$',
+        views.ChangeCylinderTypeRequestView.as_view(),
+        name="change_cylinder_type_request"
+    ),
+
+
     path('portal/service_request/list_view/',
          views.UjjwalaApplicationServiceRequestListView.as_view(),
          name="service_request_list"
@@ -213,6 +234,17 @@ urlpatterns = [
         '^portal/service-request-view/(?P<pk>[^/.]+)/$',
         views.UjjwalaApplicationServiceRequestView.as_view(),
         name="service_request_view"
+    ),
+
+    path('portal/review/bank_details_update/',
+         views.BankDetailsUpdateRequestListView.as_view(),
+         name="bank_details_update_list"
+    ),
+
+    url(
+        '^portal/bank-details-update-request/(?P<pk>[^/.]+)/$',
+        views.BankDetailsUpdateRequestView.as_view(),
+        name="bank_details_update_request_view"
     ),
 
     url(
@@ -294,6 +326,11 @@ urlpatterns = [
         '^portal/change_cylinder_type/(?P<pk>[^/.]+)/$',
         views.ChangeCylinderTypeView.as_view(),
         name="change_cylinder_type"
+    ),
+    url(
+        '^portal/download_change_cylinder_type_form/(?P<pk>[^/.]+)/$',
+        views.DownloadChangeCylinderTypeFormView.as_view(),
+        name="download_change_cylinder_type_form"
     ),
     url(
         '^portal/upload_uid_for_kyc/(?P<pk>[^/.]+)/$',

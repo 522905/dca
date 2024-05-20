@@ -70,6 +70,8 @@ class UjjwalaApplicationDocumentsEnum(models.TextChoices):
 	INSTALLATION_STOVE_WITH_STICKER = 'INSTALLATION_STOVE_WITH_STICKER', 'Installation Stove With Sticker'
 	INSTALLATION_DOCUMENT = 'INSTALLATION_DOCUMENT', 'Installation Document'
 	RATION_CARD = 'RATION_CARD', 'Ration Card'
+	CONVERSION_SV_PHOTO = 'CONVERSION_SV_PHOTO', 'Conversion SV Photo'
+	CONVERSION_REQUEST_FORM = 'CONVERSION_REQUEST_FORM', 'Conversion Request Form'
 
 	@classmethod
 	def get_skipped_additional_choices(cls):
@@ -134,8 +136,10 @@ class RoboSdmsDedeupStatusEnum(models.TextChoices):
 
 class ChangeCylinderTypeRequestStatusEnum(models.TextChoices):
 	DRAFTED = 'DRAFTED', 'Drafted'
+	IN_PROCESS = 'IN_PROCESS', 'In Process'
 	SCHEDULED = 'SCHEDULED', 'Scheduled'
 	COMPLETED = 'COMPLETED', 'Completed'
+	REJECTED = 'REJECTED', 'Rejected'
 
 
 class UjjwalaV2ApplicationAvailabilityStatus(models.TextChoices):

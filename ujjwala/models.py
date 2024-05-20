@@ -30,7 +30,7 @@ from ujjwala.enums import MaritalStatusEnum, ResidentialStatusEnum, UjjwalaUidMo
 	DisbursementDriveStatusEnum, InstallationTypeEnum, product_quantity_map, UjjwalaV2ApplicationAvailabilityStatus, \
 	UjjwalaV2ApplicationAvailabilityChannel, UjjwalaProductEnum, SDMSMobileNumberEnum, FilledByFilterEnum, \
 	SVSDMSStatusEnum, PreInspectionRejectionReasonsEnum, UjjwalaSearchLogEnum, BankDetailsUpdateRequestEnum, \
-	ChangeCylinderTypeRequestStatusEnum
+	ChangeCylinderTypeRequestStatusEnum, HouseTypeEnum
 from ujjwala.forms import ConnectionStatusApproved, ApplicationRejected, \
 	EkycAccepted, PreInspectionReviewAdminForm, LegalDocumentsUpload, \
 	LegalDocumentsReviewAdminForm, NicUpdateAddressForm, ReviewNicErrorUpdatedAddressForm, NewRelationCreated, \
@@ -1956,14 +1956,67 @@ class ChangeCylinderTypeRequest(models.Model):
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
 	pos = models.ForeignKey(User, on_delete=models.PROTECT)
+	change_address = models.BooleanField(default=False)
+	address_json = models.JSONField(null=True)
+	change_phone_number = models.BooleanField(default=False)
+	new_phone_number = models.CharField(max_length=10, null=True)
 	status = FSMField(
-		default=ChangeCylinderTypeRequestStatusEnum.DRAFTED,
+		default=ChangeCylinderTypeRequestStatusEnum.IN_PROCESS,
 		choices=ChangeCylinderTypeRequestStatusEnum.choices
 	)
 
+	def get_address_for_sdms_upload(self):
+		if not self.address_json:
+			return {
+				'addr_str': self.address,
+				'pincode': ''
+			}
 
-def dummy():
-	from ujjwala.models import FamilyMembers, UjjwalaV2Application
+		# addr_str = 'hNo {house_no} '\
+		# 'StNo {street_no} {village}'.format(
+		# 	**self.address_json
+		# )
+		addr_str = 'hNo {} StNo {} {}'.format(
+			self.address_json.get('house_no', ''),
+			self.address_json.get('street_no', ''),
+			self.address_json.get('village', '') or self.address_json.get('mohalla', ''),
+		)
 
-	for obj in FamilyMembers.objects.filter(uid_front_link__contains='tus.', uid_back_link__contains='tus.'):
-		print(obj.id)
+		# addr_tokens = [i for i in addr_str.replace(',', ' ').split(' ').split(',') if i]
+
+		addr_tokens = []
+		tokens = addr_str.replace(',', ' ').split(' ')
+
+		for token in tokens:
+			sub_tokens = token.split(',')
+			for sub_token in sub_tokens:
+				addr_tokens.append(sub_token.strip(' '))
+
+		seen = []
+		rs = []
+
+		for i in addr_tokens:
+			if i.lower() in seen: continue
+			rs.append(i)
+			seen.append(i.lower())
+
+		addr_str = ' '.join(rs)
+		landmark = self.address_json.get('landmark', '')
+		if len(addr_str) + len(landmark) <= 100:
+			addr_str = addr_str + ' ' + landmark
+
+		return {
+			'addr_str': addr_str,
+			'pincode': self.address_json.get('pincode', '141001')
+		}
+
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=status,
+		source=ChangeCylinderTypeRequestStatusEnum.DRAFTED,
+		target=ChangeCylinderTypeRequestStatusEnum.SCHEDULED,
+		custom=dict(short_description='', admin=False),
+	)
+	def transition_change_cylinder_type_request_scheduled(self, *args, **kwargs):
+		pass

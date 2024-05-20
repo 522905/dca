@@ -35,7 +35,7 @@ from ujjwala.camunda_functions import start_process_in_camunda, \
 from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, ConnectionDisbursementStatusEnum, \
 	PreInspectionTypeEnum, DisbursementDriveStatusEnum, UjjwalaApplicationDocumentsEnum, \
 	UjjwalaV2ApplicationAvailabilityChannel, ConnectionDisbursementInvitationEnum, FilledByFilterEnum, \
-	UjjwalaSearchLogEnum, BankDetailsUpdateRequestEnum
+	UjjwalaSearchLogEnum, BankDetailsUpdateRequestEnum, ChangeCylinderTypeRequestStatusEnum
 from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm, \
 	PreInspectionGenerateOtpForm, PreInspectionValidateOtpForm, \
 	KitchenPreInspectionForm, AudioOnSafetyForm, PreviewPreInspectionForm, PreInspectionAllocatedGenerateOtpForm, \
@@ -49,7 +49,7 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
 	InstallationReviewAdminForm, PreInspectionReviewAdminForm, CancelInvitationForm, UpdateAddressForm, \
 	NewRelationCreated, ChangePhoneNumberForm, UploadUIDForEKYCForm, UjjwalaApplicationServiceRequestForm, \
 	ReviewUpdatedAddressForm, UpdateBankDetailsNewForm, BankDetailsUpdateRequestForm, ChangeCylinderTypeForm, \
-	ChangeCylinderTypeForm
+	ChangeCylinderTypeForm, ChangeCylinderTypeRequestForm
 from ujjwala.global_functions import login_required_if_mech_inspection
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
 	FamilyMembers, DisbursementDrive, UjjwalaSearchLog, ConnectionDisbursementInvitation, BankDetailsUpdateRequest, \
@@ -60,7 +60,7 @@ from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_
 	get_current_user_disbursement_drive, send_ujjwala_self_pre_inspection_share_link, is_member_of_reviewer_group, \
 	send_ujjwala_share_on_social_media_link, \
 	can_resolve_service_request, ujjwala_application_state_logs, is_front_end_staff, \
-	get_data_for_new_relation, re_create_legal_docs
+	get_data_for_new_relation, re_create_legal_docs, download_change_cylinder_type_form
 from utils.global_functions import unsign_data_base64, sign_data_base64
 
 
@@ -3256,383 +3256,7 @@ class PrintDocumentsView(FormView):
 		# )
 		# return HttpResponse(content=res)
 		return res
-	
 
-
-# @method_decorator(login_required, 'dispatch')
-# class FirstCylinderMaterialDeliveryListView(ListView):
-#     model = ConnectionDisbursement
-#
-#     paginate_by = 20
-#     permission = 'has_view_permission'
-#
-#     def get_queryset(self):
-#         disbursement_drive = get_current_user_disbursement_drive(get_current_user())
-#         return ConnectionDisbursement.objects.filter(
-#             status__in=[
-#                 ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
-#                 ConnectionDisbursementStatusEnum.FIRST_DELIVERY_OTP_VERIFIED,
-#             ],
-#             walk_in_date__date=datetime.datetime.today().date(),
-#             disbursement_drive=disbursement_drive
-#         ).order_by('updated_on')
-#
-#     def get_template_names(self):
-#         return 'ujjwala/delivery/first_delivery/first_cylinder_delivery_listview.html'
-#
-#     def get(self, request, *args, **kwargs):
-#         user = get_current_user()
-#         if not is_member_of_disbursement_drive(user):
-#             return render(request, 'ujjwala/no_permissions.html')
-#         application_id = request.GET.get('application_id', '')
-#         if application_id:
-#             object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
-#             if object:
-#                 if not object.walk_in_date:
-#                     messages.add_message(
-#                         request, messages.ERROR, "Application Id {} Not Walked In.\n Application Status: {}".format(
-#                             object.parent_id, object.get_status_display()
-#                         )
-#                     )
-#                     return redirect('ujjwala:first_cylinder_delivery_list')
-#                 if object.status not in (
-#                         ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES,
-#                         ConnectionDisbursementStatusEnum.FIRST_CYLINDER_DELIVERED,
-#                         ConnectionDisbursementStatusEnum.FIRST_DELIVERY_OTP_VERIFIED,
-#
-#                 ):
-#                     messages.add_message(
-#                         request, messages.ERROR, "Application Id: {} - {}".format(
-#                             application_id, object.get_status_display()
-#                         )
-#                     )
-#                 else:
-#                     return redirect('ujjwala:first_cylinder_delivery_view',
-#                                     pk=object.pk
-#                                     )
-#             else:
-#                 messages.add_message(
-#                     request, messages.ERROR, "Application Id: {} not found".format(application_id)
-#                 )
-#         return super().get(request, *args, **kwargs)
-#
-#     def get_context_data(self, *, object_list=None, **kwargs):
-#         context = super().get_context_data(object_list=object_list, **kwargs)
-#         disbursement_drive = DisbursementDrive.objects.filter(
-#             team_members=get_current_user(), status=DisbursementDriveStatusEnum.ACTIVE
-#         ).first()
-#
-#         connection_disbursement_count = ConnectionDisbursement.objects.filter(
-#             disbursement_drive=disbursement_drive
-#         ).exclude(walk_in_date=None).count()
-#
-#         context.update({
-#             "current_disbursement_index": connection_disbursement_count,
-#             "max_walkins": disbursement_drive.max_walk_ins,
-#             "disbursement_drive": disbursement_drive
-#         })
-#         return context
-#
-#
-# @method_decorator(login_required, 'dispatch')
-# class FirstCylinderMaterialDeliveryView(FormView, ApplicationView):
-#     model = ConnectionDisbursement
-#     material_delivery_template = 'ujjwala/delivery/first_delivery/first_cylinder_delivery.html'
-#     material_delivery_qrcode_template = 'ujjwala/delivery/first_delivery/material_delivery_qrcode.html'
-#     form_class = FirstCylinderMaterialDeliveryForm
-#     success_url = '.'
-#
-#     stage_1_generate_otp = 'ujjwala/otp/generate_otp_form.html'
-#     stage_2_validate_otp = 'ujjwala/otp/validate_otp_form.html'
-#
-#     def dispatch(self, request, *args, **kwargs):
-#         user = get_current_user()
-#         if not is_member_of_disbursement_drive(user):
-#             return render(request, 'ujjwala/no_permissions.html')
-#         connection_disbursement = self.get_object()
-#         if connection_disbursement:
-#             if not connection_disbursement.walk_in_date:
-#                 messages.add_message(
-#                     request, messages.ERROR, "Application Id {} Not Walked In.\n Application Status: {}".format(
-#                         connection_disbursement.parent_id, connection_disbursement.get_status_display()
-#                     )
-#                 )
-#                 return redirect('ujjwala:first_cylinder_delivery_list')
-#             if connection_disbursement.status == \
-#                     ConnectionDisbursementStatusEnum.SOCIAL_MEDIA_UPDATES:
-#                 return self.otp_verification(connection_disbursement)
-#         return super().dispatch(request, *args, **kwargs)
-#
-#     def otp_verification(self, connection_disbursement):
-#         context = {'connection_disbursement': connection_disbursement, 'application': connection_disbursement.parent}
-#
-#         if self.request.method.lower() == 'get':
-#             app = connection_disbursement.parent
-#             context.update({
-#                 'form': UjjwalaApplicationGenerateOtpForm(
-#                     mobile_nos=app.all_contacts,
-#                     initial={
-#                         'connection_disbursement_id': connection_disbursement.id,
-#                         'application_id': connection_disbursement.parent_id,
-#                         'whatsapp_template_name': 'connection_disbursement_dac',
-#                         'otp_generated_for': f'connectiondisbursement:{connection_disbursement.id}:Material-Delivery',
-#                     }
-#                 )
-#             })
-#             return render(self.request, self.stage_1_generate_otp, context)
-#         elif self.request.method.lower() == 'post':
-#             if self.request.POST.get('form_type') == 'generate_otp_form':
-#                 app = UjjwalaV2Application.objects.get(pk=connection_disbursement.parent_id)
-#                 form = UjjwalaApplicationGenerateOtpForm(
-#                     mobile_nos=app.all_contacts,
-#                     data=self.request.POST,
-#                 )
-#                 if not form.is_valid():
-#                     context.update({
-#                         'form': form
-#                     })
-#                     return render(self.request, self.stage_1_generate_otp, context)
-#                 otp_obj = form.send_otp()
-#                 app_id = form.data.get('application_id')
-#                 context.update({
-#                     'form': UjjwalaApplicationValidateOtpForm(
-#                         initial={
-#                             'application_id': app_id,
-#                             'reference_number': otp_obj.reference_number,
-#                             'mobile': otp_obj.mobile
-#                         }
-#                     )
-#                 })
-#                 return render(self.request, self.stage_2_validate_otp, context)
-#             elif self.request.POST.get('form_type') == 'validate_otp_form':
-#                 form = UjjwalaApplicationValidateOtpForm(data=self.request.POST)
-#                 otp_obj = Otp.objects.get(reference_number=self.request.POST['reference_number'])
-#                 if not form.is_valid():
-#                     context.update({
-#                         'form': UjjwalaApplicationValidateOtpForm(
-#                             initial={
-#                                 'application_id': connection_disbursement.parent_id,
-#                                 'reference_number': otp_obj.reference_number,
-#                                 'mobile': otp_obj.mobile
-#                             }
-#                         )
-#                     })
-#                     return render(self.request, self.stage_2_validate_otp, context)
-#
-#                 connection_disbursement.transition_first_cylinder_delivery_otp_verified(
-#                     by=get_current_user(),
-#                     description="First Cylinder Material Delivery OTP, Customer Phone {}".format(otp_obj.mobile)
-#                 )
-#                 connection_disbursement.save()
-#                 return HttpResponseRedirect('.')
-#
-#     def get_object(self, queryset=None):
-#         obj = super().get_object(queryset=queryset)
-#         return obj
-#
-#     def get_template_names(self):
-#         connection_disbursement = self.get_object()
-#         if connection_disbursement.status == \
-#                 ConnectionDisbursementStatusEnum.FIRST_DELIVERY_OTP_VERIFIED:
-#             return self.material_delivery_template
-#         return self.material_delivery_qrcode_template
-#
-#     def form_valid(self, form):
-#         form.save()
-#         return HttpResponseRedirect(self.get_success_url())
-#
-#     def get_form_kwargs(self):
-#         kwargs = super().get_form_kwargs()
-#         connection_disbursement = self.get_object()
-#         kwargs['connection_disbursement'] = connection_disbursement
-#         return kwargs
-#
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         obj = self.get_object()
-#
-#         context.update({
-#             "obj": obj,
-#         })
-#         return context
-#
-#
-# @method_decorator(login_required, 'dispatch')
-# class SecondCylinderMaterialDeliveryListView(ListView):
-#     model = ConnectionDisbursement
-#
-#     paginate_by = 20
-#     permission = 'has_view_permission'
-#
-#     def get_queryset(self):
-#         return ConnectionDisbursement.objects.filter(
-#             status__in=[
-#                 ConnectionDisbursementStatusEnum.INSTALLATION_ACCEPTED,
-#                 ConnectionDisbursementStatusEnum.SECOND_DELIVERY_OTP_VERIFIED,
-#             ], pending_quantity=1
-#         ).order_by('updated_on')
-#
-#     def get_template_names(self):
-#         return 'ujjwala/delivery/second_delivery/second_cylinder_delivery_listview.html'
-#
-#     def get(self, request, *args, **kwargs):
-#         user = get_current_user()
-#         if not is_member_of_second_cylinder_delivery(user):
-#             return render(request, 'ujjwala/no_permissions.html')
-#         application_id = request.GET.get('application_id', '')
-#         if application_id:
-#             object = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
-#             if object:
-#                 if not object.walk_in_date:
-#                     messages.add_message(
-#                         request, messages.ERROR, "Application Id {} Not Walked In.\n Application Status: {}".format(
-#                             object.parent_id, object.get_status_display()
-#                         )
-#                     )
-#                     return redirect('ujjwala:second_cylinder_delivery_list')
-#                 if object.status not in (
-#                         ConnectionDisbursementStatusEnum.SECOND_DELIVERY_OTP_VERIFIED,
-#                 ):
-#                     messages.add_message(
-#                         request, messages.ERROR, "Application Id: {} - {}".format(
-#                             application_id, object.get_status_display()
-#                         )
-#                     )
-#                 else:
-#                     return redirect('ujjwala:second_cylinder_delivery_view',
-#                                     pk=object.pk
-#                                     )
-#             else:
-#                 messages.add_message(
-#                     request, messages.ERROR, "Application Id: {} not found".format(application_id)
-#                 )
-#         return super().get(request, *args, **kwargs)
-#
-#
-# @method_decorator(login_required, 'dispatch')
-# class SecondCylinderMaterialDeliveryView(FormView, ApplicationView):
-#     model = ConnectionDisbursement
-#     material_delivery_template = 'ujjwala/delivery/second_delivery/second_cylinder_delivery.html'
-#     form_class = SecondCylinderMaterialDeliveryForm
-#     success_url = '.'
-#
-#     stage_1_generate_otp = 'ujjwala/otp/generate_otp_form.html'
-#     stage_2_validate_otp = 'ujjwala/otp/validate_otp_form.html'
-#
-#     def dispatch(self, request, *args, **kwargs):
-#         user = get_current_user()
-#         if not is_member_of_second_cylinder_delivery(user):
-#             return render(request, 'ujjwala/no_permissions.html')
-#         connection_disbursement = self.get_object()
-#         if connection_disbursement:
-#             if connection_disbursement.pending_quantity == 0:
-#                 return HttpResponse(content="<h1>No Cylinder Pending</h1>")
-#             if not connection_disbursement.status in (
-#                     ConnectionDisbursementStatusEnum.INSTALLATION_ACCEPTED,
-#                     ConnectionDisbursementStatusEnum.SECOND_DELIVERY_OTP_VERIFIED,
-#             ):
-#                 messages.add_message(
-#                     request, messages.ERROR,
-#                     "Application Id {} Installation Not Accepted. Application Status: {}".format(
-#                         connection_disbursement.parent_id, connection_disbursement.get_status_display()
-#                     )
-#                 )
-#                 return redirect('ujjwala:second_cylinder_delivery_list')
-#             if connection_disbursement.status == ConnectionDisbursementStatusEnum.INSTALLATION_ACCEPTED:
-#                 return self.otp_verification(connection_disbursement)
-#         return super().dispatch(request, *args, **kwargs)
-#
-#     def otp_verification(self, connection_disbursement):
-#         context = {'connection_disbursement': connection_disbursement, 'application': connection_disbursement.parent}
-#
-#         if self.request.method.lower() == 'get':
-#             app = connection_disbursement.parent
-#             context.update({
-#                 'form': UjjwalaApplicationGenerateOtpForm(
-#                     mobile_nos=app.all_contacts,
-#                     initial={
-#                         'connection_disbursement_id': connection_disbursement.id,
-#                         'application_id': connection_disbursement.parent_id,
-#                         'whatsapp_template_name': 'connection_disbursement_dac',
-#                         'otp_generated_for': f'connectiondisbursement:{connection_disbursement.id}:Second-Cylinder-Delivery',
-#                     }
-#                 )
-#             })
-#             return render(self.request, self.stage_1_generate_otp, context)
-#         elif self.request.method.lower() == 'post':
-#             if self.request.POST.get('form_type') == 'generate_otp_form':
-#                 app = UjjwalaV2Application.objects.get(pk=connection_disbursement.parent_id)
-#                 form = UjjwalaApplicationGenerateOtpForm(
-#                     mobile_nos=app.all_contacts,
-#                     data=self.request.POST,
-#                 )
-#                 if not form.is_valid():
-#                     context.update({
-#                         'form': form
-#                     })
-#                     return render(self.request, self.stage_1_generate_otp, context)
-#                 otp_obj = form.send_otp()
-#                 app_id = form.data.get('application_id')
-#                 context.update({
-#                     'form': UjjwalaApplicationValidateOtpForm(
-#                         initial={
-#                             'application_id': app_id,
-#                             'reference_number': otp_obj.reference_number,
-#                             'mobile': otp_obj.mobile
-#                         }
-#                     )
-#                 })
-#                 return render(self.request, self.stage_2_validate_otp, context)
-#             elif self.request.POST.get('form_type') == 'validate_otp_form':
-#                 form = UjjwalaApplicationValidateOtpForm(data=self.request.POST)
-#                 otp_obj = Otp.objects.get(reference_number=self.request.POST['reference_number'])
-#                 if not form.is_valid():
-#                     context.update({
-#                         'form': UjjwalaApplicationValidateOtpForm(
-#                             initial={
-#                                 'application_id': connection_disbursement.parent_id,
-#                                 'reference_number': otp_obj.reference_number,
-#                                 'mobile': otp_obj.mobile
-#                             }
-#                         )
-#                     })
-#                     return render(self.request, self.stage_2_validate_otp, context)
-#
-#                 connection_disbursement.transition_second_delivery_otp_verified(
-#                     by=get_current_user(),
-#                     description="Second Material Delivery OTP, Customer Phone: {}".format(otp_obj.mobile)
-#                 )
-#                 connection_disbursement.save()
-#                 return HttpResponseRedirect('.')
-#
-#     def get_object(self, queryset=None):
-#         obj = super().get_object(queryset=queryset)
-#         return obj
-#
-#     def get_template_names(self):
-#         connection_disbursement = self.get_object()
-#         if connection_disbursement.status == \
-#                 ConnectionDisbursementStatusEnum.SECOND_DELIVERY_OTP_VERIFIED:
-#             return self.material_delivery_template
-#         return self.material_delivery_qrcode_template
-#
-#     def form_valid(self, form):
-#         form.save()
-#         return HttpResponseRedirect(self.get_success_url())
-#
-#     def get_form_kwargs(self):
-#         kwargs = super().get_form_kwargs()
-#         connection_disbursement = self.get_object()
-#         kwargs['connection_disbursement'] = connection_disbursement
-#         return kwargs
-#
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         obj = self.get_object()
-#         context.update({
-#             "obj": obj
-#         })
-#         return context
 
 class LegalDocumentsAcceptedToPendingView(View):
 
@@ -3976,6 +3600,21 @@ class UpdateAddressServiceRequestView(FormView):
 		)
 
 
+class DownloadChangeCylinderTypeFormView(View):
+
+	def get(self, request, *args, **kwargs):
+		obj = UjjwalaV2Application.objects.filter(id=kwargs.get('pk')).first()
+		if not obj:
+			return HttpResponse("Application Id {} does not exist".format(kwargs.get('pk')))
+
+		document = download_change_cylinder_type_form(obj)
+		resp = HttpResponse(document, content_type="application/pdf")
+		resp['Content-Disposition'] = 'attachment; filename=%s' % 'change_cylinder_form_{}.pdf'.format(
+			obj.id)
+
+		return resp
+
+
 @method_decorator(login_required, 'dispatch')
 class ChangeCylinderTypeView(FormView):
 	form_class = ChangeCylinderTypeForm
@@ -3998,13 +3637,93 @@ class ChangeCylinderTypeView(FormView):
 			return render(self.request, "ujjwala/response.html",
 			              {"heading": "Change Cylinder Type Service Request", "message": message})
 
+		# cctr_obj = ChangeCylinderTypeRequest.objects.filter(parent=obj).first()
+		#
+		# if cctr_obj:
+		# 	message = f"Service Request For Change Cylinder Type Already Submitted. Change Cylinder Type Service Request Id: {cctr_obj.id} Status: {cctr_obj.status}"
+		# 	return render(self.request, "ujjwala/response.html",
+		# 	              {"heading": "Change Cylinder Type Service Request", "message": message})
+		return super().dispatch(request, *args, **kwargs)
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		obj = self.get_object()
+
 		cctr_obj = ChangeCylinderTypeRequest.objects.filter(parent=obj).first()
 
 		if cctr_obj:
-			message = f"Service Request For Change Cylinder Type Already Submitted. Change Cylinder Type Service Request Id: {cctr_obj.id} Status: {cctr_obj.status}"
-			return render(self.request, "ujjwala/response.html",
-			              {"heading": "Change Cylinder Type Service Request", "message": message})
-		return super().dispatch(request, *args, **kwargs)
+			context.update({
+				'already_submitted': True,
+				'request_obj': cctr_obj
+			})
+		# 	message = f""
+		# 	return render(self.request, "ujjwala/response.html",
+		# 	              {"heading": "Change Cylinder Type Service Request", "message": message})
+		user = get_current_user()
+		organization = user.organizations_organization.first()
+		context.update({
+			"obj": obj,
+			"user": user,
+			"organization": organization,
+			"service_location": organization.service_locations.first(),
+		})
+		return context
+
+	def form_valid(self, form):
+		obj = self.get_object()
+		data = form.clean()
+		address_json = None
+		if data.get('change_address'):
+			address_json = {
+				"house_no": data.get('house_no', ''),
+				"room_no": data.get('room_no', ''),
+				"floor": data.get('floor', ''),
+				"street_no": data.get('street_no', ''),
+				"landmark": data.get('landmark', ''),
+				"village": data.get('village', ''),
+				"ward_no": data.get('ward_no', ''),
+				"post_office": data.get('post_office', ''),
+				"pincode": data.get('pincode', '')
+			}
+
+		if data['change_cylinder_type'] == 'YES':
+			cctr_obj = ChangeCylinderTypeRequest.objects.create(
+				parent=obj, pos=get_current_user(),
+				change_phone_number=data.get('change_phone_number'),
+				new_phone_number=data.get('new_phone_number'),
+				change_address=data.get('change_address'),
+				address_json=address_json
+			)
+
+		return redirect(reverse("ujjwala:change_cylinder_type", kwargs={'pk': self.kwargs.get('pk')}))
+
+
+@method_decorator(login_required, 'dispatch')
+class ChangeCylinderTypeRequestListView(ListView):
+	model = ChangeCylinderTypeRequest
+	template_name = 'ujjwala/service_request/change_cylinder_type/change_cylinder_type_request_listview.html'
+
+	paginate_by = 20
+	permission = 'has_view_permission'
+
+	def get_queryset(self):
+		return ChangeCylinderTypeRequest.objects.exclude(
+			status=ChangeCylinderTypeRequestStatusEnum.COMPLETED
+		)
+
+
+class ChangeCylinderTypeRequestView(FormView):
+	form_class = ChangeCylinderTypeRequestForm
+	template_name = "ujjwala/service_request/change_cylinder_type/change_cylinder_type_request.html"
+
+	def get_object(self, queryset=None):
+		try:
+			obj = ChangeCylinderTypeRequest.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No application with id: {} found.".format(self.kwargs.get('pk'))
+			)
+		return obj
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
@@ -4017,17 +3736,18 @@ class ChangeCylinderTypeView(FormView):
 	def form_valid(self, form):
 		obj = self.get_object()
 		data = form.clean()
-		if data['change_cylinder_type'] == 'YES':
-			cctr_obj = ChangeCylinderTypeRequest.objects.create(
-				parent=obj, pos=get_current_user()
-			)
-			message = f"Service Request For Change Cylinder Type Initiated. Please Wait For Some Time. Your Request Id: {cctr_obj.id}"
-		else:
-			message = f"No Service Request For Change Cylinder Type Initiated"
-
-		return render(
-			self.request, "ujjwala/response.html", {"heading": "Change Cylinder Type Request Form", "message": message}
+		obj.parent.documents.create(
+			link=data.get('sv_photo'),
+			type=UjjwalaApplicationDocumentsEnum.CONVERSION_SV_PHOTO
 		)
+		obj.parent.documents.create(
+			link=data.get('request_form'),
+			type=UjjwalaApplicationDocumentsEnum.CONVERSION_REQUEST_FORM
+		)
+		messages.add_message(self.request, messages.INFO, "Form Updated Successfully.")
+		response = redirect(reverse('ujjwala:change_cylinder_request_list'))
+		return response
+
 
 
 class UploadUIDForEKYCView(FormView):

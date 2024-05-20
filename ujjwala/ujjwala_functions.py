@@ -23,6 +23,7 @@ from django.http import HttpResponse
 from django.template import loader
 from django.urls import reverse
 from django.utils.timezone import now
+from django_currentuser.middleware import get_current_user
 from django_fsm_log.models import StateLog
 from django_rq import job
 from shapely import Point, Polygon
@@ -526,6 +527,28 @@ def re_create_legal_docs_pdf(application):
 	resp['Content-Disposition'] = 'attachment; filename=%s' % 'ujjwala_physical_{}_legal_docs.pdf'.format(
 		application.id)
 	return resp
+
+
+def download_change_cylinder_type_form(obj):
+	installation_form_html_template = loader.get_template("ujjwala/forms/change_cylinder_form.html")
+	user = get_current_user()
+	organization = user.organizations_organization.first()
+	installation_html = installation_form_html_template.render({
+		'obj': obj,
+		"user": user,
+		"organization": organization,
+		"service_location": organization.service_locations.first(),
+		"request_obj": obj.changecylindertyperequest_set.first()
+	})
+
+	change_cylinder_request_form = requests.post(
+		settings.HTML_TO_PDF_SERVER_URL,
+		json={
+			"content": installation_html,
+			"options": PDF_COMPRESSION_OPTIONS
+		}
+	)
+	return change_cylinder_request_form.content
 
 
 def download_installation_form(obj):
