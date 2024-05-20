@@ -3733,16 +3733,24 @@ class ChangeCylinderTypeRequestView(FormView):
 		})
 		return context
 
+	def get_form_kwargs(self):
+		kwargs = super().get_form_kwargs()
+		kwargs['request_obj'] = self.get_object()
+		return kwargs
+
 	def form_valid(self, form):
 		obj = self.get_object()
 		data = form.clean()
+		obj.change_address_sr_no = data.get('change_address_sr_no') if obj.change_address else None
+		obj.change_phone_number_sr_no = data.get('change_phone_number_sr_no') if obj.change_phone_number else None
+		obj.save()
 		obj.parent.documents.create(
-			link=data.get('sv_photo'),
+			link=data.get('new_sv_photo'),
 			type=UjjwalaApplicationDocumentsEnum.CONVERSION_SV_PHOTO
 		)
 		obj.parent.documents.create(
-			link=data.get('request_form'),
-			type=UjjwalaApplicationDocumentsEnum.CONVERSION_REQUEST_FORM
+			link=data.get('canceled_sv_photo'),
+			type=UjjwalaApplicationDocumentsEnum.CONVERSION_CANCELED_SV_PHOTO
 		)
 		messages.add_message(self.request, messages.INFO, "Form Updated Successfully.")
 		response = redirect(reverse('ujjwala:change_cylinder_request_list'))
