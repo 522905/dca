@@ -35,6 +35,12 @@
                     <div class="card-body">
                         <p>Service Request For Change Cylinder Type Already Submitted.<br>Change
                             Cylinder Type Service Request Id: {{ request_obj.id }} <br>Status: {{ request_obj.status }}</p>
+                        {% if request_obj.change_address %}
+                            <p>Address Change Requested: {{ request_obj.get_address_for_sdms_upload.addr_str }}, Ludhiana Punjab</p>
+                        {% endif %}
+                        {% if request_obj.change_phone_number %}
+                            <p>Phone Number Change Requested: {{ request_obj.new_phone_number }}</p>
+                        {% endif %}
                     </div>
                     {% if request_obj.status != 'COMPLETED' %}
                         <div class="card-footer">
