@@ -1,5 +1,7 @@
 {% extends "material/frontend/base_module.html" %}
 {% load static %}
+{% load material_form %}
+{% block page_title %}Service Request - Change Cylinder Type{% endblock %}
 {% block content %}
     <link rel="stylesheet" href="{% static '/css/style.css' %}" >
     <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css" >
@@ -8,26 +10,66 @@
         rel="stylesheet">
     <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
 
+
     <div class="main p-2 pt-0 form_label">
-        <form method="post" id="">
-            {% csrf_token %}
-            <div class="card">
-                <div class="row mb-2 m-0">
-                    <div class="col-sm-12 photo_block mt-2">
-                        <span class="hidden-field">{{ form.sv_photo }}</span>
-                        <label>Photo of SV</label>
-                        <p id="sv_photo"></p>
-                        {{ form.main_gate.errors }}
+        <div class="card card-profile pt-0 mt-0 " style="width: 100%;">
+            <div class="row justify-content-center m-0" style="width: 100%; margin: 0 auto !important; padding: 10px;">
+                <div style="width: 30%; float:left">
+                    <div class="card-profile-image">
+                        <a href="#">
+                            <img style="width:100%; max-height: 150px;" src="{{ obj.parent.document_self }}">
+                        </a>
                     </div>
                 </div>
-                <div class="card-footer float-right">
-                    <input class="btn btn-success float-right rounded-0" type="submit" value="फॉर्म जमा करें" />
+                <div style="width: 70%; float:right">
+                    <div class="card-body pt-0">
+                        <div class="text-left">
+                            <h5 class="h5">{{ obj.parent.name }}({{ obj.parent.id }})<span class="font-weight-light"></span></h5>
+                            <div class="h6 font-weight-300">{{ obj.parent.contact_mobile }}</div>
+                            <div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
+                                {{ obj.parent.formatted_address }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </form>
+            <form method="post" id="">
+                {% csrf_token %}
+                <div class="card-header">
+                    {% if obj.change_address %}
+                        <b>New Address.:</b> {{ obj.change_address }}
+                    {% endif %}
+                    {% if obj.change_phone_number %}
+                        <b>New Phone No.:</b> {{ obj.new_phone_number }}
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% form form=form %}{% endform %}
+                </div>
+                <div class="row mb-2 m-0">
+                    <div class="col-sm-12 photo_block mt-2">
+                        <span class="hidden-field">{{ form.canceled_sv_photo }}</span>
+                        <label>Canceled SV Photo</label>
+                        <p id="canceled_sv_photo"></p>
+                        {{ form.canceled_sv_photo.errors }}
+                    </div>
+                </div>
+                <div class="row mb-2 m-0">
+                    <div class="col-sm-12 photo_block mt-2">
+                        <span class="hidden-field">{{ form.new_sv_photo }}</span>
+                        <label>New SV Photo</label>
+                        <p id="new_sv_photo"></p>
+                        {{ form.sv_photo.errors }}
+                    </div>
+                </div>
+            </form>
+            <div class="card-footer float-right">
+                <input class="btn btn-success float-right rounded-0" type="submit" value="फॉर्म जमा करें" />
+            </div>
+        </div>
     </div>
     <script>
-         window.svPhotoUppy = new Uppy.Core({
+         window.newSVPhotoUppy = new Uppy.Core({
             debug: true,
             autoProceed: true,
             restrictions: {
@@ -38,14 +80,14 @@
             }
         })
         .use(Uppy.Dashboard, {
-            trigger: '#sv_photo',
+            trigger: '#new_sv_photo',
             inline: true,
-            target: '#sv_photo',
+            target: '#new_sv_photo',
             showProgressDetails: true,
             note: 'Images and video only, 2–3 files, up to 10 MB',
             height: 200,
             metaFields: [],
-            id: 'sv_photo',
+            id: 'new_sv_photo',
             waitForThumbnailsBeforeUpload: true,
             doneButtonHandler: () => {
                 // this.uppy.reset()
@@ -65,8 +107,50 @@
         .use(Uppy.Tus, {
             endpoint: 'https://tus.dca.arungas.com/files/',
         })
-        svPhotoUppy.on('complete', result => {
+        newSVPhotoUppy.on('complete', result => {
             $('#id_sv_photo').val(result.successful[0].uploadURL);
+        })
+
+        window.canceledSVPhotoUppy = new Uppy.Core({
+            debug: true,
+            autoProceed: true,
+            restrictions: {
+                maxFileSize: 50000000,
+                maxNumberOfFiles: 1,
+                minNumberOfFiles: 1,
+                allowedFileTypes: ['image/*'],
+            }
+        })
+        .use(Uppy.Dashboard, {
+            trigger: '#canceled_sv_photo',
+            inline: true,
+            target: '#canceled_sv_photo',
+            showProgressDetails: true,
+            note: 'Images and video only, 2–3 files, up to 10 MB',
+            height: 200,
+            metaFields: [],
+            id: 'canceled_sv_photo',
+            waitForThumbnailsBeforeUpload: true,
+            doneButtonHandler: () => {
+                // this.uppy.reset()
+                // this.requestCloseModal()
+            },
+            showRemoveButtonAfterComplete: true,
+            theme: 'light',
+            locale: {
+                strings: {
+                    dropPasteFiles: 'फोटो अपलोड करने के लिए यहाँ पर क्लिक करे %{browseFiles}',
+                    done: '-',
+                    uploadComplete: 'अपलोड पूरा हो गया है',
+                    complete: 'पूरा हुआ',
+                }
+            },
+        })
+        .use(Uppy.Tus, {
+            endpoint: 'https://tus.dca.arungas.com/files/',
+        })
+        canceledSVPhotoUppy.on('complete', result => {
+            $('#id_canceled_sv_photo').val(result.successful[0].uploadURL);
         })
     </script>
 {% endblock %}

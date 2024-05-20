@@ -57,17 +57,41 @@ class ChangePhoneNumberForm(forms.Form):
 		return data
 
 
-
-
-
 class ChangeCylinderTypeRequestForm(forms.Form):
-	request_form_photo = forms.CharField(
-		widget=forms.TextInput, label='Request Form Photo', required=True
+	change_address_sr_no = forms.CharField(
+		max_length=48, required=False, label="Change Address SR No."
+	)
+	change_phone_number_sr_no = forms.CharField(
+		max_length=48, required=False, label="Change Phone Number SR No."
+	)
+	canceled_sv_photo = forms.CharField(
+		widget=forms.HiddenInput, label='Canceled SV Photo', required=True
 	)
 
-	sv_photo = forms.CharField(
-		widget=forms.TextInput, label='SV Photo', required=True
+	new_sv_photo = forms.CharField(
+		widget=forms.HiddenInput, label='New SV Photo', required=True
 	)
+
+	def __init__(self, request_obj=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.request_obj = request_obj
+		if not request_obj.change_address:
+			self.fields['change_address_sr_no'].widget = forms.HiddenInput()
+		if not request_obj.change_phone_number:
+			self.fields['change_phone_number_sr_no'].widget = forms.HiddenInput()
+
+	def clean(self):
+		data = self.cleaned_data
+		if self.request_obj.change_address and not data.get('change_address_sr_no'):
+			raise forms.ValidationError(
+				"Customer Request Change Of Address. Please Enter SDMS Service Request Number"
+			)
+
+		if self.request_obj.change_phone_number and not data.get('change_phone_number_sr_no'):
+			raise forms.ValidationError(
+				"Customer Request Change Of Phone Number. Please Enter SDMS Service Request Number"
+			)
+
 
 # class ChangeCylinderForm(forms.Form):
 # 	review_status = forms.ChoiceField(
