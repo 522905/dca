@@ -57,18 +57,17 @@ class ChangePhoneNumberForm(forms.Form):
 		return data
 
 
-class ChangeCylinderTypeForm(forms.Form):
-	change_cylinder_type = forms.ChoiceField(
-			label="Change Cylinder Type To 14.2 Kg ?",
-			required=True,
-			help_text="",
-			choices=[
-				('', '-- Select Change Cylinder Type To 14.2 Kg --'),
-				('YES', 'Yes'),
-				('NO', 'No')
-			]
-		)
 
+
+
+class ChangeCylinderTypeRequestForm(forms.Form):
+	request_form_photo = forms.CharField(
+		widget=forms.TextInput, label='Request Form Photo', required=True
+	)
+
+	sv_photo = forms.CharField(
+		widget=forms.TextInput, label='SV Photo', required=True
+	)
 
 # class ChangeCylinderForm(forms.Form):
 # 	review_status = forms.ChoiceField(
@@ -199,21 +198,98 @@ class UpdateAddressForm(forms.Form):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
-	def clean(self):
-		data = self.cleaned_data
-		data['address_json'] = {
-			"house_type": data.get('house_type', ''),
-			"house_no": data.get('house_no', ''),
-			"room_no": data.get('room_no', ''),
-			"floor": data.get('floor', ''),
-			"street_no": data.get('street_no', ''),
-			"landmark": data.get('landmark', ''),
-			"village": data.get('village', ''),
-			"ward_no": data.get('ward_no', ''),
-			"post_office": data.get('post_office', ''),
-			"pincode": data.get('pincode', '')
-		}
-		return data
+
+class AddressForm(forms.Form):
+	house_type = forms.ChoiceField(
+		widget=forms.Select,
+		choices=HouseTypeEnum.choices,
+		required=False
+	)
+	house_no = forms.CharField(
+		widget=forms.TextInput, label='House No. (मकान नंबर)', required=True
+	)
+	room_no = forms.CharField(
+		widget=forms.TextInput, label='Room No. (कमरा सं.)', required=True
+	)
+	floor = forms.CharField(
+		widget=forms.TextInput, label='Floor (मंजिल)', required=True
+	)
+	street_no = forms.CharField(
+		widget=forms.TextInput, label='Street No (गली नंबर)', required=True
+	)
+	landmark = forms.CharField(
+		widget=forms.TextInput, label='Landmark (नजदीकी स्थान)', required=True
+	)
+	village = forms.CharField(
+		widget=forms.TextInput, label='Village (रोड/गांव/मोहल्ला/इलाका)', required=True
+	)
+	ward_no = forms.CharField(
+		widget=forms.TextInput, label='Ward No.(वार्ड नंबर)', required=True
+	)
+	post_office = forms.CharField(
+		widget=forms.TextInput, label='Post Office (डाकख़ाना)', required=True
+	)
+	pincode = forms.CharField(
+		widget=forms.TextInput, label='Pin Code (पिन कोड)', required=True
+	)
+
+
+class ChangeCylinderTypeForm(forms.Form):
+	change_address = forms.BooleanField(
+		widget=forms.CheckboxInput, label='Change Address', required=False
+	)
+	change_phone_number = forms.BooleanField(
+		widget=forms.CheckboxInput, label='Change Phone Number', required=False
+	)
+	house_type = forms.ChoiceField(
+		widget=forms.Select,
+		choices=HouseTypeEnum.choices,
+		required=False
+	)
+	house_no = forms.CharField(
+		widget=forms.TextInput, label='House No.', required=False
+	)
+	room_no = forms.CharField(
+		widget=forms.TextInput, label='Room No', required=False
+	)
+	floor = forms.CharField(
+		widget=forms.TextInput, label='Floor', required=False
+	)
+	street_no = forms.CharField(
+		widget=forms.TextInput, label='Street No', required=False
+	)
+	landmark = forms.CharField(
+		widget=forms.TextInput, label='Landmark', required=False
+	)
+	village = forms.CharField(
+		widget=forms.TextInput, label='Village', required=False
+	)
+	ward_no = forms.CharField(
+		widget=forms.TextInput, label='Ward No', required=False
+	)
+	post_office = forms.CharField(
+		widget=forms.TextInput, label='Post Office', required=False
+	)
+	pincode = forms.CharField(
+		widget=forms.TextInput, label='Pin Code', required=False
+	)
+	new_phone_number = forms.CharField(max_length=10, required=False)
+	change_cylinder_type = forms.ChoiceField(
+		label="Change Cylinder Type To 14.2 Kg ?",
+		required=True,
+		help_text="",
+		choices=[
+			('', '-- Select Change Cylinder Type To 14.2 Kg --'),
+			('YES', 'Yes'),
+			('NO', 'No')
+		]
+	)
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		for fd in ('house_type', 'house_no', 'room_no', 'floor', 'street_no', 'landmark', 'village', 'pincode'):
+			self.fields[fd].required = self.data.get('change_address') == 'on'
+		self.fields['new_phone_number'].required = self.data.get('change_phone_number') == 'on'
 
 
 class OnHoldForm(forms.Form):
