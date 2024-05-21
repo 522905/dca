@@ -1,7 +1,8 @@
 from django import template
 
 from ujjwala.ujjwala_functions import is_member_of_disbursement_drive, is_member_of_second_cylinder_delivery, \
-	is_member_of_reviewer_group, can_resolve_service_request, can_review_disbursement_form_abc_permission
+	is_member_of_reviewer_group, can_resolve_service_request, can_review_disbursement_form_abc_permission, \
+	can_initiate_change_cylinder_type_request
 
 register = template.Library()
 
@@ -34,3 +35,13 @@ def filter_status(queryset, status):
 @register.filter()
 def has_service_request_resolve_permission(user):
 	return can_resolve_service_request(user)
+
+
+@register.filter()
+def has_initiate_change_cylinder_type_request_permission(user):
+	return can_initiate_change_cylinder_type_request(user)
+
+
+@register.filter()
+def has_process_change_cylinder_type_request_permission(user):
+	return can_initiate_change_cylinder_type_request(user)

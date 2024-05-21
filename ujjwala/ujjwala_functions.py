@@ -1785,6 +1785,14 @@ def can_review_disbursement_form_abc_permission(user):
 	return user.has_perm('ujjwala.can_review_disbursement_form_abc')
 
 
+def can_initiate_change_cylinder_type_request(user):
+	return user.has_perm('ujjwala.can_initiate_change_cylinder_type_request')
+
+
+def can_process_change_cylinder_type_request(user):
+	return user.has_perm('ujjwala.can_process_change_cylinder_type_request')
+
+
 def get_current_user_disbursement_drive(user):
 	from ujjwala.models import DisbursementDrive
 

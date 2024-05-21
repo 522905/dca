@@ -3637,12 +3637,11 @@ class ChangeCylinderTypeView(FormView):
 			return render(self.request, "ujjwala/response.html",
 			              {"heading": "Change Cylinder Type Service Request", "message": message})
 
-		# cctr_obj = ChangeCylinderTypeRequest.objects.filter(parent=obj).first()
-		#
-		# if cctr_obj:
-		# 	message = f"Service Request For Change Cylinder Type Already Submitted. Change Cylinder Type Service Request Id: {cctr_obj.id} Status: {cctr_obj.status}"
-		# 	return render(self.request, "ujjwala/response.html",
-		# 	              {"heading": "Change Cylinder Type Service Request", "message": message})
+		user = get_current_user()
+		if not user.has_perm('can_initiate_change_cylinder_type_request'):
+			return render(self.request, "ujjwala/response.html",
+			              {"heading": "Change Cylinder Type Service Request", "message": "Permission Denied"})
+
 		return super().dispatch(request, *args, **kwargs)
 
 	def get_context_data(self, **kwargs):
@@ -3708,6 +3707,13 @@ class ChangeCylinderTypeRequestListView(ListView):
 	paginate_by = 20
 	permission = 'has_view_permission'
 
+	def dispatch(self, request, *args, **kwargs):
+		user = get_current_user()
+		if not user.has_perm('can_process_change_cylinder_type_request'):
+			return render(self.request, "ujjwala/response.html",
+			              {"heading": "Change Cylinder Type Service Request", "message": "Permission Denied"})
+		return super().dispatch(request, args, kwargs)
+
 	def get_queryset(self):
 		return ChangeCylinderTypeRequest.objects.exclude(
 			status=ChangeCylinderTypeRequestStatusEnum.COMPLETED
@@ -3738,6 +3744,10 @@ class ChangeCylinderTypeRequestView(FormView):
 					"message": "Your requested is already completed."
 				}
 			)
+		user = get_current_user()
+		if not user.has_perm('can_process_change_cylinder_type_request'):
+			return render(self.request, "ujjwala/response.html",
+			              {"heading": "Change Cylinder Type Service Request", "message": "Permission Denied"})
 		return super().dispatch(request, args, kwargs)
 
 	def get_context_data(self, **kwargs):
