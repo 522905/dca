@@ -13,6 +13,10 @@
 
     <div class="main p-2 pt-0 form_label">
         <div class="card card-profile pt-0 mt-0 " style="width: 100%;">
+            <div class="card-header">
+                <span class="text-black"><input type="button" value="Back" onclick="history.back()"/> </span>
+                <span class="float-right" data-turbolinks="false"><b><a href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">Application Id:  {{ obj.parent.id }}</a></b></span>
+            </div>
             <div class="row justify-content-center m-0" style="width: 100%; margin: 0 auto !important; padding: 10px;">
                 <div style="width: 30%; float:left">
                     <div class="card-profile-image">
@@ -57,11 +61,7 @@
                     <div class="col-md-6 photo_block mt-2">
                         <span class="hidden-field">{{ form.canceled_sv_photo }}</span>
                         <label for="canceled_sv_photo">Canceled SV Photo</label>
-                        <p id="canceled_sv_photo">
-    {#                          {% if form.canceled_sv_photo.data %}#}
-    {#                                  <img src="{{ url_for('static', filename=form.canceled_sv_photo.data) }}" alt="Canceled SV Photo" class="img-fluid" />#}
-    {#                          {% endif %}#}
-                        </p>
+                        <p id="canceled_sv_photo"></p>
                         {% if form.canceled_sv_photo.errors %}
                               <div class="error">{{ form.canceled_sv_photo.errors }}</div>
                         {% endif %}
@@ -69,11 +69,7 @@
                     <div class="col-md-6 photo_block mt-2">
                         <span class="hidden-field">{{ form.new_sv_photo }}</span>
                         <label for="new_sv_photo">New SV Photo</label>
-                        <p id="new_sv_photo">
-    {#                          {% if form.new_sv_photo.data %}#}
-    {#                                  <img src="{{ url_for('static', filename=form.new_sv_photo.data) }}" alt="New SV Photo" class="img-fluid" />#}
-    {#                          {% endif %}#}
-                        </p>
+                        <p id="new_sv_photo"></p>
                         {% if form.new_sv_photo.errors %}
                               <div class="error">{{ form.new_sv_photo.errors }}</div>
                         {% endif %}
@@ -81,7 +77,7 @@
                 </div>
             </form>
             <div class="card-footer float-right">
-                <input class="btn btn-success float-right rounded-0" type="submit" value="फॉर्म जमा करें" />
+                <input class="btn btn-success float-right rounded-0" type="submit" value="Submit" />
             </div>
         </div>
     </div>

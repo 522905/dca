@@ -5,107 +5,38 @@
     <link rel="stylesheet" href="{% static '/css/style.css' %}" >
     <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    {% include 'ujjwala/pagination.html' %}
     <div class="p-2 pt-0 form_label" style="width: 100%;">
-        <div class="main-header bg-heading" style="background-color: #2957A4;">
-            <span class="text-white">List of Installation</span>
-        </div>
         {% for obj in object_list %}
-            <div class="card mb-2 app_card">
-                <a href="{% url 'ujjwala:change_cylinder_type_request' pk=obj.id %}" data-turbolinks="false">
-                    <div class="card-header">
-                        <p class="text-center"><b>{{ obj.status }}</b> <br>
-                            Submitted On <b>{{ obj.submitted_on }}</b></p>
-                    </div>
-                    <div class="card-body pb-0 p-2">
-                        <ul class="m-0">
-                            <li>
-                                <p class="float-left">Application Id ({{ obj.parent_id }})</p>
-                                <p class="float-right">Pre Inspection Id({{obj.id}})</p>
-                            </li>
-                            <li>
-                                <p class="float-left">Name</p>
-                                <p class="float-right">{{ obj.parent.name }}</p>
-                            </li>
-                            <li>
-                                <p><b>Address:</b>  {{ obj.parent.formatted_address }}</p>
-                            </li>
-                        </ul>
-
-                    </div>
-                </a>
-                <div class="card-footer p-2">
-                    <ul class="m-0">
-                        {% for contact in  obj.parent.all_contacts %}
-                            <li class="contact_link">
-                                <p class="float-left">Phone  {{ forloop.counter }}</p>
-                                <p class="float-right">
-                                    <b> <a href="tel:{{ contact}}" onclick="return true;">{{contact}}</a></b>
-                                </p>
-                            </li>
-                        {% endfor %}
+            <div class="card mb-2 app_card" id="{{ obj.id }}_div">
+                <div class="card-header pl-2" style="background-color: lightsalmon">
+                    <p class="float-left">
+                        <i class="fa fa-file-text"></i><a href="{% url 'ujjwala:change_cylinder_type_request' pk=obj.id %}" data-turbolinks="false"> {{ obj.id }} - <b>{{ obj.status }}</b></a>
+                    </p>
+                    <p class="float-right">
+                        <i class='fa fa-user-circle'></i><a href="{% url 'ujjwala:ujjwala_customer_profile' pk=obj.parent.id %}"><b style="font-size: 16px"> {{ obj.parent.name }}</b></a>
+                    </p>
+                </div>
+                <div class="card-body pb-0 p-2 block">
+                    <ul class="m-0 list-body">
+                        <li>
+                            <p class="float-left"><i class="fa fa-calendar" aria-hidden="true"></i> {{ obj.created_on }}</p>
+                            <p class="float-right"><i class="fa fa-sharp fa-solid fa-phone"></i>
+                                <a href="tel:{{obj.parent.contact_mobile}}" data-turbolinks="false">
+                                   <span class="text-primary" style="font-weight: 600;"> {{ obj.parent.contact_mobile }}</span>
+                                </a>
+                            </p>
+                        </li>
                     </ul>
                 </div>
-
+                <div class="card-footer p-2 block">
+                    <p style="font-size: 13px"><i class="fa fa-address-card-o" style="font-size: 14px"></i> {{ obj.parent.get_address_for_sdms_upload.addr_str }}</p>
+                </div>
             </div>
         {% endfor %}
     </div>
-    <!-- <table>
+    {% include 'ujjwala/pagination.html' %}
 
-        <tr>
-            <td colspan="2">
-                <div class="pagination">
-                    <span class="step-links">
-                        {% if page_obj.has_previous %}
-                            <a href="?page=1">&laquo; first</a>
-                            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
-                        {% endif %}
-                        <span class="current">
-                            <input class="searchfield" id="searchbox" type="search" placeholder="Search..."/>
-                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-                        </span>
-
-                        {% if page_obj.has_next %}
-                            <a href="?page={{ page_obj.next_page_number }}">next</a>
-                            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
-                        {% endif %}
-                    </span>
-                </div>
-            </td>
-        </tr>
-        <tr>
-            <th>Id</th>
-            <th>Application Id</th>
-            <th>Status</th>
-        </tr>
-        {% for obj in object_list %}
-            <tr>
-                <td><a href="{% url 'ujjwala:pre_inspection_form_view' pk=obj.id %}">{{ obj.pk }}</a><td>
-                <td>{{ obj.parent_id }}</td>
-                <td>{{ obj.status }}</td>
-            </tr>
-        {% endfor %}
-        <tr>
-            <td colspan="2">
-                <div class="pagination">
-                    <span class="step-links">
-                        {% if page_obj.has_previous %}
-                            <a href="?page=1">&laquo; first</a>
-                            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
-                        {% endif %}
-
-                        <span class="current">
-                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-                        </span>
-
-                        {% if page_obj.has_next %}
-                            <a href="?page={{ page_obj.next_page_number }}">next</a>
-                            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
-                        {% endif %}
-                    </span>
-                </div>
-            </td>
-        </tr>
-    </table> -->
     <script>
         window.onload=function(){
 
