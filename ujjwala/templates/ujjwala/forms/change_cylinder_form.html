@@ -234,11 +234,15 @@
                     </tr>
                 {% endif %}
                 <tr>
-                    <td><b>POS:</b></td>
+                    <td><b>Filled By:</b></td>
                 </tr>
-                <tr class="custom_border" style="height: 50px">
+                <tr class="custom_border">
                     <td>
-                        <b>{{ organization.name }}</b><br>{{ service_location.address }}
+                        <b>{{ user.first_name }} {{ user.last_name }}</b>
+                        {% if organization %}
+                            <br><b>{{ organization.name }}</b>
+                            <br>{{ service_location.address }}
+                        {% endif %}
                     </td>
                 </tr>
                 <tr>
