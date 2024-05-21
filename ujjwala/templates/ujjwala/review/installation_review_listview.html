@@ -2,100 +2,66 @@
 {% load static %}
 {% block page_title %}Installation Review{% endblock %}
 {% block content %}
-
-<link rel="stylesheet" href="{% static '/css/style.css' %}" >
-<link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
-
-<div class="p-2 pt-0 form_label" style="width: 100%;">
-    {% if messages %}
-      {% for msg in messages %}
-        <div class="alert alert-info alert-dismissable">
-          <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-          {{msg.message}}
-        </div>
-      {% endfor %}
-    {% endif %}
-    {% include 'ujjwala/disbursement/custom-template/disbursement_drive_detail.html' %}
-    {% include 'ujjwala/disbursement/forms/application_search.html' %}
-    <div class="main-header bg-heading" style="background-color: #2957A4;">
-        <span class="text-white">List of Installations Under Review</span>
-    </div>
-
-    {% for obj in object_list %}
-    <div class="card mb-2 app_card">
-        <a class="text-under-n" href="{% url 'ujjwala:installation_review' pk=obj.id %}" data-turbolinks="false">
-            <div class="card-header">
-                <p class="text-center text-dark"><b>{{ obj.status }}</b>
-                     <br>
-                    <span>Updated On <b>{{ obj.updated_on }}</b> </span>
-                </p>
+    <link rel="stylesheet" href="{% static '/css/style.css' %}" >
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    {% include 'ujjwala/pagination.html' %}
+    <div class="p-2 pt-0 form_label" style="width: 100%;">
+        {% if messages %}
+          {% for msg in messages %}
+            <div class="alert alert-info alert-dismissable">
+              <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+              {{msg.message}}
             </div>
-            <div class="card-body pb-0 p-2 list_block">
-                <ul class="m-0">
-                    <li>
-                        <p class="float-left">Application Id</p>
-                        <p class="float-right"><b>({{ obj.parent_id }})</b></p>
-                    </li>
-                    <li>
-                        <p class="float-left">Connection Disbursement Id</p>
-                        <p class="float-right"><b>({{obj.id}})</b></p>
-                    </li>
-                    <li>
-                        <p class="float-left">Name</p>
-                        <p class="float-right"><b>{{ obj.parent.name }}</b></p>
-                    </li>
-                    {% for contact in  obj.parent.all_contacts %}
-                    <li class="contact_link">
-                        <p class="float-left">Phone  {{ forloop.counter }}</p>
-                        <p class="float-right">
-                            <b> <a href="tel:{{ contact }}" onclick="return true;">{{contact}}</a></b>
-                        </p>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </a>
-
-        <div class="card-footer p-2">
-            <p><b>Address: </b>{{ obj.parent.formatted_address }}</p>
+          {% endfor %}
+        {% endif %}
+        {% include 'ujjwala/disbursement/custom-template/disbursement_drive_detail.html' %}
+        {% include 'ujjwala/disbursement/forms/application_search.html' %}
+        <div class="main-header bg-heading" style="background-color: #2957A4;">
+            <span class="text-white">List of Installations Under Review</span>
         </div>
 
+        {% for obj in object_list %}
+        <div class="card mb-2 app_card">
+            <a class="text-under-n" href="{% url 'ujjwala:installation_review' pk=obj.id %}" data-turbolinks="false">
+                <div class="card-header">
+                    <p class="text-center text-dark"><b>{{ obj.status }}</b>
+                         <br>
+                        <span>Updated On <b>{{ obj.updated_on }}</b> </span>
+                    </p>
+                </div>
+                <div class="card-body pb-0 p-2 list_block">
+                    <ul class="m-0">
+                        <li>
+                            <p class="float-left">Application Id</p>
+                            <p class="float-right"><b>({{ obj.parent_id }})</b></p>
+                        </li>
+                        <li>
+                            <p class="float-left">Connection Disbursement Id</p>
+                            <p class="float-right"><b>({{obj.id}})</b></p>
+                        </li>
+                        <li>
+                            <p class="float-left">Name</p>
+                            <p class="float-right"><b>{{ obj.parent.name }}</b></p>
+                        </li>
+                        {% for contact in  obj.parent.all_contacts %}
+                        <li class="contact_link">
+                            <p class="float-left">Phone  {{ forloop.counter }}</p>
+                            <p class="float-right">
+                                <b> <a href="tel:{{ contact }}" onclick="return true;">{{contact}}</a></b>
+                            </p>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </a>
+
+            <div class="card-footer p-2">
+                <p><b>Address: </b>{{ obj.parent.formatted_address }}</p>
+            </div>
+
+        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
-</div>
- 
-    <!-- <script>
-        window.onload=function(){
-
-        const input = document.getElementById("input");
-        const getName = document.getElementById("getName");
-
-        getName.addEventListener("submit", e =>{
-            // Prevent the form from submission
-            e.preventDefault();
-            // Get city name and store it in local storage
-            var inputVal = getName.value;
-            var api_url = "{apiurl}" + inputVal;
-            // Get the dataset
-            function refreshData() {
-                fetch(api_url).then(response =>{
-                    response.json().then(json => {
-                        let dataset = json;
-                        let output = formatResponse(dataset);
-
-                    })
-                    // Catch error - for example, the user doesn't input a valid name
-                    .catch(error => console.log("not ok")); // TO BE IMPROVED
-                })
-            };
-        });
-     };
-    </script> -->
-
-<style>
-    #id_review_status{ display: block;}
-#id_rejected_reason{ margin-top: 10px;}
-#id_rejected_reason{ border: 1px solid #ccc !important;}
-</style>
+    {% include 'ujjwala/pagination.html' %}
 {% endblock %}
