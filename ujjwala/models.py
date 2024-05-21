@@ -1962,6 +1962,8 @@ class ChangeCylinderTypeRequest(models.Model):
 	change_phone_number = models.BooleanField(default=False)
 	new_phone_number = models.CharField(max_length=10, null=True)
 	change_phone_number_sr_no = models.CharField(max_length=48, null=True)
+	phone_request_video_url = models.URLField(null=True)
+
 	status = FSMField(
 		default=ChangeCylinderTypeRequestStatusEnum.IN_PROCESS,
 		choices=ChangeCylinderTypeRequestStatusEnum.choices

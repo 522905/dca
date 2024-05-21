@@ -3686,15 +3686,17 @@ class ChangeCylinderTypeView(FormView):
 				"pincode": data.get('pincode', '')
 			}
 
-		if data['change_cylinder_type'] == 'YES':
-			cctr_obj = ChangeCylinderTypeRequest.objects.create(
-				parent=obj, pos=get_current_user(),
-				change_phone_number=data.get('change_phone_number'),
-				new_phone_number=data.get('new_phone_number'),
-				change_address=data.get('change_address'),
-				address_json=address_json
-			)
+		cctr_obj = ChangeCylinderTypeRequest.objects.create(
+			parent=obj, pos=get_current_user(),
+			change_phone_number=data.get('change_phone_number'),
+			new_phone_number=data.get('new_phone_number'),
+			change_address=data.get('change_address'),
+			address_json=address_json,
+			phone_request_video_url=data.get('request_video_url')
+		)
 
+		messages.add_message(self.request, messages.INFO,
+		                     f"Change Cylinder Type Request Generated Successfully. Id: {cctr_obj.id}")
 		return redirect(reverse("ujjwala:change_cylinder_type", kwargs={'pk': self.kwargs.get('pk')}))
 
 
@@ -3725,6 +3727,19 @@ class ChangeCylinderTypeRequestView(FormView):
 			)
 		return obj
 
+	def dispatch(self, request, *args, **kwargs):
+		obj = self.get_object()
+		if obj.status == ChangeCylinderTypeRequestStatusEnum.COMPLETED:
+			return render(
+				self.request,
+				"ujjwala/response.html",
+				{
+					"heading": "Change Cylinder Type Request",
+					"message": "Your requested is already completed."
+				}
+			)
+		return super().dispatch(request, args, kwargs)
+
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		obj = self.get_object()
@@ -3743,6 +3758,7 @@ class ChangeCylinderTypeRequestView(FormView):
 		data = form.clean()
 		obj.change_address_sr_no = data.get('change_address_sr_no') if obj.change_address else None
 		obj.change_phone_number_sr_no = data.get('change_phone_number_sr_no') if obj.change_phone_number else None
+		obj.status = ChangeCylinderTypeRequestStatusEnum.COMPLETED
 		obj.save()
 		obj.parent.documents.create(
 			link=data.get('new_sv_photo'),
@@ -3752,6 +3768,11 @@ class ChangeCylinderTypeRequestView(FormView):
 			link=data.get('canceled_sv_photo'),
 			type=UjjwalaApplicationDocumentsEnum.CONVERSION_CANCELED_SV_PHOTO
 		)
+		# Updating New Phone Number & Address In Ujjwala Application
+		obj.parent.contact_mobile = obj.new_phone_number
+		obj.parent.address_json = obj.address_json
+		obj.parent.save()
+
 		messages.add_message(self.request, messages.INFO, "Form Updated Successfully.")
 		response = redirect(reverse('ujjwala:change_cylinder_request_list'))
 		return response
