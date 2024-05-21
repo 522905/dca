@@ -2,60 +2,56 @@
 {% load static %}
 {% block page_title %}List of Installation{% endblock %}
 {% block content %}
-
-<link rel="stylesheet" href="{% static '/css/style.css' %}" >
-<link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
-
-<div class="p-2 pt-0 form_label" style="width: 100%;">
-    {% if messages %}
-      {% for msg in messages %}
-        <div class="alert alert-info alert-dismissable">
-          <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-          {{msg.message}}
-        </div>
-      {% endfor %}
-    {% endif %}
-    {% include 'ujjwala/disbursement/forms/application_search.html' %}
-    <div class="main-header bg-heading" style="background-color: #2957A4;">
-        <span class="text-white">List of Installation</span>
-    </div>
-    {% for obj in object_list %}
-    <div class="card mb-2 app_card list_block">
-        <a href="{% url 'ujjwala:installation_form_view' pk=obj.id %}" data-turbolinks="false">
-            <div class="card-header">
-                <p class="text-center"><b>{{ obj.status }}</b> <br>
-                    Submitted On <b>{{ obj.submitted_on }}</b></p>
+    <link rel="stylesheet" href="{% static '/css/style.css' %}" >
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    {% include 'ujjwala/pagination.html' %}
+    <div class="p-2 pt-0 form_label" style="width: 100%;">
+        {% if messages %}
+                {% for msg in messages %}
+                <div class="alert alert-info alert-dismissable">
+                      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                      {{msg.message}}
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% include 'ujjwala/disbursement/forms/application_search.html' %}
+        {% for obj in object_list %}
+        <div class="card mb-2 app_card list_block">
+            <a href="{% url 'ujjwala:installation_form_view' pk=obj.id %}" data-turbolinks="false">
+                <div class="card-header">
+                    <p class="text-center"><b>{{ obj.status }}</b> <br>
+                        Submitted On <b>{{ obj.submitted_on }}</b></p>
+                </div>
+                <div class="card-body pb-0 p-2">
+                    <ul class="m-0">
+                        <li>
+                            <p class="float-left">Application Id ({{ obj.parent_id }})</p>
+                            <p class="float-right">Pre Inspection Id({{obj.id}})</p>
+                        </li>
+                        <li>
+                            <p class="float-left">Name</p>
+                            <p class="float-right">{{ obj.parent.name }}</p>
+                        </li>
+                        {% for contact in  obj.parent.all_contacts %}
+                        <li class="contact_link">
+                            <p class="float-left">Phone  {{ forloop.counter }}</p>
+                            <p class="float-right">
+                                <b> <a href="tel:{{ contact}}" onclick="return true;">{{contact}}</a></b>
+                            </p>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </a>
+            <div class="card-footer p-2">
+                <p><b>Address: </b>{{ obj.parent.formatted_address }}</p>
             </div>
-            <div class="card-body pb-0 p-2">
-                <ul class="m-0">
-                    <li>
-                        <p class="float-left">Application Id ({{ obj.parent_id }})</p>
-                        <p class="float-right">Pre Inspection Id({{obj.id}})</p>
-                    </li>
-                    <li>
-                        <p class="float-left">Name</p>
-                        <p class="float-right">{{ obj.parent.name }}</p>
-                    </li>
-                    {% for contact in  obj.parent.all_contacts %}
-                    <li class="contact_link">
-                        <p class="float-left">Phone  {{ forloop.counter }}</p>
-                        <p class="float-right">
-                            <b> <a href="tel:{{ contact}}" onclick="return true;">{{contact}}</a></b>      
-                        </p>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </a>
-        <div class="card-footer p-2">
-            <p><b>Address: </b>{{ obj.parent.formatted_address }}</p>
         </div>
+
+        {% endfor %}
     </div>
-    
-    {% endfor %}
-</div>
-   
+    {% include 'ujjwala/pagination.html' %}
     <script>
         window.onload=function(){
 
@@ -83,5 +79,4 @@
         });
      };
     </script>
-
 {% endblock %}
