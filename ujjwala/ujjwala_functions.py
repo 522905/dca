@@ -537,7 +537,7 @@ def download_change_cylinder_type_form(obj):
 		'obj': obj,
 		"user": user,
 		"organization": organization,
-		"service_location": organization.service_locations.first(),
+		"service_location": organization.service_locations.first() if organization else None,
 		"request_obj": obj.changecylindertyperequest_set.first()
 	})
 

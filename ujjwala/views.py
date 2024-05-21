@@ -3638,7 +3638,7 @@ class ChangeCylinderTypeView(FormView):
 			              {"heading": "Change Cylinder Type Service Request", "message": message})
 
 		user = get_current_user()
-		if not user.has_perm('can_initiate_change_cylinder_type_request'):
+		if not user.has_perm('ujjwala.can_initiate_change_cylinder_type_request'):
 			return render(self.request, "ujjwala/response.html",
 			              {"heading": "Change Cylinder Type Service Request", "message": "Permission Denied"})
 
@@ -3664,7 +3664,7 @@ class ChangeCylinderTypeView(FormView):
 			"obj": obj,
 			"user": user,
 			"organization": organization,
-			"service_location": organization.service_locations.first(),
+			"service_location": organization.service_locations.first() if organization else None,
 		})
 		return context
 
@@ -3709,7 +3709,7 @@ class ChangeCylinderTypeRequestListView(ListView):
 
 	def dispatch(self, request, *args, **kwargs):
 		user = get_current_user()
-		if not user.has_perm('can_process_change_cylinder_type_request'):
+		if not user.has_perm('ujjwala.can_process_change_cylinder_type_request'):
 			return render(self.request, "ujjwala/response.html",
 			              {"heading": "Change Cylinder Type Service Request", "message": "Permission Denied"})
 		return super().dispatch(request, args, kwargs)
@@ -3745,7 +3745,7 @@ class ChangeCylinderTypeRequestView(FormView):
 				}
 			)
 		user = get_current_user()
-		if not user.has_perm('can_process_change_cylinder_type_request'):
+		if not user.has_perm('ujjwala.can_process_change_cylinder_type_request'):
 			return render(self.request, "ujjwala/response.html",
 			              {"heading": "Change Cylinder Type Service Request", "message": "Permission Denied"})
 		return super().dispatch(request, args, kwargs)
