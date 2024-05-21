@@ -57,29 +57,29 @@
                 </div>
                 <div class="card-body">
                     {% form form=form %}{% endform %}
+                    <div class="row mb-2 m-0">
+                        <div class="col-md-6 photo_block mt-2">
+                            <span class="hidden-field">{{ form.canceled_sv_photo }}</span>
+                            <label for="canceled_sv_photo">Canceled SV Photo</label>
+                            <p id="canceled_sv_photo"></p>
+                            {% if form.canceled_sv_photo.errors %}
+                                  <div class="error">{{ form.canceled_sv_photo.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 photo_block mt-2">
+                            <span class="hidden-field">{{ form.new_sv_photo }}</span>
+                            <label for="new_sv_photo">New SV Photo</label>
+                            <p id="new_sv_photo"></p>
+                            {% if form.new_sv_photo.errors %}
+                                  <div class="error">{{ form.new_sv_photo.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
-                <div class="row mb-2 m-0">
-                    <div class="col-md-6 photo_block mt-2">
-                        <span class="hidden-field">{{ form.canceled_sv_photo }}</span>
-                        <label for="canceled_sv_photo">Canceled SV Photo</label>
-                        <p id="canceled_sv_photo"></p>
-                        {% if form.canceled_sv_photo.errors %}
-                              <div class="error">{{ form.canceled_sv_photo.errors }}</div>
-                        {% endif %}
-                    </div>
-                    <div class="col-md-6 photo_block mt-2">
-                        <span class="hidden-field">{{ form.new_sv_photo }}</span>
-                        <label for="new_sv_photo">New SV Photo</label>
-                        <p id="new_sv_photo"></p>
-                        {% if form.new_sv_photo.errors %}
-                              <div class="error">{{ form.new_sv_photo.errors }}</div>
-                        {% endif %}
-                    </div>
+                <div class="card-footer float-right">
+                    <input class="btn btn-success float-right rounded-0" type="submit" value="Submit" />
                 </div>
             </form>
-            <div class="card-footer float-right">
-                <input class="btn btn-success float-right rounded-0" type="submit" value="Submit" />
-            </div>
         </div>
     </div>
     <script>
