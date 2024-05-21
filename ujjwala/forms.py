@@ -298,15 +298,8 @@ class ChangeCylinderTypeForm(forms.Form):
 		widget=forms.TextInput, label='Pin Code', required=False
 	)
 	new_phone_number = forms.CharField(max_length=10, required=False)
-	change_cylinder_type = forms.ChoiceField(
-		label="Change Cylinder Type To 14.2 Kg ?",
-		required=True,
-		help_text="",
-		choices=[
-			('', '-- Select Change Cylinder Type To 14.2 Kg --'),
-			('YES', 'Yes'),
-			('NO', 'No')
-		]
+	request_video_url = forms.CharField(
+		widget=forms.HiddenInput, label='Request Video', required=False
 	)
 
 	def __init__(self, *args, **kwargs):
@@ -314,6 +307,7 @@ class ChangeCylinderTypeForm(forms.Form):
 		for fd in ('house_type', 'house_no', 'room_no', 'floor', 'street_no', 'landmark', 'village', 'pincode'):
 			self.fields[fd].required = self.data.get('change_address') == 'on'
 		self.fields['new_phone_number'].required = self.data.get('change_phone_number') == 'on'
+		self.fields['request_video_url'].required = self.data.get('change_phone_number') == 'on'
 
 
 class OnHoldForm(forms.Form):
@@ -342,6 +336,11 @@ class PrintDocumentsForm(forms.Form):
 class ChangeAddressForm(forms.Form):
 	update_address = forms.BooleanField(
 		widget=forms.CheckboxInput, label='Click To Change Address', required=False
+	)
+	house_type = forms.ChoiceField(
+		widget=forms.Select,
+		choices=HouseTypeEnum.choices,
+		required=False
 	)
 	house_no = forms.CharField(
 		widget=forms.TextInput, label='House No.', required=True
