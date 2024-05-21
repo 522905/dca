@@ -32,6 +32,7 @@
                         </div>
                     </div>
                 </div>
+
             </div>
             <form method="post" id="">
                 {% csrf_token %}
@@ -41,25 +42,41 @@
                     {% endif %}
                     {% if obj.change_phone_number %}
                         <b>New Phone No.:</b> {{ obj.new_phone_number }}
+                        <div>
+                            <video width="320" height="240" controls>
+                                <source src="{{ request_video_url }}" type="video/mp4">
+{#                                <source src="{{ request_video_url }}">#}
+                            </video>
+                        </div>
                     {% endif %}
                 </div>
                 <div class="card-body">
                     {% form form=form %}{% endform %}
                 </div>
                 <div class="row mb-2 m-0">
-                    <div class="col-sm-12 photo_block mt-2">
+                    <div class="col-md-6 photo_block mt-2">
                         <span class="hidden-field">{{ form.canceled_sv_photo }}</span>
-                        <label>Canceled SV Photo</label>
-                        <p id="canceled_sv_photo"></p>
-                        {{ form.canceled_sv_photo.errors }}
+                        <label for="canceled_sv_photo">Canceled SV Photo</label>
+                        <p id="canceled_sv_photo">
+    {#                          {% if form.canceled_sv_photo.data %}#}
+    {#                                  <img src="{{ url_for('static', filename=form.canceled_sv_photo.data) }}" alt="Canceled SV Photo" class="img-fluid" />#}
+    {#                          {% endif %}#}
+                        </p>
+                        {% if form.canceled_sv_photo.errors %}
+                              <div class="error">{{ form.canceled_sv_photo.errors }}</div>
+                        {% endif %}
                     </div>
-                </div>
-                <div class="row mb-2 m-0">
-                    <div class="col-sm-12 photo_block mt-2">
+                    <div class="col-md-6 photo_block mt-2">
                         <span class="hidden-field">{{ form.new_sv_photo }}</span>
-                        <label>New SV Photo</label>
-                        <p id="new_sv_photo"></p>
-                        {{ form.sv_photo.errors }}
+                        <label for="new_sv_photo">New SV Photo</label>
+                        <p id="new_sv_photo">
+    {#                          {% if form.new_sv_photo.data %}#}
+    {#                                  <img src="{{ url_for('static', filename=form.new_sv_photo.data) }}" alt="New SV Photo" class="img-fluid" />#}
+    {#                          {% endif %}#}
+                        </p>
+                        {% if form.new_sv_photo.errors %}
+                              <div class="error">{{ form.new_sv_photo.errors }}</div>
+                        {% endif %}
                     </div>
                 </div>
             </form>
