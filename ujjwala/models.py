@@ -159,6 +159,8 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			("is_part_of_reviewer_group", "Is Part of Reviewer Group"),
 			("is_front_end_staff", "Is Part of Front End Staff"),
 			("can_review_address", "Can Review Address"),
+			("can_review_disbursement_form_abc", "Can Review Disbursement Form ABC"),
+			("can_initiate_change_cylinder_type_request", "Can Initiate Change Cylinder Type Request"),
 		)
 
 	def pre_inspection_accepted(self):
@@ -1963,6 +1965,11 @@ class ChangeCylinderTypeRequest(models.Model):
 	new_phone_number = models.CharField(max_length=10, null=True)
 	change_phone_number_sr_no = models.CharField(max_length=48, null=True)
 	phone_request_video_url = models.URLField(null=True)
+
+	class Meta:
+		permissions = (
+			("can_process_change_cylinder_request", "Can Process Change Cylinder Request"),
+		)
 
 	status = FSMField(
 		default=ChangeCylinderTypeRequestStatusEnum.IN_PROCESS,
