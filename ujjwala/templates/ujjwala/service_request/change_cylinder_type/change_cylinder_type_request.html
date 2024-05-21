@@ -48,8 +48,9 @@
                         <b>New Phone No.:</b> {{ obj.new_phone_number }}
                         <div>
                             <video width="320" height="240" controls>
-                                <source src="{{ request_video_url }}" type="video/mp4">
-{#                                <source src="{{ request_video_url }}">#}
+                                <source src="{{ obj.phone_request_video_url }}" type="video/webm">
+                                <source src="{{ obj.phone_request_video_url }}" type="video/mp4">
+{#                                <source src="{{ obj.phone_request_video_url }}">#}
                             </video>
                         </div>
                     {% endif %}
