@@ -38,10 +38,11 @@ class ServiceLocations(models.Model):
 	parent = models.ForeignKey(
 		Organization, on_delete=models.CASCADE, related_name='service_locations', null=True, blank=True
 	)
+	title = models.CharField(max_length=128, null=True)
 	type = models.CharField(max_length=25, choices=LocationTypeEnum.choices)
 	start_working_hours = models.TimeField()
 	end_working_hours = models.TimeField()
-	# phone_numbers = models.JSONField(null=True, blank=True)
+	phone_numbers = models.JSONField(null=True, blank=True)
 	address = models.TextField()
 	enabled = models.BooleanField(default=True)
 	entry_point = PointField()
