@@ -247,7 +247,10 @@ class SalesOrderAdmin(admin.ModelAdmin):
     list_filter = [
         ('order_date', DateRangeFilter),
         # ('updated_on', DateRangeFilter),
-        'auto_generated'
+        'auto_generated',
+        'order_status',
+        'digital_payment',
+        'delivery_boy_full_name',
     ]
 
     fsm_fields = ['order_status', ]
