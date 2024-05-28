@@ -15,71 +15,75 @@
         <div class="card card-profile pt-0 mt-0 " style="width: 100%;">
             <div class="card-header">
                 <span class="text-black"><input type="button" value="Back" onclick="history.back()"/> </span>
-                <span class="float-right" data-turbolinks="false"><b><a href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">Application Id:  {{ obj.parent.id }}</a></b></span>
+                <span class="float-right" data-turbolinks="false"><b><a href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.parent_id %}">Application Id:  {{ obj.parent_id }}</a></b></span>
             </div>
-            <div class="row justify-content-center m-0" style="width: 100%; margin: 0 auto !important; padding: 10px;">
-                <div style="width: 30%; float:left">
-                    <div class="card-profile-image">
-                        <a href="#">
-                            <img style="width:100%; max-height: 150px;" src="{{ obj.parent.document_self }}">
-                        </a>
+            <div class="card-body">
+                <div class="row justify-content-center m-0" style="width: 100%; margin: 0 auto !important; padding: 10px;">
+                    <div style="width: 30%; float:left">
+                        <div class="card-profile-image">
+                            <a href="#">
+                                <img style="width:100%; max-height: 150px;" src="{{ obj.parent.document_self }}">
+                            </a>
+                        </div>
                     </div>
-                </div>
-                <div style="width: 70%; float:right">
-                    <div class="card-body pt-0">
-                        <div class="text-left">
-                            <h5 class="h5">{{ obj.parent.name }}({{ obj.parent.id }})<span class="font-weight-light"></span></h5>
-                            <div class="h6 font-weight-300">{{ obj.parent.contact_mobile }}</div>
-                            <div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
-                                {{ obj.parent.formatted_address }}
+                    <div style="width: 70%; float:right">
+                        <div class="card-body pt-0">
+                            <div class="text-left">
+                                <h5 class="h5">{{ obj.parent.name }}({{ obj.parent.id }})<span class="font-weight-light"></span></h5>
+                                <div class="h6 font-weight-300">{{ obj.parent.contact_mobile }}</div>
+                                <div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
+                                    {{ obj.parent.get_address_for_sdms_upload.addr_str }}
+                                </div>
+                                <div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
+                                    POS/User: {{ obj.pos.first_name }} {{ obj.pos.last_name }} - {{ obj.pos.userprofile.phone_number }}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
+                <div class="row justify-content-center m-0" style="width: 100%; margin: 0 auto !important; padding: 10px;">
+                    <form method="post" id="">
+                        {% csrf_token %}
+                        {% if obj.change_address %}
+                            <b>New Address.:</b> {{ obj.change_address }}
+                        {% endif %}
+                        {% if obj.change_phone_number %}
+                            <b>New Phone No.:</b> {{ obj.new_phone_number }}
+                            <div>
+                                <video width="320" height="240" controls>
+                                    <source src="{{ obj.phone_request_video_url }}" type="video/webm">
+                                    <source src="{{ obj.phone_request_video_url }}" type="video/mp4">
+    {#                                <source src="{{ obj.phone_request_video_url }}">#}
+                                </video>
+                            </div>
+                        {% endif %}
+                        {% form form=form %}{% endform %}
+                        <div class="row mb-2 m-0">
+                            <div class="col-md-6 photo_block mt-2">
+                                <span class="hidden-field">{{ form.canceled_sv_photo }}</span>
+                                <label for="canceled_sv_photo">Canceled SV Photo</label>
+                                <p id="canceled_sv_photo"></p>
+                                {% if form.canceled_sv_photo.errors %}
+                                      <div class="error">{{ form.canceled_sv_photo.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 photo_block mt-2">
+                                <span class="hidden-field">{{ form.new_sv_photo }}</span>
+                                <label for="new_sv_photo">New SV Photo</label>
+                                <p id="new_sv_photo"></p>
+                                {% if form.new_sv_photo.errors %}
+                                      <div class="error">{{ form.new_sv_photo.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </form>
+                 </div>
             </div>
-            <form method="post" id="">
-                {% csrf_token %}
-                <div class="card-header">
-                    {% if obj.change_address %}
-                        <b>New Address.:</b> {{ obj.change_address }}
-                    {% endif %}
-                    {% if obj.change_phone_number %}
-                        <b>New Phone No.:</b> {{ obj.new_phone_number }}
-                        <div>
-                            <video width="320" height="240" controls>
-                                <source src="{{ obj.phone_request_video_url }}" type="video/webm">
-                                <source src="{{ obj.phone_request_video_url }}" type="video/mp4">
-{#                                <source src="{{ obj.phone_request_video_url }}">#}
-                            </video>
-                        </div>
-                    {% endif %}
-                </div>
-                <div class="card-body">
-                    {% form form=form %}{% endform %}
-                    <div class="row mb-2 m-0">
-                        <div class="col-md-6 photo_block mt-2">
-                            <span class="hidden-field">{{ form.canceled_sv_photo }}</span>
-                            <label for="canceled_sv_photo">Canceled SV Photo</label>
-                            <p id="canceled_sv_photo"></p>
-                            {% if form.canceled_sv_photo.errors %}
-                                  <div class="error">{{ form.canceled_sv_photo.errors }}</div>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-6 photo_block mt-2">
-                            <span class="hidden-field">{{ form.new_sv_photo }}</span>
-                            <label for="new_sv_photo">New SV Photo</label>
-                            <p id="new_sv_photo"></p>
-                            {% if form.new_sv_photo.errors %}
-                                  <div class="error">{{ form.new_sv_photo.errors }}</div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer float-right">
+            <div class="card-footer">
+                <p class="float-right">
                     <input class="btn btn-success float-right rounded-0" type="submit" value="Submit" />
-                </div>
-            </form>
+                </p>
+            </div>
         </div>
     </div>
     <script>

@@ -32,6 +32,9 @@
                 <div class="card-footer p-2 block">
                     <p style="font-size: 13px"><i class="fa fa-address-card-o" style="font-size: 14px"></i> {{ obj.parent.get_address_for_sdms_upload.addr_str }}</p>
                 </div>
+                <div class="card-footer p-2 block">
+                    <p style="font-size: 13px"><i class="fa fa-user-circle-o" style="font-size: 14px"></i> POS/User: <b>{{ obj.pos.first_name }} {{ obj.pos.last_name }} - {{ obj.pos.userprofile.phone_number }}</b></p>
+                </div>
             </div>
         {% endfor %}
     </div>

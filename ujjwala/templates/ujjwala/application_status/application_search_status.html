@@ -77,7 +77,7 @@ body .form_label a i{ float: right;}
                                     <td>Name: <b>{{ obj.name }}</b></td>
                                 </tr>
                                 <tr>
-                                    <td>Address: <b>{{ obj.formatted_address }}</b></td>
+                                    <td>Address: <b>{{ obj.get_address_for_sdms_upload.addr_str  }}</b></td>
                                 </tr>
                                 <tr>
                                     <td>
