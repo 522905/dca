@@ -727,8 +727,9 @@ class CustomerProfile(models.Model):
 		sd = self.documents.filter(type=ConnectionApplicationDocumentsEnum.CUSTOMER_PHOTO).first()
 		return sd.link if sd else ''
 
-	def get_completed_sales_order_count(self):
-		return self.salesorder_set.filter(order_status=SalesOrderStatusEnum.COMPLETED).count()
+	def get_refill_sales_order_count(self):
+		return self.salesorder_set.filter(order_status=SalesOrderStatusEnum.COMPLETED,
+		                                  order_sub_type='Refill Order').count()
 
 
 class CustomerProfileDocuments(models.Model):
