@@ -1,7 +1,8 @@
 {% extends "material/frontend/base_module.html" %}
 {% load static %}
-{% block page_title %}Customer Profile - {{ obj.name }} ({{ obj.id }}){% endblock %}
+{% block page_title %}Customer Profile - {{ obj.name }}{% endblock %}
 {% block content %}
+{% load connection_app_utils %}
 <link rel="stylesheet" href="{% static '/css/style.css' %}" >
 <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
@@ -24,12 +25,11 @@
                             <tr>
                                 <td>
                                     <p>Relationship Status: <b>{{ obj.relationship_status }}</b><br>
-                                        <b> Address:</b>{{ obj.primary_account_address }}
+                                    <p> Address: <b>{{ obj.primary_account_address }}</b></p>
                                     <p>Phone: <b>{{ obj.mobile_number }}</b></p>
-                                    <p>Location: <a href="https://www.google.com/maps/@{{ obj.latitude }},{{ obj.longitude }},15z">
-                                        {{ obj.latitude }},{{ obj.longitude }} <i class="fa fa-globe" style="color:steelblue; position: relative; top: 2px;" aria-hidden="true"></i></a>
-                                    </p>
-                                 </p>
+                                    <p>Location: <b><a href="https://www.google.com/maps/@{{ obj.latitude }},{{ obj.longitude }},15z">
+                                        {{ obj.latitude }},{{ obj.longitude }} <i class="fa fa-globe" style="color:steelblue; position: relative; top: 2px;" aria-hidden="true"></i></a></b></p>
+                                    <p>Product: <b>{{ obj.products }}</b></p>
                                 </td>
                             </tr>
                         </table>
@@ -38,6 +38,28 @@
                         <img class="p-1" src="{{ obj.document_self }}" style="height: 125px; object-fit:contain; width: 100%;">
                     </div>
                 </div>
+            </div>
+            <div>
+               <table class="table-bordred">
+                <thead>
+                    <tr>
+                        <th>Phone #</th>
+                        <th>Primary</th>
+                        <th>Use Type</th>
+                        <th>Verified Flag</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for phone in obj.phones %}
+                        <tr>
+                            <td>{{ phone|get:"Phone #" }}</td>
+                            <td>{{ phone|get:'Primary' }}</td>
+                            <td>{{ phone|get:'Use Type' }}</td>
+                            <td>{{ phone|get:'Verified Flag' }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
             </div>
             <div class="status_block">
                 <div class="main-header">
@@ -153,7 +175,7 @@
                     <tr>
                         <td colspan="6" class="p-0">
                             <table class="last_sale_order ">
-                                {% for so in obj.salesorder_set.all|slice:":4" %}
+                                {% for so in obj.salesorder_set.all|dictsortreversed:"order_date"|slice:":4" %}
                                     <tr>
                                         <td>{{ so.order_date|date:'d-m-Y' }}</td>
                                         <td>{{ so.invoice_number }}</td>

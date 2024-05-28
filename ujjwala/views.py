@@ -27,6 +27,7 @@ from django.views.generic import DetailView, FormView, ListView, TemplateView, U
 from django_currentuser.middleware import get_current_user
 from django_fsm_log.models import StateLog
 
+from connection_app.models import CustomerProfile
 from otp.models import Otp
 from service_request.enums import ServiceRequestTypeEnum, ServiceRequestTypeStatusEnum
 from service_request.models import ServiceRequest
@@ -1106,7 +1107,6 @@ class UjjwalaApplicationStatusView(TemplateView):
 		# 	return render(self.request, 'ujjwala/no_permissions.html')
 
 		context.update({
-
 			"disbursement_user": True
 		})
 		return context
@@ -3781,6 +3781,8 @@ class ChangeCylinderTypeRequestView(FormView):
 		# Updating New Phone Number & Address In Ujjwala Application
 		obj.parent.contact_mobile = obj.new_phone_number
 		obj.parent.address_json = obj.address_json
+		obj.parent.customer_profile.products = 'Ujjwala - 14.2 Kg General Package'
+		obj.parent.customer_profile.save()
 		obj.parent.save()
 
 		messages.add_message(self.request, messages.INFO, "Form Updated Successfully.")
