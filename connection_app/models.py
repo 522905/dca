@@ -727,6 +727,9 @@ class CustomerProfile(models.Model):
 		sd = self.documents.filter(type=ConnectionApplicationDocumentsEnum.CUSTOMER_PHOTO).first()
 		return sd.link if sd else ''
 
+	def get_completed_sales_order_count(self):
+		return self.salesorder_set.filter(order_status=SalesOrderStatusEnum.COMPLETED).count()
+
 
 class CustomerProfileDocuments(models.Model):
 	parent = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, related_name='documents', null=True)

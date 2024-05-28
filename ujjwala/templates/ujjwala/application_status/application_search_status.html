@@ -2,6 +2,7 @@
 {% load comments %}
 {% load comments_xtd %}
 {% load static %}
+{% load ujjwala_utils %}
 {% block page_title %}Application Status Search {% endblock %}
 {% block content %}
 <link rel="stylesheet" href="{% static '/css/style.css' %}" >
@@ -32,7 +33,6 @@
 body .form_label a i{ float: right;}
 .link_updation a span { padding-right: 10px; text-align: right; }
 </style>
-
     <form method="get">
 {#    {% csrf_token %}#}
         {% if disbursement_user %}
@@ -64,7 +64,9 @@ body .form_label a i{ float: right;}
                 <div class="status_block">
                     <div class="main-header">
                         <span class="text-black"><input type="button" value="Back" onclick="history.back()"/> </span>
-                        <span class="float-right" data-turbolinks="false"><b><a href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">Application Id:  {{ obj.id }}</a></b></span>
+                        <span class="float-right" data-turbolinks="false">
+                            <b><a href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">Application Id: {{ obj.id }} (<a href="{% url 'connection_app:customer_profile' pk=obj.customer_profile.pk %}">View SDMS Profile</a>)</a></b>
+                        </span>
                     </div>
                 </div>
                 <div class="card-body pb-0 p-0 list_block table_text">
@@ -245,11 +247,13 @@ body .form_label a i{ float: right;}
                                         <span style="color:cornflowerblue">Update Bank Details</span>
                                         <i class="fa fa-pencil text-primary" aria-hidden="true"></i>
                                     </a>
-                                    {% if obj.customer_profile.products == 'Ujjwala - 5 Kg DBC Package' %}
-                                        <a class="text_link" href="{% url 'ujjwala:change_cylinder_type' pk=obj.id %}">
-                                            <span style="color:cornflowerblue">Change Cylinder Type Request</span>
-                                            <i class="fa fa-pencil text-primary" aria-hidden="true"></i>
-                                        </a>
+                                    {% if user|has_initiate_change_cylinder_type_request_permission %}
+                                        {% if obj.customer_profile.products == 'Ujjwala - 5 Kg DBC Package' and obj.customer_profile.get_completed_sales_order_count > 3 %}
+                                            <a class="text_link" href="{% url 'ujjwala:change_cylinder_type' pk=obj.id %}">
+                                                <span style="color:cornflowerblue">Change Cylinder Type Request</span>
+                                                <i class="fa fa-pencil text-primary" aria-hidden="true"></i>
+                                            </a>
+                                        {% endif %}
                                     {% endif %}
                                 </td>
                             </tr>
