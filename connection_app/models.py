@@ -728,8 +728,8 @@ class CustomerProfile(models.Model):
 		return sd.link if sd else ''
 
 	def get_refill_sales_order_count(self):
-		return self.salesorder_set.filter(order_status=SalesOrderStatusEnum.COMPLETED,
-		                                  order_sub_type='Refill Order').count()
+		return self.salesorder_set.filter(order_sub_type='Refill Order').exclude(
+			order_status=SalesOrderStatusEnum.CANCELLED).count()
 
 
 class CustomerProfileDocuments(models.Model):

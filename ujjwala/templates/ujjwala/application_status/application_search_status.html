@@ -249,8 +249,8 @@ body .form_label a i{ float: right;}
                                     </a>
                                     <span style="color:cornflowerblue"><b>Total Refill(s): {{ obj.customer_profile.get_refill_sales_order_count }}</b></span>
                                     {% if user|has_initiate_change_cylinder_type_request_permission %}
-                                        {% if obj.customer_profile.products == 'Ujjwala - 5 Kg DBC Package' and obj.customer_profile.get_refill_sales_order_count > 3 %}
-                                            <a class="text_link" href="{% url 'ujjwala:change_cylinder_type' pk=obj.id %}">
+                                        {% if obj.customer_profile.products == 'Ujjwala - 5 Kg DBC Package' and obj.customer_profile.get_refill_sales_order_count >= 3 %}
+                                            <a class="text_link" href="{% url 'ujjwala:change_cylinder_type' pk=obj.id %}" data-turbolinks="false">
                                                 <span style="color:cornflowerblue">Change Cylinder Type Request</span>
                                                 <i class="fa fa-pencil text-primary" aria-hidden="true"></i>
                                             </a>
