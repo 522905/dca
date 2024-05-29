@@ -70,7 +70,8 @@ class UjjwalaApplicationDocumentsEnum(models.TextChoices):
 	INSTALLATION_STOVE_WITH_STICKER = 'INSTALLATION_STOVE_WITH_STICKER', 'Installation Stove With Sticker'
 	INSTALLATION_DOCUMENT = 'INSTALLATION_DOCUMENT', 'Installation Document'
 	RATION_CARD = 'RATION_CARD', 'Ration Card'
-	CONVERSION_SV_PHOTO = 'CONVERSION_SV_PHOTO', 'Conversion SV Photo'
+	CONVERSION_CANCELED_SV_PHOTO = 'CONVERSION_CANCELED_SV_PHOTO', 'Conversion Canceled SV Photo'
+	CONVERSION_NEW_SV_PHOTO = 'CONVERSION_NEW_SV_PHOTO', 'Conversion New SV Photo'
 	CONVERSION_REQUEST_FORM = 'CONVERSION_REQUEST_FORM', 'Conversion Request Form'
 
 	@classmethod
