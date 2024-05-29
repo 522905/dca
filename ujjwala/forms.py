@@ -81,8 +81,8 @@ class ChangeCylinderTypeRequestForm(forms.Form):
 			self.fields['change_phone_number_sr_no'].widget = forms.HiddenInput()
 
 	def clean(self):
-		data = super().clean()
-		# data = self.cleaned_data
+		# data = super().clean()
+		data = self.cleaned_data
 		if self.request_obj.change_address and not data.get('change_address_sr_no'):
 			raise forms.ValidationError(
 				"Customer Request Change Of Address. Please Enter SDMS Service Request Number"

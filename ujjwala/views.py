@@ -3765,14 +3765,14 @@ class ChangeCylinderTypeRequestView(FormView):
 
 	def form_valid(self, form):
 		obj = self.get_object()
-		data = form.clean()
+		data = form.cleaned_data
 		obj.change_address_sr_no = data.get('change_address_sr_no') if obj.change_address else None
 		obj.change_phone_number_sr_no = data.get('change_phone_number_sr_no') if obj.change_phone_number else None
 		obj.status = ChangeCylinderTypeRequestStatusEnum.COMPLETED
 		obj.save()
 		obj.parent.documents.create(
 			link=data.get('new_sv_photo'),
-			type=UjjwalaApplicationDocumentsEnum.CONVERSION_SV_PHOTO
+			type=UjjwalaApplicationDocumentsEnum.CONVERSION_NEW_SV_PHOTO
 		)
 		obj.parent.documents.create(
 			link=data.get('canceled_sv_photo'),
