@@ -3745,7 +3745,7 @@ class ChangeCylinderTypeRequestView(FormView):
 				}
 			)
 		user = get_current_user()
-		if not user.has_perm('ujjwala.can_process_change_cylinder_type_request'):
+		if not user.has_perm('ujjwala.can_process_change_cylinder_request'):
 			return render(self.request, "ujjwala/response.html",
 			              {"heading": "Change Cylinder Type Service Request", "message": "Permission Denied"})
 		return super().dispatch(request, args, kwargs)
