@@ -61,8 +61,9 @@ from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_
 	get_current_user_disbursement_drive, send_ujjwala_self_pre_inspection_share_link, is_member_of_reviewer_group, \
 	send_ujjwala_share_on_social_media_link, \
 	can_resolve_service_request, ujjwala_application_state_logs, is_front_end_staff, \
-	get_data_for_new_relation, re_create_legal_docs, download_change_cylinder_type_form
-from utils.global_functions import unsign_data_base64, sign_data_base64
+	get_data_for_new_relation, re_create_legal_docs, download_change_cylinder_type_form, \
+	download_ujjwala_physical_legal_docs, upload_form_e_document_and_whatsapp
+from utils.global_functions import unsign_data_base64, sign_data_base64, upload_file_to_minio_bucket
 
 
 ### Form to avoid circular import ###
@@ -3694,10 +3695,12 @@ class ChangeCylinderTypeView(FormView):
 			phone_request_video_url=data.get('request_video_url')
 		)
 
-		# Send Whatsapp Message With Created Form
-		phone_number = data.get('new_phone_number') if data.get('change_phone_number') else obj.contact_mobile
-		obj.event_send_form_e(phone_number)
-
+		django_rq.enqueue(
+			upload_form_e_document_and_whatsapp,
+			args=(
+				obj.id, data.get('new_phone_number') if data.get('change_phone_number') else obj.contact_mobile,
+			)
+		)
 		messages.add_message(self.request, messages.INFO,
 		                     f"Change Cylinder Type Request Generated Successfully. Id: {cctr_obj.id}")
 		return redirect(reverse("ujjwala:change_cylinder_type", kwargs={'pk': self.kwargs.get('pk')}))

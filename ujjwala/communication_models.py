@@ -716,7 +716,7 @@ class UjjwalaWhatsappCommunication(object):
 
 		change_cylinder_request_form_link = connection_disbursement.documents.filter(
 			type=UjjwalaApplicationDocumentsEnum.FORM_E
-		).first()
+		).first().link
 
 		body_text = {
 			"countryCode": "+91",
@@ -757,3 +757,9 @@ class UjjwalaWhatsappCommunication(object):
 				event="change_cylinder_request_form_e", channel="whatsapp",
 				message_id=data.get('id')
 			)
+		requests.post(
+			"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
+			"&function=add_lead&phone_number={}&list_id=439&first_name={}&last_name={}".format(
+				phone_number, self.name, self.pk
+			)
+		)

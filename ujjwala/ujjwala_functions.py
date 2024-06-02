@@ -16,6 +16,7 @@ import requests
 import track
 from PyPDF2 import PdfFileMerger
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.signing import Signer
 from django.db.models import Q
@@ -549,6 +550,31 @@ def download_change_cylinder_type_form(obj):
 		}
 	)
 	return change_cylinder_request_form.content
+
+
+def upload_form_e_document_and_whatsapp(application_id, phone_number):
+	from ujjwala.models import UjjwalaV2Application
+
+	obj = UjjwalaV2Application.objects.filter(id=application_id).first()
+	if not obj:
+		return HttpResponse("Application Id {} does not exist".format(application_id))
+
+	document = download_change_cylinder_type_form(obj)
+	resp = HttpResponse(document, content_type="application/pdf")
+	resp['Content-Disposition'] = 'attachment; filename=%s' % 'change_cylinder_form_{}.pdf'.format(
+		obj.id)
+
+	upload_url = upload_file_to_minio_bucket(
+		resp,
+		"ujjwaladocuments",
+		"ujjwala_{}_form_e".format(obj.id)
+	)
+	obj.connection_disbursement.documents.create(type=UjjwalaApplicationDocumentsEnum.FORM_E, link=upload_url)
+
+	# Send Whatsapp Message With Created Form
+	# phone_number = data.get('new_phone_number') if data.get('change_phone_number') else obj.contact_mobile
+	obj.event_send_form_e(phone_number)
+	return True
 
 
 def download_installation_form(obj):
