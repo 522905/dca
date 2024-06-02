@@ -3694,6 +3694,10 @@ class ChangeCylinderTypeView(FormView):
 			phone_request_video_url=data.get('request_video_url')
 		)
 
+		# Send Whatsapp Message With Created Form
+		phone_number = data.get('new_phone_number') if data.get('change_phone_number') else obj.contact_mobile
+		obj.event_send_form_e(phone_number)
+
 		messages.add_message(self.request, messages.INFO,
 		                     f"Change Cylinder Type Request Generated Successfully. Id: {cctr_obj.id}")
 		return redirect(reverse("ujjwala:change_cylinder_type", kwargs={'pk': self.kwargs.get('pk')}))

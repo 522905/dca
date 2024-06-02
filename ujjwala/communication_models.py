@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import requests
 import track
 from django.conf import settings
@@ -704,5 +705,55 @@ class UjjwalaWhatsappCommunication(object):
 				object_id=self.pk,
 				channel_subscriber=self.contact_mobile,
 				event="update_bank_details_new", channel="whatsapp",
+				message_id=data.get('id')
+			)
+
+
+	def event_send_form_e(self, phone_number):
+		from ujjwala.models import ConnectionDisbursement
+
+		connection_disbursement = ConnectionDisbursement.objects.get(parent_id=self.pk)
+
+		change_cylinder_request_form_link = connection_disbursement.documents.filter(
+			type=UjjwalaApplicationDocumentsEnum.FORM_E
+		).first()
+
+		body_text = {
+			"countryCode": "+91",
+			"phoneNumber": phone_number,
+			"type": "Template",
+			"traits": {
+				"name": self.name,
+			},
+			# "callbackData": "some_callback_data",
+			"template": {
+				"name": "form_e",
+				"languageCode": "hi",
+				"headerValues": [
+					change_cylinder_request_form_link,  #
+				],
+				"bodyValues": [
+					self.name
+				],
+				"buttonValues": {
+				}
+			}
+		}
+
+		ujjwala_v2_application_content_type = ContentType.objects.get(
+			app_label='ujjwala', model='ujjwalav2application'
+		)
+		data = track.client.post(
+			api_key=settings.INTERAKT_API_KEY,
+			path="/v1/public/message/",
+			body=body_text
+		).json()
+
+		if data.get('result', ''):
+			CommunicationLog.objects.create(
+				content_type=ujjwala_v2_application_content_type,
+				object_id=self.pk,
+				channel_subscriber=phone_number,
+				event="change_cylinder_request_form_e", channel="whatsapp",
 				message_id=data.get('id')
 			)
