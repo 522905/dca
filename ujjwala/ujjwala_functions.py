@@ -552,14 +552,36 @@ def download_change_cylinder_type_form(obj):
 	return change_cylinder_request_form.content
 
 
-def upload_form_e_document_and_whatsapp(application_id, phone_number):
+def download_change_cylinder_type_form_for_user(obj, user_id):
+	installation_form_html_template = loader.get_template("ujjwala/forms/change_cylinder_form.html")
+	user = User.objects.get(pk=user_id)
+	organization = user.organizations_organization.first()
+	installation_html = installation_form_html_template.render({
+		'obj': obj,
+		"user": user,
+		"organization": organization,
+		"service_location": organization.service_locations.first() if organization else None,
+		"request_obj": obj.changecylindertyperequest_set.first()
+	})
+
+	change_cylinder_request_form = requests.post(
+		settings.HTML_TO_PDF_SERVER_URL,
+		json={
+			"content": installation_html,
+			"options": PDF_COMPRESSION_OPTIONS
+		}
+	)
+	return change_cylinder_request_form.content
+
+
+def upload_form_e_document_and_whatsapp(user_id, application_id, phone_number):
 	from ujjwala.models import UjjwalaV2Application
 
 	obj = UjjwalaV2Application.objects.filter(id=application_id).first()
 	if not obj:
 		return HttpResponse("Application Id {} does not exist".format(application_id))
 
-	document = download_change_cylinder_type_form(obj)
+	document = download_change_cylinder_type_form_for_user(obj, user_id)
 	resp = HttpResponse(document, content_type="application/pdf")
 	resp['Content-Disposition'] = 'attachment; filename=%s' % 'change_cylinder_form_{}.pdf'.format(
 		obj.id)

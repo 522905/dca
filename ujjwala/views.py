@@ -3698,7 +3698,7 @@ class ChangeCylinderTypeView(FormView):
 		django_rq.enqueue(
 			upload_form_e_document_and_whatsapp,
 			args=(
-				obj.id, data.get('new_phone_number') if data.get('change_phone_number') else obj.contact_mobile,
+				get_current_user().id, obj.id, data.get('new_phone_number') if data.get('change_phone_number') else obj.contact_mobile,
 			)
 		)
 		messages.add_message(self.request, messages.INFO,
