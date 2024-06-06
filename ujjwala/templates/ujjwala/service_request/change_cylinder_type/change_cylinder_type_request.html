@@ -73,6 +73,22 @@
                                 {% endif %}
                             </div>
                         </div>
+                        <div class="row mb-2 m-0">
+                            <div class="col-md-6 photo_block mt-2">
+                                <label for="form_e_page_1_photo">Form E Page 1</label>
+                                <p id="form_e_page_1_photo"></p>
+                                {% if form.form_e_page_1_photo.errors %}
+                                      <div class="error">{{ form.form_e_page_1_photo.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 photo_block mt-2">
+                                <label for="form_e_page_2_photo">Form E Page 2</label>
+                                <p id="form_e_page_2_photo"></p>
+                                {% if form.form_e_page_2_photo.errors %}
+                                      <div class="error">{{ form.form_e_page_2_photo.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="card-footer">
@@ -167,6 +183,90 @@
         })
         canceledSVPhotoUppy.on('complete', result => {
             $('#id_canceled_sv_photo').val(result.successful[0].uploadURL);
+        })
+
+        window.formEPage1PhotoUppy = new Uppy.Core({
+            debug: true,
+            autoProceed: true,
+            restrictions: {
+                maxFileSize: 50000000,
+                maxNumberOfFiles: 1,
+                minNumberOfFiles: 1,
+                allowedFileTypes: ['image/*'],
+            }
+        })
+        .use(Uppy.Dashboard, {
+            trigger: '#form_e_page_1_photo',
+            inline: true,
+            target: '#form_e_page_1_photo',
+            showProgressDetails: true,
+            note: 'Images and video only, 2–3 files, up to 10 MB',
+            height: 200,
+            metaFields: [],
+            id: 'form_e_page_1_photo',
+            waitForThumbnailsBeforeUpload: true,
+            doneButtonHandler: () => {
+                // this.uppy.reset()
+                // this.requestCloseModal()
+            },
+            showRemoveButtonAfterComplete: true,
+            theme: 'light',
+            locale: {
+                strings: {
+                    dropPasteFiles: 'फोटो अपलोड करने के लिए यहाँ पर क्लिक करे %{browseFiles}',
+                    done: '-',
+                    uploadComplete: 'अपलोड पूरा हो गया है',
+                    complete: 'पूरा हुआ',
+                }
+            },
+        })
+        .use(Uppy.Tus, {
+            endpoint: 'https://tus.dca.arungas.com/files/',
+        })
+        formEPage1PhotoUppy.on('complete', result => {
+            $('#id_form_e_page_1_photo').val(result.successful[0].uploadURL);
+        })
+
+        window.formEPage2PhotoUppy = new Uppy.Core({
+            debug: true,
+            autoProceed: true,
+            restrictions: {
+                maxFileSize: 50000000,
+                maxNumberOfFiles: 1,
+                minNumberOfFiles: 1,
+                allowedFileTypes: ['image/*'],
+            }
+        })
+        .use(Uppy.Dashboard, {
+            trigger: '#form_e_page_2_photo',
+            inline: true,
+            target: '#form_e_page_2_photo',
+            showProgressDetails: true,
+            note: 'Images and video only, 2–3 files, up to 10 MB',
+            height: 200,
+            metaFields: [],
+            id: 'form_e_page_2_photo',
+            waitForThumbnailsBeforeUpload: true,
+            doneButtonHandler: () => {
+                // this.uppy.reset()
+                // this.requestCloseModal()
+            },
+            showRemoveButtonAfterComplete: true,
+            theme: 'light',
+            locale: {
+                strings: {
+                    dropPasteFiles: 'फोटो अपलोड करने के लिए यहाँ पर क्लिक करे %{browseFiles}',
+                    done: '-',
+                    uploadComplete: 'अपलोड पूरा हो गया है',
+                    complete: 'पूरा हुआ',
+                }
+            },
+        })
+        .use(Uppy.Tus, {
+            endpoint: 'https://tus.dca.arungas.com/files/',
+        })
+        formEPage1PhotoUppy.on('complete', result => {
+            $('#id_form_e_page_2_photo').val(result.successful[0].uploadURL);
         })
     </script>
 {% endblock %}

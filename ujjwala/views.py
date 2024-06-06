@@ -3785,6 +3785,14 @@ class ChangeCylinderTypeRequestView(FormView):
 			link=data.get('canceled_sv_photo'),
 			type=UjjwalaApplicationDocumentsEnum.CONVERSION_CANCELED_SV_PHOTO
 		)
+		obj.parent.documents.create(
+			link=data.get('form_e_page_1_photo'),
+			type=UjjwalaApplicationDocumentsEnum.FORM_E_PAGE_1
+		)
+		obj.parent.documents.create(
+			link=data.get('form_e_page_2_photo'),
+			type=UjjwalaApplicationDocumentsEnum.FORM_E_PAGE_2
+		)
 		# Updating New Phone Number & Address In Ujjwala Application
 		obj.parent.contact_mobile = obj.new_phone_number
 		obj.parent.address_json = obj.address_json

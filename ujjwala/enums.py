@@ -73,7 +73,8 @@ class UjjwalaApplicationDocumentsEnum(models.TextChoices):
 	CONVERSION_CANCELED_SV_PHOTO = 'CONVERSION_CANCELED_SV_PHOTO', 'Conversion Canceled SV Photo'
 	CONVERSION_NEW_SV_PHOTO = 'CONVERSION_NEW_SV_PHOTO', 'Conversion New SV Photo'
 	CONVERSION_REQUEST_FORM = 'CONVERSION_REQUEST_FORM', 'Conversion Request Form'
-	FORM_E = 'FORM_E', 'Form E'
+	FORM_E_PAGE_1 = 'FORM_E_PAGE_1', 'Form E Page 1'
+	FORM_E_PAGE_2 = 'FORM_E_PAGE_2', 'Form E Page 2'
 
 	@classmethod
 	def get_skipped_additional_choices(cls):

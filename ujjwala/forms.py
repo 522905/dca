@@ -71,6 +71,12 @@ class ChangeCylinderTypeRequestForm(forms.Form):
 	new_sv_photo = forms.CharField(
 		widget=forms.HiddenInput, label='New SV Photo', required=True
 	)
+	form_e_page_1_photo = forms.CharField(
+		widget=forms.HiddenInput, label='Form E Page 1 Photo', required=True
+	)
+	form_e_page_2_photo = forms.CharField(
+		widget=forms.HiddenInput, label='Form E Page 2 Photo', required=True
+	)
 
 	def __init__(self, request_obj=None, *args, **kwargs):
 		super().__init__(*args, **kwargs)
