@@ -21,13 +21,14 @@ class Command(BaseCommand):
 		for bso_obj in BookSalesOrder.objects.all():
 			if not bso_obj.camunda_process_id:
 				variables = {
-					"variables":
-						{
+					"variables": {
 							"consumer_id": {"value": bso_obj.customer_profile.consumer_id, "type": "String"},
 							"book_sales_order_id": {"value": bso_obj.id, "type": "Long"},
-							"sdms_task": {"value": "book_sales_order", "type": "String"}
+							"sdms_task": {"value": "book_sales_order", "type": "String"},
+							"distributor_code": {"value": bso_obj.customer_profile.distributor_code, "type": "String"},
+							"distributor_name": {"value": bso_obj.customer_profile.distributor_name, "type": "String"},
 						}
-				}
+					}
 				res, pid = start_process_in_camunda_v2('Process_domestic_app', variables=variables)
 				bso_obj.camunda_process_id = pid
 				bso_obj.save()
