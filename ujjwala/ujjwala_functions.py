@@ -531,9 +531,10 @@ def re_create_legal_docs_pdf(application):
 
 
 def download_change_cylinder_type_form(obj):
-	installation_form_html_template = loader.get_template("ujjwala/forms/change_cylinder_form.html")
+	attachments = []
 	user = get_current_user()
 	organization = user.organizations_organization.first()
+	installation_form_html_template = loader.get_template("ujjwala/forms/change_cylinder_form_page_1.html")
 	installation_html = installation_form_html_template.render({
 		'obj': obj,
 		"user": user,
@@ -549,13 +550,50 @@ def download_change_cylinder_type_form(obj):
 			"options": PDF_COMPRESSION_OPTIONS
 		}
 	)
-	return change_cylinder_request_form.content
+	attachments.append(('Page_1.pdf', change_cylinder_request_form))
+
+	installation_form_html_template = loader.get_template("ujjwala/forms/change_cylinder_form_page_2.html")
+	installation_html = installation_form_html_template.render({
+		'obj': obj,
+		"user": user,
+		"organization": organization,
+		"service_location": organization.service_locations.first() if organization else None,
+		"request_obj": obj.changecylindertyperequest_set.first()
+	})
+
+	change_cylinder_request_form = requests.post(
+		settings.HTML_TO_PDF_SERVER_URL,
+		json={
+			"content": installation_html,
+			"options": PDF_COMPRESSION_OPTIONS
+		}
+	)
+	attachments.append(('Page_2.pdf', change_cylinder_request_form))
+
+	merger = PdfFileMerger()
+	temp_files = []
+	for key, value in attachments:
+		file = io.BytesIO()
+		file.write(value.content)
+		temp_files.append(file)
+		merger.append(file, import_bookmarks=False)
+
+	myio = io.BytesIO()
+	merger.write(myio)
+	merger.close()
+
+	[f.close() for f in temp_files]
+
+	myio.seek(0)
+	return myio.getvalue()
+	# return change_cylinder_request_form.content
 
 
 def download_change_cylinder_type_form_for_user(obj, user_id):
-	installation_form_html_template = loader.get_template("ujjwala/forms/change_cylinder_form.html")
+	attachments = []
 	user = User.objects.get(pk=user_id)
 	organization = user.organizations_organization.first()
+	installation_form_html_template = loader.get_template("ujjwala/forms/change_cylinder_form_page_1.html")
 	installation_html = installation_form_html_template.render({
 		'obj': obj,
 		"user": user,
@@ -571,7 +609,42 @@ def download_change_cylinder_type_form_for_user(obj, user_id):
 			"options": PDF_COMPRESSION_OPTIONS
 		}
 	)
-	return change_cylinder_request_form.content
+	attachments.append(('Page_1.pdf', change_cylinder_request_form))
+
+	installation_form_html_template = loader.get_template("ujjwala/forms/change_cylinder_form_page_2.html")
+	installation_html = installation_form_html_template.render({
+		'obj': obj,
+		"user": user,
+		"organization": organization,
+		"service_location": organization.service_locations.first() if organization else None,
+		"request_obj": obj.changecylindertyperequest_set.first()
+	})
+
+	change_cylinder_request_form = requests.post(
+		settings.HTML_TO_PDF_SERVER_URL,
+		json={
+			"content": installation_html,
+			"options": PDF_COMPRESSION_OPTIONS
+		}
+	)
+	attachments.append(('Page_2.pdf', change_cylinder_request_form))
+
+	merger = PdfFileMerger()
+	temp_files = []
+	for key, value in attachments:
+		file = io.BytesIO()
+		file.write(value.content)
+		temp_files.append(file)
+		merger.append(file, import_bookmarks=False)
+
+	myio = io.BytesIO()
+	merger.write(myio)
+	merger.close()
+
+	[f.close() for f in temp_files]
+
+	myio.seek(0)
+	return myio.getvalue()
 
 
 def upload_form_e_document_and_whatsapp(user_id, application_id, phone_number):
