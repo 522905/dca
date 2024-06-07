@@ -7,8 +7,9 @@ from ujjwala.notification import ujjwala_application_completed_event_notificatio
 
 class UjjwalaAppConfig(ModuleMixin, AppConfig):
 	name = 'ujjwala'
-	icon = '<i class="material-icons">flight_takeoff</i>'
+	icon = '<i class="material-icons">local_shipping</i>'
 	default_auto_field = 'django.db.models.BigAutoField'
+	verbose_name = "Ujjwala"
 
 	def ready(self):
 		post_transition.connect(
