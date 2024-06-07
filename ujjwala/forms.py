@@ -1739,3 +1739,9 @@ class CompleteDisbursementDriveForm(forms.Form):
 	description = forms.CharField(
 		widget=forms.TextInput, label='Remarks', required=True
 	)
+
+
+class ChangeCylinderTypeRequestOverrideForm(forms.Form):
+	sdms_refills = forms.IntegerField(
+		widget=forms.NumberInput, label='SDMS Refills', required=True
+	)

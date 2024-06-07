@@ -254,6 +254,13 @@ body .form_label a i{ float: right;}
                                                 <span style="color:cornflowerblue">Change Cylinder Type Request</span>
                                                 <i class="fa fa-pencil text-primary" aria-hidden="true"></i>
                                             </a>
+                                        {% else %}
+                                            {% if user|has_override_change_cylinder_type_request %}
+                                                <a class="text_link" href="{% url 'ujjwala:change_cylinder_type_request_override' pk=obj.id %}" data-turbolinks="false">
+                                                    <span style="color:cornflowerblue">Override Cylinder Type Request</span>
+                                                    <i class="fa fa-pencil text-primary" aria-hidden="true"></i>
+                                                </a>
+                                            {% endif %}
                                         {% endif %}
                                     {% endif %}
                                 </td>

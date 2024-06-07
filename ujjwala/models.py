@@ -138,6 +138,10 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	address_verified_on = models.DateTimeField(null=True, blank=True)
 	sdms_address_version = models.CharField(default=2, max_length=32)
 	customer_profile = models.ForeignKey("connection_app.CustomerProfile", on_delete=models.CASCADE, null=True)
+	sdms_refills = models.IntegerField(null=True)
+	override_change_cylinder_type = models.BooleanField(null=True, blank=True)
+	override_change_cylinder_type_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True,
+	                                                     related_name="change_cylinder_type_override_by")
 
 	class Meta:
 		permissions = (
@@ -161,6 +165,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 			("can_review_address", "Can Review Address"),
 			("can_review_disbursement_form_abc", "Can Review Disbursement Form ABC"),
 			("can_initiate_change_cylinder_type_request", "Can Initiate Change Cylinder Type Request"),
+			("can_override_change_cylinder_type_request", "Can Override Change Cylinder Type Request"),
 		)
 
 	def pre_inspection_accepted(self):
@@ -395,6 +400,9 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 				return "Connection Disbursement Status: {}".format(connection_disbursement.status)
 		else:
 			return "Connection Disbursement not initiated. Make sure Pre Inspection is done and accepted"
+
+	def get_husband_name(self):
+		return self.family_members.filter(relation=FamilyMemberRelationEnum.HUSBAND).first().name
 
 	@fsm_log_description
 	@fsm_log_by

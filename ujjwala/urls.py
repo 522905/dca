@@ -13,7 +13,8 @@ from .robos.sdms_relationship_robo import UjjwalaApplicationSdmsRelationshipView
 from .robos.sv_cancellation import SvCancellationViewSet
 from .robos.viewsets import UjjwalaApplicationNicViewSet
 from .views import UjjwalaApplicationWebFormView, WebFormOldView, UjjwalaApplicationIframeWebFormView, \
-    LegalDocumentsAcceptedToPendingView, ShareOnSocialMediaView, CancelInvitationView, UserDashboardView
+    LegalDocumentsAcceptedToPendingView, ShareOnSocialMediaView, CancelInvitationView, UserDashboardView, \
+    ChangeCylinderTypeRequestOverrideView
 from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet, UjjwalaApplicationOtpViewSet, \
     UjjwalaPreInspectionAPIViewSet
 
@@ -36,7 +37,7 @@ router.register(r'sv-bot', UjjwalaApplicationSVViewSet, basename='sv_bot')
 
 
 urlpatterns = [
-    path('', views.index),
+    path('', views.UserDashboardView.as_view(), name='index'),
     path('', include(router.urls)),
     path('portal/web-form-old/', WebFormOldView.as_view(), name="web_form_old"),
     # path(
@@ -48,7 +49,7 @@ urlpatterns = [
     path('portal/web-form/', UjjwalaApplicationWebFormView.as_view(), name="web_form"),
  
     path('portal/i-web-form/', UjjwalaApplicationIframeWebFormView.as_view(), name="i_web_form"),
-    path('portal/pre-inspection/', views.UjjwalaPreInspectionListView.as_view(), name="index"),
+    path('portal/pre-inspection/', views.UjjwalaPreInspectionListView.as_view(), name="pre_inspection_list"),
     path('portal/web-form-share/', views.ShareWebFormLink.as_view(), name="share_web_form_link"),
 
     url(
@@ -450,6 +451,11 @@ urlpatterns = [
         ShareOnSocialMediaView.as_view(),
         name="share_on_social_media"
     ),
+    url(
+        '^ujjwala-application/change_cylinder_type_request/(?P<pk>[^/.]+)/override$',
+        ChangeCylinderTypeRequestOverrideView.as_view(),
+        name="change_cylinder_type_request_override"
+    ),
     path(
         'portal/cancel_invitaion/',
         CancelInvitationView.as_view(),
@@ -459,5 +465,30 @@ urlpatterns = [
         'portal/user_dashboard/',
         UserDashboardView.as_view(),
         name="user_dashboard"
+    ),
+    path(
+        'main-menu-grid-menu-view/',
+        views.MainMenuGridMenuView.as_view(),
+        name="main_menu_grid_menu_view"
+    ),
+    path(
+        'pre-inspection-grid-menu-view/',
+        views.PreInspectionGridMenuView.as_view(),
+        name="pre_inspection_grid_menu_view"
+    ),
+    path(
+        'installation-grid-menu-view/',
+        views.InstallationGridMenuView.as_view(),
+        name="installation_grid_menu_view"
+    ),
+    path(
+        'disbursement-grid-menu-view/',
+        views.DisbursementGridMenuView.as_view(),
+        name="disbursement_grid_menu_view"
+    ),
+    path(
+        'review-grid-menu-view/',
+        views.ReviewGridMenuView.as_view(),
+        name="review_grid_menu_view"
     ),
 ]

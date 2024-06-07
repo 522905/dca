@@ -50,7 +50,7 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
 	InstallationReviewAdminForm, PreInspectionReviewAdminForm, CancelInvitationForm, UpdateAddressForm, \
 	NewRelationCreated, ChangePhoneNumberForm, UploadUIDForEKYCForm, UjjwalaApplicationServiceRequestForm, \
 	ReviewUpdatedAddressForm, UpdateBankDetailsNewForm, BankDetailsUpdateRequestForm, ChangeCylinderTypeForm, \
-	ChangeCylinderTypeForm, ChangeCylinderTypeRequestForm
+	ChangeCylinderTypeForm, ChangeCylinderTypeRequestForm, ChangeCylinderTypeRequestOverrideForm
 from ujjwala.global_functions import login_required_if_mech_inspection
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
 	FamilyMembers, DisbursementDrive, UjjwalaSearchLog, ConnectionDisbursementInvitation, BankDetailsUpdateRequest, \
@@ -62,7 +62,8 @@ from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_
 	send_ujjwala_share_on_social_media_link, \
 	can_resolve_service_request, ujjwala_application_state_logs, is_front_end_staff, \
 	get_data_for_new_relation, re_create_legal_docs, download_change_cylinder_type_form, \
-	download_ujjwala_physical_legal_docs, upload_form_e_document_and_whatsapp
+	download_ujjwala_physical_legal_docs, upload_form_e_document_and_whatsapp, can_process_change_cylinder_request, \
+	can_review_disbursement_form_abc_permission
 from utils.global_functions import unsign_data_base64, sign_data_base64, upload_file_to_minio_bucket
 
 
@@ -3805,6 +3806,49 @@ class ChangeCylinderTypeRequestView(FormView):
 		return response
 
 
+class ChangeCylinderTypeRequestOverrideView(FormView):
+	form_class = ChangeCylinderTypeRequestOverrideForm
+	template_name = "ujjwala/service_request/change_cylinder_type/change_cylinder_type_request_override.html"
+
+	def get_object(self, queryset=None):
+		try:
+			obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No application with id: {} found.".format(self.kwargs.get('pk'))
+			)
+		return obj
+
+	def dispatch(self, request, *args, **kwargs):
+		user = get_current_user()
+		if not user.has_perm('ujjwala.can_override_change_cylinder_type_request'):
+			return render(self.request, "ujjwala/response.html",
+			              {"heading": "Change Cylinder Type Service Request", "message": "Permission Denied"})
+		return super().dispatch(request, args, kwargs)
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		obj = self.get_object()
+		context.update({
+			"obj": obj
+		})
+		return context
+
+	def get_form_kwargs(self):
+		kwargs = super().get_form_kwargs()
+		return kwargs
+
+	def form_valid(self, form):
+		obj = self.get_object()
+		data = form.cleaned_data
+		obj.override_change_cylinder_type = True
+		obj.sdms_refills = data.get('sdms_refills')
+		obj.override_change_cylinder_type_by = get_current_user()
+		obj.save()
+		messages.add_message(self.request, messages.INFO, "Form Updated Successfully.")
+		response = redirect(reverse('ujjwala:change_cylinder_request_list'))
+		return response
+
 
 class UploadUIDForEKYCView(FormView):
 	form_class = UploadUIDForEKYCForm
@@ -4171,3 +4215,182 @@ class CamundaChangeAddressView(FormView):
 				"message": "Address Updated Successfully"
 			}
 		)
+
+
+class MainMenuGridMenuView(TemplateView):
+	template_name = 'ujjwala/grid_menu.html'
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+
+		menu_items = [
+				{
+					"name": "Search Status",
+					"icon": "fa-file-text",
+					"url": reverse("ujjwala:application_status_search"),
+				},
+				{
+					"name": "Share Form Link",
+					"icon": "fa-file-text",
+					"url": reverse("ujjwala:share_web_form_link"),
+				},
+			]
+
+		if can_process_change_cylinder_request(get_current_user()):
+			menu_items.append(
+				{
+					"name": "Change Cylinder Requests",
+					"icon": "fa-file-text",
+					"url": reverse("ujjwala:change_cylinder_request_list"),
+				}
+			)
+
+		context.update({
+			"menu": {
+				"name": "Main Menu",
+				"items": menu_items
+			}
+		})
+		return context
+
+
+class PreInspectionGridMenuView(TemplateView):
+	template_name = 'ujjwala/grid_menu.html'
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+
+		menu = {
+			"name": "Pre-Inspection",
+			"items": [
+				{
+					"name": "Suraksha List",
+					"icon": "fa-file-text",
+					"url": reverse("ujjwala:index"),
+				},
+				{
+					"name": "Start New Suraksha Drill",
+					"icon": "fa-file-text",
+					"url": reverse("ujjwala:pre_inspection_create"),
+				},
+			]
+		}
+
+		context.update({
+			"menu": menu
+		})
+		return context
+
+
+class DisbursementGridMenuView(TemplateView):
+	template_name = 'ujjwala/grid_menu.html'
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+
+		menu = {
+			"name": "Disbursement",
+			"items": [
+				{
+					"name": "Applicant Walk-In",
+					"icon": "fa-file-text",
+					"url": reverse("ujjwala:connection_disbursement_list"),
+				},
+				{
+					"name": "Social Media Updates",
+					"icon": "fa-file-text",
+					"url": reverse("ujjwala:connection_disbursement_social_media_updates_list"),
+				},
+				{
+					"name": "Material Delivery",
+					"icon": "fa-file-text",
+					"url": reverse("ujjwala:connection_disbursement_material_delivery_list"),
+				},
+			]
+		}
+
+		context.update({
+			"menu": menu
+		})
+		return context
+
+
+class InstallationGridMenuView(TemplateView):
+	template_name = 'ujjwala/grid_menu.html'
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+
+		menu = {
+			"name": "Installation",
+			"items": [
+				{
+					"name": "List",
+					"icon": "fa-file-text",
+					"url": reverse("ujjwala:index"),
+				},
+				{
+					"name": "Review List",
+					"icon": "fa-file-text",
+					"url": reverse("ujjwala:pre_inspection_create"),
+				},
+			]
+		}
+
+		context.update({
+			"menu": menu
+		})
+		return context
+
+
+class ReviewGridMenuView(TemplateView):
+	template_name = 'ujjwala/grid_menu.html'
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		menu_items = []
+		user = get_current_user()
+
+		if is_member_of_disbursement_drive(user):
+			if can_review_disbursement_form_abc_permission(user):
+				menu_items.append({
+					"name": "Accept Legal Documents",
+					"icon": "fa-file-text",
+					"url": reverse("ujjwala:connection_disbursement_review_form_abc_list"),
+				})
+			menu_items.append({
+				"name": "SV Label Print",
+				"icon": "fa-file-text",
+				"url": reverse("ujjwala:connection_disbursement_sv_label_print_list"),
+			})
+
+		if is_member_of_reviewer_group(user):
+			menu_items.append({
+				"name": "Audit Application",
+				"icon": "fa-file-text",
+				"url": reverse("ujjwala:ujjwala_application_audit_list"),
+			})
+			menu_items.append({
+				"name": "Address",
+				"icon": "fa-file-text",
+				"url": reverse("ujjwala:address_review_list"),
+			})
+			menu_items.append({
+				"name": "Form A B C",
+				"icon": "fa-file-text",
+				"url": reverse("ujjwala:review_form_abc_list"),
+			})
+			menu_items.append({
+				"name": "Installation",
+				"icon": "fa-file-text",
+				"url": reverse("ujjwala:installation_review_list"),
+			})
+
+		context.update({
+			"menu": {
+				"name": "Review",
+				"items": menu_items
+			}
+		})
+		return context
+

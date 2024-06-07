@@ -3,100 +3,121 @@
 {% if user.is_authenticated %}
 <div class="sidebar">
     <ul class="nav-links">
-        <li>
-            <a href="{% url 'ujjwala:user_dashboard' %}" data-turbolinks="false">
-            <i class='bx bx-grid-alt' ></i>
-            <span class="link_name">Dashboard</span>
-            </a>
+        <li class="submenu_level2">
+            <a href="{% url 'ujjwala:main_menu_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Main Menu</a>
         </li>
+{#        <li>#}
+{#            <a href="{% url 'ujjwala:user_dashboard' %}" data-turbolinks="false">#}
+{#            <i class='bx bx-grid-alt' ></i>#}
+{#            <span class="link_name">Dashboard</span>#}
+{#            </a>#}
+{#        </li>#}
 {#        <li>#}
 {#            <a href="{% url 'ujjwala:i_web_form' %}" data-turbolinks="false">#}
 {#            <i class='bx bx-grid-alt' ></i>#}
 {#            <span class="link_name">Fill New Form</span>#}
 {#            </a>#}
 {#        </li>#}
-        <li>
-            <a href="{% url 'ujjwala:application_status_search' %}" data-turbolinks="false">
-            <i class='bx bx-grid-alt' ></i>
-            <span class="link_name">Status Search</span>
-            </a>
-        </li>
-        <li>
-            <a href="{% url 'ujjwala:share_web_form_link' %}" data-turbolinks="false">
-            <i class='bx bx-grid-alt' ></i>
-            <span class="link_name">Share Form Link</span>
-            </a>
-        </li>
-        <li>
-            <div class="iocn-link">
-            <a href="#" data-turbolinks="false">
-                <i class='bx bx-collection' ></i>
-                <span class="link_name">Suraksha-Drill</span>
-            </a>
-            <i class='bx bxs-chevron-down arrow' ></i>
-            </div>
-            <ul class="sub-menu">
-                <li><a href="{% url 'ujjwala:index' %}" data-turbolinks="false">Pre-Suraksha-Drill List</a></li>
-                <li><a href="{% url 'ujjwala:pre_inspection_create' %}" data-turbolinks="false">Start a New Pre-Suraksha-Drill </a></li>
-            </ul>
+{#        <li>#}
+{#            <a href="{% url 'ujjwala:application_status_search' %}" data-turbolinks="false">#}
+{#            <i class='bx bx-grid-alt' ></i>#}
+{#            <span class="link_name">Status Search</span>#}
+{#            </a>#}
+{#        </li>#}
+{#        <li>#}
+{#            <a href="{% url 'ujjwala:share_web_form_link' %}" data-turbolinks="false">#}
+{#            <i class='bx bx-grid-alt' ></i>#}
+{#            <span class="link_name">Share Form Link</span>#}
+{#            </a>#}
+{#        </li>#}
+        <li class="submenu_level2">
+            <a href="{% url 'ujjwala:pre_inspection_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Suraksha-Drill</a>
         </li>
         {% if user|has_disbursement_permission %}
-        <li>
-            <div class="iocn-link">
-            <a href="#" data-turbolinks="false">
-                <i class='bx bx-collection' ></i>
-                <span class="link_name">Disbursement</span>
-            </a>
-            <i class='bx bxs-chevron-down arrow' ></i>
-            </div>
-            <ul class="sub-menu">
-                <li><a href="{% url 'ujjwala:connection_disbursement_list' %}" data-turbolinks="false">1 - Applicant Walk In </a></li>
+            <li class="submenu_level2">
+                <a href="{% url 'ujjwala:disbursement_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Disbursement</a>
+            </li>
+        {% endif %}
+        <li class="submenu_level2">
+            <a href="{% url 'ujjwala:installation_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Installation</a>
+        </li>
+        <li class="submenu_level2">
+            <a href="{% url 'ujjwala:review_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Review</a>
+        </li>
+{#        <li>#}
+{#        <li>#}
+{#            <div class="iocn-link">#}
+{#            <a href="#" data-turbolinks="false">#}
+{#                <i class='bx bx-collection' ></i>#}
+{#                <span class="link_name">Suraksha-Drill</span>#}
+{#            </a>#}
+{#            <i class='bx bxs-chevron-down arrow' ></i>#}
+{#            </div>#}
+{#            <ul class="sub-menu">#}
+{#                <li><a href="{% url 'ujjwala:index' %}" data-turbolinks="false">Pre-Suraksha-Drill List</a></li>#}
+{#                <li><a href="{% url 'ujjwala:pre_inspection_create' %}" data-turbolinks="false">Start a New Pre-Suraksha-Drill </a></li>#}
+{#            </ul>#}
+{#        </li>#}
+{#        {% if user|has_disbursement_permission %}#}
+{#        <li>#}
+{#            <div class="iocn-link">#}
+{#            <a href="#" data-turbolinks="false">#}
+{#                <i class='bx bx-collection' ></i>#}
+{#                <span class="link_name">Disbursement</span>#}
+{#            </a>#}
+{#            <i class='bx bxs-chevron-down arrow' ></i>#}
+{#            </div>#}
+{#            <ul class="sub-menu">#}
+{#                <li><a href="{% url 'ujjwala:connection_disbursement_list' %}" data-turbolinks="false">1 - Applicant Walk In </a></li>#}
 {#                <li><a href="{% url 'ujjwala:connection_disbursement_review_form_abc_list' %}" data-turbolinks="false">2 - Accept Legal Documents </a></li>#}
 {#                <li><a href="{% url 'ujjwala:connection_disbursement_sv_label_print_list' %}" data-turbolinks="false">3 - SV Label Print </a></li>#}
-                <li><a href="{% url 'ujjwala:connection_disbursement_social_media_updates_list' %}" data-turbolinks="false">Social Media Updates </a></li>
-                <li><a href="{% url 'ujjwala:connection_disbursement_material_delivery_list' %}" >2 - Material Delivery </a></li>
+{#                <li><a href="{% url 'ujjwala:connection_disbursement_social_media_updates_list' %}" data-turbolinks="false">Social Media Updates </a></li>#}
+{#                <li><a href="{% url 'ujjwala:connection_disbursement_material_delivery_list' %}" >2 - Material Delivery </a></li>#}
+{##}
+{#            </ul>#}
+{#        </li>#}
+{#        {% endif %}#}
 
-            </ul>
-        </li>
-        {% endif %}
-
-        {% if user|has_disbursement_permission %}
-        <li>
-            <div class="iocn-link">
-            <a href="#" data-turbolinks="false">
-                <i class='bx bx-collection' ></i>
-                <span class="link_name">Back End</span>
-            </a>
-            <i class='bx bxs-chevron-down arrow' ></i>
-            </div>
-            <ul class="sub-menu">
+{#        {% if user|has_disbursement_permission %}#}
+{#        <li>#}
+{#            <div class="iocn-link">#}
+{#            <a href="#" data-turbolinks="false">#}
+{#                <i class='bx bx-collection' ></i>#}
+{#                <span class="link_name">Back End</span>#}
+{#            </a>#}
+{#            <i class='bx bxs-chevron-down arrow' ></i>#}
+{#            </div>#}
+{#            <ul class="sub-menu">#}
 {#                <li><a href="{% url 'ujjwala:connection_disbursement_list' %}" data-turbolinks="false">1 - Applicant Walk In </a></li>#}
-                {% if user|has_disbursement_review_abc_form_permission %}
-                    <li><a href="{% url 'ujjwala:connection_disbursement_review_form_abc_list' %}" data-turbolinks="false">1 - Accept Legal Documents </a></li>
-                {% endif %}
-                <li><a href="{% url 'ujjwala:connection_disbursement_sv_label_print_list' %}" data-turbolinks="false">2 - SV Label Print </a></li>
-            </ul>
-        </li>
-        {% endif %}
+{#                {% if user|has_disbursement_review_abc_form_permission %}#}
+{#                    <li><a href="{% url 'ujjwala:connection_disbursement_review_form_abc_list' %}" data-turbolinks="false">1 - Accept Legal Documents </a></li>#}
+{#                {% endif %}#}
+{#                <li><a href="{% url 'ujjwala:connection_disbursement_sv_label_print_list' %}" data-turbolinks="false">2 - SV Label Print </a></li>#}
+{#            </ul>#}
+{#        </li>#}
+{#        {% endif %}#}
 {#        <li><a href="{% url 'ujjwala:cancel_invitation' %}" data-turbolinks="false">#}
 {#            <i class='bx bx-grid-alt' ></i><span class="link_name">Cancel Invitation</span></a>#}
 {#        </li>#}
-        <li>
-            <div class="iocn-link">
-            <a href="#" data-turbolinks="false">
-                <i class='bx bx-collection' ></i>
-                <span class="link_name">Installation</span>
-            </a>
-            <i class='bx bxs-chevron-down arrow' ></i>
-            </div>
-            <ul class="sub-menu">
-                <li><a href="{% url 'ujjwala:installation_list' %}" data-turbolinks="false">List View</a></li>
-                <li><a href="{% url 'ujjwala:installation_review_list' %}" data-turbolinks="false">Review List</a></li>
-            </ul>
-        </li>
-        {% if user|has_process_change_cylinder_type_request_permission %}
-            <li><a href="{% url 'ujjwala:change_cylinder_request_list' %}" data-turbolinks="false">Change Cylinder Requests</a></li>
-        {% endif %}
+{#        <li>#}
+{#            <div class="iocn-link">#}
+{#            <a href="#" data-turbolinks="false">#}
+{#                <i class='bx bx-collection' ></i>#}
+{#                <span class="link_name">Installation</span>#}
+{#            </a>#}
+{#            <i class='bx bxs-chevron-down arrow' ></i>#}
+{#            </div>#}
+{#            <ul class="sub-menu">#}
+{#                <li><a href="{% url 'ujjwala:installation_list' %}" data-turbolinks="false">List View</a></li>#}
+{#                <li><a href="{% url 'ujjwala:installation_review_list' %}" data-turbolinks="false">Review List</a></li>#}
+{#            </ul>#}
+{#        </li>#}
+{#        {% if user|has_process_change_cylinder_type_request_permission %}#}
+{#            <li class="submenu_level2">#}
+{#                <a href="{% url 'ujjwala:change_cylinder_request_list' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Change Cylinder Requests</a>#}
+{#            </li>#}
+{#            <li><a href="{% url 'ujjwala:change_cylinder_request_list' %}" data-turbolinks="false">Change Cylinder Requests</a></li>#}
+{#        {% endif %}#}
 {#        {% if user|has_second_delivery_permission %}#}
 {#        <li>#}
 {#            <div class="iocn-link">#}
@@ -111,26 +132,26 @@
 {#            </ul>#}
 {#        </li>#}
 {#        {% endif %}#}
-        {% if user|has_review_permission %}
-        <li>
-            <div class="iocn-link">
-            <a href="#" data-turbolinks="false">
-                <i class='bx bx-collection' ></i>
-                <span class="link_name">Review</span>
-            </a>
-            <i class='bx bxs-chevron-down arrow' ></i>
-            </div>
-            <ul class="sub-menu">
-                <li><a href="{% url 'ujjwala:ujjwala_application_audit_list' %}" data-turbolinks="false">Audit Application </a></li>
+{#        {% if user|has_review_permission %}#}
+{#        <li>#}
+{#            <div class="iocn-link">#}
+{#            <a href="#" data-turbolinks="false">#}
+{#                <i class='bx bx-collection' ></i>#}
+{#                <span class="link_name">Review</span>#}
+{#            </a>#}
+{#            <i class='bx bxs-chevron-down arrow' ></i>#}
+{#            </div>#}
+{#            <ul class="sub-menu">#}
+{#                <li><a href="{% url 'ujjwala:ujjwala_application_audit_list' %}" data-turbolinks="false">Audit Application </a></li>#}
 {#                <li><a href="{% url 'ujjwala:pre_inspection_review_list' %}" data-turbolinks="false">Pre-Inspection </a></li>#}
-                <li><a href="{% url 'ujjwala:address_review_list' %}" data-turbolinks="false">Address </a></li>
-                <li><a href="{% url 'ujjwala:review_form_abc_list' %}" data-turbolinks="false">Form A B C </a></li>
-                <li><a href="{% url 'ujjwala:installation_review_list' %}" data-turbolinks="false">Installation </a></li>
-            </ul>
-        </li>
-        {% endif %}
+{#                <li><a href="{% url 'ujjwala:address_review_list' %}" data-turbolinks="false">Address </a></li>#}
+{#                <li><a href="{% url 'ujjwala:review_form_abc_list' %}" data-turbolinks="false">Form A B C </a></li>#}
+{#                <li><a href="{% url 'ujjwala:installation_review_list' %}" data-turbolinks="false">Installation </a></li>#}
+{#            </ul>#}
+{#        </li>#}
+{#        {% endif %}#}
 
-        {% if user|has_service_request_resolve_permission %}
+{#        {% if user|has_service_request_resolve_permission %}#}
 {#        <li>#}
 {##}
 {#            <div class="iocn-link">#}
@@ -145,15 +166,15 @@
 {#                <li><a href="{% url 'ujjwala:cylinder_change_request_list' %}" data-turbolinks="false">5Kg Cylinder Change</a></li>#}
 {#            </ul>#}
 {#        </li>#}
-        {% endif %}
-        {% if user.is_authenticated %}
-        <li>
-            <a href="{% url 'logout' %}" >
-                <i class='material-icons left text-white' >exit_to_app</i>
-                <span class="link_name">Log out</span>
-            </a>
-        </li>
-        {% endif %}
+{#        {% endif %}#}
+{#        {% if user.is_authenticated %}#}
+{#        <li>#}
+{#            <a href="{% url 'logout' %}" >#}
+{#                <i class='material-icons left text-white' >exit_to_app</i>#}
+{#                <span class="link_name">Log out</span>#}
+{#            </a>#}
+{#        </li>#}
+{#        {% endif %}#}
 
     </ul>
 </div>

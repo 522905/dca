@@ -728,6 +728,10 @@ class CustomerProfile(models.Model):
 		return sd.link if sd else ''
 
 	def get_refill_sales_order_count(self):
+		if self.ujjwalav2application_set.exists():
+			ujjwala_obj = self.ujjwalav2application_set.first()
+			if ujjwala_obj.override_change_cylinder_type:
+				return ujjwala_obj.sdms_refills
 		return self.salesorder_set.filter(order_sub_type='Refill Order').exclude(
 			order_status=SalesOrderStatusEnum.CANCELLED).count()
 
@@ -1022,6 +1026,7 @@ class SalesOrder(models.Model):
 	extra_data = models.JSONField(null=True)
 	auto_generated = models.BooleanField(default=False)
 	hide_from_view = models.BooleanField(default=False)
+	to_be_read_from_sdms = models.BooleanField(null=True, blank=True)
 
 	class Meta:
 		constraints = [
