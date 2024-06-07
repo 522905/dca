@@ -4226,12 +4226,12 @@ class MainMenuGridMenuView(TemplateView):
 		menu_items = [
 				{
 					"name": "Search Status",
-					"icon": "fa-file-text",
+					"icon": "fa fa-search",
 					"url": reverse("ujjwala:application_status_search"),
 				},
 				{
 					"name": "Share Form Link",
-					"icon": "fa-file-text",
+					"icon": "fa-share-square",
 					"url": reverse("ujjwala:share_web_form_link"),
 				},
 			]
@@ -4239,8 +4239,8 @@ class MainMenuGridMenuView(TemplateView):
 		if can_process_change_cylinder_request(get_current_user()):
 			menu_items.append(
 				{
-					"name": "Change Cylinder Requests",
-					"icon": "fa-file-text",
+					"name": "Change Cylinder",
+					"icon": "fa fa-exchange",
 					"url": reverse("ujjwala:change_cylinder_request_list"),
 				}
 			)
@@ -4261,16 +4261,16 @@ class PreInspectionGridMenuView(TemplateView):
 		context = super().get_context_data(**kwargs)
 
 		menu = {
-			"name": "Pre-Inspection",
+			"name": "Suraksha Drill/Pre-Inspection",
 			"items": [
 				{
-					"name": "Suraksha List",
+					"name": "List",
 					"icon": "fa-file-text",
 					"url": reverse("ujjwala:index"),
 				},
 				{
-					"name": "Start New Suraksha Drill",
-					"icon": "fa-file-text",
+					"name": "Start New",
+					"icon": "fa fa-shield",
 					"url": reverse("ujjwala:pre_inspection_create"),
 				},
 			]
@@ -4367,22 +4367,22 @@ class ReviewGridMenuView(TemplateView):
 		if is_member_of_reviewer_group(user):
 			menu_items.append({
 				"name": "Audit Application",
-				"icon": "fa-file-text",
+				"icon": "fa fa-pencil",
 				"url": reverse("ujjwala:ujjwala_application_audit_list"),
 			})
 			menu_items.append({
 				"name": "Address",
-				"icon": "fa-file-text",
+				"icon": "fa fa-map-marker",
 				"url": reverse("ujjwala:address_review_list"),
 			})
 			menu_items.append({
 				"name": "Form A B C",
-				"icon": "fa-file-text",
+				"icon": "fa-sticky-note",
 				"url": reverse("ujjwala:review_form_abc_list"),
 			})
 			menu_items.append({
 				"name": "Installation",
-				"icon": "fa-file-text",
+				"icon": "fa fa-wrench",
 				"url": reverse("ujjwala:installation_review_list"),
 			})
 

@@ -4,7 +4,7 @@
 <div class="sidebar">
     <ul class="nav-links">
         <li class="submenu_level2">
-            <a href="{% url 'ujjwala:main_menu_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Main Menu</a>
+            <a href="{% url 'ujjwala:main_menu_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-bars" aria-hidden="true"></i>Main Menu</a>
         </li>
 {#        <li>#}
 {#            <a href="{% url 'ujjwala:user_dashboard' %}" data-turbolinks="false">#}
@@ -31,7 +31,7 @@
 {#            </a>#}
 {#        </li>#}
         <li class="submenu_level2">
-            <a href="{% url 'ujjwala:pre_inspection_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Suraksha-Drill</a>
+            <a href="{% url 'ujjwala:pre_inspection_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-shield" aria-hidden="true"></i>Suraksha-Drill</a>
         </li>
         {% if user|has_disbursement_permission %}
             <li class="submenu_level2">
@@ -39,10 +39,10 @@
             </li>
         {% endif %}
         <li class="submenu_level2">
-            <a href="{% url 'ujjwala:installation_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Installation</a>
+            <a href="{% url 'ujjwala:installation_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-wrench" aria-hidden="true"></i>Installation</a>
         </li>
         <li class="submenu_level2">
-            <a href="{% url 'ujjwala:review_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Review</a>
+            <a href="{% url 'ujjwala:review_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-file-text-o" aria-hidden="true"></i>Review</a>
         </li>
 {#        <li>#}
 {#        <li>#}
