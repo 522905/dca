@@ -852,16 +852,16 @@ class CustomerGridMenuView(TemplateView):
 		context = super().get_context_data(**kwargs)
 
 		menu = {
-			"name": "Inspection",
+			"name": "Customer",
 			"items": [
 				{
 					"name": "Customer Profile",
-					"icon": "fa-file-text",
+					"icon": "fa-user",
 					"url": reverse("connection_app:customer_profile_search"),
 				},
 				{
 					"name": "Generate Lead",
-					"icon": "fa-file-text",
+					"icon": "fa-star",
 					"url": reverse("connection_app:customer_profile_search"),
 				},
 			]
@@ -884,12 +884,12 @@ class InspectionGridMenuView(TemplateView):
 			"items": [
 				{
 					"name": "Start Post Inspection",
-					"icon": "fa-file-text",
+					"icon": "fa-user-secret",
 					"url": reverse("connection_app:post_inspection_start"),
 				},
 				{
 					"name": "Post Inspection List",
-					"icon": "fa-file-text",
+					"icon": "fa-bars",
 					"url": reverse("connection_app:post_inspection_list"),
 				},
 			]
@@ -912,17 +912,17 @@ class SalesOrderGridMenuView(TemplateView):
 			"items": [
 				{
 					"name": "Sales Order List",
-					"icon": "fa-file-text",
+					"icon": "fa-book",
 					"url": reverse("connection_app:sales_order_list"),
 				},
 				{
 					"name": "Invoice Sales Order",
-					"icon": "fa-file-text",
+					"icon": "fa-credit-card",
 					"url": reverse("connection_app:sales_order_portability"),
 				},
 				{
 					"name": "Portability List",
-					"icon": "fa-file-text",
+					"icon": "fa-bars",
 					"url": reverse("connection_app:sales_order_portability_list"),
 				}
 			]

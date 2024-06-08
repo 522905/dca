@@ -4,7 +4,7 @@
      <div class="sidebar">
         <ul class="nav-links">
             <li class="submenu_level2">
-                <a href="{% url 'connection_app:customer_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Customer</a>
+                <a href="{% url 'connection_app:customer_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-user" aria-hidden="true"></i>Customer</a>
             </li>
 {#            <li class="submenu_level2">#}
 {#              <div class="submenu_L2wrap">#}
@@ -25,7 +25,7 @@
 {#            </li>#}
             {% if user|has_post_inspection_permission %}
             <li class="submenu_level2">
-                <a href="{% url 'connection_app:inspection_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Inspection</a>
+                <a href="{% url 'connection_app:inspection_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-user-secret" aria-hidden="true"></i>Inspection</a>
             </li>
 {#            <li class="submenu_level2">#}
 {#                <div class="submenu_L2wrap">  #}
@@ -39,7 +39,7 @@
 {#            </li>#}
             {% endif %}
             <li class="submenu_level2">
-                <a href="{% url 'connection_app:sales_order_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Sales Order</a>
+                <a href="{% url 'connection_app:sales_order_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-book" aria-hidden="true"></i>Sales Order</a>
             </li>
 {#              <div class="submenu_L2wrap">#}
 {#                <span class="link_name">Sales Order</span>#}
