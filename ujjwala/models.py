@@ -58,6 +58,7 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 	address_json = models.JSONField(null=True, blank=True)
 	contact_mobile = models.CharField(max_length=10)
 	consumer_id = models.CharField(max_length=16, null=True, blank=True, unique=True)
+	ration_card_number = models.CharField(max_length=28, null=True, blank=True)
 	uid_linked_mobile = models.CharField(max_length=10, null=True, blank=True)
 	sdms_mobile_number = models.CharField(max_length=10, null=True, blank=True)
 	uid_mobile_status = models.CharField(max_length=25, choices=UjjwalaUidMobileStatusEnum.choices, blank=True, null=True)
