@@ -402,8 +402,12 @@ class UjjwalaV2Application(models.Model, UjjwalaWhatsappCommunication):
 		else:
 			return "Connection Disbursement not initiated. Make sure Pre Inspection is done and accepted"
 
-	def get_husband_name(self):
-		return self.family_members.filter(relation=FamilyMemberRelationEnum.HUSBAND).first().name
+	def get_family_member_name(self):
+		if self.family_members.filter(relation=FamilyMemberRelationEnum.HUSBAND).exists():
+			return self.family_members.filter(relation=FamilyMemberRelationEnum.HUSBAND).first().name
+		if self.family_members.filter(relation=FamilyMemberRelationEnum.FATHER).exists():
+			return self.family_members.filter(relation=FamilyMemberRelationEnum.HUSBAND).first().name
+		return ''
 
 	@fsm_log_description
 	@fsm_log_by
