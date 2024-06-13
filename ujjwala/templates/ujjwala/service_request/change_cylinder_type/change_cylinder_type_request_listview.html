@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
     {% include 'ujjwala/pagination.html' %}
     <div class="p-2 pt-0 form_label" style="width: 100%;">
+        <form method="get">
+            {{ filter.form.as_p }}
+            <input type="submit" />
+        </form>
         {% for obj in object_list %}
             <div class="card mb-2 app_card" id="{{ obj.id }}_div">
                 <div class="card-header pl-2" style="background-color: lightsalmon">
@@ -14,7 +18,7 @@
                         <i class="fa fa-file-text"></i><a href="{% url 'ujjwala:change_cylinder_type_request' pk=obj.id %}" data-turbolinks="false"> {{ obj.id }} - <b>{{ obj.status }}</b></a>
                     </p>
                     <p class="float-right">
-                        <i class='fa fa-user-circle'></i><a href="{% url 'ujjwala:ujjwala_customer_profile' pk=obj.parent.id %}"><b style="font-size: 16px"> {{ obj.parent.name }}</b></a>
+                        <i class='fa fa-user-circle'></i><a href="{% url 'ujjwala:ujjwala_customer_profile' pk=obj.parent.id %}"><b style="font-size: 16px"> {{ obj.parent.name }}({{ obj.parent.id }})</b></a>
                     </p>
                 </div>
                 <div class="card-body pb-0 p-2 block">

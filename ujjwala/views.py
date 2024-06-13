@@ -4,6 +4,7 @@ import json
 import textwrap
 from functools import partial
 
+import django_filters
 import django_rq
 import requests
 from django import forms
@@ -25,9 +26,9 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, FormView, ListView, TemplateView, UpdateView
 from django_currentuser.middleware import get_current_user
+from django_filters import FilterSet
+from django_filters.views import FilterView
 from django_fsm_log.models import StateLog
-
-from connection_app.models import CustomerProfile
 from otp.models import Otp
 from service_request.enums import ServiceRequestTypeEnum, ServiceRequestTypeStatusEnum
 from service_request.models import ServiceRequest
@@ -81,6 +82,20 @@ def index(request):
 
 def legal_documents(request):
 	return render(request, 'ujjwala/legal-document-upload-form.html')
+
+
+class ChangeCylinderTypeRequestFilter(FilterSet):
+	parent_id = django_filters.NumberFilter(field_name='parent_id', label="Search Ujjwala Application:")
+
+	class Meta:
+		model = ChangeCylinderTypeRequest
+		fields = ['parent_id']
+
+	@property
+	def qs(self):
+		parent = super().qs
+
+		return parent.order_by('-id')
 
 
 @method_decorator(login_required, 'dispatch')
@@ -273,15 +288,15 @@ class UserDashboardView(TemplateView):
 			"user": user,
 			"ujjwala_queryset": UjjwalaV2Application.objects.filter(filled_by=user),
 			"ujjwala_rejected": UjjwalaV2Application.objects.filter(filled_by=user,
-			                                                        status=UjjwalaV2ApplicationStatus.APPLICATION_REJECTED),
+																	status=UjjwalaV2ApplicationStatus.APPLICATION_REJECTED),
 			"ujjwala_material_delivered": UjjwalaV2Application.objects.filter(filled_by=user, status__in=[
 				UjjwalaV2ApplicationStatus.MATERIAL_DELIVERED, UjjwalaV2ApplicationStatus.INSTALLED
 			]),
 			"preinspection_queryset": PreInspection.objects.filter(mechanic=user),
 			"preinspection_accepted": PreInspection.objects.filter(mechanic=user,
-			                                                       status=PreInspectionStatusEnum.ACCEPTED),
+																   status=PreInspectionStatusEnum.ACCEPTED),
 			"preinspection_rejected": PreInspection.objects.filter(mechanic=user,
-			                                                       status=PreInspectionStatusEnum.REJECTED),
+																   status=PreInspectionStatusEnum.REJECTED),
 		})
 		return context
 
@@ -3703,14 +3718,16 @@ class ChangeCylinderTypeView(FormView):
 			)
 		)
 		messages.add_message(self.request, messages.INFO,
-		                     f"Change Cylinder Type Request Generated Successfully. Id: {cctr_obj.id}")
+							 f"Change Cylinder Type Request Generated Successfully. Id: {cctr_obj.id}")
 		return redirect(reverse("ujjwala:change_cylinder_type", kwargs={'pk': self.kwargs.get('pk')}))
 
 
 @method_decorator(login_required, 'dispatch')
-class ChangeCylinderTypeRequestListView(ListView):
+class ChangeCylinderTypeRequestListView(FilterView):
 	model = ChangeCylinderTypeRequest
 	template_name = 'ujjwala/service_request/change_cylinder_type/change_cylinder_type_request_listview.html'
+	context_object_name = 'objects'
+	filterset_class = ChangeCylinderTypeRequestFilter
 
 	paginate_by = 20
 	permission = 'has_view_permission'
@@ -3719,13 +3736,13 @@ class ChangeCylinderTypeRequestListView(ListView):
 		user = get_current_user()
 		if not user.has_perm('ujjwala.can_process_change_cylinder_request'):
 			return render(self.request, "ujjwala/response.html",
-			              {"heading": "Change Cylinder Type Service Request", "message": "Permission Denied"})
+						  {"heading": "Change Cylinder Type Service Request", "message": "Permission Denied"})
 		return super().dispatch(request, args, kwargs)
 
-	def get_queryset(self):
-		return ChangeCylinderTypeRequest.objects.exclude(
-			status=ChangeCylinderTypeRequestStatusEnum.COMPLETED
-		)
+	# def get_queryset(self):
+	# 	return ChangeCylinderTypeRequest.objects.exclude(
+	# 		status=ChangeCylinderTypeRequestStatusEnum.COMPLETED
+	# 	)
 
 
 class ChangeCylinderTypeRequestView(FormView):
