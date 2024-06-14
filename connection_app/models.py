@@ -77,6 +77,7 @@ class ConnectionApplication(models.Model):
 		max_length=25, choices=ConnectionApplicationLeadCommunicationMode.choices, null=True, blank=True
 	)
 	last_execution_state = models.CharField(max_length=50, null=True, blank=True)
+	filled_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
 	customer_profile = models.ForeignKey("connection_app.CustomerProfile", on_delete=models.CASCADE, null=True)
 
 	# def status(request):

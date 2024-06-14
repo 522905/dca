@@ -2,13 +2,14 @@ import datetime
 
 from django.http import JsonResponse
 from django.urls import reverse
+from django_currentuser.middleware import get_current_user
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from . import models
 from .enums import ConnectionApplicationLeadStatus
-from .models import ConnectionApplication, ConnectionApplicationDocuments
+from .models import ConnectionApplication
 from .serializers import ConnectionApplicationSerializer
 
 
@@ -19,6 +20,9 @@ class ConnectionApplicationViewSet(viewsets.ModelViewSet):
     @action(methods=['post'], detail=False, url_path='wf')
     def web_form(self, request, *args, **kwargs):
         request.PERFORM_SUBMIT = True
+        user = get_current_user()
+        if user:
+            request.data['filled_by'] = user.id
         return super().create(request, *args, **kwargs)
 
     @action(methods=['post'], detail=True, url_path='reupload_application')
@@ -120,7 +124,7 @@ class ConnectionApplicationAPIViewSet(viewsets.ViewSet):
                 skipped_rows.append(payment_profile)
             else:
                 PaymentProfile.objects.create(
-                    case_num=payment_profile.get('case_num'),
+                    case_num=payment_profile.get('Case Num'),
                     closed_data=datetime.datetime.strptime(payment_profile.get("Closed Date"),
                                                            "%d-%b-%Y %I:%M:%S %p") if payment_profile.get(
                         "Closed Date") else None,
