@@ -79,7 +79,7 @@ class ConnectionApplication(models.Model):
 	last_execution_state = models.CharField(max_length=50, null=True, blank=True)
 	filled_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
 	customer_profile = models.ForeignKey("connection_app.CustomerProfile", on_delete=models.CASCADE, null=True)
-
+	customer_remarks = models.TextField(null=True, blank=True)
 	# def status(request):
 	# 	status = Status.objects.all()
 
