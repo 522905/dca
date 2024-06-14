@@ -1,9 +1,9 @@
 {% load static %}
-<!DOCTYPE html>
+<!DOCTYPE html> 
 
 <head>
 	<title>ARUN GAS SERVICE</title>
-	<link rel="icon" type="image/png" href="img/logo2.png">
+	<link rel="icon" type="image/png" href="img/New-Banner.png">
 	<meta charset="utf-8"></meta>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	
@@ -19,7 +19,6 @@
 	<script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
 
 	<script>
-
 		function keys(event) {
 			var keyCode = event.which;
 			if (keyCode >= 65 && keyCode <= 90 || keyCode >= 97 && keyCode <= 122 || keyCode >= 32 && keyCode <= 33) {
@@ -105,35 +104,177 @@
 			})
 		}
 
+        function showImage() {
+        // Get the selected value from the dropdown
+        var selectedValue = document.getElementById("connectionType").value;
 
+        // Get the image container element
+        var imageContainer = document.getElementById("imageContainer");
+
+        // Set the default image source
+        var imagePath = "images";
+
+        // Update the image source based on the selected value
+        switch (selectedValue) {
+            case "FC14#SINGLE":
+            imagePath = "images/cylinder_14.png";
+            break;
+            case "FC14#DOUBLE":
+            imagePath = "images/cylinder_double14kg.png";
+            break;
+            case "FC5#SINGLE":
+            imagePath = "images/cylinder_5kg.png";
+            break;
+            case "FC5#DOUBLE":
+            imagePath = "images/cylinder_double5kg.png";
+            break;
+            case "INVERTOR_BACKUP":
+            imagePath = "images/INVERTOR_CYLINDER.png";
+            break;
+            case "DOUBLE_INVERTOR_BACKUP":
+            imagePath = "images/INVERTOR_DOUBLE.png";
+            break;
+            // Add more cases for other options if needed
+
+            default:
+            // Use the default image for unknown options
+            break;
+        }
+
+        // Set the image source
+        imageContainer.src = imagePath;
+        }
 	</script>
 </head>
 
-<body>
-	
+<body>	
+    <div class="slideshow-container">
+        <div class="mySlides fade">
+          <!-- <div class="numbertext">1 / 3</div> -->
+          <!-- <img src="arungas.com\ujjwala\banner1.png" style="width:100%; height: 400px;"> -->
+          <!-- <div class="text">Caption Text</div> -->
+        </div>
+        
+        <div class="mySlides fade">
+          <!-- <div class="numbertext">2 / 3</div> -->
+          <img src="https://arungas.com/ujjwala/Banner_2024.jpg" style="width:100%; height: 400px;">
+          <!-- <div class="text">Caption Two</div> -->
+        </div>
+        
+        <div class="mySlides fade">
+          <!-- <div class="numbertext">3 / 3</div> -->
+          <!-- <img src="arungas.com\ujjwala\banner2.jpg" style="width:100%; height: 400px;"> -->
+          <!-- <div class="text">Caption Three</div> -->
+        </div>
+
+        <div class="mySlides fade">
+            <!-- <div class="numbertext">3 / 3</div> -->
+            <!-- <img src="arungas.com\ujjwala\banner3.jpg" style="width:100%; height: 400px;"> -->
+            <!-- <div class="text">Caption Three</div> -->
+        </div>
+
+        <div class="mySlides fade">
+            <!-- <div class="numbertext">3 / 3</div> -->
+            <!-- <img src="arungas.com\ujjwala\banner4.jpg" style="width:100%; height: 400px;"> -->
+            <!-- <div class="text">Caption Three</div> -->
+        </div>
+        
+        <div class="mySlides fade">
+            <!-- <div class="numbertext">3 / 3</div> -->
+            <!-- <img src="arungas.com\ujjwala\banner5.jpg" style="width:100%; height: 400px;"> -->
+            <!-- <div class="text">Caption Three</div> -->
+        </div>
+
+        </div>
+		
+        <br>
+        <div style="text-align:center">
+          <!-- <span class="dot"></span>  -->
+          <span class="dot"></span> 
+          <!-- <span class="dot"></span> 
+          <span class="dot"></span> 
+          <span class="dot"></span> 
+          <span class="dot"></span>  -->
+        </div>
+        
+        <script>
+            let slideIndex = 0;
+			showSlides();
+
+			function showSlides() {
+			let i;
+			let slides = document.getElementsByClassName("mySlides");
+			let dots = document.getElementsByClassName("dot");
+			for (i = 0; i < slides.length; i++) {
+				slides[i].style.display = "none";  
+			}
+			slideIndex++;
+			if (slideIndex > slides.length) {slideIndex = 1}    
+			for (i = 0; i < dots.length; i++) {
+				dots[i].className = dots[i].className.replace(" active", "");
+			}
+			slides[slideIndex-1].style.display = "block";  
+			dots[slideIndex-1].className += " active";
+			setTimeout(showSlides, 2000); // Change image every 2 seconds
+			}
+        </script>          
+        
+<div class="main">
 	<div class="container register">
 		<div class="form-contain">
 			<div id="form_hide">
-			 <img style="width:100%; height:250px;" src="{% static 'img/logo2.png'  %}"> 
+                <!-- <img style="width:100%; height:250px;" src="">  -->
+			    <!-- <img style="width:100%; height:250px;" src="C:\Users\rohan\Documents\New Connection Link\images\New-Banner.png">  -->
 				<h3 class="text-center">Form to Apply New Domestic LPG Gas Connection</h3>
-				<h4 class="text-center">नया घरेलू गैस कनेक्शन आवेदन करने के लिए फार्म</h4><br>
+				<h4 class="text-center" style="color: #004ea1;">नया घरेलू गैस कनेक्शन आवेदन करने के लिए फार्म</h4><br>
 				<form class="form-horizontal" action="" id="punjab" method="POST" enctype="multipart/form-data">
 					<div class="form-group">
-						<p>Mobile Number. (फोन नंबर)<strong style="color:red">*</strong></p>
+						<label>Mobile Number. (फोन नंबर)<strong style="color:red">*</strong></label>
 						<input type="text" class="form-control" id="mobile" pattern="[6789][0-9]{9}" name="mobile"
-							onkeypress="return digits(event)" value="" maxlength="10"  required />
-						<span id="mobile_detail" class="text-danger"></span>
+							onkeypress="return digits(event)" value="" maxlength="10" placeholder="Ex. 1234567890" required />
+						<!-- <span id="mobile_detail" class="text-danger"></span> -->
 					</div>
 					<div class="form-group">
-						<p>Your Name (आपका नाम)<strong style="color:red">*</strong></p>
-						<input type="text" class="form-control" id="customername" name="name" value="" required />
-						<span id="customername_detail" class="text-danger"></span>
+						<label>Your Name (आपका नाम)<strong style="color:red">*</strong></label>
+						<input type="text" class="form-control" id="customername" name="name" value="" placeholder="Enter Your Name" required />
+						<!-- <span id="customername_detail" class="text-danger"></span> -->
 					</div>
 					<div class="form-group">
-						<p>Current Address (वर्तमान पता)<strong style="color:red">*</strong></p>
-						<input type="text" class="form-control" id="currentaddress" name="address" value=""
-							required>
-						<span id="currentaddress_detail" class="text-danger"></span>
+						<label>House no. (हाउस नंबर)<strong style="color:red">*</strong></label>
+						<input type="text" class="form-control" id="house_no" name="house_no" value="" placeholder="House no" required>
+						<!-- <span id="currentaddress_detail" class="text-danger"></span> -->
+					</div>
+					<div class="form-group">
+						<label>Street no. (गली नंबर)<strong style="color:red">*</strong></label>
+						<input type="text" class="form-control" id="street_no" name="street_no" value="" placeholder="Street no." required>
+						<!-- <span id="currentaddress_detail" class="text-danger"></span> -->
+					</div>
+					<div class="form-group">
+						<label>Landmark (नजदीकी स्थान )<strong style="color:red">*</strong></label>
+						<input type="text" class="form-control" id="landmark" name="landmark" value="" placeholder="Landmark" required>
+						<!-- <span id="currentaddress_detail" class="text-danger"></span> -->
+					</div>
+					<div class="form-group">
+						<label>Area/Locality Village (क्षेत्र/इलाका )<strong style="color:red">*</strong></label>
+						<input type="text" class="form-control" id="village" name="village" value="" placeholder="Area/Locality" required>
+						<!-- <span id="currentaddress_detail" class="text-danger"></span> -->
+					</div>
+					<div class="form-group">
+						<label for="ward_no">Ward No. (वर्ड नंबर)<strong style="color:red">*</strong></label>
+						<input type="text" class="form-control" id="ward_no" name="ward_no" placeholder="Ward No." maxlength="3" required />
+					</div>
+					<div class="form-group">
+						<label for="post_office">Post Office <br>(पोस्ट ऑफीस)<strong style="color:red">*</strong></label>
+						<input type="text" class="form-control" id="post_office" name="post_office" minlength="5" placeholder="Post Office" required  />
+					</div>
+					<div class="form-group">
+						<label for="city">City (शहर)<strong style="color:red">*</strong></label>
+						<input type="text" class="form-control" id="city" name="city" placeholder="City" required />
+					</div>
+					<div class="form-group">
+						<label>Pincode (पिनकोड)<strong style="color:red">*</strong></label>
+						<input type="text" class="form-control" id="pincode" name="pincode" value="" placeholder="Pincode" required>
+						<!-- <span id="currentaddress_detail" class="text-danger"></span> -->
 					</div>
 					<div class="form-group">
 						<div class="row">
@@ -141,12 +282,12 @@
 								<p>Your Picture or Selfie(ग्राहक की फोटो)<strong style="color:red">*</strong>
 								</p><br>
 								<span class="custom-file-input" name="customerpicture"
-									id="customerpicture"></span><br>
+									id="customerpicture"></span><br> 
 								<span id="customerpicture_detail" class="text-danger"></span>
 							</div>
 							<div class="col-sm-2 col">
 								<p>Aadhar Card Front Photo (आधार कार्ड की फोटो)<strong
-										style="color:red">*</strong></p>
+									style="color:red">*</strong></p>
 								<span class="custom-file-input" name="aadharcard" id="aadharcard">
 								</span><br>
 							</div>
@@ -165,7 +306,6 @@
 								<span class="custom-file-input" name="OTHER_ID_PROOF"
 									id="identification"></span><br>
 							</div>
-							
 						</div>
 					</div>
 					<div class="form-group">
@@ -182,22 +322,34 @@
 					</div>
 					<div class="form-group">
 						<p>Connection Type (गैस कनेक्शन का प्रकार)<strong style="color:red">*</strong></p>
-						<select class="selectpicker form-control" data-style="warning" name="connection_type"
-							required>
+						<select class="selectpicker form-control" data-style="warning" name="connection_type" id="connectionType" onchange="showImage()" required>
 							<option value="" selected="selected">Select Connection Type (गैस कनेक्शन प्रकार चुनें)</option>
 							<option value="FC14#SINGLE">14.2 KG Single Connection (14.2 किलो सिंगल कनेक्शन)</option>
 							<option value="FC14#DOUBLE">14.2 Kg Double Connection (14.2 किलो डबल कनेक्श)</option>
 							<option value="FC5#SINGLE">5 KG Single Connection (5 किलो सिंगल कनेक्श)</option>
 							<option value="FC5#DOUBLE">5 KG Double Connection (5 किलो डबल कनेक्श)</option>
+                            <option value="INVERTOR_BACKUP">5 KG Invertor/Backup Single Connection (5 किलो सिंगल कनेक्श)</option>
+                            <!-- <option value="DOUBLE_INVERTOR_BACKUP">5 KG Invertor/Backup Double Connection (5 किलो डबल कनेक्श)</option> -->
 						</select>
+                        <img class="custome-image" id="imageContainer" src="" alt="">
 					</div>
+                    <!-- Image container to display the selected image -->
+                    <!-- <div>
+                        <img class="custome-image" id="imageContainer" src="cylinder_14.png" alt="Gas Cylinder Image">
+                    </div> -->
+
 					<div class="form-group">
 						<p>Referral Code</p>
 						<input type="text" class="form-control" id="reference" name="referral_code" value="">
 						<br>
+                         <!-- Suggestion Box -->
+                        <label for="suggestion">Remarks:</label>
+                        <textarea class="form-control" id="customer_remarks" name="customer_remarks" rows="3"></textarea>
+                        <br>
 						<input type="submit" id="submit" name="submit" value="submit" class="btn btn-success">
 					</div>
 				</form>
+               
 				<br>
 			</div>
 			<div id="cus_id"></div>
@@ -205,10 +357,24 @@
 				<span id="app_id"></span>
 				<span id="app_id_creation"></span>
 			</div>
-
 			<div id="message"></div>
 		</div>
 	</div>
+	<div class="footer">
+		<div class="container">
+			<div class="social-media">
+				<a href="https://www.instagram.com/arungas_ldh/" target="_blank">
+				<i class="fa fa-instagram" style="font-size:36px;color:red"></i>
+				<h3>@arungas_ldh</h3>
+			</div><br>
+			<div class="social-media">
+				<a href="https://www.facebook.com/arungasindane" target="_blank">
+				<i class="fa fa-facebook" style="font-size:36px;color:rgb(0, 76, 255)"></i>
+				<h3>@arungasindane</h3>     
+			</div>
+		</div>
+	</div>
+</div>
 	<script>
 	function getCookie(name) {
 		let cookieValue = null;
@@ -245,19 +411,30 @@
 				);
 
 			formdata.documents = documentArray;
-
 			formdata.item_code = formdata.connection_type.split('#')[0];
 			formdata.connection_type = formdata.connection_type.split('#')[1];
+			formdata.address_json = {
+				house_no: formdata.house_no,
+				floor: formdata.floor,
+				room_no: formdata.room_no,
+				street_no: formdata.street_no,
+				ward_no: formdata.ward_no,
+				landmark: formdata.landmark,
+				pincode: formdata.pincode,
+				village: formdata.village,
+				post_office: formdata.post_office,
+				city: formdata.city
+			}
 
-			console.log(formdata);
+			console.log(JSON.stringify(formdata));
 
 			jQuery('#submit').val('Please wait...');
 			jQuery('#submit').attr('disabled', true);
 
-			var formData = new FormData(this);
+			{#var formData = new FormData(this);#}
 
 			jQuery.ajax({
-				url: '/connection-app/connection-application/wf/',
+				url: '/connection_app/connection-application/wf/',
 				type: 'POST',
 				data: JSON.stringify(formdata),
 				contentType: "application/json; charset=utf-8",
@@ -534,7 +711,73 @@
 </body>
 
 </html>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style type="text/css">
+	.slideshow-container{ }
+    * {box-sizing: border-box;}
+    body {font-family: Verdana, sans-serif;}
+    .mySlides {display: none;}
+    img {vertical-align: middle;}
+    
+    /* Slideshow container */
+    .slideshow-container {
+      max-width: 1000px;
+      position: relative;
+      margin: auto;
+    }
+
+    /* Caption text */
+    .text {
+      color: #f2f2f2;
+      font-size: 15px;
+      padding: 8px 12px;
+      position: absolute;
+      bottom: 8px;
+      width: 100%;
+      text-align: center;
+    }
+    
+    /* Number text (1/3 etc) */
+    .numbertext {
+      color: #f2f2f2;
+      font-size: 12px;
+      padding: 8px 12px;
+      position: absolute;
+      top: 0;
+    }
+    
+    /* The dots/bullets/indicators */
+    .dot {
+      height: 15px;
+      width: 15px;
+      margin: 0 2px;
+      background-color: #bbb;
+      border-radius: 50%;
+      display: inline-block;
+      transition: background-color 0.6s ease;
+    }
+    
+    .active {
+      background-color: #717171;
+    }
+    
+    /* Fading animation */
+    .fade {
+      animation-name: fade;
+      opacity: 1;
+      animation-duration: 1.5s;
+    }
+    
+    @keyframes fade {
+      from {opacity: .4} 
+      to {opacity: 1}
+    }
+    
+    /* On smaller screens, decrease text size */
+    @media only screen and (max-width: 300px) {
+      .text {font-size: 11px}
+    }
+
 	body {
 		font-family: 'Roboto Slab', serif;
 	}
@@ -544,13 +787,14 @@
 		padding:20px;
 		float: left;
 		width: 100%;
+        /* background-image: linear-gradient(140deg, #dae53b 0%, #feffbd 50%, #ff8f00 75%); */
 	}
 
-	.register {
+	/* .register {
 		background: -webkit-linear-gradient(left, #DA1500, #FEA400);
 		margin-top:1%;
 		padding: 1%;
-	}
+	} */
 
 	.register-left {
 		text-align: center;
@@ -663,7 +907,7 @@
 		margin-top: 8%;
 		margin-bottom: -15%;
 		color: #495057;
-	h: 100px;
+		height: 100px;
 		color: #0062cc;
 		border: 2px solid #0062cc;
 		border-top-left-radius: 1.5rem;
@@ -676,3 +920,31 @@
         margin-bottom: -15%;
         color: #495057;
     }
+
+    .social-media{
+        text-align-last: center;
+        margin-right: 28%;
+    }
+    .social-media h3{
+        font-size: 14px;
+        margin-left: 152px;
+        margin-top: -28px;
+    }
+    .custome-image{
+        vertical-align: middle;
+        height: 219px;
+        margin-left: 86px
+    }
+
+    .form-control{
+        width: 104%;
+    }
+    textarea.form-control{
+        height: auto;
+        width: 400px;
+    }
+	.body{ 
+		background-color: #efefef;
+	}
+
+</style>

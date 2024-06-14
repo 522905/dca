@@ -1,5 +1,6 @@
 import datetime
 
+from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.urls import reverse
 from django_currentuser.middleware import get_current_user
@@ -20,9 +21,9 @@ class ConnectionApplicationViewSet(viewsets.ModelViewSet):
     @action(methods=['post'], detail=False, url_path='wf')
     def web_form(self, request, *args, **kwargs):
         request.PERFORM_SUBMIT = True
-        user = get_current_user()
-        if user:
-            request.data['filled_by'] = user.id
+        user: User = get_current_user()
+        if user and not user.is_anonymous:
+            request.data['filled_by_id'] = user.id
         return super().create(request, *args, **kwargs)
 
     @action(methods=['post'], detail=True, url_path='reupload_application')
