@@ -51,6 +51,7 @@ class ConnectionApplication(models.Model):
 	name = models.CharField(max_length=255, null=True)
 	mobile = models.CharField(max_length=10)
 	address = models.TextField()
+	address_json = models.JSONField(null=True, blank=True)
 	application_type = models.CharField(max_length=25, choices=ApplicationTypeEnum.choices)
 	item_code = models.CharField(max_length=25, choices=ItemCodeEnum.choices)
 	connection_type = models.CharField(max_length=25, choices=ConnectionTypeEnum.choices, null=True)
