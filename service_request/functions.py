@@ -1,9 +1,12 @@
+import datetime
+
 import requests
 from camunda.external_task.external_task import ExternalTask
 
-from service_request.enums import ServiceRequestTypeEnum
+from service_request.enums import ServiceRequestTypeEnum, ServiceRequestTypeStatusEnum
 from service_request.models import ServiceRequest
 from ujjwala.camunda_functions import start_process_in_camunda
+from ujjwala.models import UjjwalaV2Application
 
 
 def start_service_request_process_in_camunda(service_request_id, variables):
@@ -31,21 +34,38 @@ def start_service_request_process_in_camunda(service_request_id, variables):
 	sr_obj.save()
 
 
-def update_service_request_in_dca(service_request_id, task: ExternalTask):
-	sr_obj = ServiceRequest.objects.get(pk=service_request_id)
-
+def update_service_request_in_dca(task: ExternalTask):
+	request_type = task.get_variable('request_type')
+	service_request_id = task.get_variable('service_request_id')
 	application_id = task.get_variable('application_id')
 
-	if sr_obj.service_request_type == ServiceRequestTypeEnum.CHANGE_PHONE_NUMBER:
+	sr_obj = ServiceRequest.objects.get(pk=service_request_id)
+
+	if request_type == ServiceRequestTypeEnum.CHANGE_PHONE_NUMBER:
 		phone_number = task.get_variable('phone_number')
-		service_request_id = task.get_variable('service_request_id')
-		res = requests.post(
-			f"https://dca.arungas.com/ujjwala/ujjwala-bot/{application_id}/update_ujjwala_application_mobile_number/",
-			json={
-				"phone_number": phone_number,
-				"service_request_id": service_request_id,
-			}
-		)
-		res.raise_for_status()
-	elif sr_obj.service_request_type == ServiceRequestTypeEnum.UPDATE_ADDRESS:
-		pass
+		if task.get_variable('dca_app') == 'ujjwala':
+			application = UjjwalaV2Application.objects.get(pk=application_id)
+			application.contact_mobile = phone_number
+			application.save()
+	elif request_type == ServiceRequestTypeEnum.UPDATE_ADDRESS:
+		new_address = task.get_variable('new_address')
+		if task.get_variable('dca_app') == 'ujjwala':
+			application = UjjwalaV2Application.objects.get(pk=application_id)
+			application.address_json = new_address
+			application.address_verified = True
+			application.address_verified_by = sr_obj.reviewed_by
+			application.address_verified_on = sr_obj.reviewed_on
+			application.address_updated = True
+			application.address_updated_on = datetime.datetime.now()
+			application.save()
+
+	sr_obj.status = ServiceRequestTypeStatusEnum.SUCCESS
+	sr_obj.save()
+
+
+	# res = requests.post(
+	# 	# f"https://dca.arungas.com/ujjwala/ujjwala-bot/{application_id}/update_ujjwala_service_request/",
+	# 	f"http://192.168.168.4:60613/ujjwala/ujjwala-bot/{application_id}/update_ujjwala_service_request/",
+	# 	json=data
+	# )
+	# res.raise_for_status()

@@ -248,18 +248,10 @@ def handle_task(task: ExternalTask) -> TaskResult:
 				"first_name": {"value": payment_vars['first_name'], "type": "string"},
 			}
 			return task.complete(global_variables=result)
-		elif topic == 'dca_change_phone_number#update_changed_number_in_dca':
-			application_id = task.get_variable('application_id')
-			phone_number = task.get_variable('phone_number')
-			service_request_id = task.get_variable('service_request_id')
-			res = requests.post(
-				f"https://dca.arungas.com/ujjwala/ujjwala-bot/{application_id}/update_ujjwala_application_mobile_number/",
-				json={
-					"phone_number": phone_number,
-					"service_request_id": service_request_id,
-				}
-			)
-			res.raise_for_status()
+		elif topic == 'process_dca_service_request#update_service_request_in_dca':
+			action = task.get_variable('action')
+			if action == 'ACCEPT':
+				update_service_request_in_dca(task)
 			return task.complete()
 		elif topic == 'process_ekyc#process_existing_relationship':
 			incident_dict = _existing_relation_regex.search(task.get_variable('bpmnError')).groupdict()
