@@ -3,11 +3,11 @@
 <!-- <link rel="stylesheet" href="{% static '/css/zoom/zoomist.css' %}">
 <script src="{% static '/js/zoomist.js' %}"></script>
 <script defer src="{% static '/js/test.js' %}" ></script> -->
-	<h3>Application Status:<span> {{obj.get_status_display}}</h3>
-	<h3>Installation Status:<span> {{obj.get_installation_status_display}}</h3>
+<h3>Application Status:<span> {{obj.get_status_display}}</span></h3>
+<h3>Installation Status:<span> {{obj.get_installation_status_display}}</span></h3>
 	<div class="form-group">
 		<p>
-			<label>Name:</label> 
+			<label>Name:</label>
 			<span>{{obj.name}}</span>
 		</p>
 		<p>
@@ -19,8 +19,13 @@
 			<span>{{obj.communication_mode}}</span>
 		</p>
 		<p>
-			<label>Address:</label> 
-			<span>{{obj.address}}</span>
+			<label>Address:</label>
+            {% if obj.address %}
+			    <span>{{obj.address}}</span>
+            {% else %}
+                <span>HNo: {{obj.address_json.house_no}} St No.: {{ obj.address_json.street_no }} <br>{{ obj.address_json.village }} {{ obj.address_json.city }} - {{ obj.address_json.pincode }}
+                    {{obj.address_json.city}}</span>
+            {% endif %}
 		</p>
 		<p>
 			<label>Application Type:</label> 
