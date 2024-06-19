@@ -50,6 +50,7 @@ class ConnectionInstallationStatus(models.TextChoices):
 class ApplicationTypeEnum(models.TextChoices):
 	NEW_CONNECTION = 'NEW_CONNECTION', 'New Connection'
 	BLUE_BOOK = 'BLUE_BOOK', 'Blue Book'
+	ADD_ON_CYLINDER = 'ADD_ON_CYLINDER', 'Add On Cylinder'
 
 
 class ItemCodeEnum(models.TextChoices):
