@@ -38,29 +38,36 @@ def update_service_request_in_dca(task: ExternalTask):
 	request_type = task.get_variable('request_type')
 	service_request_id = task.get_variable('service_request_id')
 	application_id = task.get_variable('application_id')
+	action = task.get_variable('action')
 
 	sr_obj = ServiceRequest.objects.get(pk=service_request_id)
 
-	if request_type == ServiceRequestTypeEnum.CHANGE_PHONE_NUMBER:
-		phone_number = task.get_variable('phone_number')
-		if task.get_variable('dca_app') == 'ujjwala':
-			application = UjjwalaV2Application.objects.get(pk=application_id)
-			application.contact_mobile = phone_number
-			application.save()
-	elif request_type == ServiceRequestTypeEnum.UPDATE_ADDRESS:
-		new_address = task.get_variable('new_address')
-		if task.get_variable('dca_app') == 'ujjwala':
-			application = UjjwalaV2Application.objects.get(pk=application_id)
-			application.address_json = new_address
-			application.address_verified = True
-			application.address_verified_by = sr_obj.reviewed_by
-			application.address_verified_on = sr_obj.reviewed_on
-			application.address_updated = True
-			application.address_updated_on = datetime.datetime.now()
-			application.save()
+	if action == 'ACCEPT':
+		if request_type == ServiceRequestTypeEnum.CHANGE_PHONE_NUMBER:
+			phone_number = task.get_variable('phone_number')
+			if task.get_variable('dca_app') == 'ujjwala':
+				application = UjjwalaV2Application.objects.get(pk=application_id)
+				application.contact_mobile = phone_number
+				application.save()
+		elif request_type == ServiceRequestTypeEnum.UPDATE_ADDRESS:
+			new_address = task.get_variable('new_address')
+			if task.get_variable('dca_app') == 'ujjwala':
+				application = UjjwalaV2Application.objects.get(pk=application_id)
+				application.address_json = new_address
+				application.address_verified = True
+				application.address_verified_by = sr_obj.reviewed_by
+				application.address_verified_on = sr_obj.reviewed_on
+				application.address_updated = True
+				application.address_updated_on = datetime.datetime.now()
+				application.save()
 
-	sr_obj.status = ServiceRequestTypeStatusEnum.SUCCESS
-	sr_obj.save()
+		sr_obj.status = ServiceRequestTypeStatusEnum.COMPLETED
+		sr_obj.sdms_ticket_number = task.get_variable('sdms_ticket_number')
+		sr_obj.save()
+
+	else:
+		sr_obj.status = ServiceRequestTypeStatusEnum.REJECTED
+		sr_obj.save()
 
 
 	# res = requests.post(
