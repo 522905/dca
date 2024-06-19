@@ -100,6 +100,7 @@ class ConnectionApplicationDocumentsEnum(models.TextChoices):
 	MAIN_GATE = 'MAIN_GATE', 'Main Gate'
 	SURAKSHA_PIPE_PHOTO = 'SURAKSHA_PIPE_PHOTO', 'Suraksha Pipe Photo'
 	BANK_SUBSIDY_CERTIFICATE_PHOTO = 'BANK_SUBSIDY_CERTIFICATE_PHOTO', 'Bank Subsidy Certificate Photo'
+	GAS_COPY_PHOTO = 'GAS_COPY_PHOTO', 'Gas Copy Photo'
 
 	@classmethod
 	def get_skipped_additional_choices(cls):
