@@ -5,19 +5,19 @@ from django.urls import path
 from service_request import views
 
 urlpatterns = [
-	path('/dashboard/', views.DashboardView.as_view(), name="index"),
+	path('dashboard/', views.DashboardView.as_view(), name="index"),
 	path(
-		'/change-address-list-view/',
+		'change-address-list-view/',
 		views.ServiceRequestChangeAddressListView.as_view(),
 		name="service_request_change_address_list"
 	),
 	path(
-		'/change-phone-number-list-view/',
+		'change-phone-number-list-view/',
 		views.ServiceRequestChangePhoneNumberListView.as_view(),
 		name="service_request_change_phone_number_list"
 	),
 	path(
-		'/change-others-list-view/',
+		'change-others-list-view/',
 		views.ServiceRequestOthersListView.as_view(),
 		name="service_request_others_list"
 	),
