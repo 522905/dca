@@ -54,11 +54,16 @@ COMPILED_REGEX_PATTERN_OTHERS = re.compile(
 	"Available with (?P<omc>.*) LPGId : (?P<consumer_id>.*) DistName : (?P<distributor_name>.*)"
 )
 
+# Previous OTP SMS Template
+# SMS_OTP_MESSAGE = \
+# """
+# Dear Customer,
+# Your Verification code for {{for}} is {{code}}
+# """
+
+# New OTP SMS Template 22-06-2024
 SMS_OTP_MESSAGE = \
-"""
-Dear Customer, 
-Your Verification code for {{for}} is {{code}}
-"""
+	"{code} is your verification OTP. This OTP will expire in {valid_min} mins. Do not share it with anyone -Arun Gas"
 
 PDF_COMPRESSION_OPTIONS = {
 	"pageSize": "A4", "imageDpi": 150, "imageQuality": 80, "lowquality": True
@@ -1074,6 +1079,7 @@ def verify_whatsapp_contact_otp(reference_number, otp):
 
 
 # Send OTP SMS
+# Template Name: COMMON OTP V2
 def send_sms_contact_otp(contact_mobile):
 	from otp.models import Otp
 
@@ -1100,15 +1106,20 @@ def send_sms_contact_otp(contact_mobile):
 			"contact_mobile": contact_mobile
 		}
 	)
+	#
+	# context = {
+	# 	"for": "Phone Number Verification: {}".format(contact_mobile),
+	# 	"code": otp,
+	# }
 
 	context = {
-		"for": "Phone Number Verification: {}".format(contact_mobile),
 		"code": otp,
+		"valid_min": "5",
 	}
 
 	message = SMS_OTP_MESSAGE.format(**context)
 
-	data = requests.post("https://4r198.api.infobip.com/sms/2/text/advanced", json={
+	res = requests.post("https://4r198.api.infobip.com/sms/2/text/advanced", json={
 		"messages": [
 			{
 				"from": "ARUNGS",
@@ -1124,7 +1135,8 @@ def send_sms_contact_otp(contact_mobile):
 				"regional": {
 					"indiaDlt": {
 						"principalEntityId": "1101546710000030317",
-						"contentTemplateId": "1107161183026272363"
+						# "contentTemplateId": "1107161183026272363"
+						"contentTemplateId": "1107169822213183469"
 					}
 				},
 				"notifyUrl": "https://dca.arungas.com/commlog/infobip/webhook/",
@@ -1137,13 +1149,15 @@ def send_sms_contact_otp(contact_mobile):
 		'Authorization': 'App 140a3abf6dd9134f5defb703a54dfcf0-e3df520b-f144-4282-a174-aa3765c7b438'
 	})
 
-	if data.get('result', ''):
-		CommunicationLog.objects.create(
-			channel_subscriber=contact_mobile,
-			event="ujjwala_application_whatsapp_contact_otp", channel="whatsapp",
-			message_id=data.get('id')
-		)
-		return ref_no
+	if res.status_code == 200:
+		result = res.json()
+		if result.get('messages', ''):
+			CommunicationLog.objects.create(
+				channel_subscriber=contact_mobile,
+				event="ujjwala_application_sms_contact_otp", channel="sms",
+				message_id=result.get('messages', '')[0]['messageId']
+			)
+			return ref_no
 
 
 def verify_sms_contact_otp(reference_number, otp):

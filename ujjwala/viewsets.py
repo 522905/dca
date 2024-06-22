@@ -1407,7 +1407,7 @@ class UjjwalaApplicationOtpViewSet(viewsets.ViewSet):
     @action(methods=['get'], detail=False, url_path='send_sms_otp')
     def send_sms_otp(self, request: HttpRequest, *args, **kwargs):
         contact_mobile = request.GET.get('contact_mobile')
-        result = send_sms_contact_otp(request, contact_mobile)
+        result = send_sms_contact_otp(contact_mobile)
         return JsonResponse({
             "reference_number": result
         })
