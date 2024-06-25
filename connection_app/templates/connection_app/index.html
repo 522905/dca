@@ -346,7 +346,7 @@
 									}).
 									then(() => {
 										return jQuery.ajax({
-											url: '/ujjwala/ujjwala-otp/send_whatsapp_otp/',
+											url: '/ujjwala/ujjwala-otp/send_sms_otp/',
 											type: "GET",
 											data: {
 												contact_mobile: mobile
@@ -374,7 +374,7 @@
 										$('.modal-footer button').attr('disabled', true);
 										
 										jQuery.ajax({
-											url: '/ujjwala/ujjwala-otp/verify_whatsapp_otp/',
+											url: '/ujjwala/ujjwala-otp/verify_sms_otp/',
 											type: "POST",
 											data: {
 												"otp": whatsapp_otp,
