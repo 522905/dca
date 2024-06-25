@@ -644,6 +644,7 @@
 			formdata.documents = documentArray;
 			formdata.item_code = formdata.connection_type.split('#')[0];
 			formdata.connection_type = formdata.connection_type.split('#')[1];
+			formdata.mobile = formdata.contact_mobile.split(':')[0];
 			formdata.address_json = {
 				house_no: formdata.house_no,
 				floor: formdata.floor,
