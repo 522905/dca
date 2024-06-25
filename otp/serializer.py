@@ -13,7 +13,7 @@ from rest_framework import serializers
 from communication_log.models import CommunicationLog
 from otp.enums import OtpChannels
 from otp.models import Otp
-from ujjwala.models import UjjwalaV2Application
+
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
@@ -201,6 +201,8 @@ class GetOtpVerificationPhonesSerializer(serializers.Serializer):
 	uid_linked_mobile = serializers.CharField()
 
 	def get_numbers(self):
+		from ujjwala.models import UjjwalaV2Application
+
 		parent_id = self.validated_data.get('parent_id')
 		application = UjjwalaV2Application.objects.filter(pk=parent_id)
 		numbers = [application.contact_mobile, application.uid_linked_mobile]
