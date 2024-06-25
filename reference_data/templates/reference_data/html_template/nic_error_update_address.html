@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+
+        .image{
+          border-radius:  10px 10px 0 0px;
+        }
+
+        .card {
+          box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+          transition: 0.3s;
+          width: 380;
+          border-radius: 10px;
+          margin: 0 auto;
+        }
+        
+        .card:hover {
+          box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+        }
+        
+        .container {
+          padding: 2px 16px;
+        }
+
+        .button {
+          background-color: rgb(1, 110, 235); /* Green */
+          border: none;
+          color: white;
+          padding: 15px 32px;
+          text-align: center;
+          text-decoration: none;
+          display: inline-block;
+          font-size: 16px;
+          margin: 4px 2px;
+          cursor: pointer;
+        }
+
+        </style>
+</head>
+<body>
+    <div class="card">
+        <img class="image" src="Z:\PycharmProjects\domestic_app\static\img\reference_data\Banner21_2024.jpg" alt="Avatar" style="width:100%">
+        <div class="container">
+            <h4><b>🙏 नमस्कार {{customer_name}} जी 🙏</b></h4> 
+            <h4>अरूण गैस में आपका स्वागत है |</h4> 
+            <p>आपके उज्ज्वला कनेक्शन की प्रक्रिया पूर्ण करने के लिए
+                आपके घर का पता अपडेट किया जाना है..</p>
+            <p>कृप्या नीचे दिए गए लिंक पर जा कर
+                आप अपना पता (एड्रेस) भर कर फॉर्म सबमिट कर दें..</p> 
+            <p>कृप्या सही पता भरें जिससे आपके उज्ज्वला कनेक्शन के वितरण में देरी न हो..</p>
+            <p><b>*उज्ज्वला कनेक्शन की सभी प्रक्रियाएं पूर्ण रूप से निःशुल्क है*</b></p>
+            <p>फॉर्म को खोलने के लिए नीचे दिए गए लिंक को क्लिक करें</p><br>
+            <p>👇👇👇👇👇</p>
+            <button class="button" type="button" onclick="window.location.href='{{ button_url }}';">पता भरने के लिए लिंक</button>
+            <p><b>धन्यवाद</b></p>
+            <p><b>जय हिन्द जय भारत 🇮🇳</b></p>
+        </div>
+      </div>
+</body>
+</html>

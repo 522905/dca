@@ -36,3 +36,12 @@ class Distributor(models.Model):
 	name = models.CharField(max_length=128)
 	address = models.TextField()
 
+
+class HTMLTemplate(models.Model):
+	template_name = models.CharField(max_length=52)
+	html_file_name = models.CharField(max_length=254)
+
+
+class HTMLTemplateVariable(models.Model):
+	parent = models.ForeignKey(HTMLTemplate, on_delete=models.CASCADE)
+	name = models.CharField(max_length=52)

@@ -4,7 +4,7 @@ from django.contrib import admin
 # -*- coding: utf-8 -*-
 from django.contrib import admin
 
-from .models import TokensExcluded, IFSCodeList, ServiceType, Distributor
+from .models import TokensExcluded, IFSCodeList, ServiceType, Distributor, HTMLTemplate, HTMLTemplateVariable
 
 
 @admin.register(TokensExcluded)
@@ -17,6 +17,18 @@ class TokensExcludedAdmin(admin.ModelAdmin):
 class IFSCodeListAdmin(admin.ModelAdmin):
     list_display = ('id', 'old_ifscode', 'new_ifscode')
     search_fields = ('old_ifscode', 'new_ifscode')
+
+
+class HTMLTemplateVariableInlineAdmin(admin.TabularInline):
+    model = HTMLTemplateVariable
+    extra = 1
+
+
+@admin.register(HTMLTemplate)
+class HTMLTemplateAdmin(admin.ModelAdmin):
+    list_display = ('id', 'template_name',)
+    search_fields = ('template_name',)
+    inlines = [HTMLTemplateVariableInlineAdmin,]
 
 
 @admin.register(ServiceType)

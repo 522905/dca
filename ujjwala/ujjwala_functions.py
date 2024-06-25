@@ -18,6 +18,7 @@ from PyPDF2 import PdfFileMerger
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sites.models import Site
 from django.core.signing import Signer
 from django.db.models import Q
 from django.http import HttpResponse
@@ -29,7 +30,9 @@ from django_fsm_log.models import StateLog
 from django_rq import job
 from shapely import Point, Polygon
 
+from communication_log.functions import send_template_link_sms
 from communication_log.models import CommunicationLog
+from reference_data.functions import create_tiny_html_template_url_for_sms, get_signed_data
 from reference_data.models import TokensExcluded
 from ujjwala.communication_functions import send_whatsapp_message, send_sms
 from ujjwala.enums import UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, ResidentialStatusEnum, \
@@ -1183,11 +1186,7 @@ def get_signed_share_data(contact_mobile, user_id):
 		'user': user_id,
 		'creation': datetime.now()
 	}
-	signer = Signer()
-	data_signed = signer.sign(data)
-	data_signed_base64 = base64.urlsafe_b64encode(data_signed.encode('ascii'))
-	data = data_signed_base64.decode('ascii')
-	return data
+	return sign_data_base64(data)
 
 
 def send_ujjwala_application_whatsapp_link_v1(contact_mobile, user_id):
