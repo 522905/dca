@@ -35,15 +35,11 @@ urlpatterns = [
     path(r'sdms/', include('sdms.urls')),
     path(r'comments/', include('django_comments.urls')),
     path(r'comments/', include('django_comments_xtd.urls')),
+    path(r'reference_data/', include('reference_data.urls'), name='reference_data'),
+    path(r'vicidial/', include('vicidial.urls'), name='vicidial'),
     # path(r'', RedirectView.as_view(url='/ujjwala/portal/application-status-search/', permanent=False)),
     path(r'', RedirectView.as_view(url='/ujjwala/portal/user_dashboard/', permanent=False)),
     path(r'', include(frontend_urls)),
-    # # path(r'portal/camunda_change_address/APPLICANT/',
-    # #      RedirectView.as_view(url='ujjwala/portal/camunda_change_address/APPLICANT/'))
-    # url(
-    #     '^portal/camunda_change_address/(?P<message_source>(STAFF|APPLICANT))/(?P<process_instance_id>[^/.]+)/(?P<agent>[^/.]+)/$',
-    #     CamundaChangeAddressView.as_view()
-    # ),
 ]
 
 
