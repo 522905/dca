@@ -162,6 +162,12 @@ urlpatterns = [
     ),
 
     url(
+        '^portal/ujjwala-customer-profile-public/(?P<pk>[^/.]+)/$',
+        views.UjjwalaApplicationCustomerProfilePublicView.as_view(),
+        name="ujjwala_customer_profile_public"
+    ),
+
+    url(
         '^portal/whatsapp_nic_error_update_address/(?P<pk>[^/.]+)/$',
         views.WhatsappNicErrorUpdateAddress.as_view(),
         name="whatsapp_nic_error_update_address"

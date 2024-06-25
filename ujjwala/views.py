@@ -1575,6 +1575,29 @@ class UjjwalaApplicationCustomerProfileView(TemplateView):
 		return context
 
 
+# @method_decorator(login_required, 'dispatch')
+class UjjwalaApplicationCustomerProfilePublicView(TemplateView):
+	template_name = 'ujjwala/extra/ujjwala_customer_profile_public.html'
+
+	def get_object(self, queryset=None):
+		try:
+			obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No Application Exist For Given Application Id"
+			)
+		return obj
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		obj = self.get_object()
+		context.update({
+			"obj": obj
+			# "state_logs": ujjwala_application_state_logs(obj.id, 13)
+		})
+		return context
+
+
 @method_decorator(login_required, 'dispatch')
 class ConnectionDisbursementReviewFormAbcListView(ListView):
 	model = ConnectionDisbursement
