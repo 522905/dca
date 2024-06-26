@@ -13,6 +13,7 @@ from django.views.generic import DetailView, ListView, FormView, TemplateView
 from django_currentuser.middleware import get_current_user
 from django_filters.views import FilterView
 
+
 from connection_app.enums import PostInspectionStatusEnum, InspectionTypeEnum, PostInspectionActivityTypeEnum, \
 	ConnectionApplicationDocumentsEnum
 from connection_app.forms import UpdateAddressForm, PostInspectionStartForm, PreviewPostInspectionForm, \
@@ -24,6 +25,7 @@ from connection_app.models import ConnectionApplication, PostInspection, Custome
 	SalesOrderPortability
 from reference_data.models import ServiceType, Distributor
 from teams.models import SDMSUser
+from connection_app.filters import SalesOrderFilterSet
 
 
 def installation_upload_process_gleam_entry_gate(request):
@@ -704,7 +706,7 @@ class CustomerProfileDocumentUploadFormView(FormView):
 		kwargs = super().get_form_kwargs()
 		kwargs['initial'] = {'document_type': ConnectionApplicationDocumentsEnum.BANK_SUBSIDY_CERTIFICATE_PHOTO}
 		return kwargs
-	
+
 
 @method_decorator(login_required, 'dispatch')
 class DashboardView(TemplateView):
@@ -802,6 +804,29 @@ class SalesOrderDetailFormView(FormView):
 		context = super().get_context_data()
 		context.update({
 			"sales_order": self.get_object()
+		})
+		return context
+
+
+@method_decorator(login_required, 'dispatch')
+class CustomerProfileContactsView(TemplateView):
+
+	template_name = "connection_app/customer_profile_contacts.html"
+
+	def get_object(self, queryset=None):
+		try:
+			obj = CustomerProfile.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No %(verbose_name)s found matching the query" %
+				{'verbose_name': queryset.model._meta.verbose_name}
+			)
+		return obj
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context.update({
+			"obj": self.get_object()
 		})
 		return context
 

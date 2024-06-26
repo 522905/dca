@@ -100,9 +100,10 @@ class ConnectionApplication(models.Model):
 
 	lead_details_in_html.short_description = 'Lead Details'
 
-	@fsm_log_description
-	@fsm_log_by
-	@transition(
+
+	@ fsm_log_description
+	@ fsm_log_by
+	@ transition(
 		field=status,
 		source=[
 			ConnectionApplicationLeadStatus.SUBMITTED,
@@ -727,6 +728,9 @@ class CustomerProfile(models.Model):
 
 	def document_self(self):
 		sd = self.documents.filter(type=ConnectionApplicationDocumentsEnum.CUSTOMER_PHOTO).first()
+		if not sd:
+			if self.ujjwalav2application_set.exists():
+				return self.ujjwalav2application_set.first().document_self()
 		return sd.link if sd else ''
 
 	def get_refill_sales_order_count(self):
@@ -736,6 +740,10 @@ class CustomerProfile(models.Model):
 				return ujjwala_obj.sdms_refills
 		return self.salesorder_set.filter(order_sub_type='Refill Order').exclude(
 			order_status=SalesOrderStatusEnum.CANCELLED).count()
+
+	def get_phone_numbers_from_sales_order(self):
+		return self.salesorder_set.exclude(mobile_number__isnull=True).exclude(mobile_number='').values(
+			'mobile_number').distinct()
 
 
 class CustomerProfileDocuments(models.Model):

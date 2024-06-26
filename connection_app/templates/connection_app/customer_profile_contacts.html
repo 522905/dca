@@ -1,0 +1,96 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block page_title %}Customer Profile - {{ obj.name }}{% endblock %}
+{% block content %}
+{% load connection_app_utils %}
+    <link rel="stylesheet" href="{% static '/css/style.css' %}" >
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    {% if obj %}
+        <div class="p-2 pt-0 form_label application_form" style="width: 100%;">
+            <div class="card">
+                <div class="status_block">
+                    <div class="main-header">
+                        <span class="text-black back_button">
+                            <input class="btn btn-secondary" type="button" value="Back" onclick="history.back()" /> Consumer Id: {{ obj.consumer_id }}
+                        </span>
+                        <span class="float-right"><b><a data-turbolinks="false" href="{% url 'admin:connection_app_customerprofile_change' object_id=obj.id %}">{{ obj.id }}</a></b></span>
+                    </div>
+                </div>
+                <div class="card-body pb-0 p-0 list_block">
+                    <div class="row m-0">
+                        <div class="col-8 p-0">
+                            <table>
+                                <tr>
+                                    <td>
+                                        <p>Relationship Status: <b>{{ obj.relationship_status }}</b><br>
+                                        <p> Address: <b>{{ obj.primary_account_address }}</b></p>
+                                        <p>Phone: <b>{{ obj.mobile_number }}</b></p>
+                                        <p>Location: <b><a href="https://www.google.com/maps/@{{ obj.latitude }},{{ obj.longitude }},15z">
+                                            {{ obj.latitude }},{{ obj.longitude }} <i class="fa fa-globe" style="color:steelblue; position: relative; top: 2px;" aria-hidden="true"></i></a></b></p>
+                                        <p>Product: <b>{{ obj.products }}</b></p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-4 p-0">
+                            <img class="p-1" src="{{ obj.document_self }}" style="height: 125px; object-fit:contain; width: 100%;" alt="Profile Picture">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                   <table class="table-bordred">
+                        <thead>
+                            <tr>
+                                <th><i class="fa fa-sharp fa-solid fa-phone"></i> Phone #</th>
+                                <th>Primary</th>
+                                <th>Use Type</th>
+                                <th>Verified Flag</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for phone in obj.phones %}
+                                <tr>
+                                    <td>{{ phone|get:"Phone #" }}</td>
+                                    <td>{{ phone|get:'Primary' }}</td>
+                                    <td>{{ phone|get:'Use Type' }}</td>
+                                    <td>{{ phone|get:'Verified Flag' }}</td>
+                                </tr>
+                            {% endfor %}
+                                <tr>
+                                    <td colspan="4">Phone Numbers Used For Sales Order</td>
+                                </tr>
+                            {% for mobile_number in obj.get_phone_numbers_from_sales_order %}
+                                <tr>
+                                    <td colspan="4">{{ mobile_number.mobile_number }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="status_block">
+                    <div class="main-header">
+                        <span class="text-black back_button">
+                            <input class="btn btn-secondary" type="button" value="Back" onclick="history.back()" />
+                        </span>
+                    </div>
+                </div>
+            </div>
+         </div>
+    {% endif %}
+    <style>
+        .status_block .main-header{
+            border-top: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+            border-radius: 0;
+            background-color: #efefef;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .application_form .list_block th, .application_form .list_block td, .status_block th,.application_form .list_block td { font-size: 0.9rem;}
+        .table.table-bordred:last-child tr{ border-bottom: transparent;}
+        .back_button input{ border:1px solid transparent; padding: 0 10px !important; margin: 0 0 10px 0 !important; cursor: pointer; margin-right:10px; padding: 5px 10px;
+            height: 30px !important;}
+        body .form_label .back_button .btn { height: 30px !important; text-transform:capitalize; margin: 0 10px 0 0 !important; }
+    </style>
+{% endblock %}

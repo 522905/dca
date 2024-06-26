@@ -110,6 +110,11 @@ urlpatterns = [
         views.SalesOrderDetailFormView.as_view(),
         name="sales_order_detail_view"
     ),
+    url(
+        '^customer-profile-contacts/(?P<pk>[^/.]+)/$',
+        views.CustomerProfileContactsView.as_view(),
+        name="customer_profile_contacts"
+    ),
     path(
         'sales-order-portability/',
         views.SalesOrderPortabilityFormView.as_view(),
