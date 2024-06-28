@@ -27,19 +27,19 @@
                     <div class="card-body pb-0 p-2 list_block">
                         <ul class="m-0">
                             <li>
-                                <p class="float-left">Updated On: </p>
-                                <p class="float-right"><b>{{ obj.updated_on }}</b></p>
+                                <p class="float-left">Updated On: {{ obj.updated_on }}</p>
+                                <p class="float-right">{{ obj.content_type.name }}<b> {{ obj.get_object_status }}</b></p>
                             </li>
                         </ul>
                     </div>
-                    {% if obj.status == 'SUCCESS' %}
+                    {% if obj.status == 'COMPLETED' %}
                         <div class="card-footer p-2" style="background-color: lightgreen">
-                            <p><b>Status: </b>{{ obj.status }}</p>
+                            <a class="text-under-n " style="display: block;"  href="{% url 'service_request:service_request_view' pk=obj.id %}" data-turbolinks="false"><p><b>Status: </b>{{ obj.status }}</p></a>
                         </div>
                     {% elif obj.status == 'PENDING' %}
                         <div class="card-footer p-2" style="background-color: lightblue">
 {#                            <a class="text-under-n " style="display: block;"  href="{% url 'service_request:service_request_view' pk=obj.id %}" data-turbolinks="false"><p><b>Status: </b>{{ obj.status }}</p></a>#}
-                            <a class="text-under-n " style="display: block;"  href="https://camunda.dca.arungas.com/camunda/app/cockpit/default/#/process-instance/{{ obj.camunda_process_id }}" data-turbolinks="false" target="_blank"><p><b>Status: </b>{{ obj.status }}</p></a>
+                            <a class="text-under-n " style="display: block;" href="https://camunda.dca.arungas.com/camunda/app/cockpit/default/#/process-instance/{{ obj.camunda_process_id }}" data-turbolinks="false" target="_blank"><p><b>Status: </b>{{ obj.status }}</p></a>
                         </div>
                     {% else %}
                         <div class="card-footer p-2" style="background-color: lightsalmon">

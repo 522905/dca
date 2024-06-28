@@ -25,3 +25,6 @@ class ServiceRequest(models.Model):
 		permissions = (
 			("can_resolve_service_request", "Can Resolve Service Request"),
 		)
+
+	def get_object_status(self):
+		return self.content_type.get_object_for_this_type(pk=self.object_id).status
