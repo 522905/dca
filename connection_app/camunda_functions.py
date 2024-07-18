@@ -30,6 +30,11 @@ def start_process_fetch_sales_order_details_from_sdms(so_id):
 	so_obj: SalesOrder = SalesOrder.objects.get(pk=so_id)
 
 	result = is_process_exist_in_camunda('cb0cbe24-f241-11ee-b887-0242ac140002', 'sales_order_id', so_obj.id)
+	distributor_code = "0000110338" if "gas" in so_obj.distributor_name.lower() else "0000305948"
+
+	if so_obj.parent.distributor_code != distributor_code:
+		so_obj.parent.distributor_code = distributor_code
+		so_obj.parent.save()
 
 	if result == 0:
 		variables = {
@@ -38,7 +43,7 @@ def start_process_fetch_sales_order_details_from_sdms(so_id):
 					"sales_order_id": {"value": so_obj.id, "type": "Long"},
 					"sales_order_number": {"value": so_obj.sales_order, "type": "String"},
 					"order_status": {"value": so_obj.order_status, "type": "String"},
-					"distributor_code": {"value": so_obj.parent.distributor_code, "type": "String"}
+					"distributor_code": {"value": distributor_code, "type": "String"}
 				}
 			}
 		res, pid = start_process_in_camunda_v2('process_fetch_sales_order_details_from_sdms', variables=variables)
@@ -174,6 +179,7 @@ def process_update_sales_order_in_dca(sales_order_list):
 		else:
 			so_obj = create_sales_order(so)
 			start_process_fetch_sales_order_details_from_sdms(so_obj.id)
+
 	django_rq.enqueue(evaluate_change_cylinder_type_requests)
 
 
