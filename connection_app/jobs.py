@@ -32,7 +32,8 @@ def start_read_customer_profile(customer_profile_id):
 			{
 				"sdms_task": {"value": "read_customer_profile", "type": "String"},
 				"consumer_id": {"value": cp_obj.consumer_id, "type": "String"},
-				"customer_profile_id": {"value": cp_obj.id, "type": "Long"}
+				"customer_profile_id": {"value": cp_obj.id, "type": "Long"},
+				"distributor_code": {"value": cp_obj.distributor_code, "type": "String"}
 			}
 	}
 
