@@ -258,12 +258,17 @@ def update_sales_order_details_in_dca(sales_order_id, sales_order_details, exist
 		so_new_details['delivery_date'], '%d-%b-%Y %H:%M:%S %p') if so_new_details[
 		'delivery_date'] else None
 
-	so_new_details['total_due_amount'] = float(
-		so_new_details['total_due_amount'].replace('Rs.', '').replace(",", ""))
-	so_new_details['order_total'] = float(
-		so_new_details['order_total'].replace('Rs.', '').replace(",", ""))
-	so_new_details['total_payment_amount'] = float(
-		so_new_details['total_payment_amount'].replace('Rs.', '').replace(",", ""))
+	total_due_amount = \
+		so_new_details['total_due_amount'].replace('Rs.', '').replace(",", "").replace("(", "").replace(")", "")
+
+	so_new_details['total_due_amount'] = float(total_due_amount if total_due_amount else 0)
+
+	order_total = so_new_details['order_total'].replace('Rs.', '').replace(",", "").replace("(", "").replace(")", "")
+	so_new_details['order_total'] = float(order_total if order_total else 0)
+
+	total_payment_amount = \
+		so_new_details['total_payment_amount'].replace('Rs.', '').replace(",", "").replace("(", "").replace(")", "")
+	so_new_details['total_payment_amount'] = float(total_payment_amount if total_payment_amount else 0)
 
 	so_new_details['consumed_quota'] = 0 if so_new_details['consumed_quota'] == "" else float(
 		so_new_details['consumed_quota'])
