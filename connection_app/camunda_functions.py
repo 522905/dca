@@ -37,7 +37,8 @@ def start_process_fetch_sales_order_details_from_sdms(so_id):
 				{
 					"sales_order_id": {"value": so_obj.id, "type": "Long"},
 					"sales_order_number": {"value": so_obj.sales_order, "type": "String"},
-					"order_status": {"value": so_obj.order_status, "type": "String"}
+					"order_status": {"value": so_obj.order_status, "type": "String"},
+					"distributor_code": {"value": so_obj.parent.distributor_code, "type": "String"}
 				}
 			}
 		res, pid = start_process_in_camunda_v2('process_fetch_sales_order_details_from_sdms', variables=variables)
@@ -547,7 +548,7 @@ def update_customer_profile_in_dca(relationship_details, customer_profile_id):
 
 	if not relationship_details['consumer_category']:
 		return True
-	elif relationship_details['consumer_category'] == 'Commercial/Industrial':
+	elif relationship_details['consumer_category'] in ['Commercial/Industrial', "Exempted"]:
 		CustomerProfile.objects.filter(pk=customer_profile_id).update(**relationship_details)
 	else:
 		relationship_details['dob'] = datetime.datetime.strptime(relationship_details.get('dob'), "%d-%b-%Y") if \
