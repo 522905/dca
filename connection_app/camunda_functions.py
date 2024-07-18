@@ -547,6 +547,8 @@ def update_customer_profile_in_dca(relationship_details, customer_profile_id):
 
 	if not relationship_details['consumer_category']:
 		return True
+	elif relationship_details['consumer_category'] == 'Commercial/Industrial':
+		CustomerProfile.objects.filter(pk=customer_profile_id).update(**relationship_details)
 	else:
 		relationship_details['dob'] = datetime.datetime.strptime(relationship_details.get('dob'), "%d-%b-%Y") if \
 			relationship_details.get('dob') else None
