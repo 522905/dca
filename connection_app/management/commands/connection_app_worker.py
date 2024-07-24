@@ -48,8 +48,9 @@ def handle_task(task: ExternalTask) -> TaskResult:
 				process_update_sales_order_completed_today(sales_order_completed)
 				return task.complete()
 			elif sdms_task == 'fetch_sales_order':
+				distributor_code = task.get_variable('distributor_code')
 				sales_order_list = json.loads(task.get_variable('sales_order_list'))
-				process_update_sales_order_in_dca(sales_order_list)
+				process_update_sales_order_in_dca(sales_order_list, distributor_code)
 				return task.complete()
 		elif topic == 'process_fetch_sales_order_details_from_sdms#update_in_dca':
 			sales_order_details = json.loads(task.get_variable('sales_order_details'))

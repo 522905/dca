@@ -24,17 +24,20 @@ def get_customer_profile(consumer_id, name, address):
 	return cp_obj
 
 
-def start_process_fetch_sales_order_details_from_sdms(so_id):
+def start_process_fetch_sales_order_details_from_sdms(so_id, distributor_code):
 	from connection_app.models import SalesOrder
 
 	so_obj: SalesOrder = SalesOrder.objects.get(pk=so_id)
 
-	result = is_process_exist_in_camunda('cb0cbe24-f241-11ee-b887-0242ac140002', 'sales_order_id', so_obj.id)
-	distributor_code = "0000110338" if "gas" in so_obj.distributor_name.lower() else "0000305948"
+	if not so_obj:
+		raise Exception("Sales Order Id Not Found")
 
-	if so_obj.parent.distributor_code != distributor_code:
-		so_obj.parent.distributor_code = distributor_code
-		so_obj.parent.save()
+	result = is_process_exist_in_camunda('cb0cbe24-f241-11ee-b887-0242ac140002', 'sales_order_id', so_obj.id)
+	# distributor_code = "0000110338" if "gas" in distributor_code else "0000305948"
+
+	# if so_obj.parent.distributor_code != distributor_code:
+	# 	so_obj.parent.distributor_code = distributor_code
+	# 	so_obj.parent.save()
 
 	if result == 0:
 		variables = {
@@ -138,7 +141,7 @@ def process_update_sales_order_completed_today(sales_order_completed):
 			start_process_fetch_sales_order_details_from_sdms(so_obj.id)
 
 
-def process_update_sales_order_in_dca(sales_order_list):
+def process_update_sales_order_in_dca(sales_order_list, distributor_code):
 	"""
 		{
 			"": "",
@@ -175,10 +178,10 @@ def process_update_sales_order_in_dca(sales_order_list):
 
 		if so_obj:
 			if so_obj.order_status != so['Order Status']:
-				start_process_fetch_sales_order_details_from_sdms(so_obj.id)
+				start_process_fetch_sales_order_details_from_sdms(so_obj.id, distributor_code)
 		else:
 			so_obj = create_sales_order(so)
-			start_process_fetch_sales_order_details_from_sdms(so_obj.id)
+			start_process_fetch_sales_order_details_from_sdms(so_obj.id, distributor_code)
 
 	django_rq.enqueue(evaluate_change_cylinder_type_requests)
 
