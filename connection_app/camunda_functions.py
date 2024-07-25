@@ -9,7 +9,7 @@ from ujjwala.camunda_functions import start_process_in_camunda_v2, is_process_ex
 from ujjwala.ujjwala_functions import evaluate_change_cylinder_type_requests
 
 
-def get_customer_profile(consumer_id, name, address):
+def get_customer_profile(consumer_id, name, address, distributor_code):
 	from connection_app.models import CustomerProfile
 
 	cp_obj = CustomerProfile.objects.filter(consumer_id=consumer_id).first()
@@ -18,7 +18,8 @@ def get_customer_profile(consumer_id, name, address):
 		cp_obj = CustomerProfile.objects.create(
 			consumer_id=consumer_id,
 			name=name,
-			address=address
+			address=address,
+			distributor_code=distributor_code
 		)
 		django_rq.enqueue(start_read_customer_profile, args=(cp_obj.id,))
 	return cp_obj
@@ -56,13 +57,13 @@ def start_process_fetch_sales_order_details_from_sdms(so_id, distributor_code):
 		print(res)
 
 
-def create_sales_order(so):
+def create_sales_order(so, distributor_code):
 	"""
 		Create Sales Order In Connection App For Given Sales Order Object From SDMS
 	"""
 	from connection_app.models import SalesOrder
 
-	cp_obj = get_customer_profile(so["Relationship Id"], so["Consumer Name"], so["Consumer Address"])
+	cp_obj = get_customer_profile(so["Relationship Id"], so["Consumer Name"], so["Consumer Address"], distributor_code)
 
 	so_obj = SalesOrder.objects.create(
 		parent=cp_obj,
@@ -180,7 +181,7 @@ def process_update_sales_order_in_dca(sales_order_list, distributor_code):
 			if so_obj.order_status != so['Order Status']:
 				start_process_fetch_sales_order_details_from_sdms(so_obj.id, distributor_code)
 		else:
-			so_obj = create_sales_order(so)
+			so_obj = create_sales_order(so, distributor_code)
 			start_process_fetch_sales_order_details_from_sdms(so_obj.id, distributor_code)
 
 	django_rq.enqueue(evaluate_change_cylinder_type_requests)
