@@ -203,7 +203,11 @@ class ConnectionApplication(models.Model):
 			move_files_to_minio_processing,
 			args=(self.id,),
 		)
-		self.event_submit_channel_whatsapp()
+		# Disabled Whatsapp Message To Switch To SMS
+		# self.event_submit_channel_whatsapp()
+
+		# Currently we have to use SMS Communication
+		self.event_submit_channel_sms()
 		self.send_reminder_for_installation_upload()
 
 	def event_submit_channel_whatsapp(self):
