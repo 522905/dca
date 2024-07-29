@@ -15,6 +15,7 @@ from django_fsm_log.decorators import fsm_log_description, fsm_log_by
 from minio import Minio
 from taggit.managers import TaggableManager
 
+from communication_log.functions import send_template_link_sms
 from communication_log.jobs import move_sv_doc_file_tus_to_minio, move_files_to_minio_processing
 from communication_log.models import CommunicationLog
 from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTypeEnum, \
@@ -139,7 +140,8 @@ class ConnectionApplication(models.Model):
 				ConnectionInstallationStatus.REUPLOAD,
 				ConnectionInstallationStatus.PENDING
 		):
-			self.event_installation_upload_channel_whatsapp()
+			# self.event_installation_upload_channel_whatsapp()
+			self.event_installation_upload_channel_sms()
 			return True
 		return False
 
@@ -490,7 +492,6 @@ class ConnectionApplication(models.Model):
 			self.remarks = kwargs.get("remarks")
 
 	def event_installation_upload_channel_whatsapp(self):
-
 		body_text = {
 			"countryCode": "+91",
 			"phoneNumber": self.mobile,
@@ -501,7 +502,7 @@ class ConnectionApplication(models.Model):
 			# "callbackData": "some_callback_data",
 			"template": {
 				"name": "kitchen_photo_upload_sp",
-				"languageCode": "en_GB",	
+				"languageCode": "en_GB",
 				"headerValues": [
 					# "Alert",  #
 				],
@@ -535,7 +536,11 @@ class ConnectionApplication(models.Model):
 			#self.event_submit_channel_sms()
 
 	def event_installation_upload_channel_sms(self):
-		pass
+		send_template_link_sms(
+			self.mobile,
+			"Installation",
+			"https://dca.arungas.com/connection-app/connection-application/{}/installation".format(self.id)
+		)
 
 	def event_reupload_channel_whatsapp(self):
 		body_text = {
