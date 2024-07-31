@@ -754,6 +754,9 @@ class CustomerProfile(models.Model):
 		return self.salesorder_set.exclude(mobile_number__isnull=True).exclude(mobile_number='').values(
 			'mobile_number').distinct()
 
+	def get_last_sales_order(self):
+		return self.salesorder_set.order_by('-order_date').first()
+
 
 class CustomerProfileDocuments(models.Model):
 	parent = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, related_name='documents', null=True)
