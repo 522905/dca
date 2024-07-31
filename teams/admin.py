@@ -4,7 +4,7 @@ from treenode.admin import TreeNodeModelAdmin
 from treenode.forms import TreeNodeForm
 
 from .models import ServiceLocations, ServiceArea, ServiceAreaUserProfile, FormFillArea, UserProfile, \
-    UserProfileDocuments, SDMSUser
+    UserProfileDocuments, SDMSUser, SDMSServiceArea
 
 
 @admin.register(ServiceLocations)
@@ -34,6 +34,16 @@ class FormFillAreaAdmin(admin.ModelAdmin):
 class ServiceAreaUserProfileLineAdmin(admin.TabularInline):
     model = ServiceAreaUserProfile
     extra = 1
+
+
+class SDMSServiceAreaInlineAdmin(admin.TabularInline):
+    model = SDMSServiceArea
+    extra = 1
+
+
+@admin.register(SDMSServiceArea)
+class SDMSServiceAreaAdmin(admin.ModelAdmin):
+    list_display = ['area_name']
 
 
 @admin.register(ServiceArea)
@@ -76,12 +86,19 @@ class UserProfileSDMSUserInline(admin.TabularInline):
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = (
-        'id',
-        'user',
-        'type'
-    )
+
+    def sdms_info(self, obj: UserProfile):
+        delivery_boy = ", ".join(
+            [
+                "{} - {}".format(o.delivery_boy_login, o.delivery_boy_full_name) \
+                for o in obj.sdmsuser_set.filter()
+            ]
+        )
+        return delivery_boy
+
+    list_display = ('id', 'user', 'type', 'sdms_info',)
     list_filter = ('type',)
+    filter_horizontal = ['sdms_service_areas', ]
     inlines = [
-        UserProfileDocumentsInline, UserProfileSDMSUserInline
+        UserProfileDocumentsInline, UserProfileSDMSUserInline,
     ]

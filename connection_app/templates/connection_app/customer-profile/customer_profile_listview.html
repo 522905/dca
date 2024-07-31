@@ -1,0 +1,94 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block page_title %}Customers List{% endblock %}
+{% load material_form %}
+{% block content %}
+    <link rel="stylesheet" href="{% static '/css/style.css' %}" >
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <div class="p-2 pt-0 form_label" style="width: 100%;">
+        <div class="card mb-0 app_card">
+            <div class="card-header">
+                <ul>
+                    <li>
+                        <p class="float-left" style="font-size: 12px">
+                            {% for k, v in filters.items %}
+                                {{ k }}: <b>{{ v }}</b><br>
+                            {% endfor %}
+                        </p>
+                    </li>
+                    <li>
+                        <p class="float-right">
+                            <button class="btn btn-outline-primary" onclick="toggleFilterForm()"><i class="fa fa-binoculars" style="font-size: 16px"></i> Filter</button>
+                        </p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <form method="get" >
+            <div id="filterFormDiv" class="card" style="display: none; background-color: lightyellow">
+                <div class="card-body p-2">
+                     {% form form=filter_form %}{% endform %}
+                </div>
+                <div class="card-footer">
+                     <input class="float-right" type="submit" value="Submit">
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="p-2 pt-0 form_label" style="width: 100%;">
+        {% for obj  in object_list %}
+            <div class="card mb-2 mt-0 app_card" id="{{ obj.id }}_div">
+                <div class="card-header pl-2" style="background-color: lightsteelblue">
+                    <p class="float-left">
+                        <i class='fa fa-user-circle' style="font-size: 16px"></i><a href="{% url 'connection_app:customer_profile' pk=obj.id %}"><b style="font-size: 14px"> {{ obj.name }}</b></a>
+                    </p>
+                    <p class="float-right"><i class="fa fa-sharp fa-solid fa-phone"></i>
+                        <a href="tel:{{obj.mobile_number}}" data-turbolinks="false">
+                            <span class="text-primary" style="font-weight: 600;"><b style="font-size: 14px"> {{ obj.mobile_number }}</b></span>
+                        </a>
+                    </p>
+                </div>
+                <div class="card-body pb-0 p-2 block">
+                    <ul class="m-0 list-body">
+                        <li>
+                            <p class="float-left">
+                                <i class='fa fa-map-marker' style="font-size: 16px"></i><b style="font-size: 14px"> {{ obj.service_area }}</b></a>
+                            </p>
+                            <p class="float-right">
+                                <i class='fa fa-truck' style="font-size: 16px"></i><b style="font-size: 14px"> {{ obj.distributor_name }}</b></a>
+                            </p>
+                        </li>
+                        <li>
+                            <p class="float-left"><i class="fa fa-sharp fa-solid fa-folder-open-o"></i>
+                                <span style="font-weight: 600;">Last Order: {{ obj.get_last_sales_order.order_date }}</span>
+                            </p>
+                            <p class="float-right">
+                                <span style="font-weight: 600;">{{ obj.get_last_sales_order.order_status }}</span>
+                            </p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-footer p-2 block">
+                    <p style="font-size: 12px"><i class="fa fa-address-card-o" style="font-size: 14px"></i> {{ obj.address }}</p>
+                </div>
+            </div>
+        {% endfor %}
+        {% include 'connection_app/pagination.html' %}
+    </div>
+    <style>
+        .list-body li{ display: inline-block; width:100%;}
+        #filterFormDiv .card-footer{ float: left; width:100%; }
+        #filterFormDiv{ float: left; width:100%;}
+    </style>
+    <script>
+        function toggleFilterForm() {
+            var filterFormDiv = document.getElementById("filterFormDiv");
+            if (filterFormDiv.style.display === "none") {
+                filterFormDiv.style.display = "block";
+            } else {
+                filterFormDiv.style.display = "none";
+            }
+        }
+    </script>
+{% endblock %}

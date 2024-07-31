@@ -139,5 +139,15 @@ urlpatterns = [
       'customer-grid-menu-view/',
       views.CustomerGridMenuView.as_view(),
       name="customer_grid_menu_view"
-    )
+    ),
+    # path(
+    #     'sales-order-portability/',
+    #     views.SalesOrderPortabilityFormView.as_view(),
+    #     name="sales_order_portability"
+    # ),
+    path(
+        'customer-profile-list/',
+        views.CustomerProfileListView.as_view(),
+        name="customer_profile_list"
+    ),
 ] + router.urls

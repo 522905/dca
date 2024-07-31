@@ -4,7 +4,6 @@ from djgeojson.fields import PointField, PolygonField
 from organizations.models import Organization
 from treenode.models import TreeNodeModel
 
-import teams
 from reference_data.models import Distributor
 from teams.enums import UserProfileTypeEnum, UserProfileDocumentsEnum
 
@@ -19,6 +18,7 @@ class UserProfile(models.Model):
 	type = models.CharField(max_length=32, choices=UserProfileTypeEnum.choices)
 	vehicle_no = models.CharField(max_length=10, null=True, blank=True)
 	phone_number = models.CharField(max_length=10, null=True, blank=True)
+	sdms_service_areas = models.ManyToManyField("SDMSServiceArea", blank=True, null=True)
 
 
 class SDMSUser(models.Model):
@@ -38,7 +38,7 @@ class ServiceLocations(models.Model):
 	parent = models.ForeignKey(
 		Organization, on_delete=models.CASCADE, related_name='service_locations', null=True, blank=True
 	)
-	title = models.CharField(max_length=128, null=True)
+	title = models.CharField(max_length=128, null=True, blank=True)
 	type = models.CharField(max_length=25, choices=LocationTypeEnum.choices)
 	start_working_hours = models.TimeField()
 	end_working_hours = models.TimeField()
@@ -90,3 +90,12 @@ class ServiceAreaHex(models.Model):
 	class Meta:
 		managed = False
 		db_table = 'service_area_hex'
+
+
+class SDMSServiceArea(models.Model):
+	created_on = models.DateTimeField(auto_now_add=True, null=True)
+	updated_on = models.DateTimeField(auto_now=True, null=True)
+	area_name = models.CharField(max_length=128)
+
+	def __str__(self):
+		return self.area_name

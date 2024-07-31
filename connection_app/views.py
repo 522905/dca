@@ -19,12 +19,12 @@ from connection_app.enums import PostInspectionStatusEnum, InspectionTypeEnum, P
 from connection_app.forms import UpdateAddressForm, PostInspectionStartForm, PreviewPostInspectionForm, \
 	KitchenPostInspectionForm, PostInspectionForm, UIDPostInspectionForm, ProfilePhotoPostInspectionForm, \
 	SurakshaPipePostInspectionForm, CustomerProfileSearchForm, GenerateLeadForm, GenerateNonCustomerLeadForm, \
-	CustomerProfileDocumentUploadForm, SalesOrderDetailViewForm, SalesOrderPortabilityForm
+	CustomerProfileDocumentUploadForm, SalesOrderDetailViewForm, SalesOrderPortabilityForm, SDMSServiceAreaForm
 from connection_app.jobs import start_sales_order_portability_process
 from connection_app.models import ConnectionApplication, PostInspection, CustomerProfile, Lead, SalesOrder, \
 	SalesOrderPortability
 from reference_data.models import ServiceType, Distributor
-from teams.models import SDMSUser
+from teams.models import SDMSUser, UserProfile, SDMSServiceArea
 from connection_app.filters import SalesOrderFilterSet
 
 
@@ -47,7 +47,6 @@ def index(request):
 
 def web_form_view(request):
 	return render(request, "connection_app/web_form.html")
-
 	# def get_context_data(self, **kwargs):
 	#     context_data = super().get(**kwargs)
 	#     form_fill_area_list = FormFillArea.objects.all()
@@ -717,12 +716,7 @@ class DashboardView(TemplateView):
 		user = get_current_user()
 
 		context.update({
-			"user": user,
-			"dashboard": [
-				{
-					"sales_order_portability": {}
-				}
-			]
+			"user": user
 			# "sales_order_portability_queryset": SalesOrderPortability.objects.filter(user=get_current_user()),
 			# "sales_order_portability_status": SalesOrderPortabilityStatusEnum.choices
 		})
@@ -949,6 +943,11 @@ class SalesOrderGridMenuView(TemplateView):
 					"name": "Portability List",
 					"icon": "fa-bars",
 					"url": reverse("connection_app:sales_order_portability_list"),
+				},
+				{
+					"name": "Customer List",
+					"icon": "fa-bars",
+					"url": reverse("connection_app:customer_profile_list"),
 				}
 			]
 		}
@@ -995,5 +994,79 @@ class SalesOrderPortabilityListView(ListView):
 		except EmptyPage:
 			list_qs = paginator.page(paginator.num_pages)
 		context['list_qs'] = list_qs
+
+		return context
+
+
+@method_decorator(login_required, 'dispatch')
+class CustomerProfileListView(ListView):
+	model = CustomerProfile
+	template_name = 'connection_app/customer-profile/customer_profile_listview.html'
+
+	paginate_by = 20
+	permission = 'has_view_permission'
+
+	def __init__(self, **kwargs):
+		super().__init__(**kwargs)
+		self.service_area_list = []
+		self.distributor_list = []
+
+	def dispatch(self, request, *args, **kwargs):
+		current_user = get_current_user()
+		user_profile = UserProfile.objects.get(user=current_user)
+
+		if not user_profile:
+			return
+
+		return super().dispatch(request, *args, **kwargs)
+
+	def get_queryset(self):
+		current_user = get_current_user()
+		user_profile = UserProfile.objects.get(user=current_user)
+
+		self.service_area_list = user_profile.sdms_service_areas.values_list('area_name', flat=True)
+		self.distributor_list = user_profile.sdmsuser_set.values_list('distributor__code', flat=True)
+
+		if self.request.method == 'GET':
+			self.service_area_list = self.request.GET.getlist('sdms_service_area') if self.request.GET.getlist(
+				'sdms_service_area') else self.service_area_list
+			self.distributor_list = self.request.GET.getlist('distributor') if self.request.GET.getlist(
+				'distributor') else self.distributor_list
+
+		return CustomerProfile.objects.filter(
+			distributor_code__in=self.distributor_list,
+			service_area__in=self.service_area_list
+		)
+
+	def get_context_data(self, *, object_list=None, **kwargs):
+		context = super().get_context_data(object_list=object_list, **kwargs)
+		initial_data = {
+			'sdms_service_area': self.request.GET.getlist('sdms_service_area')
+		}
+		context['filter_form'] = SDMSServiceAreaForm(
+			user_profile=UserProfile.objects.get(user=get_current_user()), data=initial_data
+		)
+		list_qs = self.get_queryset()
+		paginator = Paginator(list_qs, self.paginate_by)
+
+		page = self.request.GET.get('page')
+
+		try:
+			list_qs = paginator.page(page)
+		except PageNotAnInteger:
+			list_qs = paginator.page(1)
+		except EmptyPage:
+			list_qs = paginator.page(paginator.num_pages)
+		context['list_qs'] = list_qs
+
+		# Preserve all query parameters
+		query_params = self.request.GET.copy()
+		if query_params.get('page'):
+			query_params.pop('page')
+		context['query_params'] = query_params.urlencode()
+		context['filters'] = {
+			"Distributor": "{}".format(", ".join(self.distributor_list)),
+			"Service Area": "{}".format(", ".join(self.service_area_list))
+		}
 
 		return context
