@@ -7,6 +7,7 @@ from django_currentuser.middleware import get_current_user
 from connection_app.enums import ConnectionApplicationProcessType, ConnectionApplicationLeadStatus, \
 	ConnectionApplicationDocumentsEnum, HouseTypeEnum, PostInspectionActivityTypeEnum, PostInspectionStatusEnum
 from inactive_customers.models import InactiveCustomer
+from teams.models import SDMSServiceArea, UserProfile
 
 
 class SubmitLead(forms.Form):
@@ -552,3 +553,29 @@ class SalesOrderPortabilityForm(forms.Form):
 	def __init__(self, distributor_list=None, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.fields['distributor'].choices = distributor_list
+
+
+class SDMSServiceAreaForm(forms.Form):
+	distributor = forms.MultipleChoiceField(
+		widget=forms.CheckboxSelectMultiple,
+		label="Distributor",
+		required=False,
+		help_text="",
+		choices=[]
+	)
+	sdms_service_area = forms.MultipleChoiceField(
+		widget=forms.CheckboxSelectMultiple,
+		label="SDMS Service Area",
+		required=False,
+		help_text="",
+		choices=[]
+	)
+
+	def __init__(self, user_profile: UserProfile=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.fields['sdms_service_area'].choices = [
+			(i.area_name, i.area_name) for i in user_profile.sdms_service_areas.all()
+		]
+		self.fields['distributor'].choices = [
+			(i.distributor.code, "{} - {}".format(i.distributor.code, i.distributor.name)) for i in user_profile.sdmsuser_set.all().distinct('distributor')
+		]
