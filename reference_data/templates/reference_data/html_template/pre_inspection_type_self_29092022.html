@@ -39,7 +39,26 @@
           cursor: pointer;
         }
 
+        .button1 {
+          background-color: #f44336; /* Green */
+          border: none;
+          color: white;
+          padding: 15px 32px;
+          text-align: center;
+          text-decoration: none;
+          display: inline-block;
+          font-size: 16px;
+          margin: 4px 2px;
+          cursor: pointer;
+        }
+
         </style>
+
+        <script type="text/javascript">
+          function initiateCall() {
+              window.location.href = "tel:01615201005";
+          }
+        </script>
 </head>
 <body>
     <div class="card">
@@ -67,6 +86,8 @@
             <p>फॉर्म को खोलने के लिए नीचे दिए गए लिंक को क्लिक करें</p>
             <p>👇👇👇👇👇</p>
             <button class="button" type="button" onclick="window.location.href='{{ button_url }}';">स्वयं निरीक्षण फॉर्म खोले</button>
+            <p >अधिक जानकारी के लिए हमारे दिए गए व्हाट्सप्प नंबर पर संपर्क करें।<i class="fa fa-whatsapp"></i></p>
+            <button class="button1" type="button" onclick="initiateCall()">01615201005</button>
             <p><b>धन्यवाद</b></p>
             <p><b>जय हिन्द जय भारत 🇮🇳</b></p>
         </div>
