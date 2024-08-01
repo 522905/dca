@@ -3,9 +3,16 @@ import requests
 import track
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sites.models import Site
+from django.urls import reverse
 
+from communication_log.functions import send_template_link_sms
 from communication_log.models import CommunicationLog
+from domestic_app.settings import PRE_SURAKSHA_YOUTUBE_VIDEO_URL
+from reference_data.functions import create_tiny_html_template_url_for_sms
 from ujjwala.enums import UjjwalaApplicationDocumentsEnum
+from ujjwala.ujjwala_functions import re_create_legal_docs, get_signed_share_data
+from utils.global_functions import sign_data_base64
 
 
 class UjjwalaWhatsappCommunication(object):
@@ -158,12 +165,13 @@ class UjjwalaWhatsappCommunication(object):
 				message_id=data.get('id')
 			)
 
-		#res = requests.post(
-		#	"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
-		#	"&function=add_lead&phone_number={}&list_id=1007&first_name={}&last_name={}".format(
-		#		self.contact_mobile, self.name, self.pk
-		#	)
-		#)
+		res = requests.post(
+			"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
+			"&function=add_lead&phone_number={}&list_id=1007&first_name={}&last_name={}".format(
+				self.contact_mobile, self.name, self.pk
+			)
+		)
+		print(res.status_code)
 
 	def event_legal_documents_upload_channel_whatsapp(self):
 		from ujjwala.models import ConnectionDisbursement
@@ -172,7 +180,15 @@ class UjjwalaWhatsappCommunication(object):
 
 		physical_legal_doc_link = self.pre_inspection.documents.filter(
 			type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT
-		).first().link
+		).first()
+		if not physical_legal_doc_link:
+			re_create_legal_docs(self)
+			physical_legal_doc_link = self.pre_inspection.documents.filter(
+				type=UjjwalaApplicationDocumentsEnum.PHYSICAL_LEGAL_DOCUMENT
+			).first().link
+		else:
+			physical_legal_doc_link = physical_legal_doc_link.link
+
 
 		body_text = {
 			"countryCode": "+91",
@@ -461,52 +477,70 @@ class UjjwalaWhatsappCommunication(object):
 		return data.get('result', '')
 
 
-	def event_whatsapp_pre_inspection_type_self(self, pre_inspection_id):
-		body_text = {
-			"countryCode": "+91",
-			"phoneNumber": self.contact_mobile,
-			"type": "Template",
-			"traits": {
-				"name": self.name,
-			},
-			# "callbackData": "some_callback_data",
-			"template": {
-				# "name": "ujjwala_application_submitted_",
-				"name": "pre_inspection_type_self_29092022",
-				"languageCode": "hi",
-				"headerValues": [
-					# "Alert",  #
-				],
-				"bodyValues": [
-					self.name,
-					'https://youtu.be/pQNdDHklka0',
-					"https://dca.arungas.com/ujjwala/portal/pre-inspection/self/{}/".format(str(pre_inspection_id))
-				],
-				"buttonValues": {
-					"0": [
-						"ujjwala/portal/pre-inspection/self/{}/".format(pre_inspection_id)
-					]
+	def event_whatsapp_pre_inspection_type_self(self, pre_inspection_id, channel='SMS'):
+		if channel == 'WHATSAPP':
+			body_text = {
+				"countryCode": "+91",
+				"phoneNumber": self.contact_mobile,
+				"type": "Template",
+				"traits": {
+					"name": self.name,
+				},
+				# "callbackData": "some_callback_data",
+				"template": {
+					# "name": "ujjwala_application_submitted_",
+					"name": "pre_inspection_type_self_29092022",
+					"languageCode": "hi",
+					"headerValues": [
+						# "Alert",  #
+					],
+					"bodyValues": [
+						self.name,
+						'https://youtu.be/pQNdDHklka0',
+						"https://dca.arungas.com/ujjwala/portal/pre-inspection/self/{}/".format(str(pre_inspection_id))
+					],
+					"buttonValues": {
+						"0": [
+							"ujjwala/portal/pre-inspection/self/{}/".format(pre_inspection_id)
+						]
+					}
 				}
 			}
-		}
 
-		ujjwala_v2_application_content_type = ContentType.objects.get(
-			app_label='ujjwala', model='ujjwalav2application'
-		)
-		data = track.client.post(
-			api_key=settings.INTERAKT_API_KEY,
-			path="/v1/public/message/",
-			body=body_text
-		).json()
-
-		if data.get('result', ''):
-			CommunicationLog.objects.create(
-				content_type=ujjwala_v2_application_content_type,
-				object_id=self.pk,
-				channel_subscriber=self.contact_mobile,
-				event="pre_inspection_type_self", channel="whatsapp",
-				message_id=data.get('id')
+			ujjwala_v2_application_content_type = ContentType.objects.get(
+				app_label='ujjwala', model='ujjwalav2application'
 			)
+			data = track.client.post(
+				api_key=settings.INTERAKT_API_KEY,
+				path="/v1/public/message/",
+				body=body_text
+			).json()
+
+			if data.get('result', ''):
+				CommunicationLog.objects.create(
+					content_type=ujjwala_v2_application_content_type,
+					object_id=self.pk,
+					channel_subscriber=self.contact_mobile,
+					event="pre_inspection_type_self", channel="whatsapp",
+					message_id=data.get('id')
+				)
+		else:
+			host = "https://dca.arungas.com"
+
+			data = sign_data_base64({
+				'template': 'pre_inspection_type_self',
+				'variables': {
+					'customer_name': self.name,
+					'video_url': PRE_SURAKSHA_YOUTUBE_VIDEO_URL,
+					'form_link': "https://dca.arungas.com/ujjwala/portal/pre-inspection/self/{}/".format(
+						str(pre_inspection_id)),
+					'button_url': "https://dca.arungas.com/ujjwala/portal/pre-inspection/self/{}/".format(
+						str(pre_inspection_id))
+				}
+			})
+			url = create_tiny_html_template_url_for_sms(data, host)
+
+			send_template_link_sms(self.contact_mobile, "Ujjwala Pre-Inspection", url)
 
 		# res = requests.post(
 		# 	"http://vici.arungas.com/vicidial/non_agent_api.php?source=ujjwala&user=6666&pass=C00lerMaster101"
@@ -580,16 +614,18 @@ class UjjwalaWhatsappCommunication(object):
 			# "callbackData": "some_callback_data",
 			"template": {
 				# "name": "ujjwala_application_submitted_",
-				"name": "pre_inspection_type_self_rejected_20072022",
+				# "name": "pre_inspection_type_self_rejected_20072022",
+				"name": "pre_inspection_type_self_rejected_120324",
 				"languageCode": "hi",
 				"headerValues": [
-		            "https://www.arungas.com/public/ujwalla/pamplate.pdf"
+		            # "https://www.arungas.com/public/ujwalla/pamplate.pdf"
+		            "https://www.arungas.com/public/ujwalla/safety_guide.pdf"
 				],
 				"bodyValues": [
 					self.name,
 					reject_reason,
-					'https://youtu.be/pQNdDHklka0',
-					"https://dca.arungas.com/ujjwala/portal/pre-inspection/self/{}/".format(str(pre_inspection_id))
+					# 'https://youtu.be/pQNdDHklka0',
+					# "https://dca.arungas.com/ujjwala/portal/pre-inspection/self/{}/".format(str(pre_inspection_id))
 				],
 				"buttonValues": {
 					"0": [
