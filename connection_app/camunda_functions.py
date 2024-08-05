@@ -5,6 +5,8 @@ import django_rq
 
 from connection_app.jobs import start_read_customer_profile
 from connection_app.models import SalesOrder
+from reference_data.models import Distributor
+from teams.models import SDMSServiceArea
 from ujjwala.camunda_functions import start_process_in_camunda_v2, is_process_exist_in_camunda
 from ujjwala.ujjwala_functions import evaluate_change_cylinder_type_requests
 
@@ -15,11 +17,14 @@ def get_customer_profile(consumer_id, name, address, distributor_code):
 	cp_obj = CustomerProfile.objects.filter(consumer_id=consumer_id).first()
 
 	if not cp_obj:
+		distributor = Distributor.objects.filter(code=distributor_code)
 		cp_obj = CustomerProfile.objects.create(
 			consumer_id=consumer_id,
 			name=name,
 			address=address,
-			distributor_code=distributor_code
+			distributor=distributor,
+			distributor_code=distributor_code,
+			distributor_name=distributor.name
 		)
 		django_rq.enqueue(start_read_customer_profile, args=(cp_obj.id,))
 	return cp_obj
@@ -621,6 +626,19 @@ def update_customer_profile_in_dca(relationship_details, customer_profile_id):
 
 		relationship_details['no_of_flats'] = int(relationship_details['no_of_flats']) if relationship_details[
 			'no_of_flats'] else 0
+
+		sdms_service_area = SDMSServiceArea.objects.filter(area_name=relationship_details['service_area'])
+
+		if not sdms_service_area:
+			sdms_service_area = SDMSServiceArea.objects.create(area_name=sdms_service_area)
+		relationship_details['sdms_service_area'] = sdms_service_area
+
+		distributor = Distributor.objects.filter(code=relationship_details['distributor_code'])
+
+		if not distributor:
+			distributor = Distributor.objects.create(code=relationship_details['distributor_code'],
+			                           name=relationship_details['distributor_name'])
+		relationship_details['distributor'] = distributor
 		CustomerProfile.objects.filter(pk=customer_profile_id).update(**relationship_details)
 
 
@@ -689,6 +707,7 @@ def update_booked_order_details_in_dca(sales_order_details, consumer_id, process
 	so_new_details['qc_due'] = True if so_new_details.get('qc_due') == 'Y' else False
 	so_new_details['auto_generated'] = True
 
+
 	SalesOrder.objects.filter(pk=so_obj.id).update(**so_new_details)
 	# so_obj = SalesOrder.objects.get(pk=sales_order_id)
 	# if not new_order_status == existing_order_status:
@@ -710,5 +729,11 @@ def update_service_area_in_customer_profile(consumer_id, service_area):
 	cp_obj = CustomerProfile.objects.filter(consumer_id=consumer_id).first()
 
 	if cp_obj:
+		sdms_service_area = SDMSServiceArea.objects.filter(area_name=service_area).first()
+
+		if not sdms_service_area:
+			SDMSServiceArea.objects.create(area_name=service_area)
+
+		cp_obj.sdms_service_area = sdms_service_area
 		cp_obj.service_area = service_area
 		cp_obj.save()

@@ -28,6 +28,7 @@ from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, F
 	BackOfficeNewConnection, DocumentsReupload, InstallationReviewForm
 from domestic_app.utils import get_minio_public_url
 from reference_data.models import ServiceType, Distributor
+from teams.models import SDMSServiceArea
 
 minio_client = Minio(
 	settings.MINIO_API_ENDPOINT,
@@ -672,6 +673,7 @@ class CustomerProfile(models.Model):
 	account_name = models.CharField(max_length=128, null=True)
 	primary_account_address = models.TextField(null=True)
 	dealer_code = models.CharField(max_length=128, null=True)
+	distributor = models.ForeignKey(Distributor, on_delete=models.PROTECT, null=True, blank=True)
 	distributor_code = models.CharField(max_length=128, null=True)
 	distributor_name = models.CharField(max_length=128, null=True)
 	mobile_number = models.CharField(max_length=128, null=True)
@@ -684,6 +686,7 @@ class CustomerProfile(models.Model):
 	cancel_reason = models.CharField(max_length=128, null=True)
 	cancel_remarks = models.TextField(null=True)
 	delivery_type = models.CharField(max_length=128, null=True)
+	sdms_service_area = models.ForeignKey(SDMSServiceArea, on_delete=models.PROTECT, blank=True, null=True)
 	service_area = models.CharField(max_length=128, null=True)
 	relationship_status = models.CharField(max_length=128, null=True)
 	relationship_sub_status = models.CharField(max_length=128, null=True)
