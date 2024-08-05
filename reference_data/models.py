@@ -30,11 +30,17 @@ class ServiceType(models.Model):
 	name = models.CharField(max_length=48)
 	description = models.CharField(max_length=128)
 
+	def __str__(self):
+		return self.name
+
 
 class Distributor(models.Model):
 	code = models.CharField(max_length=48)
 	name = models.CharField(max_length=128)
 	address = models.TextField()
+
+	def __str__(self):
+		return f"{self.code} - {self.name}"
 
 
 class HTMLTemplate(models.Model):
