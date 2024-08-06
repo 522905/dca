@@ -24,7 +24,6 @@ def get_customer_profile(consumer_id, name, address, distributor_code):
 			address=address,
 			distributor=distributor,
 			distributor_code=distributor_code,
-			distributor_name=distributor.name
 		)
 		django_rq.enqueue(start_read_customer_profile, args=(cp_obj.id,))
 	return cp_obj
