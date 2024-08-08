@@ -17,7 +17,7 @@ def get_customer_profile(consumer_id, name, address, distributor_code):
 	cp_obj = CustomerProfile.objects.filter(consumer_id=consumer_id).first()
 
 	if not cp_obj:
-		distributor = Distributor.objects.filter(code=distributor_code)
+		distributor = Distributor.objects.filter(code=distributor_code).first()
 		cp_obj = CustomerProfile.objects.create(
 			consumer_id=consumer_id,
 			name=name,
@@ -626,13 +626,13 @@ def update_customer_profile_in_dca(relationship_details, customer_profile_id):
 		relationship_details['no_of_flats'] = int(relationship_details['no_of_flats']) if relationship_details[
 			'no_of_flats'] else 0
 
-		sdms_service_area = SDMSServiceArea.objects.filter(area_name=relationship_details['service_area'])
+		sdms_service_area = SDMSServiceArea.objects.filter(area_name=relationship_details['service_area']).first()
 
 		if not sdms_service_area:
 			sdms_service_area = SDMSServiceArea.objects.create(area_name=sdms_service_area)
 		relationship_details['sdms_service_area'] = sdms_service_area
 
-		distributor = Distributor.objects.filter(code=relationship_details['distributor_code'])
+		distributor = Distributor.objects.filter(code=relationship_details['distributor_code']).first()
 
 		if not distributor:
 			distributor = Distributor.objects.create(code=relationship_details['distributor_code'],
