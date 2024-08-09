@@ -25,19 +25,24 @@ class Command(BaseCommand):
 
 		for bso_obj in BookSalesOrder.objects.all():
 			if not bso_obj.camunda_process_id:
-				variables = {
-					"variables": {
-							"consumer_id": {"value": bso_obj.customer_profile.consumer_id, "type": "String"},
-							"book_sales_order_id": {"value": bso_obj.id, "type": "Long"},
-							"sdms_task": {"value": "book_sales_order", "type": "String"},
-							"distributor_code": {"value": bso_obj.customer_profile.distributor_code, "type": "String"},
-							"distributor_name": {"value": bso_obj.customer_profile.distributor_name, "type": "String"},
-							"delivery_boy_login": {
-								"value": get_delivery_boy_login(bso_obj.customer_profile.id), "type": "String"
-							},
+				try:
+					variables = {
+						"variables": {
+								"consumer_id": {"value": bso_obj.customer_profile.consumer_id, "type": "String"},
+								"book_sales_order_id": {"value": bso_obj.id, "type": "Long"},
+								"sdms_task": {"value": "book_sales_order", "type": "String"},
+								"distributor_code": {"value": bso_obj.customer_profile.distributor_code, "type": "String"},
+								"distributor_name": {"value": bso_obj.customer_profile.distributor_name, "type": "String"},
+								"delivery_boy_login": {
+									"value": get_delivery_boy_login(bso_obj.customer_profile.id), "type": "String"
+								},
+							}
 						}
-					}
-				res, pid = start_process_in_camunda_v2('Process_domestic_app', variables=variables)
-				bso_obj.camunda_process_id = pid
-				bso_obj.save()
-				print(pid)
+					res, pid = start_process_in_camunda_v2('Process_domestic_app', variables=variables)
+					bso_obj.camunda_process_id = pid
+					bso_obj.save()
+					print(pid)
+				except Exception as e:
+					bso_obj.error_log = str(e)
+					bso_obj.save()
+					continue
