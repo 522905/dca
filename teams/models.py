@@ -25,6 +25,7 @@ class SDMSUser(models.Model):
 	parent = models.ForeignKey(UserProfile, on_delete=models.PROTECT)
 	distributor = models.ForeignKey(Distributor, on_delete=models.PROTECT)
 	delivery_boy_login = models.CharField(max_length=32)
+	delivery_boy_password = models.CharField(max_length=128)
 	delivery_boy_full_name = models.CharField(max_length=256, null=True, blank=True)
 
 
