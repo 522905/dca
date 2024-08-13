@@ -43,7 +43,8 @@ class SDMSServiceAreaInlineAdmin(admin.TabularInline):
 
 @admin.register(SDMSServiceArea)
 class SDMSServiceAreaAdmin(admin.ModelAdmin):
-    list_display = ['area_name']
+    list_display = ['distributor', 'area_code', 'area_name']
+    list_filter = ['distributor']
 
 
 @admin.register(ServiceArea)
