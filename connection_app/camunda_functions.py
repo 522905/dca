@@ -730,19 +730,3 @@ def update_booked_order_details_in_dca(sales_order_details, consumer_id, process
 	# 	so_obj.save()
 	print(so_obj)
 	bso_obj.delete()
-
-
-def update_service_area_in_customer_profile(consumer_id, service_area):
-	from connection_app.models import CustomerProfile
-
-	cp_obj = CustomerProfile.objects.filter(consumer_id=consumer_id).first()
-
-	if cp_obj:
-		sdms_service_area = SDMSServiceArea.objects.filter(area_name=service_area).first()
-
-		if not sdms_service_area:
-			SDMSServiceArea.objects.create(area_name=service_area)
-
-		cp_obj.sdms_service_area = sdms_service_area
-		cp_obj.service_area = service_area
-		cp_obj.save()
