@@ -730,3 +730,16 @@ def update_booked_order_details_in_dca(sales_order_details, consumer_id, process
 	# 	so_obj.save()
 	print(so_obj)
 	bso_obj.delete()
+
+
+def update_service_area_in_customer_profile(consumer_id, service_area):
+	from connection_app.models import CustomerProfile
+
+	cp_obj: CustomerProfile = CustomerProfile.objects.filter(consumer_id=consumer_id).first()
+
+	if cp_obj:
+		cp_obj.sdms_service_area = get_sdms_service_area(service_area, cp_obj.distributor.code)
+		cp_obj.service_area = service_area
+		cp_obj.save()
+	else:
+		raise Exception("Customer Profile Not Found.")
