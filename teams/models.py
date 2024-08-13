@@ -96,7 +96,9 @@ class ServiceAreaHex(models.Model):
 class SDMSServiceArea(models.Model):
 	created_on = models.DateTimeField(auto_now_add=True, null=True)
 	updated_on = models.DateTimeField(auto_now=True, null=True)
+	area_code = models.CharField(max_length=52, null=True, blank=True)
 	area_name = models.CharField(max_length=128)
+	distributor = models.ForeignKey(Distributor, on_delete=models.PROTECT, null=True)
 
 	def __str__(self):
-		return self.area_name
+		return "{}-{}-{}".format(self.distributor, self.area_code, self.area_name)
