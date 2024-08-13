@@ -14,10 +14,10 @@ from ujjwala.ujjwala_functions import evaluate_change_cylinder_type_requests
 def get_customer_profile(consumer_id, name, address, distributor_code):
 	from connection_app.models import CustomerProfile
 
-	cp_obj = CustomerProfile.objects.filter(consumer_id=consumer_id).first()
+	distributor = Distributor.objects.filter(code=distributor_code).first()
+	cp_obj: CustomerProfile = CustomerProfile.objects.filter(consumer_id=consumer_id).first()
 
 	if not cp_obj:
-		distributor = Distributor.objects.filter(code=distributor_code).first()
 		cp_obj = CustomerProfile.objects.create(
 			consumer_id=consumer_id,
 			name=name,
@@ -27,6 +27,18 @@ def get_customer_profile(consumer_id, name, address, distributor_code):
 		)
 		django_rq.enqueue(start_read_customer_profile, args=(cp_obj.id,))
 	return cp_obj
+
+
+def get_sdms_service_area(area_name, distributor_code):
+	from teams.models import SDMSServiceArea
+
+	distributor = Distributor.objects.filter(code=distributor_code).first()
+	sdms_service_area_list = SDMSServiceArea.objects.filter(area_name=area_name, distributor=distributor)
+
+	if sdms_service_area_list:
+		return sdms_service_area_list.first()
+	else:
+		return SDMSServiceArea.objects.create(area_name=area_name, distributor=distributor)
 
 
 def start_process_fetch_sales_order_details_from_sdms(so_id, distributor_code):
@@ -626,9 +638,6 @@ def update_customer_profile_in_dca(relationship_details, customer_profile_id):
 		relationship_details['no_of_flats'] = int(relationship_details['no_of_flats']) if relationship_details[
 			'no_of_flats'] else 0
 
-
-
-
 		distributor = Distributor.objects.filter(code=relationship_details['distributor_code']).first()
 
 		if not distributor:
@@ -636,13 +645,9 @@ def update_customer_profile_in_dca(relationship_details, customer_profile_id):
 			                           name=relationship_details['distributor_name'])
 		relationship_details['distributor'] = distributor
 
-		sdms_service_area = SDMSServiceArea.objects.filter(area_name=relationship_details['service_area'],
-		                                                   distributor=distributor).first()
 
-		if not sdms_service_area:
-			sdms_service_area = SDMSServiceArea.objects.create(area_name=sdms_service_area)
-
-		relationship_details['sdms_service_area'] = sdms_service_area
+		relationship_details['sdms_service_area'] = get_sdms_service_area(relationship_details['service_area'],
+		                                                                  distributor.code)
 		CustomerProfile.objects.filter(pk=customer_profile_id).update(**relationship_details)
 
 
