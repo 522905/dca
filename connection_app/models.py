@@ -729,7 +729,7 @@ class CustomerProfile(models.Model):
 	scheme_opted = models.CharField(max_length=128, null=True)
 	asset_count = models.IntegerField(null=True)
 	migrant = models.BooleanField(null=True)
-	scheme_onbaording_status = models.CharField(max_length=128, null=True)
+	scheme_onboarding_status = models.CharField(max_length=128, null=True)
 	contact_identities = models.JSONField(null=True)
 	phones = models.JSONField(null=True)
 	ekyc_details = models.JSONField(null=True)
@@ -737,6 +737,10 @@ class CustomerProfile(models.Model):
 	latitude = models.CharField(max_length=128, null=True, blank=True)
 	longitude = models.CharField(max_length=128, null=True, blank=True)
 	do_not_auto_generate = models.BooleanField(default=False)
+	verified = models.BooleanField(null=True, blank=True)
+	verified_on = models.DateTimeField(null=True, blank=True)
+	verification_source = models.CharField(max_length=128, null=True, blank=True)
+
 
 	def document_self(self):
 		sd = self.documents.filter(type=ConnectionApplicationDocumentsEnum.CUSTOMER_PHOTO).first()
@@ -1188,6 +1192,7 @@ class Lead(models.Model):
 class BookSalesOrder(models.Model):
 	customer_profile = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE)
 	camunda_process_id = models.CharField(max_length=128, null=True)
+	error_log = models.TextField(null=True, blank=True)
 
 
 class SalesOrderPortability(models.Model):
