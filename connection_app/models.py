@@ -729,7 +729,7 @@ class CustomerProfile(models.Model):
 	scheme_opted = models.CharField(max_length=128, null=True)
 	asset_count = models.IntegerField(null=True)
 	migrant = models.BooleanField(null=True)
-	scheme_onboarding_status = models.CharField(max_length=128, null=True)
+	scheme_onbaording_status = models.CharField(max_length=128, null=True)
 	contact_identities = models.JSONField(null=True)
 	phones = models.JSONField(null=True)
 	ekyc_details = models.JSONField(null=True)
