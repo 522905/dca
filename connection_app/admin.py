@@ -232,7 +232,7 @@ class SalesOrderInvoiceAdmin(admin.ModelAdmin):
         'id', 'invoice_number', 'sales_order', 'invoice_date', 'consumer_name', 'consumer_address', 'invoice_status',
         'delivery_boy', 'invoice_status'
     ]
-    list_filter = ['invoice_status', 'delivery_boy']
+    list_filter = ['invoice_status', 'delivery_boy', ]
 
     def has_change_permission(self, request, obj=None):
         return False
@@ -245,13 +245,17 @@ class SalesOrderAdmin(admin.ModelAdmin):
         'order_status', 'auto_generated'
     ]
     list_filter = [
+        'distributor_name',
+        'order_sub_type',
         ('order_date', DateRangeFilter),
-        # ('updated_on', DateRangeFilter),
         'auto_generated',
-        'order_status',
         'digital_payment',
-        'delivery_boy_full_name',
+        ('order_status', DropdownFilter),
+        ('delivery_boy_full_name', DropdownFilter),
+        ('channel', DropdownFilter),
+        ('service_area', DropdownFilter),
     ]
+    search_fields = ['sales_order', 'consumer_name', 'delivery_boy_full_name',]
 
     fsm_fields = ['order_status', ]
     inlines = [

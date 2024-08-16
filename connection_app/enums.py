@@ -146,6 +146,7 @@ class SalesOrderStatusEnum(models.TextChoices):
 	INVOICED = 'Invoiced', 'Invoiced'
 	COMPLETED = 'Completed', 'Completed'
 	RETURNED = 'Returned', 'Returned'
+	NOT_FOUND = 'Not Found', 'Not Found'
 
 
 class ConsumerTypeEnum(models.TextChoices):
