@@ -38,7 +38,7 @@ class Command(BaseCommand):
 								},
 							}
 						}
-					res, pid = start_process_in_camunda_v2('Process_domestic_app', variables=variables)
+					res, pid = start_process_in_camunda_v2('Process_book_sales_order', variables=variables)
 					bso_obj.camunda_process_id = pid
 					bso_obj.save()
 					print(pid)
