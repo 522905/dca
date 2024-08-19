@@ -38,8 +38,9 @@ class Command(BaseCommand):
 				print(res)
 
 				for i, so in enumerate(SalesOrder.objects.exclude(
-						order_status__in=[SalesOrderStatusEnum.COMPLETED, SalesOrderStatusEnum.CANCELLED]).order_by(
-						'id')):
+						order_status__in=[
+							SalesOrderStatusEnum.COMPLETED, SalesOrderStatusEnum.CANCELLED, SalesOrderStatusEnum.NOT_FOUND
+						]).order_by('id')):
 					try:
 						exist = is_process_exist_in_camunda(
 							'process_fetch_sales_order_details_from_sdms', 'sales_order_id', so.id)
