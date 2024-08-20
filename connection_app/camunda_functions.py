@@ -1,12 +1,11 @@
 import datetime
 
-import arrow
 import django_rq
 
+from connection_app.enums import SalesOrderStatusEnum
 from connection_app.jobs import start_read_customer_profile
 from connection_app.models import SalesOrder
 from reference_data.models import Distributor
-from teams.models import SDMSServiceArea
 from ujjwala.camunda_functions import start_process_in_camunda_v2, is_process_exist_in_camunda
 from ujjwala.ujjwala_functions import evaluate_change_cylinder_type_requests
 
@@ -268,6 +267,12 @@ def update_sales_order_details_in_dca(sales_order_id, sales_order_details, exist
 	"""
 	from connection_app.models import SalesOrder
 
+	if sales_order_details.get('sales_order_status') == SalesOrderStatusEnum.NOT_FOUND:
+		so_obj = SalesOrder.objects.get(id=sales_order_id)
+		so_obj.transition_sales_order_not_found()
+		so_obj.save()
+		return so_obj
+
 	so = sales_order_details.pop('sales_order')
 
 	so_new_details: dict = sales_order_details
@@ -325,7 +330,7 @@ def update_sales_order_details_in_dca(sales_order_id, sales_order_details, exist
 		elif new_order_status == 'Invoiced':
 			so_obj.transition_sales_order_invoiced()
 		so_obj.save()
-	print(so_obj)
+	return so_obj
 
 
 def update_customer_profile_in_dca(relationship_details, customer_profile_id):
@@ -656,6 +661,17 @@ def update_booked_order_details_in_dca(sales_order_details, consumer_id, process
 	order_status, sales_order_id, sales_order_number
 	"""
 	from connection_app.models import BookSalesOrder, SalesOrder
+
+	bso_obj: BookSalesOrder = BookSalesOrder.objects.filter(camunda_process_id=process_instance_id).first()
+
+	if sales_order_details.get('relationship_sub_status'):
+		bso_obj.error_log = "Relationship Sub Status {} Processed To Update Customer Profile".format(
+			sales_order_details.get('relationship_sub_status'))
+		bso_obj.save()
+		bso_obj.customer_profile.relationship_sub_status = sales_order_details.get('relationship_sub_status')
+		bso_obj.customer_profile.save()
+		django_rq.enqueue(start_read_customer_profile, args=(bso_obj.customer_profile.id,))
+		return True
 
 	bso_obj = BookSalesOrder.objects.filter(camunda_process_id=process_instance_id).first()
 
