@@ -1,3 +1,6 @@
+import csv
+
+from connection_app.enums import TemplateEnum, ImportDataStatusEnum
 from ujjwala.camunda_functions import start_process_in_camunda_v2
 
 
@@ -42,3 +45,35 @@ def start_read_customer_profile(customer_profile_id):
 		cp_obj.camunda_process_instance_id = pid
 		cp_obj.save()
 	print(res)
+
+
+def schedule_upload_data(template, id_obj):
+	from connection_app.functions import upload_customer_register_csv, upload_service_area_csv
+
+	id_obj.status = ImportDataStatusEnum.PROCESSING
+	id_obj.save()
+
+	try:
+		with open(id_obj.file_path, 'r', encoding='ISO-8859-1') as f:
+			reader = csv.DictReader(f)
+			data_rows = []
+			for row in reader:
+				try:
+					data_rows.append(row)
+				except Exception as e:
+					print(e)
+					continue
+
+		if template == TemplateEnum.SERVICE_AREA:
+			upload_service_area_csv(data_rows)
+		elif template == TemplateEnum.CUSTOMER_REGISTER:
+			upload_customer_register_csv(data_rows)
+		elif template == TemplateEnum.DELIVERY_REGISTER:
+			pass
+
+		id_obj.status = ImportDataStatusEnum.COMPLETED
+		id_obj.save()
+	except Exception as e:
+		id_obj.error_log = str(e)
+		id_obj.status = ImportDataStatusEnum.FAILED
+		id_obj.save()

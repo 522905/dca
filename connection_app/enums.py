@@ -171,8 +171,22 @@ class OrderSubTypeEnum(models.TextChoices):
 
 
 class LeadStatusEnum(models.TextChoices):
-	GENERATED = 'GENERATED', 'Generated',
-	DUE_ON = 'DUE_ON', 'Due On',
-	FOLLOW_UP = 'FOLLOW_UP', 'Follow Up',
+	GENERATED = 'GENERATED', 'Generated'
+	DUE_ON = 'DUE_ON', 'Due On'
+	FOLLOW_UP = 'FOLLOW_UP', 'Follow Up'
 	IN_PROGRESS = 'IN_PROGRESS', 'In Progress'
+	COMPLETED = 'COMPLETED', 'Completed'
+
+
+class TemplateEnum(models.TextChoices):
+	SERVICE_AREA = 'SERVICE_AREA', 'Service Area'
+	CUSTOMER_REGISTER = 'CUSTOMER_REGISTER', 'Customer Register'
+	DELIVERY_REGISTER = 'DELIVERY_REGISTER', 'Delivery Register'
+
+
+class ImportDataStatusEnum(models.TextChoices):
+	SUBMITTED = 'SUBMITTED', 'Submitted'
+	PROCESSING = 'PROCESSING', 'Processing'
+	TEMPLATE_ERROR = 'TEMPLATE_ERROR', 'Template Error'
+	FAILED = 'FAILED', 'Failed'
 	COMPLETED = 'COMPLETED', 'Completed'

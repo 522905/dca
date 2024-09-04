@@ -5,7 +5,8 @@ from django.forms import NumberInput
 from django_currentuser.middleware import get_current_user
 
 from connection_app.enums import ConnectionApplicationProcessType, ConnectionApplicationLeadStatus, \
-	ConnectionApplicationDocumentsEnum, HouseTypeEnum, PostInspectionActivityTypeEnum, PostInspectionStatusEnum
+	ConnectionApplicationDocumentsEnum, HouseTypeEnum, PostInspectionActivityTypeEnum, PostInspectionStatusEnum, \
+	TemplateEnum
 from inactive_customers.models import InactiveCustomer
 from teams.models import SDMSServiceArea, UserProfile
 
@@ -579,3 +580,35 @@ class SDMSServiceAreaForm(forms.Form):
 		self.fields['distributor'].choices = [
 			(i.distributor.code, "{} - {}".format(i.distributor.code, i.distributor.name)) for i in user_profile.sdmsuser_set.all().distinct('distributor')
 		]
+
+
+class UploadDataForm(forms.Form):
+	template = forms.ChoiceField(
+		widget=forms.Select,
+		choices=TemplateEnum.choices,
+		required=True
+	)
+	file = forms.FileField(label='Select a CSV file')
+
+	def clean(self):
+		form_data = self.cleaned_data
+
+		if not form_data.get('file').name.endswith('.csv'):
+			raise forms.ValidationError("Invalid CSV File.")
+		return form_data
+
+
+class ImportDataForm(forms.Form):
+	template = forms.ChoiceField(
+		widget=forms.Select,
+		choices=TemplateEnum.choices,
+		required=True
+	)
+	file = forms.FileField(label='Select a CSV file')
+
+	def clean(self):
+		form_data = self.cleaned_data
+
+		if not form_data.get('file').name.endswith('.csv'):
+			raise forms.ValidationError("Invalid CSV File.")
+		return form_data

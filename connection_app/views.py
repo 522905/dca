@@ -1,3 +1,8 @@
+import csv
+import datetime
+import io
+import os
+
 import django_filters
 import django_rq
 from django.contrib import messages
@@ -13,19 +18,19 @@ from django.views.generic import DetailView, ListView, FormView, TemplateView
 from django_currentuser.middleware import get_current_user
 from django_filters.views import FilterView
 
-
 from connection_app.enums import PostInspectionStatusEnum, InspectionTypeEnum, PostInspectionActivityTypeEnum, \
 	ConnectionApplicationDocumentsEnum
 from connection_app.forms import UpdateAddressForm, PostInspectionStartForm, PreviewPostInspectionForm, \
 	KitchenPostInspectionForm, PostInspectionForm, UIDPostInspectionForm, ProfilePhotoPostInspectionForm, \
 	SurakshaPipePostInspectionForm, CustomerProfileSearchForm, GenerateLeadForm, GenerateNonCustomerLeadForm, \
-	CustomerProfileDocumentUploadForm, SalesOrderDetailViewForm, SalesOrderPortabilityForm, SDMSServiceAreaForm
-from connection_app.jobs import start_sales_order_portability_process
+	CustomerProfileDocumentUploadForm, SalesOrderDetailViewForm, SalesOrderPortabilityForm, SDMSServiceAreaForm, \
+	UploadDataForm, ImportDataForm
+from connection_app.jobs import start_sales_order_portability_process, schedule_upload_data
 from connection_app.models import ConnectionApplication, PostInspection, CustomerProfile, Lead, SalesOrder, \
-	SalesOrderPortability
+	SalesOrderPortability, ImportData
+from domestic_app import settings
 from reference_data.models import ServiceType, Distributor
-from teams.models import SDMSUser, UserProfile, SDMSServiceArea
-from connection_app.filters import SalesOrderFilterSet
+from teams.models import SDMSUser, UserProfile
 
 
 def installation_upload_process_gleam_entry_gate(request):
@@ -959,6 +964,30 @@ class SalesOrderGridMenuView(TemplateView):
 
 
 @method_decorator(login_required, 'dispatch')
+class AdminToolsGridMenuView(TemplateView):
+	template_name = 'connection_app/grid_menu.html'
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+
+		menu = {
+			"name": "Import",
+			"items": [
+				{
+					"name": "Import Data",
+					"icon": "fa-user-secret",
+					"url": reverse("connection_app:import_data"),
+				},
+			]
+		}
+
+		context.update({
+			"menu": menu
+		})
+		return context
+
+
+@method_decorator(login_required, 'dispatch')
 class SalesOrderPortabilityListView(ListView):
 	model = SalesOrderPortability
 	template_name = 'connection_app/sales-order/sales_order_portability_listview.html'
@@ -1070,3 +1099,56 @@ class CustomerProfileListView(ListView):
 		}
 
 		return context
+
+
+class UploadDataView(FormView):
+	form_class = UploadDataForm
+	template_name = "connection_app/upload_data.html"
+
+	def get_success_url(self):
+		return "/"
+
+	def form_valid(self, form):
+		form_data = form.cleaned_data
+		csv_file = form_data.get('file')
+		# csv_file_wrapper = io.TextIOWrapper(csv_file.file, encoding='utf-8')
+		csv_file_wrapper = io.TextIOWrapper(csv_file.file, encoding='ISO-8859-1')
+		reader = csv.DictReader(csv_file_wrapper)
+
+		# Store the rows in a list of dictionaries
+		csv_data = []
+		for row in reader:
+			try:
+				csv_data.append(row)
+			except Exception as e:
+				print(e)
+				continue
+		# res = django_rq.enqueue(schedule_upload_data, args=(form_data.get('template'), csv_data))
+		# messages.add_message(self.request, messages.INFO, "Job Scheduled: {}".format(res.id))
+		schedule_upload_data(form_data.get('template'), csv_data)
+		return redirect(self.get_success_url())
+
+
+class ImportDataView(FormView):
+	form_class = ImportDataForm
+	template_name = "connection_app/upload_data.html"
+
+	def get_success_url(self):
+		return "/"
+
+	def form_valid(self, form):
+		form_data = form.cleaned_data
+		csv_file = form_data.get('file')
+		# Determine the save path for the file
+		save_path = os.path.join(settings.MEDIA_ROOT, 'import_data',
+		                         "import_{}_{}".format(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"), csv_file.name))
+
+		# Save the file to the filesystem
+		with open(save_path, 'wb+') as destination:
+			for chunk in csv_file.chunks():
+				destination.write(chunk)
+		# res = django_rq.enqueue(schedule_upload_data, args=(form_data.get('template'), id_obj))
+		# messages.add_message(self.request, messages.INFO, "Job Scheduled: {}".format(res.id))
+		id_obj = ImportData.objects.create(template=form_data.get('template'), file_path=save_path)
+		schedule_upload_data(form_data.get('template'), id_obj)
+		return redirect(self.get_success_url())

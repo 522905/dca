@@ -1,6 +1,6 @@
 from django import template
 
-from connection_app.functions import can_do_post_inspection
+from connection_app.functions import can_do_post_inspection, can_use_admin_tools
 
 register = template.Library()
 
@@ -18,3 +18,8 @@ def query_filter(value, attr):
 @register.filter
 def get(mapping, key):
 	return mapping.get(key, '')
+
+
+@register.filter()
+def allowed_admin_tools(user):
+	return can_use_admin_tools(user)

@@ -131,6 +131,11 @@ urlpatterns = [
         name="sales_order_grid_menu_view"
     ),
     path(
+        'admin-tools-grid-menu-view/',
+        views.AdminToolsGridMenuView.as_view(),
+        name="admin_tools_grid_menu_view"
+    ),
+    path(
       'inspection-grid-menu-view/',
       views.InspectionGridMenuView.as_view(),
       name="inspection_grid_menu_view"
@@ -150,4 +155,14 @@ urlpatterns = [
         views.CustomerProfileListView.as_view(),
         name="customer_profile_list"
     ),
+    path(
+        'upload-data/',
+        views.UploadDataView.as_view(),
+        name="upload_data"
+    ),
+    path(
+        'import-data/',
+        views.ImportDataView.as_view(),
+        name="import_data"
+    )
 ] + router.urls

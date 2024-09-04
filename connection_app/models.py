@@ -22,7 +22,8 @@ from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTy
 	ConnectionApplicationProcessType, ConnectionApplicationLeadStatus, ConnectionApplicationDocumentsEnum, \
 	ConnectionApplicationLeadCommunicationMode, ConnectionInstallationStatus, \
 	PaymentProfileApprovalStatusEnum, CustomerTypeEnum, SalesOrderStatusEnum, InspectionTypeEnum, \
-	PostInspectionStatusEnum, PostInspectionActivityTypeEnum, LeadStatusEnum, SalesOrderPortabilityStatusEnum
+	PostInspectionStatusEnum, PostInspectionActivityTypeEnum, LeadStatusEnum, SalesOrderPortabilityStatusEnum, \
+	TemplateEnum, ImportDataStatusEnum
 from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, FrontOfficeCompleted, \
 	BackOfficeReactivation, BackOfficeRegularisation, \
 	BackOfficeNewConnection, DocumentsReupload, InstallationReviewForm
@@ -1218,3 +1219,18 @@ class SalesOrderPortability(models.Model):
 	status = models.CharField(max_length=128, choices=SalesOrderPortabilityStatusEnum.choices,
 	                          default=SalesOrderPortabilityStatusEnum.DRAFTED)
 	camunda_process_id = models.CharField(max_length=128)
+
+
+class ImportData(models.Model):
+	created_on = models.DateTimeField(auto_now_add=True)
+	updated_on = models.DateTimeField(auto_now=True)
+	template = models.CharField(max_length=128, choices=TemplateEnum.choices)
+	file_path = models.FilePathField(max_length=254)
+	status = models.CharField(max_length=128, choices=ImportDataStatusEnum.choices,
+	                          default=ImportDataStatusEnum.SUBMITTED)
+	error_log = models.TextField(null=True, blank=True)
+
+	class Meta:
+		permissions = (
+			("can_use_admin_tools", "Can Use Admin Tools"),
+		)

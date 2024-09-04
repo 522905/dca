@@ -1,0 +1,26 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block page_title %}Upload Template{% endblock %}
+{% load material_form %}
+{% block content %}
+    <link rel="stylesheet" href="{% static '/css/style.css' %}" >
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <body>
+    <form method="post" enctype="multipart/form-data">
+        <div class="p-2 pt-0 form_label application_form" style="width: 100%;">
+            <div class="card p-0">
+                <div class="card-header">
+                    Import Data
+                </div>
+                <div class="card-body">
+                    {% csrf_token %}
+                    {% form form=form %}{% endform %}
+                </div>
+                <div class="card-footer float-right">
+                    <button type="submit">Upload</button>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}
