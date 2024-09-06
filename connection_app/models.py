@@ -1225,7 +1225,7 @@ class ImportData(models.Model):
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
 	template = models.CharField(max_length=128, choices=TemplateEnum.choices)
-	file_path = models.FilePathField(max_length=254)
+	file_path = models.TextField()
 	status = models.CharField(max_length=128, choices=ImportDataStatusEnum.choices,
 	                          default=ImportDataStatusEnum.SUBMITTED)
 	error_log = models.TextField(null=True, blank=True)

@@ -12,6 +12,7 @@ from ujjwala.ujjwala_functions import evaluate_change_cylinder_type_requests
 
 def get_customer_profile(consumer_id, name, address, distributor_code):
 	from connection_app.models import CustomerProfile
+	from connection_app.jobs import start_read_customer_profile
 
 	distributor = Distributor.objects.filter(code=distributor_code).first()
 	cp_obj: CustomerProfile = CustomerProfile.objects.filter(consumer_id=consumer_id).first()
@@ -267,7 +268,7 @@ def update_sales_order_details_in_dca(sales_order_id, sales_order_details, exist
 	"""
 	from connection_app.models import SalesOrder
 
-	if sales_order_details.get('sales_order_status') == SalesOrderStatusEnum.NOT_FOUND:
+	if sales_order_details.get('sales_order_status', '') == 'NOT_FOUND':
 		so_obj = SalesOrder.objects.get(id=sales_order_id)
 		so_obj.transition_sales_order_not_found()
 		so_obj.save()

@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 import json
 from django.contrib import admin
+from django.utils.html import format_html
 from import_export.admin import ExportActionMixin
 # from django.contrib.flatpages.admin import FlatPageAdmin
 from fsm_admin2_custom.admin import FSMTransitionCustomMixin
 from .enums import ConnectionApplicationLeadStatus
 from .models import ConnectionApplication, ConnectionApplicationDocuments, PaymentProfile, SalesOrderInvoice, \
-    SalesOrder, CustomerProfile, PostInspection
+    SalesOrder, CustomerProfile, PostInspection, ImportData
 from django_fsm_log.admin import StateLogInline
 from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 from django_admin_listfilter_dropdown.filters import DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter
 from django.contrib.admin import SimpleListFilter
 from django.db import connection
-from django.urls import path
+from django.urls import path, reverse
 from django.http import JsonResponse, HttpResponseRedirect
 from itertools import groupby
 
@@ -293,3 +294,27 @@ class PostInspectionAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         return False
+
+
+@admin.register(ImportData)
+class ImportDataAdmin(admin.ModelAdmin):
+    list_display = [
+        'id', 'created_on', 'updated_on', 'template', 'status', 'download_file_link'
+    ]
+
+    list_filter = [
+        ('created_on', DateRangeFilter),
+        ('updated_on', DateRangeFilter),
+        'status',
+    ]
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def download_file_link(self, obj):
+        if obj.file_path:
+            url = reverse('download_imported_file', args=[obj.pk])
+            return format_html('<a href="{}" target="_blank">Download File</a>', url)
+        return "No file available"
+
+    download_file_link.short_description = "Download File"

@@ -4,12 +4,15 @@ from django.urls import path, include
 from django.views.generic import RedirectView
 from rest_framework import routers
 
-from connection_app.viewsets import ConnectionApplicationViewSet, ConnectionApplicationAPIViewSet
+from connection_app.viewsets import ConnectionApplicationViewSet, ConnectionApplicationAPIViewSet, BookSalesOrderViewSet
 from . import views
 
 router = routers.DefaultRouter()
 router.register(r'connection-application', ConnectionApplicationViewSet)
 router.register(r'connection-application-api', ConnectionApplicationAPIViewSet, basename="connection_application_api")
+router.register(
+    r'connection-application-sales-order', BookSalesOrderViewSet, basename="connection_application_sales_order"
+)
 
 
 urlpatterns = [
@@ -164,5 +167,10 @@ urlpatterns = [
         'import-data/',
         views.ImportDataView.as_view(),
         name="import_data"
-    )
+    ),
+    url(
+        '^download-imported-file/(?P<pk>[^/.]+)/$',
+        views.DownloadImportedFileView.as_view(),
+        name="download_imported_file"
+    ),
 ] + router.urls

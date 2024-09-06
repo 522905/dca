@@ -182,6 +182,7 @@ class TemplateEnum(models.TextChoices):
 	SERVICE_AREA = 'SERVICE_AREA', 'Service Area'
 	CUSTOMER_REGISTER = 'CUSTOMER_REGISTER', 'Customer Register'
 	DELIVERY_REGISTER = 'DELIVERY_REGISTER', 'Delivery Register'
+	CANCEL_BOOKINGS = 'CANCEL_BOOKINGS', 'Cancel Bookings'
 
 
 class ImportDataStatusEnum(models.TextChoices):

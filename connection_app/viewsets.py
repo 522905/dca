@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from . import models
 from .enums import ConnectionApplicationLeadStatus
 from .models import ConnectionApplication
+from .serializer import SalesOrderSerializer
 from .serializers import ConnectionApplicationSerializer
 
 
@@ -159,3 +160,50 @@ class ConnectionApplicationAPIViewSet(viewsets.ViewSet):
         so_obj.hide_from_view = value
         so_obj.save()
         return Response(data='OK', status=200)
+
+    @action(methods=['get'], detail=False, url_path='get_sales_order_for_delivery_boy')
+    def get_sales_order_for_delivery_id(self, request, *args, **kwargs):
+        from connection_app.models import SalesOrder
+
+        delivery_boy_login = request.GET.get('delivery_boy_login')
+        from_order_date = datetime.datetime.now() - datetime.timedelta(days=10)
+        data = SalesOrderSerializer(
+            SalesOrder.objects.exclude(
+                order_status__in=['COMPLETED', 'Completed', 'Cancelled']
+            ).filter(delivery_boy_login=delivery_boy_login, order_date__gte=from_order_date.date()), many=True).data
+        return JsonResponse(data, safe=False)
+
+
+class BookSalesOrderViewSet(viewsets.ViewSet):
+    @action(methods=['get'], detail=False, url_path='get_book_sales_order_delivery_boy_login')
+    def get_book_sales_order_delivery_boy_login(self, request, *args, **kwargs):
+        from connection_app.models import BookSalesOrder
+        from teams.models import UserProfile
+
+        data = []
+
+        userprofile_set = BookSalesOrder.objects.all().values_list(
+            'customer_profile__sdms_service_area__userprofile').distinct()
+
+        distributor_set = BookSalesOrder.objects.all().values_list(
+            'customer_profile__distributor__code').distinct()
+
+        # data['distributor'] = [distributor[0] for distributor in distributor_set]
+
+        for distributor in distributor_set:
+            for userprofile in userprofile_set:
+                try:
+                    userprofile_obj = UserProfile.objects.get(id=userprofile[0])
+                    data.append({
+                        "delivery_boy_login": userprofile_obj.sdmsuser_set.filter(
+                            distributor__code=distributor[0]).first().delivery_boy_login,
+                        "delivery_boy_password": userprofile_obj.sdmsuser_set.filter(
+                            distributor__code=distributor[0]).first().delivery_boy_password,
+                        "distributor_code": distributor[0]
+                        }
+                    )
+                except Exception as e:
+                    print(e)
+                    continue
+
+        return JsonResponse(data, safe=False)

@@ -5,6 +5,7 @@ import requests
 from connection_app.camunda_functions import get_customer_profile, get_sdms_service_area
 from domestic_app.settings import CAMUNDA_BASE_URL
 from reference_data.models import Distributor
+from ujjwala.camunda_functions import start_process_in_camunda_v2, is_process_exist_in_camunda
 
 
 def can_do_post_inspection(user):
@@ -79,3 +80,21 @@ def upload_service_area_csv(csv_file_rows):
 def upload_delivery_register_csv(csv_file_rows):
 	pass
 
+
+def schedule_booking_cancellation_csv(csv_file_rows):
+	for idx, row in enumerate(csv_file_rows):
+		try:
+			exist = is_process_exist_in_camunda('Process_book_sales_order', 'sales_order', row['sale_order'])
+			if not exist:
+				variables = {
+					"variables": {
+						"sale_order": {"value": row['sale_order'], "type": "String"},
+						"distributor_code": {"value": row['distributor_code'], "type": "String"},
+						"sdms_task": {"value": "cancel_booked_sales_order", "type": "String"},
+					}
+				}
+				res, pid = start_process_in_camunda_v2('Process_book_sales_order', variables=variables)
+				print(pid)
+		except Exception as e:
+			continue
+	return True

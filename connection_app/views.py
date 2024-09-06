@@ -1,6 +1,7 @@
 import csv
 import datetime
 import io
+import mimetypes
 import os
 
 import django_filters
@@ -9,10 +10,11 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils.decorators import method_decorator
+from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, ListView, FormView, TemplateView
 from django_currentuser.middleware import get_current_user
@@ -1141,7 +1143,7 @@ class ImportDataView(FormView):
 		csv_file = form_data.get('file')
 		# Determine the save path for the file
 		save_path = os.path.join(settings.MEDIA_ROOT, 'import_data',
-		                         "import_{}_{}".format(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"), csv_file.name))
+								 "import_{}_{}".format(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"), csv_file.name))
 
 		# Save the file to the filesystem
 		with open(save_path, 'wb+') as destination:
@@ -1152,3 +1154,24 @@ class ImportDataView(FormView):
 		id_obj = ImportData.objects.create(template=form_data.get('template'), file_path=save_path)
 		schedule_upload_data(form_data.get('template'), id_obj)
 		return redirect(self.get_success_url())
+
+
+class DownloadImportedFileView(View):
+
+	def get(self, request, pk, *args, **kwargs):
+		# Retrieve the ImportData instance by primary key (pk)
+		import_data = ImportData.objects.get(pk=pk)
+		file_path = import_data.file_path
+
+		# Check if file exists
+		if not os.path.exists(file_path):
+			raise Http404("The requested file does not exist.")
+
+		# Determine the file's MIME type
+		mime_type, _ = mimetypes.guess_type(file_path)
+
+		# Open the file in binary mode and prepare the response
+		with open(file_path, 'rb') as f:
+			response = HttpResponse(f.read(), content_type=mime_type)
+			response['Content-Disposition'] = f'attachment; filename={os.path.basename(file_path)}'
+		return response
