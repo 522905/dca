@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "om-prakash-rerm",
+  "private_key_id": "8249ddd388c84f33ee0ef28cb85adf5277395007",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDEde/VT+NU3U0g\n3hjm6gRyG6vIhojwWkbPPHbUe/67BURix5Jd0dFH3/KQfl5TKxHuD8Z/8yQWByoE\nvsCuHuywmlvNbbjon876K4ocusgoajWmffbvL7Dwh/cVsvM2bmhrTLOqb3X7o+Gp\nw9BD9DSfZwcTKgPCaPNEXTTa1yCoqMQWGczOGxPKA03h3JGGq5neSD2bcsdtIuzN\nKW4oQ0pPXp7Z9pgmbcsKYBulw+luLh5Kh6F1nnabajSqZJelqbt682I++w79gbEB\ncQu5q4HsUMDDNSKSo0i0TEfA83m23t3XEsURrv3+tmkot/c+jxALovXu8t3ufQXE\n2+IYdv1tAgMBAAECggEATFoBcYdwtESlewaV6vg77hTu+CnBApgzOMso63+dChYL\n88/YBHpMuYBBhwJ1qiDtAPZEkOlvttfl7p4rx//gwOncj8P6vv2MtRFCxdOZgot0\nelYuJ9sDCxfsYRSBDUBveHQAx1Y2JiwUwaOGR0KbSPADgeEsQNwE3ybSKdK9sI3o\nBYd67YzkX9xYJLGQDV6+dpAv/Ysr4HN3Ys0D+d4E1uCOuGmFnu3j7TdA1aNPZufH\nW0bhQkOT+xlYtTSq8/HdMBkEIEILqm0/RuUDONcPEoB/z0S/mkrV80aOkxMcX+eS\nDyLLKktnuEm1IfRBrBVISPm23wVX6BBw5lVKGtz7yQKBgQDhladtZIlobzHUajWX\nLqng25W+QPrObsSl+FuZpNxKCqbHmDlIZm/1hVykNwr7R1hNHhYv/B2JJ9xsnklS\nXPI8bHT3eqOLapns0neaxrFB6s/LJA9CHNuLy55+FE3JklalOjMXzcniw90BzlVL\njJOFkoAQjZkeleSYiP/Oaflo4wKBgQDe8wicbpOE/g9eZkl5wvEZloBWU+dYD2a9\nxciiz+QMirMUqK4Imqq5NGmVqDZ/XfF5lAbbTPLxr6VNhQG4JCSUNFLp9cqPFmyQ\nTHDtQwqS5COP4yr0MJrEYsDyUxNUkUjwrjFy9U9n8UgIAyYGxjxi8y0Rt9Pbt1Ac\nHTjiP8HhbwKBgQC4aCQz8sm5C50KbcBdVBIe9KJWorvkYPx0SLBoyzIhfM+VvkSl\ngMfpRxnSTAS4ITx33i55D3n9kw5H5KU/pSeIaYi8fg6Pe5dU10Ba0C47Gn6/Kz0l\n6H04rD1mB6cHLo+SBh+aR+nPbBmQzmE/ny1BNd9mqLoRHKuAXg3vaQYvzQKBgACM\nNkw0FVaxTRZdR/btnKwEa6JKqHnV59m1f62utw+004XMeEj7IEo+L7g3ZpLfhzVW\nQMIPKVWgqdZL6loqdJCMpFuAyBOb6X5dQbXDgWYk+1ViKHvbFrY+y9yMibKefMBi\nnSp8IcrOk++5GkHQANv5XvX5LqMOizrWc4pSv8YvAoGBAKAldD84WbhVEsg++oHG\nX//hnF2E4w7jrvvAY0BYUJC33VpQzXoW7+TKWsDuaeHCoSEwp0Ne0r7xEhqRWM01\nWzBVPU/NUPhuH6NOAVFflZM5z8o/rY51/+NgTQfVfSFM0N31FaOuLIdPy5GlK042\nSpYOfz+j18UhmoBwnvveWiKW\n-----END PRIVATE KEY-----\n",
+  "client_email": "arungas-bot@om-prakash-rerm.iam.gserviceaccount.com",
+  "client_id": "110352826378948551500",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/arungas-bot%40om-prakash-rerm.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

@@ -8,12 +8,18 @@ https://docs.djangoproject.com/en/3.1/topics/settings/`
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-
+import json
+import pickle
 from pathlib import Path
 import os # new
 import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+from corsheaders.defaults import default_headers, default_methods
+# from  logging_utils import ArrowFormatter
+from deathbycaptcha import deathbycaptcha
+from django.core.cache import cache
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -29,12 +35,12 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "./dialogflow_api.json"
 # Application definition
 
 INSTALLED_APPS = [
     'material',
     'material.frontend',
-
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -46,9 +52,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'organizations',
     'communication_log',
-
     'django_rq',
-
     'django_fsm',
     'django_fsm_log',
     'fsm_admin2',
@@ -56,26 +60,38 @@ INSTALLED_APPS = [
     'import_export',
     'django_filters',
     'advanced_filters',
-
-    'connection_app',
+    'scheduler',
+    'connection_app.apps.ConnectionAppConfig',
     'inactive_customers',
     'treenode',
-
     'rangefilter',
     'django_admin_listfilter_dropdown',
     'teams',
     'formtools',
-
     'ujjwala.apps.UjjwalaAppConfig',
     'sdms',
     'otp',
     'app_utilities',
-    'scheduler',
     'djgeojson',
     'leaflet',
     'reference_data.apps.ReferenceDataConfig',
     'retail_customers',
+    # 'domestic.apps.DomesticConfig',
+    'erp_invoice_management',
+    'django_admin_json_editor',
+    'service_request.apps.ServiceRequestAppConfig',
+    'csc_services.apps.CSCServicesAppConfig',
+    'django_comments_xtd',
+    'django_comments',
+    'django.contrib.sites',
+    'taggit',
+    'solo',
+    'vicidial',
 ]
+
+CRISPY_TEMPLATE_PACK = "bootstrap4"
+
+SITE_ID = 2
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -88,7 +104,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django_currentuser.middleware.ThreadLocalUserMiddleware',
-
+    'django.contrib.sites.middleware.CurrentSiteMiddleware'
 ]
 
 ROOT_URLCONF = 'domestic_app.urls'
@@ -104,7 +120,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'domestic_app.context_processors.bridge_context'
+                "domestic_app.context_processors.thumbor_compression_url",
             ],
         },
     },
@@ -116,21 +132,22 @@ WSGI_APPLICATION = 'domestic_app.wsgi.application'
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = {
-    #'default': {
-    #    'ENGINE': 'django.db.backends.sqlite3',
-    #    'NAME': BASE_DIR / 'db.sqlite3',
-    #},
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3'
+    # }
     'default': {
         'ATOMIC_REQUESTS': True,
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'domestic_connection_app',
-        'USER': 'process_mobile_application',
+        'NAME': 'dca',
+        'USER': 'dca_webapp',
         'PASSWORD': '3ty5JS8sJlqtk3bQ',
-        'HOST': 'localhost',
+        # 'HOST': 'localhost',
+        # 'HOST': '10.1.1.132',
+        'HOST': '192.168.171.65',
         'PORT': '',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -167,26 +184,35 @@ USE_L10N = True
 USE_TZ = True
 
 
+# CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ORIGIN_ALLOW_ALL = True
+
 
 INTERAKT_API_KEY = "HmtU2CH6poGN_TU-XqCtwuvef8utPNRJRlamfbWXTwg"
 
-# CAMUNDA_BASE_URL = "http://192.168.1.77:25252/engine-rest"
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 
-#DataFlair #Django #Static files
+ADMIN_COMMENTS_SHOW_EMPTY = False
+
+COMMENTS_APP = 'django_comments_xtd'
+# COMMENTS_XTD_MODEL = 'reference_data.models.CommentX'
+# COMMENTS_XTD_FORM_CLASS = 'reference_data.forms.CommentXForm'
+
+COMMENTS_XTD_CONFIRM_EMAIL = False
+
 STATIC_URL = '/static/'
-#--------------------------------------------------
+
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
-#-----------------------------------------------------
+
 STATICFILES_DIRS = [
         os.path.join(BASE_DIR, 'static'),
 ]
 RQ_QUEUES = {
     'default': {
-        'HOST': 'localhost',
+        'HOST': '192.168.171.65',
         'PORT': 56379,
         'DB': 0,
         # 'PASSWORD': 'some-password',
@@ -196,17 +222,19 @@ RQ_QUEUES = {
 }
 
 # If you need custom exception handlers
-#RQ_EXCEPTION_HANDLERS = ['path.to.my.handler']
 
 BASE_URL = 'https://dca.arungas.com'
 
+# RQ_EXCEPTION_HANDLERS = ['path.to.my.handler']
+
 MINIO_UPLOAD_URL = "http://files.dca.arungas.com"
 MINIO_PUBLIC_URL = "https://files.dca.arungas.com"
-#MINIO_UPLOAD_URL = "http://localhost:59000"
 
-#MINIO_ENDPOINT = "files.dca.arungas.com"
-MINIO_ENDPOINT = "localhost:59000"
-MINIO_API_ENDPOINT = "localhost:59000"
+# MINIO_ENDPOINT = "arungas.com:59000"
+# MINIO_API_ENDPOINT = "arungas.com:59000"
+
+MINIO_ENDPOINT = "arungas.com:59000"
+MINIO_API_ENDPOINT = "arungas.com:59000"
 
 MINIO_BUCKET_NAME = "domesticconnectionapplicationdocs"
 MINIO_UJJWALA_BUCKET_NAME = "ujjwaladocuments"
@@ -217,23 +245,37 @@ MINIO_CREDENTIAL = {
 }
 
 
+# Camunda DCA Production URL
+# CAMUNDA_WEB_ROOT_URL = "https://camunda.dca.arungas.com"
+# CAMUNDA_WEB_ROOT_URL = "https://camunda.dca.arungas.com"
 
-# Camunda Production URL
-CAMUNDA_WEB_ROOT_URL = "https://process.arungas.com"
+
 # Camunda Development URL
-#CAMUNDA_WEB_ROOT_URL = "http://192.168.168.4:25252"
+CAMUNDA_WEB_ROOT_URL = "http://192.168.171.65:38080"
 
 # Camunda Base URL
 CAMUNDA_BASE_URL = f"{CAMUNDA_WEB_ROOT_URL}/engine-rest"
 
+# Currently Pointing To Live Project of DCA Using Local Address
+HTML_TO_PDF_SERVER_URL = "http://192.168.171.32:58080"
 
-HTML_TO_PDF_SERVER_URL = "http://localhost:58080"
+# Old Thumbor URL
+# THUMBOR_URL = "http://dca.arungas.com:6988/unsafe/fit-in/1920x1080/filters:quality(75):format(jpeg)/"
+# THUMBOR_URL_INTERNAL = "http://dca.arungas.com:6988/unsafe/fit-in/1520x2688/filters:format(webp)/"
+# THUMBOR_URL_INTERNAL = "http://dca.arungas.com:6988/unsafe/fit-in/1520x2688/filters:quality(80)/"
+# THUMBOR_URL_INTERNAL_WEBP_COMPRESSED = "http://dca.arungas.com:6988/unsafe/fit-in/1520x2688/filters:quality(80):format(webp)/"
+# THUMBOR_URL_INTERNAL_WEBP_UNCOMPRESSED = "http://dca.arungas.com:6988/unsafe/fit-in/1520x2688/filters:quality(100):format(webp)/"
 
-THUMBOR_URL = "http://dca.arungas.com:6988/unsafe/fit-in/1920x1080/filters:quality(75):format(jpeg)/"
+THUMBOR_WEB_URL = "http://thumbs.dca.arungas.com"
+THUMBOR_URL = f"{THUMBOR_WEB_URL}/unsafe/fit-in/1920x1080/filters:quality(75):format(jpeg)/"
 
-THUMBOR_URL_INTERNAL = "http://dca.arungas.com:6988/unsafe/fit-in/1520x2688/filters:format(webp)/"
-THUMBOR_URL_INTERNAL_WEBP_COMPRESSED = "http://dca.arungas.com:6988/unsafe/fit-in/1520x2688/filters:quality(80):format(webp)/"
-THUMBOR_URL_INTERNAL_WEBP_UNCOMPRESSED = "http://dca.arungas.com:6988/unsafe/fit-in/1520x2688/filters:quality(100):format(webp)/"
+THUMBOR_LOCAL_URL = "http://192.168.171.32:6988"
+THUMBOR_LOCAL_COMPRESSION_URL = f"{THUMBOR_LOCAL_URL}/unsafe/fit-in/1920x1080/filters:quality(75):format(jpeg)/"
+
+THUMBOR_URL_INTERNAL = f"{THUMBOR_LOCAL_URL}/unsafe/fit-in/1520x2688/filters:format(webp)/"
+THUMBOR_URL_INTERNAL_WEBP_COMPRESSED = f"{THUMBOR_WEB_URL}/unsafe/fit-in/1520x2688/filters:quality(80):format(webp)/"
+THUMBOR_URL_LOCAL_INTERNAL_WEBP_COMPRESSED = f"{THUMBOR_LOCAL_URL}/unsafe/fit-in/1520x2688/filters:quality(80):format(webp)/"
+THUMBOR_URL_INTERNAL_WEBP_UNCOMPRESSED = f"{THUMBOR_WEB_URL}/unsafe/fit-in/1520x2688/filters:quality(100):format(webp)/"
 
 INFOBIP_URL = "https://4r198.api.infobip.com/sms/2/text/advanced"
 INFOBIP_NOTIFY_URL = "https://dca.arungas.com/commlog/infobip/webhook/"
@@ -245,18 +287,6 @@ SUBMIT_SMS_TEMPLATE = \
     "Your application with Id {id} submitted for connection type  {application_details}. " \
     "We will get back to you within {working_days} working days."
 
-
-#GENERIC_SMS_OTP_TEMPLATE = \
-#    "Dear Customer,"\
-#    "Your verification code for {otp_for} is {otp} -Arun Gas"
-
-#GENERIC_SMS_OTP_TEMPLATE_ID = "1107165976858894486"
-
-
-# GENERIC_SMS_OTP_TEMPLATE = \
-#     "Dear Customer,"\
-#     "Your verification code for {otp_for} is {otp} -Arun Gas"
-
 GENERIC_SMS_OTP_TEMPLATE = \
     "{otp} is your verification OTP. This OTP will expire in {otp_expire} mins. Do not share it with anyone   -Arun Gas"
 
@@ -266,21 +296,83 @@ GENERIC_SMS_OTP_TEMPLATE_ID = "1107169822213183469"
 
 VERIFIED_SMS_TEMPLATE = \
     ""
+#
+# DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 UJJWALA_PRE_INSPECTION_OTP = 'ujjwala_pre_inspection_otp'
 
 X_FRAME_OPTIONS = 'ALLOWALL'
 
+# import sentry_sdk
+#
+# sentry_sdk.init(
+#     dsn="https://3a6bc49af5e0461af09f8818d01e79b0@o4506076265906176.ingest.sentry.io/4506076268331008",
+#     # Set traces_sample_rate to 1.0 to capture 100%
+#     # of transactions for performance monitoring.
+#     traces_sample_rate=1.0,
+#     # Set profiles_sample_rate to 1.0 to profile 100%
+#     # of sampled transactions.
+#     # We recommend adjusting this value in production.
+#     profiles_sample_rate=1.0,
+# )
 
-import sentry_sdk
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'messaged': {
+            'format': '{asctime} {levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/whatsapp_dialogflow.log'),
+            'formatter': 'messaged',
 
-sentry_sdk.init(
-    dsn="https://3a6bc49af5e0461af09f8818d01e79b0@o4506076265906176.ingest.sentry.io/4506076268331008",
-    # Set traces_sample_rate to 1.0 to capture 100%
-    # of transactions for performance monitoring.
-    traces_sample_rate=1.0,
-    # Set profiles_sample_rate to 1.0 to profile 100%
-    # of sampled transactions.
-    # We recommend adjusting this value in production.
-    profiles_sample_rate=1.0,
-)
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'chatbot_views': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+    },
+}
+
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-dedup_portal",
+    }
+}
+
+PRE_SURAKSHA_YOUTUBE_VIDEO_URL = 'https://youtu.be/d-XiWg4277E'
+
+def read_private_key_file(filepath):
+    with open(filepath, 'r') as file:
+        private_key = file.read()
+    return private_key
+
+# Define the path to your private key file
+PRIVATE_KEY_PATH = os.path.join(BASE_DIR, 'private.pem')
+
+# Read the private key
+PRIVATE_KEY = read_private_key_file(PRIVATE_KEY_PATH)
+
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "./dialogflow_api.json"
+os.environ["PRIVATE_KEY"] = PRIVATE_KEY
+os.environ["PASSPHRASE"] = "jobnot"
+os.environ["APP_SECRET"] = "10bee2967962c7fb6010d8b99764df45"
+# cache.get_or_set("dedup_portal", pickled_dedeup_portal, 1000)
+# dedup_portal = IoclOmcDedup('305948', 'Inder@1234')
+
+# GEOS_LIBRARY_PATH = '/home/user/local/lib/libgeos_c.so'
+# GDAL_LIBRARY_PATH = '/home/user/local/lib/libgdal.so'
