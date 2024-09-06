@@ -314,12 +314,12 @@ class SharedSelfPreInspectionLinkView(View):
 
 			response = redirect(
 				reverse('ujjwala:pre_inspection_form_view',
-				        args=('self', data['pre_inspection_id'])) + '?referral_user_id={}'.format(user_id)
+						args=('self', data['pre_inspection_id'])) + '?referral_user_id={}'.format(user_id)
 			)
 		else:
 			response = redirect(
 				reverse('ujjwala:pre_inspection_form_view',
-				        args=('self', data['pre_inspection_id']))
+						args=('self', data['pre_inspection_id']))
 			)
 		return response
 
@@ -340,7 +340,7 @@ class WhatsappUploadLegalForms(View):
 					"ujjwala/response.html",
 					{
 						"heading": "Legal Documents",
-				        "message": "Application Id {} Form A B C sent.".format(kwargs.get('pk'))
+						"message": "Application Id {} Form A B C sent.".format(kwargs.get('pk'))
 					}
 				)
 			else:
@@ -349,7 +349,7 @@ class WhatsappUploadLegalForms(View):
 					"ujjwala/response.html",
 					{
 						"heading": "Legal Documents",
-				        "message": "Application Id {} Form A B C Uploaded.".format(kwargs.get('pk'))
+						"message": "Application Id {} Form A B C Uploaded.".format(kwargs.get('pk'))
 					}
 				)
 		else:
@@ -358,7 +358,7 @@ class WhatsappUploadLegalForms(View):
 				"ujjwala/response.html",
 				{
 					"heading": "Legal Documents",
-			        "message": "Application Id {} not valid state. Connection Disbursement not created.".format(kwargs.get('pk'))
+					"message": "Application Id {} not valid state. Connection Disbursement not created.".format(kwargs.get('pk'))
 				}
 			)
 
@@ -424,8 +424,6 @@ class UjjwalaApplicationWebFormView(TemplateView):
 	#         "form_fill_area_list": form_fill_area_list
 	#     })
 	#     return context_data
-
-
 
 
 @method_decorator(login_required, 'dispatch')
@@ -532,7 +530,7 @@ class UjjwalaAddressReviewView(FormView, ApplicationView):
 		# address_form = UpdateAddressForm(initial=obj.address_json)
 		state_log = StateLog.objects.filter(
 			object_id=obj.id,
-		    content_type=ContentType.objects.get(app_label='ujjwala', model='ujjwalav2application'),
+			content_type=ContentType.objects.get(app_label='ujjwala', model='ujjwalav2application'),
 			state=UjjwalaV2ApplicationStatus.REVIEW_ADDRESS
 		).order_by('-id').first()
 		context.update({
@@ -687,8 +685,8 @@ class UjjwalaApplicationReuploadFormView(FormView):
 
 	def get_initial(self):
 		"""
-        Returns the initial data to use for forms on this view.
-        """
+		Returns the initial data to use for forms on this view.
+		"""
 		initial = super().get_initial()
 
 		initial['application_id'] = self.kwargs.get('pk')
@@ -722,7 +720,7 @@ class PreInspectionView(FormView):
 		if self.kwargs.get('type') == 'mech':
 			if pre_inspection.status == PreInspectionStatusEnum.ALLOCATED \
 					or (pre_inspection.status in (PreInspectionStatusEnum.REJECTED, PreInspectionStatusEnum.REDO)
-					    and pre_inspection.type == PreInspectionTypeEnum.MECHANIC
+						and pre_inspection.type == PreInspectionTypeEnum.MECHANIC
 			):
 				return self.otp_verification(pre_inspection)
 
@@ -1075,7 +1073,7 @@ class UjjwalaApplicationStatusView(TemplateView):
 		front_end_staff = is_front_end_staff(current_user)
 
 		if current_user.is_staff or DisbursementDrive.objects.filter(status='ACTIVE',
-		                                                             team_members=current_user).exists() or front_end_staff:
+																	 team_members=current_user).exists() or front_end_staff:
 			qs = UjjwalaV2Application.objects.all()
 		else:
 			qs = UjjwalaV2Application.objects.filter(Q(filled_by__isnull=True) | Q(filled_by=current_user))
@@ -1441,7 +1439,7 @@ class ConnectionDisbursementView(TemplateView, ApplicationView):
 				if result:
 					connection_disbursement.camunda_process_id = message
 					messages.add_message(self.request, messages.INFO,
-					                     "SV Creation Process Started In Camunda: Process Id = {}".format(message))
+										 "SV Creation Process Started In Camunda: Process Id = {}".format(message))
 				else:
 					connection_disbursement.camunda_error = message
 					messages.add_message(self.request, messages.ERROR, message)
@@ -1643,7 +1641,7 @@ class ConnectionDisbursementReviewFormAbcListView(ListView):
 					)
 				else:
 					return redirect('ujjwala:connection_disbursement_review_form_abc_view',
-					                pk=object.pk)
+									pk=object.pk)
 			else:
 				messages.add_message(
 					request, messages.ERROR, "Application Id: {} not found".format(application_id)
@@ -1886,7 +1884,7 @@ class ConnectionDisbursementSvLabelPrintView(FormView, ApplicationView):
 			"obj": obj,
 			# "bluebook_label_print_url": self.request.build_absolute_uri(bluebook_label_print_url)
 			"bluebook_label_print_url": self.request.build_absolute_uri(bluebook_label_print_url).replace("dca-local",
-			                                                                                              "dca")
+																										  "dca")
 		})
 		return context
 
@@ -2075,7 +2073,7 @@ class UjjwalaConnectionDisbursementMaterialDeliveryListView(ListView):
 
 		if application_id == '6095':
 			return redirect('ujjwala:connection_disbursement_material_delivery_view',
-			                pk=ConnectionDisbursement.objects.get(parent_id=6095).id)
+							pk=ConnectionDisbursement.objects.get(parent_id=6095).id)
 
 		object: ConnectionDisbursement = ConnectionDisbursement.objects.filter(parent_id=application_id).first()
 
@@ -2500,7 +2498,7 @@ class InstallationReviewListView(ListView):
 					)
 				else:
 					return redirect('ujjwala:installation_review',
-					                pk=object.pk)
+									pk=object.pk)
 			else:
 				messages.add_message(
 					request, messages.ERROR, "Application Id: {} not found".format(application_id)
@@ -2610,7 +2608,7 @@ class ReviewFormAbcListView(ListView):
 					)
 				else:
 					return redirect('ujjwala:connection_disbursement_review_form_abc_view',
-					                pk=object.pk)
+									pk=object.pk)
 			else:
 				messages.add_message(
 					request, messages.ERROR, "Application Id: {} not found".format(application_id)
@@ -3019,13 +3017,13 @@ class PreInspectionConvertToView(FormView):
 			if self.kwargs.get('convert_to') == 'mech' and obj.type == PreInspectionTypeEnum.MECHANIC:
 				return redirect(
 					reverse('ujjwala:pre_inspection_form_view',
-					        args=('mech', obj.pk)) + '?{}'.format(request.GET.urlencode())
+							args=('mech', obj.pk)) + '?{}'.format(request.GET.urlencode())
 				)
 				# return redirect('ujjwala:pre_inspection_form_view', type="mech", pk=obj.pk)
 			elif self.kwargs.get('convert_to') == 'self' and obj.type == PreInspectionTypeEnum.SELF:
 				return redirect(
 					reverse('ujjwala:pre_inspection_form_view',
-					        args=('self', obj.pk)) + '?{}'.format(request.GET.urlencode())
+							args=('self', obj.pk)) + '?{}'.format(request.GET.urlencode())
 				)
 				# return redirect('ujjwala:pre_inspection_form_view', type="self", pk=obj.pk)
 		return super().dispatch(request, *args, **kwargs)
@@ -3070,7 +3068,7 @@ class PreInspectionConvertToView(FormView):
 			obj.save()
 		return redirect(
 			reverse('ujjwala:pre_inspection_form_view',
-			        args=(data['convert_to'], obj.pk)) + '?{}'.format(self.request.GET.urlencode())
+					args=(data['convert_to'], obj.pk)) + '?{}'.format(self.request.GET.urlencode())
 		)
 		# return redirect('ujjwala:pre_inspection_form_view', type=data['convert_to'], pk=obj.pk)
 
@@ -3404,13 +3402,13 @@ class CancelInvitationView(FormView):
 		obj = UjjwalaV2Application.objects.filter(id=data['application_id']).first()
 		if not obj:
 			messages.add_message(self.request, messages.ERROR,
-			                     "No Application Exist With Given Id: {}".format(data['application_id']))
+								 "No Application Exist With Given Id: {}".format(data['application_id']))
 			return redirect(".")
 
 		invitation = obj.connection_disbursement.invitation.filter(status=ConnectionDisbursementInvitationEnum.VALID)
 		if not invitation.exists():
 			messages.add_message(self.request, messages.ERROR,
-			                     "No Invitation Exist For Given Application Id: {}".format(data['application_id']))
+								 "No Invitation Exist For Given Application Id: {}".format(data['application_id']))
 			return redirect(".")
 
 		invitation = invitation.first()
@@ -3472,7 +3470,7 @@ class ChangePhoneNumberView(FormView):
 		if sr_obj:
 			message = f"Service Request For Change Phone Number Already Submitted. Service Request Id: {sr_obj.id} Status: {sr_obj.status}"
 			return render(self.request, "ujjwala/response.html",
-			              {"heading": "Update Address Service Request", "message": message})
+						  {"heading": "Update Address Service Request", "message": message})
 		return super().dispatch(request, *args, **kwargs)
 
 	def get_context_data(self, **kwargs):
@@ -3568,7 +3566,7 @@ class UpdateAddressServiceRequestView(FormView):
 		if sr_obj:
 			message = f"Service Request For Update Address Already Submitted. Service Request Id: {sr_obj.id} Status: {sr_obj.status}"
 			return render(self.request, "ujjwala/response.html",
-			              {"heading": "Update Address Service Request", "message": message})
+						  {"heading": "Update Address Service Request", "message": message})
 		return super().dispatch(request, *args, **kwargs)
 
 
@@ -3675,12 +3673,12 @@ class ChangeCylinderTypeView(FormView):
 		if not '5' in obj.customer_profile.products:
 			message = f"Customer Product: {obj.customer_profile.products} Not Valid For Conversion In 14.2 Kg"
 			return render(self.request, "ujjwala/response.html",
-			              {"heading": "Change Cylinder Type Service Request", "message": message})
+						  {"heading": "Change Cylinder Type Service Request", "message": message})
 
 		user = get_current_user()
 		if not user.has_perm('ujjwala.can_initiate_change_cylinder_type_request'):
 			return render(self.request, "ujjwala/response.html",
-			              {"heading": "Change Cylinder Type Service Request", "message": "Permission Denied"})
+						  {"heading": "Change Cylinder Type Service Request", "message": "Permission Denied"})
 
 		return super().dispatch(request, *args, **kwargs)
 
@@ -3795,7 +3793,7 @@ class ChangeCylinderTypeRequestView(FormView):
 		user = get_current_user()
 		if not user.has_perm('ujjwala.can_process_change_cylinder_request'):
 			return render(self.request, "ujjwala/response.html",
-			              {"heading": "Change Cylinder Type Service Request", "message": "Permission Denied"})
+						  {"heading": "Change Cylinder Type Service Request", "message": "Permission Denied"})
 		return super().dispatch(request, args, kwargs)
 
 	def get_context_data(self, **kwargs):
@@ -3863,7 +3861,7 @@ class ChangeCylinderTypeRequestOverrideView(FormView):
 		user = get_current_user()
 		if not user.has_perm('ujjwala.can_override_change_cylinder_type_request'):
 			return render(self.request, "ujjwala/response.html",
-			              {"heading": "Change Cylinder Type Service Request", "message": "Permission Denied"})
+						  {"heading": "Change Cylinder Type Service Request", "message": "Permission Denied"})
 		return super().dispatch(request, args, kwargs)
 
 	def get_context_data(self, **kwargs):
@@ -4011,7 +4009,7 @@ class UjjwalaApplicationAuditView(UpdateView):
 			application = self.get_object()
 			if application.status != UjjwalaV2ApplicationStatus.AUDIT_APPLICATION:
 				messages.add_message(self.request, messages.ERROR,
-				                     f"Application Id: {application_id} Not In Audit Status")
+									 f"Application Id: {application_id} Not In Audit Status")
 				return redirect('ujjwala:ujjwala_application_audit_list')
 		return super().dispatch(request, *args, **kwargs)
 
@@ -4063,6 +4061,87 @@ class UjjwalaApplicationAuditView(UpdateView):
 
 
 @method_decorator(login_required, 'dispatch')
+class BankDetailsUpdateRequestListView(ListView):
+	model = BankDetailsUpdateRequest
+
+	paginate_by = 20
+	permission = 'has_view_permission'
+
+	def get_queryset(self):
+		# return ServiceRequest.objects.filter(
+		# 	status=ServiceRequestTypeStatusEnum.PENDING
+		# )
+		return BankDetailsUpdateRequest.objects.filter(status=BankDetailsUpdateRequestEnum.RECEIVED).order_by('-id')
+
+	def get_template_names(self):
+		return 'ujjwala/review/bank_details_update_request_listview.html'
+
+
+@method_decorator(login_required, 'dispatch')
+class BankDetailsUpdateRequestView(FormView):
+	template_name = 'ujjwala/review/bank_details_update_request_view.html'
+	form_class = BankDetailsUpdateRequestForm
+
+	def get_success_url(self):
+		return reverse('ujjwala:bank_details_update_list')
+
+	# def dispatch(self, request, *args, **kwargs):
+	# 	user = get_current_user()
+	# 	if not can_resolve_service_request(user):
+	# 		return render(request, 'ujjwala/no_permissions.html')
+	# 	return super().dispatch(request, *args, **kwargs)
+
+	def get_object(self, queryset=None):
+		try:
+			obj = BankDetailsUpdateRequest.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No Application Exist For Given Application Id"
+			)
+		return obj
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		obj = self.get_object()
+		res = requests.get(
+			f"https://camunda.dca.arungas.com/engine-rest/process-instance/{obj.camunda_process_id}/variables")
+		res.raise_for_status()
+
+		process_vars = res.json()
+
+		for k, v in process_vars.items():
+			context[k] = v['value']
+
+		context.update({
+			"bd_obj": obj,
+		})
+		return context
+
+	def form_valid(self, form):
+		obj = self.get_object()
+		data = form.cleaned_data
+		obj.status = data['review_status']
+		obj.remarks = data['request_remarks']
+		obj.save()
+
+		res = requests.get('https://camunda.dca.arungas.com/engine-rest/task',
+						   params={'processInstanceId': f'{obj.camunda_process_id}',
+								   'taskDefinitionKey': 'Activity_payment_profile_update_review_bank_details'})
+		# res = requests.get('https://camunda.dca.arungas.com/engine-rest/task',
+		#                    params={'processInstanceId': f'{obj.camunda_process_id}',
+		#                            'taskDefinitionKey': 'Activity_dca_change_phone_number_verify_request'})
+		res.raise_for_status()
+
+		res = requests.post(
+			f"https://camunda.dca.arungas.com/engine-rest/task/{res.json()[0]['id']}/submit-form",
+			json={'variables': {"bank_details": {"type": "String", "value": obj.status}}}
+		)
+		res.raise_for_status()
+
+		return redirect(self.get_success_url())
+
+
+@method_decorator(login_required, 'dispatch')
 class UjjwalaApplicationServiceRequestListView(ListView):
 	model = PreInspection
 
@@ -4082,7 +4161,6 @@ class UjjwalaApplicationServiceRequestListView(ListView):
 @method_decorator(login_required, 'dispatch')
 class UjjwalaApplicationServiceRequestView(FormView):
 	template_name = 'ujjwala/service_request/ujjwala_application_service_request.html'
-	form_class = UjjwalaApplicationServiceRequestForm
 
 	def get_success_url(self):
 		return reverse('ujjwala:service_request_list')
@@ -4154,8 +4232,8 @@ class UjjwalaApplicationServiceRequestView(FormView):
 		obj.save()
 
 		res = requests.get('https://camunda.dca.arungas.com/engine-rest/task',
-		                   params={'processInstanceId': f'{obj.camunda_process_id}',
-		                           'taskDefinitionKey': 'Activity_verify_dca_service_request'})
+						   params={'processInstanceId': f'{obj.camunda_process_id}',
+								   'taskDefinitionKey': 'Activity_verify_dca_service_request'})
 		# res = requests.get('https://camunda.dca.arungas.com/engine-rest/task',
 		#                    params={'processInstanceId': f'{obj.camunda_process_id}',
 		#                            'taskDefinitionKey': 'Activity_dca_change_phone_number_verify_request'})
@@ -4163,7 +4241,7 @@ class UjjwalaApplicationServiceRequestView(FormView):
 
 		res = requests.post(
 			f"https://camunda.dca.arungas.com/engine-rest/task/{res.json()[0]['id']}/submit-form",
-            json={'variables': {}}
+			json={'variables': {}}
 		)
 		res.raise_for_status()
 
@@ -4187,7 +4265,7 @@ class CamundaChangeAddressView(FormView):
 		relevent_activity = False
 		for activity_instance in res.json()['childActivityInstances']:
 			if activity_instance['activityId'] in ['Event_review_address_new_address_received',
-			                                           'Event_new_address_received']:
+													   'Event_new_address_received']:
 				relevent_activity = True
 		if not relevent_activity:
 			return HttpResponse(f"Process Instance: not in update address stage")
@@ -4433,4 +4511,3 @@ class ReviewGridMenuView(TemplateView):
 			}
 		})
 		return context
-
