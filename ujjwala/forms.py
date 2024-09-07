@@ -1745,3 +1745,7 @@ class ChangeCylinderTypeRequestOverrideForm(forms.Form):
 	sdms_refills = forms.IntegerField(
 		widget=forms.NumberInput, label='SDMS Refills', required=True
 	)
+
+
+class BankDetailsUpdateRequestForm(forms.Form):
+	pass
