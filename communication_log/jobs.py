@@ -1,13 +1,17 @@
 import io
+import re
 from functools import wraps
 
-import arrow
+import django_rq
+from django.http import  JsonResponse
+import arrow, os
 import requests
+import track
 from django.conf import settings
 from django.db import close_old_connections
-
+from google.cloud import dialogflow_v2 as dialogflow
 from communication_log.models import CommunicationLog
-
+import tempfile
 import magic
 from functools import wraps
 from domestic_app.utils import get_minio_public_url
@@ -16,6 +20,8 @@ from django.db import close_old_connections
 from ujjwala.management.commands.ujjwala_file_worker import upload_compressed_file_to_tus
 import logging
 
+# Initialize logger
+logger = logging.getLogger("chatbot_views")
 
 def ensure_db_connection(func):
     @wraps(func)
@@ -26,14 +32,16 @@ def ensure_db_connection(func):
 
 
 def interakt_webhook_job_processing(data):
+    if data["type"] == "Webhook Test":
+        return JsonResponse({'status': 'success'}, status=200)
     mid = data['data']['message']['id']
     print(data['data'])
     logging.info(data['data'])
+    _type = data.get('type')
+    _timestamp = arrow.get(data['timestamp']).to("Asia/Kolkata").datetime
+
     try:
         comm_obj = CommunicationLog.objects.get(channel='whatsapp', message_id=mid)
-
-        _type = data.get('type')
-        _timestamp = arrow.get(data['timestamp']).to("Asia/Kolkata").datetime
         if _type == "message_api_sent":
             comm_obj.status = "SENT"
             comm_obj.sent_on = _timestamp
@@ -52,7 +60,11 @@ def interakt_webhook_job_processing(data):
 
         comm_obj.save()
     except CommunicationLog.DoesNotExist:
-        pass
+        if _type == "message_received":
+            if data["data"]["customer"]["phone_number"] == "7717262764":
+                 chatbot_view(data)
+
+
 
 
 def infobip_webhook_job_processing(data):
@@ -232,3 +244,101 @@ def send_message_on_whatsapp(id):
 
     obj = ConnectionApplication.objects.get(id=id)
     obj.event_completed_channel_whatsapp()
+
+
+def interakt_flow_template(session_id):
+    body_text = {
+        "countryCode": "+91",
+        "phoneNumber": session_id,
+        "fullPhoneNumber": " ",
+        "campaignId": "YOUR_CAMPAIGN_ID",
+        "callbackData": "some text here",
+        "type": "Template",
+        "template": {
+            "name": "template_name_here",
+            "languageCode": "en",
+            "bodyValues": [
+                "body_variable_value_1",
+                "body_variable_value_n"
+            ]
+        }
+    }
+
+
+    track.client.post(
+        api_key=settings.INTERAKT_API_KEY,
+        path="/v1/public/message/",
+        body=body_text
+    ).json()
+
+    logger.info(f'Sending message to Whatapp: send flow to  {session_id}')
+
+
+def redis_image(url):
+    redis_conn = django_rq.get_connection("default")
+    match = re.search(r'^.+\.jpeg', url)
+
+    if match:
+        result = match.group(0)
+        print(result)
+
+    redis_conn.set(result, url)
+
+    my_redis_data = redis_conn.get(result)
+    print(f'the stored data in redis is {result}: {my_redis_data}')
+    return result
+
+def dialogflow_whatapp_message(reply, session_id, user_id):
+    body_text = {
+        "userId": user_id or " ",
+        "fullPhoneNumber": f'+91{session_id}',
+        "callbackData": "some_callback_data",
+        "type": "Text",
+        "data": {
+            "message": reply
+        }
+    }
+    track.client.post(
+        api_key=settings.INTERAKT_API_KEY,
+        path="/v1/public/message/",
+        body=body_text
+    ).json()
+
+    logger.info(f'Sending message to Whatapp:  {reply} from {session_id}')
+
+
+def detect_intent_texts(project_id, session_id, text, language_code='hi'):
+    client = dialogflow.SessionsClient()
+    session = client.session_path(project_id, session_id)
+    if not text:
+        raise ValueError("Input text is empty. Please provide a valid text input.")
+
+    text_input = dialogflow.TextInput(text=text, language_code=language_code)
+    query_input = dialogflow.QueryInput(text=text_input)
+
+    response = client.detect_intent(
+        request={"session": session, "query_input": query_input}
+    )
+
+    return response.query_result
+
+
+def chatbot_view(data_dict):
+    data = data_dict['data']
+    message_data = data.get('message', {})
+    user_message = redis_image(message_data['media_url']) \
+                                        if message_data['media_url'] is not None else message_data.get('message', ' ')
+    project_id = 'om-prakash-rerm'
+    user_id = data['customer']["id"]
+    session_id = data['customer']['phone_number']
+    print(f'the user pin is : {user_message}')
+    logger.info(f"Sending message to Dialogflow: {user_message} from {session_id}")
+    # You can use a unique ID for each user session
+    response = detect_intent_texts(project_id, session_id, user_message)
+    reply = response.fulfillment_text
+    if reply:
+        try:
+            dialogflow_whatapp_message(reply, session_id, user_id)
+            print(f"Message sent successfully: {reply}")  # Logging example
+        except Exception as e:
+            print(f"Error sending message: {str(e)}")

@@ -22,6 +22,8 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views import View
+from communication_log.jobs import  dialogflow_whatapp_message
+from communication_log.jobs import send_message_on_whatsapp
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, FormView, ListView, TemplateView, UpdateView
@@ -50,8 +52,9 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
 	UpdateBankDetailsForm, NicClearedCustomerRemarksForm, PrintDocumentsForm, \
 	InstallationReviewAdminForm, PreInspectionReviewAdminForm, CancelInvitationForm, UpdateAddressForm, \
 	NewRelationCreated, ChangePhoneNumberForm, UploadUIDForEKYCForm, UjjwalaApplicationServiceRequestForm, \
-	ReviewUpdatedAddressForm, UpdateBankDetailsNewForm, BankDetailsUpdateRequestForm, ChangeCylinderTypeForm, \
-	ChangeCylinderTypeForm, ChangeCylinderTypeRequestForm, ChangeCylinderTypeRequestOverrideForm
+	ReviewUpdatedAddressForm, UpdateBankDetailsNewForm, ChangeCylinderTypeForm, \
+	ChangeCylinderTypeForm, ChangeCylinderTypeRequestForm, ChangeCylinderTypeRequestOverrideForm, \
+	BankDetailsUpdateRequestForm
 from ujjwala.global_functions import login_required_if_mech_inspection
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
 	FamilyMembers, DisbursementDrive, UjjwalaSearchLog, ConnectionDisbursementInvitation, BankDetailsUpdateRequest, \
@@ -166,6 +169,99 @@ class WhatsappPreInspectionTypeSelf(View):
 		return render(
 			self.request, "ujjwala/response.html", {"heading": "Pre-Inspection", "message": message}
 		)
+
+# pre Inspection through whatapp and dialogflow
+def WhatsappPreInspection(Inspection_data, unique_id, intent):
+	conn = django_rq.get_connection("default")
+	if not unique_id:
+		return
+	# Fetch the application using the unique ID
+	application = UjjwalaV2Application.objects.filter(contact_mobile=unique_id).first()
+	if not application:
+		return f"Application does not exist with phone number {unique_id}"
+
+	# Check if pre-inspection is applicable
+	if not is_pre_inspection_applicable(application.id):
+		return "You are not eligible for pre-inspection. Check your application status."
+
+	# Fetch the PreInspection object
+	pi_obj = PreInspection.objects.filter(parent_id=application.id).first()
+
+	# Handle kitchen-photo intent
+	if intent == "kitchen-photo":
+		link = conn.get(Inspection_data)
+		if not link:
+			return "Kitchen photo link not found in Inspection data."
+
+		# Process and save the kitchen photo form
+		form = KitchenPreInspectionForm(data={'pre_inspection': pi_obj, 'kitchen_photo': link})
+		if form.is_valid():
+			form.save()
+			return "Your kitchen photo has been updated and please fill the blow form for address update "
+		else:
+			return "Failed to update kitchen photo."
+	# Handle address details
+	if intent == "address_details":
+		form = ChangeAddressForm(pre_inspection=pi_obj, data=Inspection_data)
+		if form.is_valid():
+			form.save()
+			dialogflow_whatapp_message(reply="Your address details has been updated." , session_id= unique_id)
+		else:
+			dialogflow_whatapp_message(reply="Failed to update address details." , session_id= unique_id)
+	# Handle pin-location or main-gate intent
+	if intent in ["pin-location", "main-gate"]:
+		link = conn.get(Inspection_data)
+		longitude = latitude = None
+
+		if not link:
+			try:
+				location_data = json.loads(Inspection_data)
+				latitude = location_data.get('latitude')
+				longitude = location_data.get('longitude')
+			except (json.JSONDecodeError, TypeError, KeyError) as e:
+				return "Invalid location data."
+
+		# Process and save the preview inspection form
+		form = PreviewPreInspectionForm(data={
+			'pre_inspection': pi_obj,
+			'main_gate': link,
+			'longitude': longitude,
+			'latitude': latitude
+		})
+		if form.is_valid():
+			form.save()
+			if not link:
+				return "Your pin location data has been updated,now please shared your in kitchen photo for verification"
+			return "Your main gate photo has been updated ,now please shared your pin location by watching the above video"
+		else:
+			return "Failed to update location or photo."
+
+	return "Invalid intent provided."
+
+
+
+def check_ujwaala_status(contact_mobile):
+	if not contact_mobile:
+		return JsonResponse({"error": "Phone number is required."}, status=400)
+
+	qs = UjjwalaV2Application.objects.all()
+
+	# Retrieve the application based on the provided contact mobile number
+	application = qs.filter(Q(contact_mobile=contact_mobile) | Q(sdms_mobile_number=contact_mobile)).first()
+
+	if application:
+		reject_reason = ujjwala_application_reject_reason_log(application.id)
+		status = {
+			"application_id": application.id,
+			"status": application.status,
+			"rejected_reason": reject_reason
+		}
+		reply = status
+	else:
+		reply = 'No application found for the provided phone number'
+
+	return reply
+
 
 
 # This View Shares Web Form Link To The Given Contact Number
@@ -437,7 +533,6 @@ class UjjwalaAddressReviewListView(ListView):
 	def get_queryset(self):
 		return UjjwalaV2Application.objects.filter(status=UjjwalaV2ApplicationStatus.REVIEW_ADDRESS).order_by(
 			'updated_on')
-
 
 	def get_context_data(self, **kwargs):
 		context = super(UjjwalaAddressReviewListView, self).get_context_data(**kwargs)
