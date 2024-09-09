@@ -16,6 +16,7 @@ import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 from corsheaders.defaults import default_headers, default_methods
+# from  logging_utils import ArrowFormatter
 from deathbycaptcha import deathbycaptcha
 from django.core.cache import cache
 
@@ -34,6 +35,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "./dialogflow_api.json"
 # Application definition
 
 INSTALLED_APPS = [
@@ -85,8 +87,6 @@ INSTALLED_APPS = [
     'taggit',
     'solo',
     'vicidial',
-    'slick_reporting',
-    'crispy_forms',
 ]
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
@@ -300,6 +300,8 @@ GENERIC_SMS_OTP_TEMPLATE_ID = "1107169822213183469"
 
 VERIFIED_SMS_TEMPLATE = \
     ""
+#
+# DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 UJJWALA_PRE_INSPECTION_OTP = 'ujjwala_pre_inspection_otp'
 
@@ -317,6 +319,36 @@ X_FRAME_OPTIONS = 'ALLOWALL'
 #     # We recommend adjusting this value in production.
 #     profiles_sample_rate=1.0,
 # )
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'messaged': {
+            'format': '{asctime} {levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/whatsapp_dialogflow.log'),
+            'formatter': 'messaged',
+
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'chatbot_views': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+    },
+}
 
 
 CACHES = {
@@ -346,5 +378,12 @@ os.environ["PRIVATE_KEY"] = PRIVATE_KEY
 os.environ["PASSPHRASE"] = "jobnot"
 os.environ["APP_SECRET"] = "10bee2967962c7fb6010d8b99764df45"
 
+
 # cache.get_or_set("dedup_portal", pickled_dedeup_portal, 1000)
 # dedup_portal = IoclOmcDedup('305948', 'Inder@1234')
+
+# cache.get_or_set("dedup_portal", pickled_dedeup_portal, 1000)
+# dedup_portal = IoclOmcDedup('305948', 'Inder@1234')
+
+# GEOS_LIBRARY_PATH = '/home/user/local/lib/libgeos_c.so'
+# GDAL_LIBRARY_PATH = '/home/user/local/lib/libgdal.so'

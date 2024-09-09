@@ -41,6 +41,7 @@ from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, C
 	UjjwalaV2ApplicationAvailabilityChannel, ConnectionDisbursementInvitationEnum, FilledByFilterEnum, \
 	UjjwalaSearchLogEnum, BankDetailsUpdateRequestEnum, ChangeCylinderTypeRequestStatusEnum
 from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm, \
+	UpdateBankDetailsForm, CancelInvitationForm, NewRelationCreated, ChangePhoneNumberForm, UpdateAddressForm, \
 	PreInspectionGenerateOtpForm, PreInspectionValidateOtpForm, \
 	KitchenPreInspectionForm, AudioOnSafetyForm, PreviewPreInspectionForm, PreInspectionAllocatedGenerateOtpForm, \
 	PreInspectionAllocatedValidateOtpForm, UjjwalaLegalDocumentsUpload, ChangeAddressForm, \
@@ -76,6 +77,8 @@ class BackendDriveSelectionForm(forms.Form):
 	drive = forms.ModelChoiceField(queryset=DisbursementDrive.objects.filter(
 		status=DisbursementDriveStatusEnum.ACTIVE
 	))
+
+
 ### END ###
 
 
@@ -148,7 +151,8 @@ class WhatsappPreInspectionTypeSelf(View):
 		if not is_pre_inspection_applicable(application.id):
 			return render(
 				self.request, "ujjwala/response.html",
-				{"heading": "Pre-Inspection", "message": "Application Id {} not valid for Pre-Inspection".format(kwargs.get('pk'))}
+				{"heading": "Pre-Inspection",
+				 "message": "Application Id {} not valid for Pre-Inspection".format(kwargs.get('pk'))}
 			)
 
 		pi_obj = PreInspection.objects.filter(parent_id=kwargs.get('pk')).first()
@@ -261,7 +265,6 @@ def check_ujwaala_status(contact_mobile):
 		reply = 'No application found for the provided phone number'
 
 	return reply
-
 
 
 # This View Shares Web Form Link To The Given Contact Number
@@ -513,13 +516,13 @@ class ApplicationStatusView(DetailView):
 class UjjwalaApplicationWebFormView(TemplateView):
 	template_name = "ujjwala/web_form.html"
 
-	# def get_context_data(self, **kwargs):
-	#     context_data = super().get(**kwargs)
-	#     form_fill_area_list = FormFillArea.objects.all()
-	#     context_data = context_data.update({
-	#         "form_fill_area_list": form_fill_area_list
-	#     })
-	#     return context_data
+# def get_context_data(self, **kwargs):
+#     context_data = super().get(**kwargs)
+#     form_fill_area_list = FormFillArea.objects.all()
+#     context_data = context_data.update({
+#         "form_fill_area_list": form_fill_area_list
+#     })
+#     return context_data
 
 
 @method_decorator(login_required, 'dispatch')
@@ -678,20 +681,21 @@ class PreInspectionReviewView(FormView, ApplicationView):
 
 	def dispatch(self, request, *args, **kwargs):
 		return HttpResponse(content="Not Allowed")
-		# user = get_current_user()
-		# if not is_member_of_reviewer_group(user):
-		# 	return render(request, 'ujjwala/no_permissions.html')
-		# application_id = request.GET.get('application_id', '')
-		# if application_id:
-		# 	pre_inspection = self.get_object()
-		# 	if pre_inspection.status != PreInspectionStatusEnum.SUBMITTED:
-		# 		messages.add_message(
-		# 			request, messages.ERROR, "Application Id: {} - {}".format(
-		# 				pre_inspection.parent_id, pre_inspection.get_status_display()
-		# 			)
-		# 		)
-		# 		return redirect('ujjwala:installation_review')
-		# return super().dispatch(request, *args, **kwargs)
+
+	# user = get_current_user()
+	# if not is_member_of_reviewer_group(user):
+	# 	return render(request, 'ujjwala/no_permissions.html')
+	# application_id = request.GET.get('application_id', '')
+	# if application_id:
+	# 	pre_inspection = self.get_object()
+	# 	if pre_inspection.status != PreInspectionStatusEnum.SUBMITTED:
+	# 		messages.add_message(
+	# 			request, messages.ERROR, "Application Id: {} - {}".format(
+	# 				pre_inspection.parent_id, pre_inspection.get_status_display()
+	# 			)
+	# 		)
+	# 		return redirect('ujjwala:installation_review')
+	# return super().dispatch(request, *args, **kwargs)
 
 	def get_object(self, queryset=None):
 		try:
@@ -713,7 +717,6 @@ class PreInspectionReviewView(FormView, ApplicationView):
 		)
 		obj.save()
 		return redirect(self.get_success_url())
-
 
 	def get_form_kwargs(self):
 		kwargs = super().get_form_kwargs()
@@ -783,7 +786,6 @@ class UjjwalaApplicationReuploadFormView(FormView):
 		Returns the initial data to use for forms on this view.
 		"""
 		initial = super().get_initial()
-
 		initial['application_id'] = self.kwargs.get('pk')
 
 		return initial
@@ -1146,14 +1148,60 @@ class UjjwalaApplicationLegalDocumentsUpload(FormView):
 			return HttpResponse(content='Status: {}'.format(connection_disbursement.status))
 
 		return super().dispatch(request, *args, **kwargs)
-		# return redirect('ujjwala:legal_documents_upload', pk=self.kwargs.get('pk'))
+
+	# return redirect('ujjwala:legal_documents_upload', pk=self.kwargs.get('pk'))
+
+		if current_user.is_staff or DisbursementDrive.objects.filter(status='ACTIVE',
+																	 team_members=current_user).exists() or front_end_staff:
+			qs = UjjwalaV2Application.objects.all()
+		else:
+			qs = UjjwalaV2Application.objects.filter(Q(filled_by__isnull=True) | Q(filled_by=current_user))
+
+		contact_mobile = request.GET.get('contact_mobile', '')
+		uid = request.GET.get('uid', '')
+		application_id = request.GET.get('application_id', '')
+		application = None
+
+		if contact_mobile:
+			application = qs.filter(Q(contact_mobile=contact_mobile) | Q(sdms_mobile_number=contact_mobile)) .first()
+		elif uid:
+			family_member = FamilyMembers.objects.filter(uid_no=uid).first()
+			if family_member:
+				application = family_member.parent
+		elif application_id:
+			application: UjjwalaV2Application = qs.filter(id=application_id).first()
+
+		if application:
+			reject_reason = ujjwala_application_reject_reason_log(application.id)
+			UjjwalaSearchLog.objects.create(
+				parent=application, requested_by=get_current_user(), source=UjjwalaSearchLogEnum.WEB,
+				activity_datetime=datetime.datetime.now()
+			)
+			invitation = None
+
+			cd_obj: ConnectionDisbursement = ConnectionDisbursement.objects.filter(parent=application).first()
+
+			if cd_obj:
+				invitation = cd_obj.invitation.first()
+			return render(
+				request, self.template_name, context={
+					'obj': application, 'rejected_reason': reject_reason, "invitation": invitation
+				}
+			)
+		else:
+			messages.add_message(
+				request, messages.ERROR, "Please Enter Contact Mobile Or Aadhaar Or Application Id To Search"
+			)
+		return super().get(request, *args, **kwargs)
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
-		# application = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
-		connection_disbursement = ConnectionDisbursement.objects.get(pk=self.kwargs.get('pk'))
+		user = get_current_user()
+		# if not is_member_of_disbursement_drive(user):
+		# 	return render(self.request, 'ujjwala/no_permissions.html')
+
 		context.update({
-			"obj": connection_disbursement
+			"disbursement_user": True
 		})
 		return context
 
@@ -1179,7 +1227,7 @@ class UjjwalaApplicationStatusView(TemplateView):
 		application = None
 
 		if contact_mobile:
-			application = qs.filter(Q(contact_mobile=contact_mobile) | Q(sdms_mobile_number=contact_mobile)) .first()
+			application = qs.filter(Q(contact_mobile=contact_mobile) | Q(sdms_mobile_number=contact_mobile)).first()
 		elif uid:
 			family_member = FamilyMembers.objects.filter(uid_no=uid).first()
 			if family_member:
@@ -1372,7 +1420,8 @@ class UjjwalaConnectionDisbursementListView(ListView):
 						return redirect('ujjwala:connection_disbursement_form_view', pk=obj.pk)
 				else:
 					messages.add_message(
-						request, messages.ERROR, "Application Id: {} Connection Disbursement not found".format(application_id)
+						request, messages.ERROR,
+						"Application Id: {} Connection Disbursement not found".format(application_id)
 					)
 		return super().get(request, *args, **kwargs)
 
@@ -1854,7 +1903,7 @@ class UjjwalaConnectionDisbursementSvLabelPrintListView(ListView):
 			status__in=[
 				ConnectionDisbursementStatusEnum.LEGAL_DOCUMENTS_ACCEPTED,
 			],
-			#walk_in_date__date=datetime.datetime.today().date(),
+			# walk_in_date__date=datetime.datetime.today().date(),
 			disbursement_drive=disbursement_drive,
 		).prefetch_related('invitation').order_by(
 			'invitation__sv_generated_not_downloaded', 'invitation__sv_link', 'updated_on'
@@ -2000,7 +2049,7 @@ class UjjwalaConnectionDisbursementSocialMediaUpdatesListView(ListView):
 			#     ConnectionDisbursementStatusEnum.SV_LABEL_PRINT,
 			# ],
 			social_media_update_done=False,
-			#walk_in_date__date=datetime.datetime.today().date(),
+			# walk_in_date__date=datetime.datetime.today().date(),
 			disbursement_drive=disbursement_drive
 		).order_by('updated_on')
 
@@ -2371,9 +2420,10 @@ class InstallationListView(ListView):
 				ConnectionDisbursementStatusEnum.FIRST_CYLINDER_DELIVERED,
 			]
 		)
-		# .filter(
-		#     status=PreInspectionStatusEnum.SUBMITTED
-		# )
+
+	# .filter(
+	#     status=PreInspectionStatusEnum.SUBMITTED
+	# )
 
 	def get_template_names(self):
 		return 'ujjwala/Installation-form/installation_listview.html'
@@ -2599,8 +2649,6 @@ class InstallationReviewListView(ListView):
 					request, messages.ERROR, "Application Id: {} not found".format(application_id)
 				)
 		return super().get(request, *args, **kwargs)
-	
-
 
 
 @method_decorator(login_required, 'dispatch')
@@ -3073,7 +3121,6 @@ class ChangeAddressView(FormView):
 		kwargs['initial'] = obj.address_json
 		return kwargs
 
-
 	def form_invalid(self, form):
 		return super().form_invalid(form)
 
@@ -3318,7 +3365,6 @@ class UpdateBankDetailsNewFormView(FormView):
 				}
 			)
 
-
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data()
 		obj = self.get_object()
@@ -3355,8 +3401,9 @@ class NicClearedCustomerRemarks(FormView):
 			self.request, messages.INFO, "Application Id {}: Remarks Updated: {}".format(obj.pk, obj.customer_remarks)
 		)
 		return redirect('ujjwala:application_status_search')
-		#
-		# return HttpResponse(content="Customer Remarks Updated Successfully.")
+
+	#
+	# return HttpResponse(content="Customer Remarks Updated Successfully.")
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data()
@@ -3438,7 +3485,8 @@ class GetEKYCStatusFromSDMS(View):
 						"requested_by": {"value": f"{user.first_name} {user.last_name}", "type": "String"},
 						"requested_by_id": {"value": f"{user.id}", "type": "String"},
 						"contact": {"value": json.dumps(get_data_for_new_relation(application.id)), "type": "String"},
-						"start_time": {"value": datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S+0530'), "type": "String"}
+						"start_time": {"value": datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S+0530'),
+									   "type": "String"}
 					}
 			}
 			res, process_id = start_process_in_camunda_v2('process_get_ekyc_status_from_sdms', variables)
@@ -3855,10 +3903,11 @@ class ChangeCylinderTypeRequestListView(FilterView):
 						  {"heading": "Change Cylinder Type Service Request", "message": "Permission Denied"})
 		return super().dispatch(request, args, kwargs)
 
-	# def get_queryset(self):
-	# 	return ChangeCylinderTypeRequest.objects.exclude(
-	# 		status=ChangeCylinderTypeRequestStatusEnum.COMPLETED
-	# 	)
+
+# def get_queryset(self):
+# 	return ChangeCylinderTypeRequest.objects.exclude(
+# 		status=ChangeCylinderTypeRequestStatusEnum.COMPLETED
+# 	)
 
 
 class ChangeCylinderTypeRequestView(FormView):
@@ -4064,7 +4113,7 @@ class UjjwalaApplicationAuditFamilyMembersForm(forms.ModelForm):
 		fields = [
 			'name', 'dob', 'uid_no', 'uid_front_link', 'uid_back_link'
 		]
-		# exclude = ['uid_back_compressed', 'relation', 'uid_front_file_size', 'uid_back_file_size']
+	# exclude = ['uid_back_compressed', 'relation', 'uid_front_file_size', 'uid_back_file_size']
 
 
 class UjjwalaApplicationAuditForm(forms.ModelForm):
@@ -4074,15 +4123,15 @@ class UjjwalaApplicationAuditForm(forms.ModelForm):
 		fields = [
 			'ifsc_code', 'bank_account_number'
 		]
-		# exclude = [
-		# 	'sdms_last_updated_on', 'marital_status', 'version', 'robo_sdms_dedup', 'status',
-		# 	'availability_updated_on', 'tags', 'name', 'contact_mobile', 'ekyc_date', 'address',
-		# ]
+	# exclude = [
+	# 	'sdms_last_updated_on', 'marital_status', 'version', 'robo_sdms_dedup', 'status',
+	# 	'availability_updated_on', 'tags', 'name', 'contact_mobile', 'ekyc_date', 'address',
+	# ]
 
 
 FamilyMembersInlineFormSet = inlineformset_factory(
-			UjjwalaV2Application, FamilyMembers, UjjwalaApplicationAuditFamilyMembersForm, extra=0,
-		)
+	UjjwalaV2Application, FamilyMembers, UjjwalaApplicationAuditFamilyMembersForm, extra=0,
+)
 
 
 @method_decorator(login_required, 'dispatch')
@@ -4437,17 +4486,17 @@ class MainMenuGridMenuView(TemplateView):
 		context = super().get_context_data(**kwargs)
 
 		menu_items = [
-				{
-					"name": "Search Status",
-					"icon": "fa fa-search",
-					"url": reverse("ujjwala:application_status_search"),
-				},
-				{
-					"name": "Share Form Link",
-					"icon": "fa-share-square",
-					"url": reverse("ujjwala:share_web_form_link"),
-				},
-			]
+			{
+				"name": "Search Status",
+				"icon": "fa fa-search",
+				"url": reverse("ujjwala:application_status_search"),
+			},
+			{
+				"name": "Share Form Link",
+				"icon": "fa-share-square",
+				"url": reverse("ujjwala:share_web_form_link"),
+			},
+		]
 
 		if can_process_change_cylinder_request(get_current_user()):
 			menu_items.append(
