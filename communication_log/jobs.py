@@ -257,8 +257,8 @@ def interakt_flow_template(session_id):
         "callbackData": "some text here",
         "type": "Template",
         "template": {
-            "name": "template_name_here",
-            "languageCode": "en",
+            "name": "address_details",
+            "languageCode": "hi",
             "bodyValues": [
                 "body_variable_value_1",
                 "body_variable_value_n"
