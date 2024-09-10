@@ -13,7 +13,7 @@ from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from communication_log.flow_encryption import decrypt_request
+from communication_log.flow_encryption import decrypt_request,encrypt_response
 from communication_log.jobs import interakt_webhook_job_processing, infobip_webhook_job_processing, \
     interakt_flow_template
 from ujjwala.views import WhatsappPreInspection
