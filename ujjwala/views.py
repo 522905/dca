@@ -1139,7 +1139,19 @@ class UjjwalaApplicationLegalDocumentsUpload(FormView):
 	form_class = UjjwalaLegalDocumentsUpload
 	template_name = "ujjwala/legal-document-upload-form.html"
 
+	def get_object(self, queryset=None):
+		try:
+			obj = PreInspection.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No %(verbose_name)s found matching the query" %
+				{'verbose_name': queryset.model._meta.verbose_name}
+			)
+		return obj
+
+
 	def dispatch(self, request, *args, **kwargs):
+
 		connection_disbursement = ConnectionDisbursement.objects.get(pk=self.kwargs.get('pk'))
 
 		if connection_disbursement.status not in (
@@ -1201,7 +1213,8 @@ class UjjwalaApplicationLegalDocumentsUpload(FormView):
 		# 	return render(self.request, 'ujjwala/no_permissions.html')
 
 		context.update({
-			"disbursement_user": True
+			"disbursement_user": True,
+			"obj": self.get_object()
 		})
 		return context
 
