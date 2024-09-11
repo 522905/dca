@@ -1,10 +1,12 @@
 import datetime
 
 import django_rq
+import requests
 
 from connection_app.enums import SalesOrderStatusEnum
 from connection_app.jobs import start_read_customer_profile
 from connection_app.models import SalesOrder
+from domestic_app.settings import CAMUNDA_BASE_URL
 from reference_data.models import Distributor
 from ujjwala.camunda_functions import start_process_in_camunda_v2, is_process_exist_in_camunda
 from ujjwala.ujjwala_functions import evaluate_change_cylinder_type_requests
@@ -69,6 +71,56 @@ def start_process_fetch_sales_order_details_from_sdms(so_id, distributor_code):
 		res, pid = start_process_in_camunda_v2('process_fetch_sales_order_details_from_sdms', variables=variables)
 		if res == 200:
 			so_obj.camunda_process_instance_id = pid
+			so_obj.save()
+		print(res)
+
+
+def start_process_return_auto_sales_order(so_id, distributor_code):
+	from connection_app.models import SalesOrder
+
+	so_obj: SalesOrder = SalesOrder.objects.get(pk=so_id)
+
+	if not so_obj:
+		raise Exception("Sales Order Id Not Found")
+
+	existing = requests.post(
+		f'{CAMUNDA_BASE_URL}/process-instance',
+		json={
+			"variables": [
+				{
+					"name": "sales_order_id",
+					"operator": "eq",
+					"value": str(so_id)
+				},
+				{
+					"name": "distributor_code",
+					"operator": "eq",
+					"value": str(distributor_code)
+				}
+			],
+			"processDefinitionKey": "Process_book_sales_order"
+		}).json()
+
+	# distributor_code = "0000110338" if "gas" in distributor_code else "0000305948"
+
+	# if so_obj.parent.distributor_code != distributor_code:
+	# 	so_obj.parent.distributor_code = distributor_code
+	# 	so_obj.parent.save()
+
+	if len(existing) == 0:
+		variables = {
+			"variables":
+				{
+					"sales_order_id": {"value": so_obj.id, "type": "Long"},
+					"sales_order": {"value": so_obj.sales_order, "type": "String"},
+					"order_status": {"value": so_obj.order_status, "type": "String"},
+					"distributor_code": {"value": distributor_code, "type": "String"},
+					"sdms_task": {"value": "cancel_booked_sales_order", "type": "String"},
+				}
+			}
+		res, pid = start_process_in_camunda_v2('Process_book_sales_order', variables=variables)
+		if res == 200:
+			so_obj.cancellation_camunda_pid = pid
 			so_obj.save()
 		print(res)
 
@@ -201,7 +253,6 @@ def process_update_sales_order_in_dca(sales_order_list, distributor_code):
 			start_process_fetch_sales_order_details_from_sdms(so_obj.id, distributor_code)
 
 	django_rq.enqueue(evaluate_change_cylinder_type_requests)
-
 
 
 def update_sales_order_details_in_dca(sales_order_id, sales_order_details, existing_order_status):
@@ -760,3 +811,7 @@ def update_service_area_in_customer_profile(consumer_id, service_area):
 		cp_obj.save()
 	else:
 		raise Exception("Customer Profile Not Found.")
+
+
+def update_returned_booked_order(task):
+	pass
