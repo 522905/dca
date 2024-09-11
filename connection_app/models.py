@@ -742,6 +742,14 @@ class CustomerProfile(models.Model):
 	verified_on = models.DateTimeField(null=True, blank=True)
 	verification_source = models.CharField(max_length=128, null=True, blank=True)
 
+	def days_since_last_sales_order(self):
+		last_order = self.salesorder_set.filter(
+			order_status__in=[SalesOrderStatusEnum.COMPLETED, SalesOrderStatusEnum.INVOICED,
+			                  SalesOrderStatusEnum.INVOICING_IN_PROGRESS]).order_by('-order_date').first()
+		if last_order:
+			delta = datetime.datetime.now().date() - last_order.order_date.date()
+			return delta.days
+		return None
 
 	def document_self(self):
 		sd = self.documents.filter(type=ConnectionApplicationDocumentsEnum.CUSTOMER_PHOTO).first()
@@ -1053,6 +1061,7 @@ class SalesOrder(models.Model):
 	dac_disable_by = models.CharField(null=True, max_length=128)
 	ship_to_address = models.TextField(null=True)
 	camunda_process_instance_id = models.CharField(max_length=128, null=True)
+	cancellation_camunda_pid = models.CharField(max_length=128, null=True)
 	extra_data = models.JSONField(null=True)
 	auto_generated = models.BooleanField(default=False)
 	hide_from_view = models.BooleanField(default=False)

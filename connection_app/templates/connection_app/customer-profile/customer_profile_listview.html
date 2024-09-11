@@ -64,7 +64,7 @@
                                 <span style="font-weight: 600;">Last Order: {{ obj.get_last_sales_order.order_date }}</span>
                             </p>
                             <p class="float-right">
-                                <span style="font-weight: 600;">{{ obj.get_last_sales_order.order_status }}</span>
+                                <span style="font-weight: 600;">{{ obj.get_last_sales_order.order_status }} ({{ obj.days_since_last_sales_order }} Days)</span>
                             </p>
                         </li>
                     </ul>
