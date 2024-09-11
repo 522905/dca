@@ -8,7 +8,7 @@ from django.core.management import BaseCommand
 
 from connection_app.camunda_functions import process_update_sales_order_in_dca, \
 	update_sales_order_details_in_dca, process_update_sales_order_completed_today, update_customer_profile_in_dca, \
-	update_booked_order_details_in_dca, update_service_area_in_customer_profile
+	update_booked_order_details_in_dca, update_service_area_in_customer_profile, update_returned_booked_order
 from domestic_app import settings
 from ujjwala.jobs import ensure_db_connection
 
@@ -19,6 +19,7 @@ EXTERNAL_TASK_TO_SUBSCRIBE = [
 	'process_read_customer_profile_from_sdms#update_in_dca',
 	'process_domestic_app#update_booked_order_details_in_dca',
 	'service_area_update#verify_update_service_area_in_sdms',
+	'process_book_sales_order#update_returned_booked_order',
 ]
 
 default_config = {
@@ -73,6 +74,11 @@ def handle_task(task: ExternalTask) -> TaskResult:
 			service_area = task.get_variable('service_area')
 			update_service_area_in_customer_profile(consumer_id, service_area)
 			return task.complete()
+		elif topic == 'process_book_sales_order#update_returned_booked_order':
+			sales_order_id = task.get_variable('sales_order_id')
+			status = task.get_variable('status')
+			result_variables = update_returned_booked_order(sales_order_id, status)
+			return task.complete(global_variables=result_variables)
 	except Exception as e:
 		return task.failure(
 			str(e), traceback.format_exc(),
