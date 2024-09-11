@@ -252,8 +252,8 @@ def interakt_flow_template(session_id):
     body_text = {
         "countryCode": "+91",
         "phoneNumber": session_id,
-        "fullPhoneNumber": " ",
-        "campaignId": "YOUR_CAMPAIGN_ID",
+        "fullPhoneNumber": "",
+        "campaignId": "",
         "callbackData": "some text here",
         "type": "Template",
         "template": {

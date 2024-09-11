@@ -135,7 +135,7 @@ def webhook(request):
             if intent_name == 'ujjwala.status':
                 response_texts = check_ujwaala_status(session_id)
 
-            elif intent_name == 'aaddress.details-main-gate-pin-location':
+            elif intent_name == 'address.details-main-gate-pin-location':
                 response_texts = WhatsappPreInspection(Inspection_data=user_input, unique_id=session_id, intent="pin-location")
                 print(f'the response text by pin-location data : {response_texts}')
 
