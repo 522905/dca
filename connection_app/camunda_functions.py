@@ -361,9 +361,9 @@ def update_sales_order_details_in_dca(sales_order_id, sales_order_details, exist
 	so_new_details['digital_payment'] = True if so_new_details['digital_payment'] == 'Y' else False
 	so_new_details['subsidized'] = True if so_new_details['subsidized'] == 'Y' else False
 	so_new_details['subsidized_on_invoice_gen'] = True if so_new_details[
-		                                                      'subsidized_on_invoice_gen'] == 'Y' else False
+															  'subsidized_on_invoice_gen'] == 'Y' else False
 	so_new_details['attempted_during_pdt_daytime'] = True if so_new_details[
-		                                                         'attempted_during_pdt_daytime'] == 'Y' else False
+																 'attempted_during_pdt_daytime'] == 'Y' else False
 	so_new_details['preferred_flag'] = True if so_new_details['preferred_flag'] == 'Y' else False
 	so_new_details['isi_mark_ho_plate'] = True if so_new_details['isi_mark_ho_plate'] == 'Y' else False
 	so_new_details['dac_flag'] = True if so_new_details['dac_flag'] == 'Y' else False
@@ -465,165 +465,165 @@ def update_customer_profile_in_dca(relationship_details, customer_profile_id):
 		  "migrant": "Yes",
 		  "scheme_onbaording_status": "Onboarded With CTC",
 		  "contact_identities": [
-		    {
-		      "": "",
-		      "Identity Type": "INTERNAL-UJJWALA",
-		      "Identity Method": "ANNEXURE 1",
-		      "Identity Num": "4379",
-		      "Comments": "",
-		      "Identity Status": "Active",
-		      "Aadhar Status": "",
-		      "Issue Date": "",
-		      "State of Issue": "",
-		      "NPCI Batch Date": "",
-		      "NPCI Batch Id": "",
-		      "Verif Flag": "",
-		      "Mode of Verification": "",
-		      "Verification Date": "",
-		      "Verification/Issuing Authority": "",
-		      "Seeding Date": "11-Jul-2022",
-		      "CTC Date": "",
-		      "NPCIL Verif Status": "",
-		      "Identity Source": "",
-		      "NPCI Resp Date Time": "",
-		      "ContactFileSrcPath": "",
-		      "ContactFileSrcType": "",
-		      "Profile Image Active": "N"
-		    },
-		    {
-		      "": "",
-		      "Identity Type": "INTERNAL-UJJWALA",
-		      "Identity Method": "14 Point Exclusion Declaration",
-		      "Identity Num": "4379",
-		      "Comments": "",
-		      "Identity Status": "Active",
-		      "Aadhar Status": "",
-		      "Issue Date": "",
-		      "State of Issue": "",
-		      "NPCI Batch Date": "",
-		      "NPCI Batch Id": "",
-		      "Verif Flag": "",
-		      "Mode of Verification": "",
-		      "Verification Date": "",
-		      "Verification/Issuing Authority": "",
-		      "Seeding Date": "11-Jul-2022",
-		      "CTC Date": "",
-		      "NPCIL Verif Status": "",
-		      "Identity Source": "",
-		      "NPCI Resp Date Time": "",
-		      "ContactFileSrcPath": "",
-		      "ContactFileSrcType": "",
-		      "Profile Image Active": "N"
-		    },
-		    {
-		      "": "",
-		      "Identity Type": "POA-POI",
-		      "Identity Method": "Aadhaar(UID)",
-		      "Identity Num": "xxxxxxxx6884",
-		      "Comments": "",
-		      "Identity Status": "Active",
-		      "Aadhar Status": "CTC",
-		      "Issue Date": "",
-		      "State of Issue": "",
-		      "NPCI Batch Date": "",
-		      "NPCI Batch Id": "",
-		      "Verif Flag": "Y",
-		      "Mode of Verification": "",
-		      "Verification Date": "17-Jun-2023",
-		      "Verification/Issuing Authority": "",
-		      "Seeding Date": "",
-		      "CTC Date": "17-Jun-2023",
-		      "NPCIL Verif Status": "CTC",
-		      "Identity Source": "",
-		      "NPCI Resp Date Time": "17-Jun-2023 12:00:00 AM",
-		      "ContactFileSrcPath": "1-630064071306",
-		      "ContactFileSrcType": "URL",
-		      "Profile Image Active": "N"
-		    },
-		    {
-		      "": "",
-		      "Identity Type": "PROFILE IMAGE",
-		      "Identity Method": "PROFILE IMAGE",
-		      "Identity Num": "xxxxxxxxx4379",
-		      "Comments": "",
-		      "Identity Status": "Active",
-		      "Aadhar Status": "",
-		      "Issue Date": "",
-		      "State of Issue": "",
-		      "NPCI Batch Date": "",
-		      "NPCI Batch Id": "",
-		      "Verif Flag": "Y",
-		      "Mode of Verification": "",
-		      "Verification Date": "",
-		      "Verification/Issuing Authority": "",
-		      "Seeding Date": "",
-		      "CTC Date": "",
-		      "NPCIL Verif Status": "",
-		      "Identity Source": "",
-		      "NPCI Resp Date Time": "",
-		      "ContactFileSrcPath": "",
-		      "ContactFileSrcType": "",
-		      "Profile Image Active": "N"
-		    }
+			{
+			  "": "",
+			  "Identity Type": "INTERNAL-UJJWALA",
+			  "Identity Method": "ANNEXURE 1",
+			  "Identity Num": "4379",
+			  "Comments": "",
+			  "Identity Status": "Active",
+			  "Aadhar Status": "",
+			  "Issue Date": "",
+			  "State of Issue": "",
+			  "NPCI Batch Date": "",
+			  "NPCI Batch Id": "",
+			  "Verif Flag": "",
+			  "Mode of Verification": "",
+			  "Verification Date": "",
+			  "Verification/Issuing Authority": "",
+			  "Seeding Date": "11-Jul-2022",
+			  "CTC Date": "",
+			  "NPCIL Verif Status": "",
+			  "Identity Source": "",
+			  "NPCI Resp Date Time": "",
+			  "ContactFileSrcPath": "",
+			  "ContactFileSrcType": "",
+			  "Profile Image Active": "N"
+			},
+			{
+			  "": "",
+			  "Identity Type": "INTERNAL-UJJWALA",
+			  "Identity Method": "14 Point Exclusion Declaration",
+			  "Identity Num": "4379",
+			  "Comments": "",
+			  "Identity Status": "Active",
+			  "Aadhar Status": "",
+			  "Issue Date": "",
+			  "State of Issue": "",
+			  "NPCI Batch Date": "",
+			  "NPCI Batch Id": "",
+			  "Verif Flag": "",
+			  "Mode of Verification": "",
+			  "Verification Date": "",
+			  "Verification/Issuing Authority": "",
+			  "Seeding Date": "11-Jul-2022",
+			  "CTC Date": "",
+			  "NPCIL Verif Status": "",
+			  "Identity Source": "",
+			  "NPCI Resp Date Time": "",
+			  "ContactFileSrcPath": "",
+			  "ContactFileSrcType": "",
+			  "Profile Image Active": "N"
+			},
+			{
+			  "": "",
+			  "Identity Type": "POA-POI",
+			  "Identity Method": "Aadhaar(UID)",
+			  "Identity Num": "xxxxxxxx6884",
+			  "Comments": "",
+			  "Identity Status": "Active",
+			  "Aadhar Status": "CTC",
+			  "Issue Date": "",
+			  "State of Issue": "",
+			  "NPCI Batch Date": "",
+			  "NPCI Batch Id": "",
+			  "Verif Flag": "Y",
+			  "Mode of Verification": "",
+			  "Verification Date": "17-Jun-2023",
+			  "Verification/Issuing Authority": "",
+			  "Seeding Date": "",
+			  "CTC Date": "17-Jun-2023",
+			  "NPCIL Verif Status": "CTC",
+			  "Identity Source": "",
+			  "NPCI Resp Date Time": "17-Jun-2023 12:00:00 AM",
+			  "ContactFileSrcPath": "1-630064071306",
+			  "ContactFileSrcType": "URL",
+			  "Profile Image Active": "N"
+			},
+			{
+			  "": "",
+			  "Identity Type": "PROFILE IMAGE",
+			  "Identity Method": "PROFILE IMAGE",
+			  "Identity Num": "xxxxxxxxx4379",
+			  "Comments": "",
+			  "Identity Status": "Active",
+			  "Aadhar Status": "",
+			  "Issue Date": "",
+			  "State of Issue": "",
+			  "NPCI Batch Date": "",
+			  "NPCI Batch Id": "",
+			  "Verif Flag": "Y",
+			  "Mode of Verification": "",
+			  "Verification Date": "",
+			  "Verification/Issuing Authority": "",
+			  "Seeding Date": "",
+			  "CTC Date": "",
+			  "NPCIL Verif Status": "",
+			  "Identity Source": "",
+			  "NPCI Resp Date Time": "",
+			  "ContactFileSrcPath": "",
+			  "ContactFileSrcType": "",
+			  "Profile Image Active": "N"
+			}
 		  ],
 		  "phones": [
-		    {
-		      "": "",
-		      "Primary": "Y",
-		      "Active Flag": "",
-		      "Phone #": "7837521390",
-		      "Use Type": "",
-		      "Phone Type": "Mobile",
-		      "Description": "1-81G3VOUH",
-		      "Consumer Id": "",
-		      "Verify OTP": "",
-		      "Verified Flag": "Y",
-		      "Contact Phone Status": "Active"
-		    },
-		    {
-		      "": "",
-		      "Primary": "N",
-		      "Active Flag": "",
-		      "Phone #": "7889283509",
-		      "Use Type": "",
-		      "Phone Type": "Mobile",
-		      "Description": "1-9OF5DP2R",
-		      "Consumer Id": "",
-		      "Verify OTP": "",
-		      "Verified Flag": "Y",
-		      "Contact Phone Status": "New"
-		    },
-		    {
-		      "": "",
-		      "Primary": "N",
-		      "Active Flag": "",
-		      "Phone #": "9815938017",
-		      "Use Type": "",
-		      "Phone Type": "Mobile",
-		      "Description": "1-9OFG48I9",
-		      "Consumer Id": "",
-		      "Verify OTP": "",
-		      "Verified Flag": "Y",
-		      "Contact Phone Status": "Active"
-		    }
+			{
+			  "": "",
+			  "Primary": "Y",
+			  "Active Flag": "",
+			  "Phone #": "7837521390",
+			  "Use Type": "",
+			  "Phone Type": "Mobile",
+			  "Description": "1-81G3VOUH",
+			  "Consumer Id": "",
+			  "Verify OTP": "",
+			  "Verified Flag": "Y",
+			  "Contact Phone Status": "Active"
+			},
+			{
+			  "": "",
+			  "Primary": "N",
+			  "Active Flag": "",
+			  "Phone #": "7889283509",
+			  "Use Type": "",
+			  "Phone Type": "Mobile",
+			  "Description": "1-9OF5DP2R",
+			  "Consumer Id": "",
+			  "Verify OTP": "",
+			  "Verified Flag": "Y",
+			  "Contact Phone Status": "New"
+			},
+			{
+			  "": "",
+			  "Primary": "N",
+			  "Active Flag": "",
+			  "Phone #": "9815938017",
+			  "Use Type": "",
+			  "Phone Type": "Mobile",
+			  "Description": "1-9OFG48I9",
+			  "Consumer Id": "",
+			  "Verify OTP": "",
+			  "Verified Flag": "Y",
+			  "Contact Phone Status": "Active"
+			}
 		  ],
 		  "ekyc_details": [
-		    {
-		      "": "",
-		      "eKYC Num": "1-630064071322",
-		      "Created On": "02-Jul-2022 02:24:18 PM",
-		      "eKYC Type": "KYC",
-		      "eKYC Sub Type": "Fresh KYC",
-		      "eKYC Status": "Closed",
-		      "Aadhar Number": "xxxxxxxx6884",
-		      "Organization": "ARUN INDANE PROP LUDHIANA ENT.",
-		      "First Name": "Kiranjeet",
-		      "Last Name": "Kaur",
-		      "Aadhar Seeding": "N",
-		      "Channel": "Mobility",
-		      "Authentication Type": "",
-		      "Created By": ""
-		    }
+			{
+			  "": "",
+			  "eKYC Num": "1-630064071322",
+			  "Created On": "02-Jul-2022 02:24:18 PM",
+			  "eKYC Type": "KYC",
+			  "eKYC Sub Type": "Fresh KYC",
+			  "eKYC Status": "Closed",
+			  "Aadhar Number": "xxxxxxxx6884",
+			  "Organization": "ARUN INDANE PROP LUDHIANA ENT.",
+			  "First Name": "Kiranjeet",
+			  "Last Name": "Kaur",
+			  "Aadhar Seeding": "N",
+			  "Channel": "Mobility",
+			  "Authentication Type": "",
+			  "Created By": ""
+			}
 		  ]
 		}
 	"""
@@ -641,17 +641,17 @@ def update_customer_profile_in_dca(relationship_details, customer_profile_id):
 			relationship_details['relationship_start_date'], "%d-%b-%Y") if \
 			relationship_details['relationship_start_date'] else None
 		relationship_details['ekyc_date'] = datetime.datetime.strptime(relationship_details['ekyc_date'],
-		                                                               '%d-%b-%Y %H:%M:%S %p') if \
+																	   '%d-%b-%Y %H:%M:%S %p') if \
 			relationship_details['ekyc_date'] else None
 		relationship_details['kyc_approval_date'] = datetime.datetime.strptime(relationship_details['kyc_approval_date'],
-		                                                               '%d-%b-%Y %H:%M:%S %p') if \
+																	   '%d-%b-%Y %H:%M:%S %p') if \
 			relationship_details['kyc_approval_date'] else None
 
 		relationship_details['kyc_date'] = datetime.datetime.strptime(relationship_details['kyc_date'],
-		                                                               '%d-%b-%Y %H:%M:%S %p') if \
+																	   '%d-%b-%Y %H:%M:%S %p') if \
 			relationship_details['kyc_date'] else None
 		relationship_details['release_date'] = datetime.datetime.strptime(relationship_details['release_date'],
-		                                                               '%d-%b-%Y %H:%M:%S %p') if \
+																	   '%d-%b-%Y %H:%M:%S %p') if \
 			relationship_details['release_date'] else None
 		relationship_details['intimation_release_date'] = datetime.datetime.strptime(
 			relationship_details['intimation_release_date'],
@@ -688,7 +688,7 @@ def update_customer_profile_in_dca(relationship_details, customer_profile_id):
 		relationship_details['tcs_flag'] = True if relationship_details['tcs_flag'] == 'Y' else False
 		relationship_details['mi_refusal_flag'] = True if relationship_details['mi_refusal_flag'] == 'Y' else False
 		relationship_details['tight_joint_replacement_flag'] = True if relationship_details[
-			                                                               'tight_joint_replacement_flag'] == 'Y' else False
+																		   'tight_joint_replacement_flag'] == 'Y' else False
 		relationship_details['priority'] = True if relationship_details['priority'] == 'Y' else False
 		relationship_details['migrant'] = True if relationship_details['migrant'] == 'Yes' else False
 
@@ -699,12 +699,12 @@ def update_customer_profile_in_dca(relationship_details, customer_profile_id):
 
 		if not distributor:
 			distributor = Distributor.objects.create(code=relationship_details['distributor_code'],
-			                           name=relationship_details['distributor_name'])
+									   name=relationship_details['distributor_name'])
 		relationship_details['distributor'] = distributor
 
 
 		relationship_details['sdms_service_area'] = get_sdms_service_area(relationship_details['service_area'],
-		                                                                  distributor.code)
+																		  distributor.code)
 		CustomerProfile.objects.filter(pk=customer_profile_id).update(**relationship_details)
 
 
@@ -773,9 +773,9 @@ def update_booked_order_details_in_dca(sales_order_details, consumer_id, process
 	so_new_details['digital_payment'] = True if so_new_details['digital_payment'] == 'Y' else False
 	so_new_details['subsidized'] = True if so_new_details['subsidized'] == 'Y' else False
 	so_new_details['subsidized_on_invoice_gen'] = True if so_new_details[
-		                                                      'subsidized_on_invoice_gen'] == 'Y' else False
+															  'subsidized_on_invoice_gen'] == 'Y' else False
 	so_new_details['attempted_during_pdt_daytime'] = True if so_new_details[
-		                                                         'attempted_during_pdt_daytime'] == 'Y' else False
+																 'attempted_during_pdt_daytime'] == 'Y' else False
 	so_new_details['preferred_flag'] = True if so_new_details['preferred_flag'] == 'Y' else False
 	so_new_details['isi_mark_ho_plate'] = True if so_new_details['isi_mark_ho_plate'] == 'Y' else False
 	so_new_details['dac_flag'] = True if so_new_details['dac_flag'] == 'Y' else False
@@ -813,5 +813,38 @@ def update_service_area_in_customer_profile(consumer_id, service_area):
 		raise Exception("Customer Profile Not Found.")
 
 
-def update_returned_booked_order(task):
-	pass
+def get_next_next_nine_oclock():
+	now = datetime.datetime.now()
+	today_nine_am = now.replace(hour=9, minute=0, second=0, microsecond=0)
+
+	if now < today_nine_am:
+		# First 9:00 AM is today
+		next_nine_am = today_nine_am
+	else:
+		# First 9:00 AM is tomorrow
+		next_nine_am = today_nine_am + datetime.timedelta(days=1)
+
+	# Second 9:00 AM after now
+	next_next_nine_am = next_nine_am + datetime.timedelta(days=1)
+
+	return next_next_nine_am
+
+
+def update_returned_booked_order(sales_order_id, status):
+	from connection_app.models import SalesOrder
+
+	so_obj = SalesOrder.objects.get(pk=sales_order_id)
+
+	variables = {}
+	if status == 'RETURNED':
+		so_obj.transition_sales_order_returned()
+		variables['next_order_return_date_time'] = {"value": get_next_next_nine_oclock().isoformat()}
+	elif status == 'CANCELLED':
+		so_obj.transition_sales_order_cancelled()
+		variables['order_canceled'] = {"value": True}
+	elif status == 'NOT_FOUND':
+		so_obj.transition_sales_order_not_found()
+		variables['order_canceled'] = {"value": True}
+
+	so_obj.save()
+	return variables

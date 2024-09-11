@@ -1128,6 +1128,19 @@ class SalesOrder(models.Model):
 	def transition_sales_order_not_found(self, *args, **kwargs):
 		pass
 
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
+		field=order_status,
+		source=['*'],
+		target=SalesOrderStatusEnum.RETURNED,
+		custom=dict(
+			short_description='Sales Order Returned',
+			admin=False,
+		),
+	)
+	def transition_sales_order_returned(self, *args, **kwargs):
+		pass
 
 class SalesOrderInvoice(models.Model):
 	"""
