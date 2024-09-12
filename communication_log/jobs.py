@@ -330,7 +330,7 @@ def chatbot_view(data_dict):
     data = data_dict['data']
     message_data = data.get('message', {})
     message_content = message_data["message_content_type"]
-    
+
     user_message = redis_image(message_data['media_url']) \
         if message_data.get('media_url') is not None else message_data.get('message', ' ')
 
@@ -339,7 +339,9 @@ def chatbot_view(data_dict):
     session_id = data['customer']['phone_number']
     print(f'the user pin is : {user_message}')
     if message_content == "InteractiveFlowReply":
-        response_json_data = json.loads(user_message["nfm_reply"]["response_json"])
+        json_data = json.loads(user_message)
+        logger.info(f'the response data that we got is : {json_data} and {user_message} and {type(user_message)}')
+        response_json_data = json.loads(json_data["nfm_reply"]["response_json"])
         logger.info(f'the response data that we get is : {response_json_data.get("data")}')
         reply = WhatsappPreInspection(Inspection_data=response_json_data.get("data" ,""), unique_id=session_id, intent="address_details")
         logger.info(f'handling flow response to fill the address form')
