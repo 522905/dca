@@ -91,12 +91,12 @@ def flowhook(request):
                                    "extension_message_response": {
                                        "params": {
                                            "flow_token": decrypted_body.get('flow_token') or "test request ",
-                                           "some_param_name": "PASS_CUSTOM_VALUE"
+                                           "data": decrypted_data or "some issue with data retrival"
                                        }
                                    }
                                }
                            }
-                WhatsappPreInspection(Inspection_data=decrypted_data, unique_id=phone_no, intent="address_details")
+                # WhatsappPreInspection(Inspection_data=decrypted_data, unique_id=phone_no, intent="address_details")
 
             print("👉 Response to Encrypt:", response)
             # encrypted_response = encrypt_response(response, aes_key_buffer, initial_vector_buffer)
@@ -140,18 +140,21 @@ def webhook(request):
             if intent_name == 'ujjwala.status':
                 response_texts = check_ujwaala_status(session_id)
 
-            elif intent_name == 'aaddress.details-main-gate-pin-location':
-                response_texts = WhatsappPreInspection(Inspection_data=user_input, unique_id=session_id, intent="pin-location")
+            elif intent_name == 'address.details-main-gate-pin-location':
+                response_texts = WhatsappPreInspection(Inspection_data=user_input, unique_id=session_id,
+                                                       intent="pin-location")
                 print(f'the response text by pin-location data : {response_texts}')
 
             elif intent_name == 'address.details - main-gate':
-                if(user_input.find(".jpeg")!= -1):
-                    response_texts = WhatsappPreInspection(Inspection_data=user_input, unique_id=session_id, intent="main-gate")
+                if user_input.find(".jpeg") != -1:
+                    response_texts = WhatsappPreInspection(Inspection_data=user_input, unique_id=session_id,
+                                                           intent="main-gate")
                 else:
                     response_texts = "please only share image"
             elif intent_name == 'address.details-pin-location-kitchen':
-                if(user_input.find(".jpeg")!= -1):
-                    response_texts = WhatsappPreInspection(Inspection_data=user_input, unique_id=session_id, intent="kitchen-photo")
+                if user_input.find(".jpeg") != -1:
+                    response_texts = WhatsappPreInspection(Inspection_data=user_input, unique_id=session_id,
+                                                           intent="kitchen-photo")
                     interakt_flow_template(session_id)
                 else:
                     response_texts = "please only share image"

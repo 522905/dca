@@ -1,4 +1,5 @@
 import io
+import json
 import re
 from functools import wraps
 
@@ -18,6 +19,7 @@ from domestic_app.utils import get_minio_public_url
 # from ujjwala.jobs import ensure_db_connection
 from django.db import close_old_connections
 from ujjwala.management.commands.ujjwala_file_worker import upload_compressed_file_to_tus
+from ujjwala.views import  WhatsappPreInspection
 import logging
 
 # Initialize logger
@@ -250,13 +252,13 @@ def interakt_flow_template(session_id):
     body_text = {
         "countryCode": "+91",
         "phoneNumber": session_id,
-        "fullPhoneNumber": " ",
-        "campaignId": "YOUR_CAMPAIGN_ID",
+        "fullPhoneNumber": "",
+        "campaignId": "",
         "callbackData": "some text here",
         "type": "Template",
         "template": {
-            "name": "template_name_here",
-            "languageCode": "en",
+            "name": "address_details",
+            "languageCode": "hi",
             "bodyValues": [
                 "body_variable_value_1",
                 "body_variable_value_n"
@@ -287,6 +289,7 @@ def redis_image(url):
     my_redis_data = redis_conn.get(result)
     print(f'the stored data in redis is {result}: {my_redis_data}')
     return result
+
 
 def dialogflow_whatapp_message(reply, session_id, user_id):
     body_text = {
@@ -326,16 +329,23 @@ def detect_intent_texts(project_id, session_id, text, language_code='hi'):
 def chatbot_view(data_dict):
     data = data_dict['data']
     message_data = data.get('message', {})
-    user_message = redis_image(message_data['media_url']) \
-                                        if message_data['media_url'] is not None else message_data.get('message', ' ')
+    message_content = message_data["message_content_type"]
+    user_message = redis_image(message_data['media_url']) if 'media_url' in message_data else message_data.get('message', ' ')
     project_id = 'om-prakash-rerm'
     user_id = data['customer']["id"]
     session_id = data['customer']['phone_number']
     print(f'the user pin is : {user_message}')
-    logger.info(f"Sending message to Dialogflow: {user_message} from {session_id}")
-    # You can use a unique ID for each user session
-    response = detect_intent_texts(project_id, session_id, user_message)
-    reply = response.fulfillment_text
+    if message_content == "InteractiveFlowReply":
+        response_json_data = json.loads(user_message["nfm_reply"]["response_json"])
+        logger.info(f'the response data that we get is : {response_json_data.get("data")}')
+        reply = WhatsappPreInspection(Inspection_data=response_json_data.get("data" ,""), unique_id=session_id, intent="address_details")
+        logger.info(f'handling flow response to fill the address form')
+    else:
+        logger.info(f"Sending message to Dialogflow: {user_message} from {session_id}")
+        # You can use a unique ID for each user session
+        response = detect_intent_texts(project_id, session_id, user_message)
+        reply = response.fulfillment_text
+
     if reply:
         try:
             dialogflow_whatapp_message(reply, session_id, user_id)

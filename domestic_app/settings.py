@@ -16,7 +16,11 @@ import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 from corsheaders.defaults import default_headers, default_methods
+<<<<<<< Updated upstream
+
 # from  logging_utils import ArrowFormatter
+=======
+>>>>>>> Stashed changes
 from deathbycaptcha import deathbycaptcha
 from django.core.cache import cache
 
@@ -87,6 +91,11 @@ INSTALLED_APPS = [
     'taggit',
     'solo',
     'vicidial',
+<<<<<<< Updated upstream
+=======
+    'slick_reporting',
+    'crispy_forms',
+>>>>>>> Stashed changes
 ]
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
@@ -320,6 +329,7 @@ X_FRAME_OPTIONS = 'ALLOWALL'
 #     profiles_sample_rate=1.0,
 # )
 
+<<<<<<< Updated upstream
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -349,7 +359,8 @@ LOGGING = {
         },
     },
 }
-
+=======
+>>>>>>> Stashed changes
 
 CACHES = {
     "default": {
@@ -359,6 +370,7 @@ CACHES = {
 }
 
 PRE_SURAKSHA_YOUTUBE_VIDEO_URL = 'https://youtu.be/d-XiWg4277E'
+<<<<<<< Updated upstream
 
 
 def read_private_key_file(filepath):
@@ -387,3 +399,9 @@ os.environ["APP_SECRET"] = "10bee2967962c7fb6010d8b99764df45"
 
 # GEOS_LIBRARY_PATH = '/home/user/local/lib/libgeos_c.so'
 # GDAL_LIBRARY_PATH = '/home/user/local/lib/libgdal.so'
+=======
+
+
+# cache.get_or_set("dedup_portal", pickled_dedeup_portal, 1000)
+# dedup_portal = IoclOmcDedup('305948', 'Inder@1234')
+>>>>>>> Stashed changes
