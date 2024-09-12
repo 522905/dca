@@ -330,7 +330,10 @@ def chatbot_view(data_dict):
     data = data_dict['data']
     message_data = data.get('message', {})
     message_content = message_data["message_content_type"]
-    user_message = redis_image(message_data['media_url']) if 'media_url' in message_data else message_data.get('message', ' ')
+    
+    user_message = redis_image(message_data['media_url']) \
+        if message_data.get('media_url') is not None else message_data.get('message', ' ')
+
     project_id = 'om-prakash-rerm'
     user_id = data['customer']["id"]
     session_id = data['customer']['phone_number']

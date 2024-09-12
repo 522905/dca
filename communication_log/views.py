@@ -73,37 +73,40 @@ def flowhook(request):
                 except json.JSONDecodeError:
                     raise ValueError("decryptedBody is not valid JSON")
 
-            # Now safely access 'data' within the decrypted_body dictionary
-            decrypted_data = decrypted_body.get('data', None)
-
-            if decrypted_data is None:
-                raise KeyError("Key 'data' not found in decryptedBody")
-
-            logger.info(f"the decrypted request contain: {decrypted_request} from {request}")
-            phone_no = decrypted_body.get('messages', {}).get('context', {}).get('from', " ") or " "
-            print("💬 Decrypted Request:", decrypted_body, decrypted_data , )
             if decrypted_body.get('action') == 'ping':
                 response = {"data": {"status": "active"}}
             else:
+
+                # Now safely access 'data' within the decrypted_body dictionary
+                decrypted_data = decrypted_body.get('data', None)
+
+                if decrypted_data is None:
+                    raise KeyError("Key 'data' not found in decryptedBody")
+
+                logger.info(f"the decrypted request contain: {decrypted_request} from {request}")
+                phone_no = decrypted_body.get('messages', {}).get('context', {}).get('from', " ") or " "
+                print("Decrypted Request:", decrypted_body, decrypted_data, )
+
                 response = {
-                               "screen": "SUCCESS",
-                               "data": {
-                                   "extension_message_response": {
-                                       "params": {
-                                           "flow_token": decrypted_body.get('flow_token') or "test request ",
-                                           "data": decrypted_data or "some issue with data retrival"
-                                       }
-                                   }
-                               }
-                           }
+                    "screen": "SUCCESS",
+                    "data": {
+                        "extension_message_response": {
+                            "params": {
+                                "flow_token": decrypted_body.get('flow_token') or "test request ",
+                                "data": decrypted_data or "some issue with data retrival"
+                            }
+                        }
+                    }
+                }
                 # WhatsappPreInspection(Inspection_data=decrypted_data, unique_id=phone_no, intent="address_details")
 
-            print("👉 Response to Encrypt:", response)
+            print(" Response to Encrypt:", response)
             # encrypted_response = encrypt_response(response, aes_key_buffer, initial_vector_buffer)
-            return HttpResponse(encrypt_response(response, aes_key_buffer, initial_vector_buffer), content_type='text/plain')
+            return HttpResponse(encrypt_response(response, aes_key_buffer, initial_vector_buffer),
+                                content_type='text/plain')
             # return HttpResponse(encrypted_response, content_type='application/json', status= 200)
         except FlowEndpointException as e:
-            logger.error(f"flowend point exception: {str(e)}")
+            logger.error(f"flow end point exception: {str(e)}")
             return HttpResponse(status=e.status_code)
         except Exception as e:
             print(e)
@@ -141,8 +144,7 @@ def webhook(request):
                 response_texts = check_ujwaala_status(session_id)
 
             elif intent_name == 'address.details-main-gate-pin-location':
-                response_texts = WhatsappPreInspection(Inspection_data=user_input, unique_id=session_id,
-                                                       intent="pin-location")
+                response_texts = WhatsappPreInspection(Inspection_data=user_input, unique_id=session_id, intent="pin-location")
                 print(f'the response text by pin-location data : {response_texts}')
 
             elif intent_name == 'address.details - main-gate':
@@ -158,7 +160,7 @@ def webhook(request):
                     interakt_flow_template(session_id)
                 else:
                     response_texts = "please only share image"
-
+            print(f'the respose text is {response_texts}')
             return JsonResponse({'fulfillmentText': response_texts})
 
         except json.JSONDecodeError:
