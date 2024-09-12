@@ -22,8 +22,6 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views import View
-from communication_log.jobs import  dialogflow_whatapp_message
-from communication_log.jobs import send_message_on_whatsapp
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, FormView, ListView, TemplateView, UpdateView
@@ -172,73 +170,74 @@ class WhatsappPreInspectionTypeSelf(View):
             self.request, "ujjwala/response.html", {"heading": "Pre-Inspection", "message": message}
         )
 
+
 # pre Inspection through whatapp and dialogflow
 def WhatsappPreInspection(Inspection_data, unique_id, intent):
-	conn = django_rq.get_connection("default")
-	if not unique_id:
-		return
-	# Fetch the application using the unique ID
-	application = UjjwalaV2Application.objects.filter(contact_mobile=unique_id).first()
-	if not application:
-		return f"Application does not exist with phone number {unique_id}"
+    conn = django_rq.get_connection("default")
+    if not unique_id:
+        return
+    # Fetch the application using the unique ID
+    application = UjjwalaV2Application.objects.filter(contact_mobile=unique_id).first()
+    if not application:
+        return f"इस फोन नंबर {unique_id} के साथ कोई आवेदन मौजूद नहीं है।"
 
-	# Check if pre-inspection is applicable
-	if not is_pre_inspection_applicable(application.id):
-		return "You are not eligible for pre-inspection. Check your application status."
+    # Check if pre-inspection is applicable
+    if not is_pre_inspection_applicable(application.id):
+        return "आप प्री-निरीक्षण के लिए पात्र नहीं हैं। कृपया अपने आवेदन की स्थिति जांचें।"
 
-	# Fetch the PreInspection object
-	pi_obj = PreInspection.objects.filter(parent_id=application.id).first()
+    # Fetch the PreInspection object
+    pi_obj = PreInspection.objects.filter(parent_id=application.id).first()
 
-	# Handle kitchen-photo intent
-	if intent == "kitchen-photo":
-		link = conn.get(Inspection_data)
-		if not link:
-			return "Kitchen photo link not found in Inspection data."
+    # Handle kitchen-photo intent
+    if intent == "kitchen-photo":
+        link = conn.get(Inspection_data)
+        if not link:
+            return "Kitchen photo link not found in Inspection data."
 
-		# Process and save the kitchen photo form
-		form = KitchenPreInspectionForm(data={'pre_inspection': pi_obj, 'kitchen_photo': link})
-		if form.is_valid():
-			form.save()
-			return "Your kitchen photo has been updated and please fill the blow form for address update "
-		else:
-			return "Failed to update kitchen photo."
-	# Handle address details
-	if intent == "address_details":
-		form = ChangeAddressForm(pre_inspection=pi_obj, data=Inspection_data)
-		if form.is_valid():
-			form.save()
-			dialogflow_whatapp_message(reply="Your address details has been updated." , session_id= unique_id)
-		else:
-			dialogflow_whatapp_message(reply="Failed to update address details." , session_id= unique_id)
-	# Handle pin-location or main-gate intent
-	if intent in ["pin-location", "main-gate"]:
-		link = conn.get(Inspection_data)
-		longitude = latitude = None
+        # Process and save the kitchen photo form
+        form = KitchenPreInspectionForm(data={'pre_inspection': pi_obj, 'kitchen_photo': link})
+        if form.is_valid():
+            form.save()
+            return "आपकी रसोई की फोटो अपडेट हो गई है, कृपया पता अपडेट के लिए नीचे दिया गया फॉर्म भरें।"
+        else:
+            return "रसोई की फोटो अपडेट करने में विफल।"
+    # Handle address details
+    if intent == "address_details":
+        form = ChangeAddressForm(pre_inspection=pi_obj, data=Inspection_data)
+        if form.is_valid():
+            form.save()
+            return "आपके पते का विवरण अपडेट हो गया है।"
+        else:
+            return "पते का विवरण अपडेट करने में विफल।"
+    # Handle pin-location or main-gate intent
+    if intent in ["pin-location", "main-gate"]:
+        link = conn.get(Inspection_data)
+        longitude = latitude = None
 
-		if not link:
-			try:
-				location_data = json.loads(Inspection_data)
-				latitude = location_data.get('latitude')
-				longitude = location_data.get('longitude')
-			except (json.JSONDecodeError, TypeError, KeyError) as e:
-				return "Invalid location data."
+        if not link:
+            try:
+                location_data = json.loads(Inspection_data)
+                latitude = location_data.get('latitude')
+                longitude = location_data.get('longitude')
+            except (json.JSONDecodeError, TypeError, KeyError) as e:
+                return "Invalid location data."
 
-		# Process and save the preview inspection form
-		form = PreviewPreInspectionForm(data={
-			'pre_inspection': pi_obj,
-			'main_gate': link,
-			'longitude': longitude,
-			'latitude': latitude
-		})
-		if form.is_valid():
-			form.save()
-			if not link:
-				return "Your pin location data has been updated,now please shared your in kitchen photo for verification"
-			return "Your main gate photo has been updated ,now please shared your pin location by watching the above video"
-		else:
-			return "Failed to update location or photo."
+        # Process and save the preview inspection form
+        form = PreviewPreInspectionForm(data={
+            'pre_inspection': pi_obj,
+            'main_gate': link,
+            'longitude': longitude,
+            'latitude': latitude
+        })
+        if form.is_valid():
+            form.save()
+            if not link:
+                return "आपकी पिन लोकेशन का डेटा अपडेट हो गया है, अब कृपया Verification के लिए अपनी रसोई वाली  फोटो साझा करें।"
+            return "आपके मुख्य द्वार की फोटो अपडेट हो गई है, अब कृपया ऊपर दिए गए वीडियो को देखकर अपनी पिन लोकेशन साझा करें।"
+        else:
+            return "लोकेशन या फोटो अपडेट करने में विफल।"
 
-	return "Invalid intent provided."
+    return "Invalid intent provided."
 
 
 

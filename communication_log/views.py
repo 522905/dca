@@ -84,12 +84,12 @@ def flowhook(request):
                                    "extension_message_response": {
                                        "params": {
                                            "flow_token": decrypted_body.get('flow_token') or "test request ",
-                                           "some_param_name": "PASS_CUSTOM_VALUE"
+                                           "data": decrypted_data or "some issue with data retrival"
                                        }
                                    }
                                }
                            }
-                WhatsappPreInspection(Inspection_data=decrypted_data, unique_id=phone_no, intent="address_details")
+                # WhatsappPreInspection(Inspection_data=decrypted_data, unique_id=phone_no, intent="address_details")
 
             print("👉 Response to Encrypt:", response)
             # encrypted_response = encrypt_response(response, aes_key_buffer, initial_vector_buffer)
