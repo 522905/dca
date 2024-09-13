@@ -1177,10 +1177,10 @@ class ImportDataView(FormView):
 		with open(save_path, 'wb+') as destination:
 			for chunk in csv_file.chunks():
 				destination.write(chunk)
-		# res = django_rq.enqueue(schedule_upload_data, args=(form_data.get('template'), id_obj))
-		# messages.add_message(self.request, messages.INFO, "Job Scheduled: {}".format(res.id))
 		id_obj = ImportData.objects.create(template=form_data.get('template'), file_path=save_path)
-		schedule_upload_data(form_data.get('template'), id_obj)
+		res = django_rq.enqueue(schedule_upload_data, args=(form_data.get('template'), id_obj))
+		messages.add_message(self.request, messages.INFO, "Job Scheduled: {}".format(res.id))
+		# schedule_upload_data(form_data.get('template'), id_obj)
 		return redirect(self.get_success_url())
 
 
