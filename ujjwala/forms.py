@@ -489,7 +489,7 @@ class PreviewPreInspectionForm(forms.Form):
 		widget=forms.TextInput(attrs={'readonly': 1}), max_length=32, label='Longitude', required=True
 	)
 	accuracy = forms.CharField(
-		widget=forms.TextInput(attrs={'readonly': 1}), max_length=24, label='Accuracy', required=True
+		widget=forms.TextInput(attrs={'readonly': 1}), max_length=24, label='Accuracy', required=False
 	)
 	main_gate = forms.CharField(
 		widget=forms.HiddenInput, label='Main Gate Photo', required=True
