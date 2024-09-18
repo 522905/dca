@@ -240,19 +240,22 @@ def process_update_sales_order_in_dca(sales_order_list, distributor_code):
 		 }
 	"""
 	for so in sales_order_list:
-		so_obj: SalesOrder = SalesOrder.objects.filter(
-			sales_order=so['Sales Order #'],
-			order_date=datetime.datetime.strptime(so["Order Date"], '%d-%b-%Y %H:%M:%S %p')
-		).first()
+		try:
+			so_obj: SalesOrder = SalesOrder.objects.filter(
+				sales_order=so['Sales Order #'],
+				order_date=datetime.datetime.strptime(so["Order Date"], '%d-%b-%Y %H:%M:%S %p')
+			).first()
 
-		if so_obj:
-			if so_obj.order_status != so['Order Status']:
+			if so_obj:
+				if so_obj.order_status != so['Order Status']:
+					start_process_fetch_sales_order_details_from_sdms(so_obj.id, distributor_code)
+			else:
+				so_obj = create_sales_order(so, distributor_code)
 				start_process_fetch_sales_order_details_from_sdms(so_obj.id, distributor_code)
-		else:
-			so_obj = create_sales_order(so, distributor_code)
-			start_process_fetch_sales_order_details_from_sdms(so_obj.id, distributor_code)
+		except Exception as e:
+			continue
 
-	django_rq.enqueue(evaluate_change_cylinder_type_requests)
+	# django_rq.enqueue(evaluate_change_cylinder_type_requests)
 
 
 def update_sales_order_details_in_dca(sales_order_id, sales_order_details, existing_order_status):
