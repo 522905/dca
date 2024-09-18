@@ -39,11 +39,17 @@
     <div class="p-2 pt-0 form_label" style="width: 100%;">
         {% for obj  in object_list %}
             <div class="card mb-2 mt-0 app_card" id="{{ obj.id }}_div">
-                <div class="card-header pl-2" style="background-color: lightsteelblue">
+                <div class="card-header pl-2" style="background-color: lightcyan">
                     <p class="float-left">
                         <i class='fa fa-user-circle' style="font-size: 16px"></i><a href="{% url 'connection_app:customer_profile' pk=obj.id %}"><b style="font-size: 14px"> {{ obj.name }}</b></a>
                     </p>
-                    <p class="float-right"><i class="fa fa-sharp fa-solid fa-phone"></i>
+                    <p class="float-right">
+
+                    </p>
+                    <p class="float-right">
+                        <i class='fa fa-truck' style="font-size: 16px"></i><b style="font-size: 14px"> {{ obj.distributor_name }}</b></a>
+                        <i class='fa fa-map-marker' style="font-size: 16px"></i><b style="font-size: 14px"> {{ obj.service_area }}</b>
+                        <i class="fa fa-sharp fa-solid fa-phone"></i>
                         <a href="tel:{{obj.mobile_number}}" data-turbolinks="false">
                             <span class="text-primary" style="font-weight: 600;"><b style="font-size: 14px"> {{ obj.mobile_number }}</b></span>
                         </a>
@@ -51,14 +57,6 @@
                 </div>
                 <div class="card-body pb-0 p-2 block">
                     <ul class="m-0 list-body">
-                        <li>
-                            <p class="float-left">
-                                <i class='fa fa-map-marker' style="font-size: 16px"></i><b style="font-size: 14px"> {{ obj.service_area }}</b></a>
-                            </p>
-                            <p class="float-right">
-                                <i class='fa fa-truck' style="font-size: 16px"></i><b style="font-size: 14px"> {{ obj.distributor_name }}</b></a>
-                            </p>
-                        </li>
                         <li>
                             <p class="float-left"><i class="fa fa-sharp fa-solid fa-folder-open-o"></i>
                                 <span style="font-weight: 600;">Last Order: {{ obj.get_last_sales_order.order_date }}</span>

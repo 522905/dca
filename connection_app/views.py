@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import F, ExpressionWrapper, fields
 from django.http import Http404, HttpResponseRedirect, HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views import View
@@ -1058,6 +1058,44 @@ class CustomerProfileListView(ListView):
 
 		return super().dispatch(request, *args, **kwargs)
 
+	# def get_queryset(self):
+	# 	current_user = get_current_user()
+	# 	user_profile = UserProfile.objects.get(user=current_user)
+	#
+	# 	self.service_area_list = user_profile.sdms_service_areas.values_list('area_name', flat=True)
+	# 	self.distributor_list = user_profile.sdmsuser_set.values_list('distributor__code', flat=True)
+	#
+	# 	if self.request.method == 'GET':
+	# 		self.service_area_list = self.request.GET.getlist('sdms_service_area') if self.request.GET.getlist(
+	# 			'sdms_service_area') else self.service_area_list
+	# 		self.distributor_list = self.request.GET.getlist('distributor') if self.request.GET.getlist(
+	# 			'distributor') else self.distributor_list
+	#
+	# 	# Filter CustomerProfile based on the distributor and service area lists
+	# 	queryset = CustomerProfile.objects.filter(
+	# 		distributor_code__in=self.distributor_list,
+	# 		service_area__in=self.service_area_list,
+	# 	)
+	#
+	# 	# Get the current date
+	# 	current_date = datetime.datetime.now().date()
+	#
+	# 	# Annotate with the number of days since the last order
+	# 	queryset = queryset.filter(
+	# 		salesorder__order_date__isnull=False,
+	# 		salesorder__order_status__in=[
+	# 			SalesOrderStatusEnum.INVOICED, SalesOrderStatusEnum.INVOICING_IN_PROGRESS
+	# 		]
+	# 	).annotate(last_order_date=F('salesorder__order_date')).annotate(
+	# 		days_since_last_order=ExpressionWrapper(
+	# 			current_date - F('last_order_date'),
+	# 			output_field=fields.DurationField()
+	# 		)
+	# 	).order_by('salesorder__order_date')
+	# 	# Limit to the first 10 records
+	# 	queryset = queryset[:10]
+	#
+	# 	return queryset
 	def get_queryset(self):
 		current_user = get_current_user()
 		user_profile = UserProfile.objects.get(user=current_user)
@@ -1080,7 +1118,10 @@ class CustomerProfileListView(ListView):
 		# Get the current date
 		current_date = datetime.datetime.now().date()
 
-		# Annotate with the number of days since the last order
+		# Filter to get records where the last order date is 30 days or more before the current date
+		thirty_days_ago = current_date - datetime.timedelta(days=30)
+
+		# Annotate with the number of days since the last order and filter by last order date
 		queryset = queryset.filter(
 			salesorder__order_date__isnull=False,
 			salesorder__order_status__in=[
@@ -1091,7 +1132,10 @@ class CustomerProfileListView(ListView):
 				current_date - F('last_order_date'),
 				output_field=fields.DurationField()
 			)
+		).filter(
+			last_order_date__lte=thirty_days_ago  # Filter for orders older than 30 days
 		).order_by('salesorder__order_date')
+
 		# Limit to the first 10 records
 		queryset = queryset[:10]
 
