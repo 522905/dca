@@ -489,7 +489,7 @@ class PreviewPreInspectionForm(forms.Form):
 		widget=forms.TextInput(attrs={'readonly': 1}), max_length=32, label='Longitude', required=True
 	)
 	accuracy = forms.CharField(
-		widget=forms.TextInput(attrs={'readonly': 1}), max_length=24, label='Accuracy', required=True
+		widget=forms.TextInput(attrs={'readonly': 1}), max_length=24, label='Accuracy', required=False
 	)
 	main_gate = forms.CharField(
 		widget=forms.HiddenInput, label='Main Gate Photo', required=True
@@ -508,7 +508,7 @@ class PreviewPreInspectionForm(forms.Form):
 	def save(self):
 		data = self.cleaned_data
 		obj = self.pre_inspection
-
+		print(f"the object we get for {data} and the pre inspection user {obj}")
 		obj.latitude = data['latitude']
 		obj.longitude = data['longitude']
 		obj.accuracy = data['accuracy']
