@@ -1690,10 +1690,13 @@ def application_needs_to_be_audited_by_id(obj):
 
 def ujjwala_application_reject_reason_log(application_id):
 	from django_fsm_log.models import StateLog
+	from ujjwala.models import UjjwalaV2Application
+	ujjwala_app_content_type = ContentType.objects.get(model=UjjwalaV2Application.__name__.lower())
 
 	description = StateLog.objects.filter(
-		transition='application_rejected', object_id=application_id
-	).first()
+		object_id=application_id, content_type=ujjwala_app_content_type,
+		state__icontains='reject'
+	).order_by('-id').first()
 
 	if description:
 		return description.description

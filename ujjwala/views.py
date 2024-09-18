@@ -175,95 +175,205 @@ class WhatsappPreInspectionTypeSelf(View):
 
 # pre Inspection through whatapp and dialogflow
 def WhatsappPreInspection(Inspection_data, unique_id, intent):
-    conn = django_rq.get_connection("default")
-    if not unique_id:
-        return
-    # Fetch the application using the unique ID
-    application = UjjwalaV2Application.objects.filter(contact_mobile=unique_id).first()
-    if not application:
-        return f"इस फोन नंबर {unique_id} के साथ कोई आवेदन मौजूद नहीं है।"
+	conn = django_rq.get_connection("default")
+	if not unique_id:
+		return
+	# Fetch the application using the unique ID
+	application = UjjwalaV2Application.objects.filter(contact_mobile=unique_id).first()
+	if not application:
+		return f"इस फोन नंबर {unique_id} के साथ कोई आवेदन मौजूद नहीं है।"
 
-    # Check if pre-inspection is applicable
-    if not is_pre_inspection_applicable(application.id):
-        return "आप प्री-निरीक्षण के लिए पात्र नहीं हैं। कृपया अपने आवेदन की स्थिति जांचें।"
+	# Check if pre-inspection is applicable
+	if not is_pre_inspection_applicable(application.id):
+		return "आप प्री-निरीक्षण के लिए पात्र नहीं हैं। कृपया अपने आवेदन की स्थिति जांचें।"
 
-    # Fetch the PreInspection object
-    pi_obj = PreInspection.objects.filter(parent_id=application.id).first()
+	# Fetch the PreInspection object
+	pi_obj = PreInspection.objects.filter(parent_id=application.id).first()
 
-    # Handle kitchen-photo intent
-    if intent == "kitchen-photo":
-        link = conn.get(Inspection_data)
-        if not link:
-            return "Kitchen photo link not found in Inspection data."
+	# Handle kitchen-photo intent
+	if intent == "kitchen-photo":
+		link = conn.get(Inspection_data)
+		if not link:
+			return "Kitchen photo link not found in Inspection data."
 
-        # Process and save the kitchen photo form
-        form = KitchenPreInspectionForm(data={'pre_inspection': pi_obj, 'kitchen_photo': link})
-        if form.is_valid():
-            form.save()
-            return "आपकी रसोई की फोटो अपडेट हो गई है, कृपया पता अपडेट के लिए नीचे दिया गया फॉर्म भरें।"
-        else:
-            return "रसोई की फोटो अपडेट करने में विफल।"
-    # Handle address details
-    if intent == "address_details":
-        form = ChangeAddressForm(pre_inspection=pi_obj, data=Inspection_data)
-        if form.is_valid():
-            form.save()
-            return "आपके पते का विवरण अपडेट हो गया है।"
-        else:
-            return "पते का विवरण अपडेट करने में विफल।"
-    # Handle pin-location or main-gate intent
-    if intent in ["pin-location", "main-gate"]:
-        link = conn.get(Inspection_data)
-        longitude = latitude = None
+		# Process and save the kitchen photo form
+		form = KitchenPreInspectionForm(data={'pre_inspection': pi_obj, 'kitchen_photo': link})
+		if form.is_valid():
+			form.save()
+			return "आपकी रसोई की फोटो अपडेट हो गई है, कृपया पता अपडेट के लिए नीचे दिया गया फॉर्म भरें।"
+		else:
+			return "रसोई की फोटो अपडेट करने में विफल।"
+	# Handle address details
+	if intent == "address_details":
+		form = ChangeAddressForm(pre_inspection=pi_obj, data=Inspection_data)
+		if form.is_valid():
+			form.save()
+			return "आपके पते का विवरण अपडेट हो गया है।"
+		else:
+			return "पते का विवरण अपडेट करने में विफल।"
+	# Handle pin-location or main-gate intent
+	if intent in ["pin-location", "main-gate"]:
+		link = conn.get(Inspection_data)
+		longitude = latitude = None
 
-        if not link:
-            try:
-                location_data = json.loads(Inspection_data)
-                latitude = location_data.get('latitude')
-                longitude = location_data.get('longitude')
-            except (json.JSONDecodeError, TypeError, KeyError) as e:
-                return "Invalid location data."
+		if not link:
+			try:
+				location_data = json.loads(Inspection_data)
+				latitude = location_data.get('latitude')
+				longitude = location_data.get('longitude')
+			except (json.JSONDecodeError, TypeError, KeyError) as e:
+				return "Invalid location data."
 
-        # Process and save the preview inspection form
-        form = PreviewPreInspectionForm(data={
-            'pre_inspection': pi_obj,
-            'main_gate': link,
-            'longitude': longitude,
-            'latitude': latitude
-        })
-        if form.is_valid():
-            form.save()
-            if not link:
-                return "आपकी पिन लोकेशन का डेटा अपडेट हो गया है, अब कृपया Verification के लिए अपनी रसोई वाली  फोटो साझा करें।"
-            return "आपके मुख्य द्वार की फोटो अपडेट हो गई है, अब कृपया ऊपर दिए गए वीडियो को देखकर अपनी पिन लोकेशन साझा करें।"
-        else:
-            return "लोकेशन या फोटो अपडेट करने में विफल।"
+		# Process and save the preview inspection form
+		form = PreviewPreInspectionForm(data={
+			'pre_inspection': pi_obj,
+			'main_gate': link,
+			'longitude': longitude,
+			'latitude': latitude
+		})
+		if form.is_valid():
+			form.save()
+			if not link:
+				return "आपकी पिन लोकेशन का डेटा अपडेट हो गया है, अब कृपया Verification के लिए अपनी रसोई वाली  फोटो साझा करें।"
+			return "आपके मुख्य द्वार की फोटो अपडेट हो गई है, अब कृपया ऊपर दिए गए वीडियो को देखकर अपनी पिन लोकेशन साझा करें।"
+		else:
+			return "लोकेशन या फोटो अपडेट करने में विफल।"
 
-    return "Invalid intent provided."
+	return "Invalid intent provided."
 
 
+# def WhatsappPreInspection(Inspection_data, unique_id, intent):
+#      conn = django_rq.get_connection("default")
+#     if not unique_id and Inspection_data is None:
+#         return
+#     # Fetch the application using the unique ID
+#     application = UjjwalaV2Application.objects.filter(contact_mobile=unique_id).first()
+#     if not application:
+#         return f"इस फोन नंबर {unique_id} के साथ कोई आवेदन मौजूद नहीं है।"
+#
+#     # Check if pre-inspection is applicable
+#     if not is_pre_inspection_applicable(application.id):
+#         return "आप प्री-निरीक्षण के लिए पात्र नहीं हैं। कृपया अपने आवेदन की स्थिति जांचें।"
+#
+#     # Fetch the PreInspection object
+#     pi_obj = PreInspection.objects.filter(parent_id=application.id).first()
+#
+#     # Handle kitchen-photo intent
+#     if intent == "kitchen-photo":
+#         link = conn.get(Inspection_data)
+#         if not link:
+#             return "Kitchen photo link not found in Inspection data."
+#
+#         # Process and save the kitchen photo form
+#         form = KitchenPreInspectionForm( pre_inspection= pi_obj ,data={'kitchen_photo': link})
+#         if form.is_valid():
+#             form.save()
+#             return "आपकी रसोई की फोटो अपडेट हो गई है, कृपया पता अपडेट के लिए नीचे दिया गया फॉर्म भरें।"
+#         else:
+#             return "रसोई की फोटो अपडेट करने में विफल।"
+#     # Handle address details
+#     if intent == "address_details":
+#         form = ChangeAddressForm(pre_inspection=pi_obj, data=Inspection_data)
+#         if form.is_valid():
+#             form.save()
+#             return "आपके पते का विवरण अपडेट हो गया है।"
+#         else:
+#             return "पते का विवरण अपडेट करने में विफल।"
+#     # Handle pin-location or main-gate intent
+#     if intent in ["pin-location", "main-gate"]:
+#         link = conn.get(Inspection_data)
+#         longitude = latitude = None
+#
+#         if not link:
+#             try:
+#                 location_data = json.loads(Inspection_data)
+#                 latitude = location_data.get('latitude')
+#                 longitude = location_data.get('longitude')
+#             except (json.JSONDecodeError, TypeError, KeyError) as e:
+#                 return "Invalid location data."
+#
+#         # Process and save the preview inspection form
+#         form = PreviewPreInspectionForm(pre_inspection=pi_obj  ,data={
+#             'pre_inspection': pi_obj,
+#             'main_gate': link,
+#             'longitude': longitude,
+#             'latitude': latitude
+#         })
+#         if form.is_valid():
+#             form.save()
+#             if not link:
+#                 return "आपकी पिन लोकेशन का डेटा अपडेट हो गया है, अब कृपया Verification के लिए अपनी रसोई वाली  फोटो साझा करें।"
+#             return "आपके मुख्य द्वार की फोटो अपडेट हो गई है, अब कृपया ऊपर दिए गए वीडियो को देखकर अपनी पिन लोकेशन साझा करें।"
+#         else:
+#             print(form.errors)
+#             return "लोकेशन या फोटो अपडेट करने में विफल।"
+#
+#     return "Invalid intent provided."
 
-def check_ujwaala_status(contact_mobile):
+
+def check_ujjwala_status(contact_mobile):
 	if not contact_mobile:
 		return JsonResponse({"error": "Phone number is required."}, status=400)
 
-	qs = UjjwalaV2Application.objects.all()
-
 	# Retrieve the application based on the provided contact mobile number
-	application = qs.filter(Q(contact_mobile=contact_mobile) | Q(sdms_mobile_number=contact_mobile)).first()
+	application = UjjwalaV2Application.objects.filter(
+		Q(contact_mobile=contact_mobile) | Q(sdms_mobile_number=contact_mobile)
+	).first()
+	print(f"the object application is {application}")
+	if not application:
+		return 'No application found for the provided phone number'
 
-	if application:
+	# Fetch the rejection reason if applicable
+	if 'reject' in application.status.lower():
 		reject_reason = ujjwala_application_reject_reason_log(application.id)
-		status = {
-			"application_id": application.id,
-			"status": application.status,
-			"rejected_reason": reject_reason
-		}
-		reply = status
-	else:
-		reply = 'No application found for the provided phone number'
+		if reject_reason is not None:
+			return f"Application rejected: {reject_reason}"
 
-	return reply
+	# Check for PreInspection object
+	pi_obj = PreInspection.objects.filter(parent_id=application.id).first()
+	from ujjwala.enums import PreInspectionRejectionReasonsEnum
+	# check for rejected status of pi
+	if pi_obj.status == "REJECTED":
+		inspection_app_content_type = ContentType.objects.get(model=PreInspection.__name__.lower() ,app_label= "ujjwala" )
+
+		description = StateLog.objects.filter(
+			object_id=pi_obj.id, content_type=inspection_app_content_type,
+			state__icontains='reject'
+		).order_by('-id').first()
+		if description:
+			json_text = json.loads(description.description).get("reason")[0]
+			print(json_text[0] ,json_text )
+
+			status_dict = dict(PreInspectionRejectionReasonsEnum.choices)
+			print(f"the dict value we get {status_dict.get(json_text, 'not able to access')} and {status_dict}")
+		return f"your application has been rejected due to { status_dict.get(json_text) or 'wrong details'}"
+
+	# Handle different statuses for PreInspection
+	if pi_obj.status in ["ALLOCATED", "OTP_VERIFIED", "CHANGE_ADDRESS", "KITCHEN_PHOTO", "PREVIEW_INSPECTION"]:
+		return "Your pre-suraksha is incomplete. Please visit this link and complete it."
+
+	if pi_obj.status == "SUBMITTED":
+		return "Your pre-suraksha is under verification."
+
+	# Fetch ConnectionDisbursement object
+	connection = ConnectionDisbursement.objects.filter(parent=application.id).first()
+	if connection is None:
+		return 'No connection disbursement data found'
+
+	if pi_obj.status == "ACCEPTED" and connection.status == "LEGAL_DOCUMENTS_PENDING":
+		return "Please upload the signed ABC form to this link to complete your pre-suraksha."
+
+	if connection.status == "LEGAL_DOCUMENTS_ACCEPTED" and not application.ekyc_cleared:
+		return "Please visit Arun Gas with the ABC form and complete your eKYC verification."
+
+	# # Handle application-level statuses
+	# if application.status == "OMC_REJECTED":
+	#     return "Your family member has a linked connection with another distributor. Please resolve this issue first."
+
+	if application.status == "READY_FOR_DISBURSEMENT":
+		return "You can call us to know when to come for receiving your connection cylinder."
+
+	return "Status not recognized. Please contact support for further assistance."
 
 
 # This View Shares Web Form Link To The Given Contact Number
