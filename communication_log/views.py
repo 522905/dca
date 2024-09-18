@@ -3,9 +3,8 @@ import logging
 import re, os
 import django_rq
 from communication_log.flow_Encryption import decrypt_request , encrypt_response
-from ujjwala.views import check_ujwaala_status
+from ujjwala.views import check_ujjwala_status ,  WhatsappPreInspection
 from communication_log.jobs import interakt_webhook_job_processing, infobip_webhook_job_processing , interakt_flow_template
-from ujjwala.views import  WhatsappPreInspection
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
@@ -136,7 +135,7 @@ def webhook(request):
 
             # Handle different intents
             if intent_name == 'ujjwala.status':
-                response_texts = check_ujwaala_status(session_id)
+                response_texts = check_ujjwala_status(session_id)
 
             elif intent_name == 'address.details-main-gate-pin-location':
                 response_texts = WhatsappPreInspection(Inspection_data=user_input, unique_id=session_id, intent="pin-location")

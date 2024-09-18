@@ -310,33 +310,75 @@ def WhatsappPreInspection(Inspection_data, unique_id, intent):
 #     return "Invalid intent provided."
 
 
-
-def check_ujwaala_status(contact_mobile):
+def check_ujjwala_status(contact_mobile):
     if not contact_mobile:
         return JsonResponse({"error": "Phone number is required."}, status=400)
 
-    qs = UjjwalaV2Application.objects.all()
-
     # Retrieve the application based on the provided contact mobile number
-    application = qs.filter(Q(contact_mobile=contact_mobile) | Q(sdms_mobile_number=contact_mobile)).first()
+    application = UjjwalaV2Application.objects.filter(
+        Q(contact_mobile=contact_mobile) | Q(sdms_mobile_number=contact_mobile)
+    ).first()
+    print(f"the object application is {application}")
+    if not application:
+        return 'No application found for the provided phone number'
 
-    if application:
+    # Fetch the rejection reason if applicable
+    if 'reject' in application.status.lower():
         reject_reason = ujjwala_application_reject_reason_log(application.id)
-        status = {
-            "application_id": application.id,
-            "status": application.status,
-            "rejected_reason": reject_reason
-        }
-        reply = status
-    else:
-        reply = 'No application found for the provided phone number'
+        if reject_reason is not None:
+            return f"Application rejected: {reject_reason}"
 
-    return reply
+    # Check for PreInspection object
+    pi_obj = PreInspection.objects.filter(parent_id=application.id).first()
+    from ujjwala.enums import PreInspectionRejectionReasonsEnum
+    # check for rejected status of pi
+    if pi_obj.status == "REJECTED":
+        inspection_app_content_type = ContentType.objects.get(model=PreInspection.__name__.lower() ,app_label= "ujjwala" )
+
+        description = StateLog.objects.filter(
+            object_id=pi_obj.id, content_type=inspection_app_content_type,
+            state__icontains='reject'
+        ).order_by('-id').first()
+        if description:
+            json_text = json.loads(description.description).get("reason")[0]
+            print(json_text[0] ,json_text )
+
+            status_dict = dict(PreInspectionRejectionReasonsEnum.choices)
+            print(f"the dict value we get {status_dict.get(json_text, 'not able to access')} and {status_dict}")
+        return f"your application has been rejected due to { status_dict.get(json_text) or 'wrong details'}"
+
+    # Handle different statuses for PreInspection
+    if pi_obj.status in ["ALLOCATED", "OTP_VERIFIED", "CHANGE_ADDRESS", "KITCHEN_PHOTO", "PREVIEW_INSPECTION"]:
+        return "Your pre-suraksha is incomplete. Please visit this link and complete it."
+
+    if pi_obj.status == "SUBMITTED":
+        return "Your pre-suraksha is under verification."
+
+    # Fetch ConnectionDisbursement object
+    connection = ConnectionDisbursement.objects.filter(parent=application.id).first()
+    if connection is None:
+        return 'No connection disbursement data found'
+
+    if pi_obj.status == "ACCEPTED" and connection.status == "LEGAL_DOCUMENTS_PENDING":
+        return "Please upload the signed ABC form to this link to complete your pre-suraksha."
+
+    if connection.status == "LEGAL_DOCUMENTS_ACCEPTED" and not application.ekyc_cleared:
+        return "Please visit Arun Gas with the ABC form and complete your eKYC verification."
+
+    # # Handle application-level statuses
+    # if application.status == "OMC_REJECTED":
+    #     return "Your family member has a linked connection with another distributor. Please resolve this issue first."
+
+    if application.status == "READY_FOR_DISBURSEMENT":
+        return "You can call us to know when to come for receiving your connection cylinder."
+
+    return "Status not recognized. Please contact support for further assistance."
+
 
 
 
 # This View Shares Web Form Link To The Given Contact Number
-@method_decorator(login_required, 'dispatch')
+method_decorator(login_required, 'dispatch')
 class ShareWebFormLink(TemplateView):
     template_name = "ujjwala/share_web_form_link.html"
 

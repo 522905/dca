@@ -508,7 +508,7 @@ class PreviewPreInspectionForm(forms.Form):
 	def save(self):
 		data = self.cleaned_data
 		obj = self.pre_inspection
-
+		print(f"the object we get for {data} and the pre inspection user {obj}")
 		obj.latitude = data['latitude']
 		obj.longitude = data['longitude']
 		obj.accuracy = data['accuracy']
