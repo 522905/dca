@@ -205,9 +205,10 @@ class IoclOmcDedup:
 			epoch_time = int(datetime.datetime.now(pytz.timezone('Asia/Kolkata')).timestamp() * 1000)
 			captcha_resp = self.session.get(f'https://spandan.indianoil.co.in/ePIC/CaptchImage?time={epoch_time}')
 			captcha_file = io.BytesIO(captcha_resp.content)
-			captcha = captcha_client.decode(captcha_file)
-			omcdedup.captcha_text = captcha['text']
-			omcdedup.save()
+			raise Exception("Captcha Service Disabled")
+			# captcha = captcha_client.decode(captcha_file)
+			# omcdedup.captcha_text = captcha['text']
+			# omcdedup.save()
 		return omcdedup.captcha_text
 
 	def mark_captcha_incorrect(self):
