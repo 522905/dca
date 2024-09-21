@@ -265,7 +265,7 @@
         .use(Uppy.Tus, {
             endpoint: 'https://tus.dca.arungas.com/files/',
         })
-        formEPage1PhotoUppy.on('complete', result => {
+        formEPage2PhotoUppy.on('complete', result => {
             $('#id_form_e_page_2_photo').val(result.successful[0].uploadURL);
         })
     </script>
