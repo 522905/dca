@@ -333,15 +333,18 @@ def check_ujjwala_status(contact_mobile):
     from ujjwala.enums import PreInspectionRejectionReasonsEnum
     # check for rejected status of pi
     if pi_obj.status == "REJECTED":
-        inspection_app_content_type = ContentType.objects.get(model=PreInspection.__name__.lower() ,app_label= "ujjwala" )
+        inspection_app_content_type = ContentType.objects.get(model=PreInspection.__name__.lower(), app_label="ujjwala")
 
         description = StateLog.objects.filter(
             object_id=pi_obj.id, content_type=inspection_app_content_type,
             state__icontains='reject'
         ).order_by('-id').first()
         if description:
-            json_text = json.loads(description.description).get("reason")[0]
-            print(json_text[0] ,json_text )
+            try:
+                json_text = json.loads(description.description).get("reason")[0]
+            except:
+                return description.description
+            print(json_text[0], json_text)
 
             status_dict = dict(PreInspectionRejectionReasonsEnum.choices)
             print(f"the dict value we get {status_dict.get(json_text, 'not able to access')} and {status_dict}")
@@ -349,10 +352,10 @@ def check_ujjwala_status(contact_mobile):
 
     # Handle different statuses for PreInspection
     if pi_obj.status in ["ALLOCATED", "OTP_VERIFIED", "CHANGE_ADDRESS", "KITCHEN_PHOTO", "PREVIEW_INSPECTION"]:
-        return "Your pre-suraksha is incomplete. Please visit this link and complete it."
+        return "आपकी pre सुरक्षा अधूरी है. कृपया इस लिंक पर जाएँ और इसे पूरा करें।"
 
     if pi_obj.status == "SUBMITTED":
-        return "Your pre-suraksha is under verification."
+        return "आपकी प्री-सुरक्षा का सत्यापन चल रहा है।"
 
     # Fetch ConnectionDisbursement object
     connection = ConnectionDisbursement.objects.filter(parent=application.id).first()
@@ -360,21 +363,22 @@ def check_ujjwala_status(contact_mobile):
         return 'No connection disbursement data found'
 
     if pi_obj.status == "ACCEPTED" and connection.status == "LEGAL_DOCUMENTS_PENDING":
-        return "Please upload the signed ABC form to this link to complete your pre-suraksha."
+        return "कृपया अपनी pre-सुरक्षा पूरी करने के लिए हस्ताक्षरित एबीसी फॉर्म इस लिंक पर अपलोड करें।"
 
     if connection.status == "LEGAL_DOCUMENTS_ACCEPTED" and not application.ekyc_cleared:
-        return "Please visit Arun Gas with the ABC form and complete your eKYC verification."
+        return "कृपया एबीसी फॉर्म के साथ अरुण गैस पर जाएँ और अपना ईकेवाईसी सत्यापन पूरा करें।"
 
     # # Handle application-level statuses
     # if application.status == "OMC_REJECTED":
     #     return "Your family member has a linked connection with another distributor. Please resolve this issue first."
 
     if application.status == "READY_FOR_DISBURSEMENT":
-        return "You can call us to know when to come for receiving your connection cylinder."
+        return "आप यह जानने के लिए हमें कॉल कर सकते हैं कि आपको अपना कनेक्शन सिलेंडर लेने के लिए कब आना है।"
 
-    return "Status not recognized. Please contact support for further assistance."
+    if application.status == "MATERIAL_DELIVERED":
+        return "आपका सिलेंडर डिलीवर हो गया है, किसी भी प्रश्न के लिए हेल्प लाइन नंबर पर कॉल करें।"
 
-
+    return "स्थिति पहचानी नहीं गई. कृपया अधिक सहायता के लिए समर्थन से संपर्क करें।"
 
 
 # This View Shares Web Form Link To The Given Contact Number

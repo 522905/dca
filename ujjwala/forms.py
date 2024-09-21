@@ -509,23 +509,25 @@ class PreviewPreInspectionForm(forms.Form):
 		data = self.cleaned_data
 		obj = self.pre_inspection
 		print(f"the object we get for {data} and the pre inspection user {obj}")
-		obj.latitude = data['latitude']
-		obj.longitude = data['longitude']
-		obj.accuracy = data['accuracy']
+		if data["longitude"] != "does not exist":
+			obj.latitude = data['latitude']
+			obj.longitude = data['longitude']
+			obj.accuracy = data['accuracy']
 
-		if obj.type == PreInspectionTypeEnum.SELF:
-			obj.transition_pre_inspection_submit(
-				link=data['main_gate'],
-				description="Self Inspection: Latitude: {}, Longitude: {}, Accuracy: {}".format(
-					data['latitude'], data['longitude'], data['accuracy'])
-			)
-		else:
-			obj.transition_pre_inspection_submit(
-				link=data['main_gate'],
-				by=get_current_user(),
-				description="Latitude: {}, Longitude: {}, Accuracy: {}".format(
-					data['latitude'], data['longitude'], data['accuracy'])
-			)
+		if data["main_gate"] != "does not exist":
+			if obj.type == PreInspectionTypeEnum.SELF:
+				obj.transition_pre_inspection_submit(
+					link=data['main_gate'],
+					description="Self Inspection: Latitude: {}, Longitude: {}, Accuracy: {}".format(
+						data['latitude'], data['longitude'], data['accuracy'])
+				)
+			else:
+				obj.transition_pre_inspection_submit(
+					link=data['main_gate'],
+					by=get_current_user(),
+					description="Latitude: {}, Longitude: {}, Accuracy: {}".format(
+						data['latitude'], data['longitude'], data['accuracy'])
+				)
 		obj.save()
 
 	def get_form_initial(self, step):
