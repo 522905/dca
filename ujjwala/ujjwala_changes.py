@@ -113,8 +113,7 @@ def WhatsappPreInspection(Inspection_data, unique_id, intent):
         conn.set(unique_id, json.dumps(dataSet))
         # Trigger the submission method if 'complete' is True
         if dataSet["complete"]:
-            Follow_Set_Submission(conn, unique_id)
-        return "आपके पते का विवरण अपडेट हो गया है।"
+            return Follow_Set_Submission(conn, unique_id)
 
     return "Invalid intent provided."
 
