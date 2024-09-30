@@ -1,3 +1,5 @@
+import logging
+
 import django_filters
 import django_rq
 from django.contrib import messages
@@ -26,25 +28,33 @@ from connection_app.models import ConnectionApplication, PostInspection, Custome
 from reference_data.models import ServiceType, Distributor
 from teams.models import SDMSUser, UserProfile, SDMSServiceArea
 from connection_app.filters import SalesOrderFilterSet
+from connection_app.jobs import dialogflow_chat_assignment
 
+logger = logging.getLogger(__name__)
 
-def My_clinder_status(unique_id):
+def My_clinder_status(unique_id,phone_number):
 	from ujjwala.models import FamilyMembers
 	# Validate the input
 	if not unique_id or len(unique_id) not in [10,12]:
 		return "कृपया एक मान्य मोबाइल या उपभोक्ता नंबर दर्ज करें।"
 
-	if len(unique_id) == 12:
-		family_member = FamilyMembers.objects.filter(uid_no=unique_id).first()
-		if not family_member:
-			return "we are unable to check your order status , please call on: +91 161 520 1005"
-		# TODO
-		application = CustomerProfile.objects.filter(mobile_number=family_member.parent.sdms_mobile_number).first()
-
 	if len(unique_id) == 10:
 		# Try to find the customer profile based on mobile number or consumer number
 		application = CustomerProfile.objects.filter(mobile_number=unique_id).first() or \
 					  CustomerProfile.objects.filter(consumer_no=unique_id).first()
+
+	if len(unique_id) == 12:
+		family_member = FamilyMembers.objects.filter(uid_no=unique_id).first()
+		if not family_member:
+			try:
+				dialogflow_chat_assignment(phone_number)
+				return "हम आपके कनेक्शन का विवरण ढूंढने में असमर्थ हैं, इसलिए हम आपको व्हाट्सएप पर हमारे ग्राहक सेवा से जोड़ रहे हैं"
+			except Exception as e:
+				logger.error(f"the issue in chat assignment {str(e)}")
+				return "आपकी ऑर्डर जानकारी उपलब्ध नहीं है, कृपया अपनी ऑर्डर स्थिति की जांच करें। +91 161 520 1005"
+
+		# TODO
+		application = CustomerProfile.objects.filter(mobile_number=family_member.parent.sdms_mobile_number).first()
 
 	if not application:
 		return "हमें इस मोबाइल और उपभोक्ता नंबर के साथ कोई एप्लिकेशन नहीं मिला, कृपया अपना आधार कार्ड नंबर साझा करें।"

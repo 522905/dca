@@ -1,5 +1,23 @@
 from ujjwala.camunda_functions import start_process_in_camunda_v2
+import logging , track
+from django.conf import settings
+logger = logging.getLogger(__name__)
 
+
+def dialogflow_chat_assignment(session_id):
+	body_text = {
+		"user_phone_number": f"91{session_id}",
+		"agent_email": "guriarora8140@gmail.com",
+		"wc_id": " ",
+	}
+
+	track.client.post(
+		api_key=settings.INTERAKT_API_KEY,
+		path="/v1/public/message/",
+		body=body_text
+	).json()
+
+	logger.info(f'Assign the chat to gurpreet : for user  {session_id}')
 
 def start_sales_order_portability_process(sales_order_portability_id):
 	from connection_app.models import SalesOrderPortability

@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 import arrow
 import django_rq
@@ -10,7 +11,7 @@ from teams.models import SDMSServiceArea
 from ujjwala.camunda_functions import start_process_in_camunda_v2, is_process_exist_in_camunda
 from ujjwala.ujjwala_functions import evaluate_change_cylinder_type_requests
 
-
+logger = logging.getLogger(__name__)
 def get_customer_profile(consumer_id, name, address, distributor_code):
 	from connection_app.models import CustomerProfile
 
@@ -59,6 +60,21 @@ def start_process_fetch_sales_order_details_from_sdms(so_id, distributor_code):
 			so_obj.camunda_process_instance_id = pid
 			so_obj.save()
 		print(res)
+
+
+def start_process_fetch_subsidy_status_of_customer_from_sdms(phone_number):
+	from connection_app.models import ConnectionApplication
+	from connection_app.jobs import dialogflow_chat_assignment
+
+	# application = ConnectionApplication.objects.filter(mobile=phone_number).first()
+	try:
+		dialogflow_chat_assignment(phone_number)
+		return "हम आपके कनेक्शन का विवरण ढूंढने में असमर्थ हैं, इसलिए हम आपको व्हाट्सएप पर हमारे ग्राहक सेवा से जोड़ रहे हैं"
+	except Exception as e:
+		logger.error(f"the issue in chat assignment {str(e)}")
+		return "आपकी ऑर्डर जानकारी उपलब्ध नहीं है, कृपया अपनी ऑर्डर स्थिति की जांच करें। +91 161 520 1005"
+
+	# TODO
 
 
 def create_sales_order(so, distributor_code):
