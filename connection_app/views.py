@@ -29,7 +29,8 @@ from reference_data.models import ServiceType, Distributor
 from teams.models import SDMSUser, UserProfile, SDMSServiceArea
 from connection_app.filters import SalesOrderFilterSet
 from connection_app.jobs import dialogflow_chat_assignment
-
+from datetime import datetime, timedelta
+from django.utils import timezone
 logger = logging.getLogger(__name__)
 
 def My_clinder_status(unique_id,phone_number):
@@ -1063,76 +1064,107 @@ class SalesOrderPortabilityListView(ListView):
 
 		return context
 
-
 @method_decorator(login_required, 'dispatch')
 class CustomerProfileListView(ListView):
-	model = CustomerProfile
-	template_name = 'connection_app/customer-profile/customer_profile_listview.html'
+    model = CustomerProfile
+    template_name = 'connection_app/customer-profile/customer_profile_listview.html'
 
-	paginate_by = 20
-	permission = 'has_view_permission'
+    paginate_by = 20
+    permission = 'has_view_permission'
 
-	def __init__(self, **kwargs):
-		super().__init__(**kwargs)
-		self.service_area_list = []
-		self.distributor_list = []
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.service_area_list = []
+        self.distributor_list = []
+        self.inactive_customer_list = []
 
-	def dispatch(self, request, *args, **kwargs):
-		current_user = get_current_user()
-		user_profile = UserProfile.objects.get(user=current_user)
+    def dispatch(self, request, *args, **kwargs):
+        current_user = get_current_user()
+        user_profile = UserProfile.objects.get(user=current_user)
 
-		if not user_profile:
-			return
+        if not user_profile:
+            return
 
-		return super().dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
-	def get_queryset(self):
-		current_user = get_current_user()
-		user_profile = UserProfile.objects.get(user=current_user)
+    def get_queryset(self):
+        current_user = get_current_user()
+        user_profile = UserProfile.objects.get(user=current_user)
+        days = self.request.GET.get('days', "30")
+        now = timezone.now()
+        days_ago = now - timedelta(days=int(days) if days else 30)
 
-		self.service_area_list = user_profile.sdms_service_areas.values_list('area_name', flat=True)
-		self.distributor_list = user_profile.sdmsuser_set.values_list('distributor__code', flat=True)
+        self.service_area_list = user_profile.sdms_service_areas.values_list('area_name', flat=True)
+        self.distributor_list = user_profile.sdmsuser_set.values_list('distributor__code', flat=True)
 
-		if self.request.method == 'GET':
-			self.service_area_list = self.request.GET.getlist('sdms_service_area') if self.request.GET.getlist(
-				'sdms_service_area') else self.service_area_list
-			self.distributor_list = self.request.GET.getlist('distributor') if self.request.GET.getlist(
-				'distributor') else self.distributor_list
+        # Apply filters from the request (GET method)
+        if self.request.method == 'GET':
+            self.service_area_list = self.request.GET.getlist('sdms_service_area') or self.service_area_list
+            self.distributor_list = self.request.GET.getlist('distributor') or self.distributor_list
 
-		return CustomerProfile.objects.filter(
-			distributor_code__in=self.distributor_list,
-			service_area__in=self.service_area_list
-		)
+        # Get recent sales orders (placed in the last X days)
+        recent_sales_orders = SalesOrder.objects.filter(order_date__gte=days_ago).values("parent_id")
 
-	def get_context_data(self, *, object_list=None, **kwargs):
-		context = super().get_context_data(object_list=object_list, **kwargs)
-		initial_data = {
-			'sdms_service_area': self.request.GET.getlist('sdms_service_area')
-		}
-		context['filter_form'] = SDMSServiceAreaForm(
-			user_profile=UserProfile.objects.get(user=get_current_user()), data=initial_data
-		)
-		list_qs = self.get_queryset()
-		paginator = Paginator(list_qs, self.paginate_by)
+        # Filter active customers (placed orders in the last 30 days)
+        active_customers = CustomerProfile.objects.filter(
+            distributor_code__in=self.distributor_list,
+            service_area__in=self.service_area_list,
+            id__in=recent_sales_orders
+        ).distinct().order_by("id")
 
-		page = self.request.GET.get('page')
+        # Filter inactive customers (no orders in the last 30 days)
+        self.inactive_customer_list = CustomerProfile.objects.filter(
+            distributor_code__in=self.distributor_list,
+            service_area__in=self.service_area_list
+        ).exclude(
+            id__in=recent_sales_orders
+        ).order_by("id")
 
-		try:
-			list_qs = paginator.page(page)
-		except PageNotAnInteger:
-			list_qs = paginator.page(1)
-		except EmptyPage:
-			list_qs = paginator.page(paginator.num_pages)
-		context['list_qs'] = list_qs
+        return active_customers
 
-		# Preserve all query parameters
-		query_params = self.request.GET.copy()
-		if query_params.get('page'):
-			query_params.pop('page')
-		context['query_params'] = query_params.urlencode()
-		context['filters'] = {
-			"Distributor": "{}".format(", ".join(self.distributor_list)),
-			"Service Area": "{}".format(", ".join(self.service_area_list))
-		}
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        initial_data = {
+            'sdms_service_area': self.request.GET.getlist('sdms_service_area')
+        }
+        context['filter_form'] = SDMSServiceAreaForm(
+            user_profile=UserProfile.objects.get(user=get_current_user()), data=initial_data
+        )
 
-		return context
+        # Paginate active customers
+        active_customers = self.get_queryset()
+        active_paginator = Paginator(active_customers, self.paginate_by)
+        active_page = self.request.GET.get('page')
+        try:
+            active_customers = active_paginator.page(active_page)
+        except PageNotAnInteger:
+            active_customers = active_paginator.page(1)
+        except EmptyPage:
+            active_customers = active_paginator.page(active_paginator.num_pages)
+        context['list_qs'] = active_customers
+
+        # Paginate inactive customers
+        inactive_customers = self.inactive_customer_list
+        inactive_paginator = Paginator(inactive_customers, self.paginate_by)
+        inactive_page = self.request.GET.get('inactive_page')
+        try:
+            inactive_customers = inactive_paginator.page(inactive_page)
+        except PageNotAnInteger:
+            inactive_customers = inactive_paginator.page(1)
+        except EmptyPage:
+            inactive_customers = inactive_paginator.page(1)  # Redirect to first page on error
+        context['inactive_customer_list'] = inactive_customers
+
+        # Preserve all query parameters except page and inactive_page
+        query_params = self.request.GET.copy()
+        query_params.pop('page', None)
+        query_params.pop('inactive_page', None)
+        context['query_params'] = query_params.urlencode()
+
+        # Add additional filters info
+        context['filters'] = {
+            "Distributor": ", ".join(self.distributor_list),
+            "Service Area": ", ".join(self.service_area_list)
+        }
+
+        return context
