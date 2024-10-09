@@ -249,9 +249,14 @@ def process_update_sales_order_in_dca(sales_order_list, distributor_code):
 
 			if so_obj:
 				if so_obj.order_status != so['Order Status']:
-					start_process_fetch_sales_order_details_from_sdms(so_obj.id, distributor_code)
+					so_obj.order_status = so['Order Status']
+					so_obj.save()
 			else:
 				so_obj = create_sales_order(so, distributor_code)
+
+			if so_obj.order_status in [
+				SalesOrderStatusEnum.COMPLETED, SalesOrderStatusEnum.CANCELLED
+			] or so_obj.is_dirty:
 				start_process_fetch_sales_order_details_from_sdms(so_obj.id, distributor_code)
 		except Exception as e:
 			continue
@@ -385,6 +390,7 @@ def update_sales_order_details_in_dca(sales_order_id, sales_order_details, exist
 			so_obj.transition_sales_order_completed()
 		elif new_order_status == 'Invoiced':
 			so_obj.transition_sales_order_invoiced()
+		so_obj.last_synced_on = datetime.datetime.now()
 		so_obj.save()
 	return so_obj
 
