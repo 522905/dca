@@ -26,7 +26,7 @@ class Command(BaseCommand):
 			distributor_code = options.get('distributor_code')
 
 			less_than_date = datetime.datetime.strptime(from_date, '%d-%b-%Y').date()
-			for i, so in enumerate(SalesOrder.objects.filter(order_date__lt=less_than_date).exclude(
+			for i, so in enumerate(SalesOrder.objects.filter(order_date__lt=less_than_date, is_dirty=True).exclude(
 					order_status__in=[
 						SalesOrderStatusEnum.COMPLETED, SalesOrderStatusEnum.CANCELLED, SalesOrderStatusEnum.NOT_FOUND
 					]).order_by('id')):

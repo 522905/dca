@@ -390,6 +390,7 @@ def update_sales_order_details_in_dca(sales_order_id, sales_order_details, exist
 			so_obj.transition_sales_order_completed()
 		elif new_order_status == 'Invoiced':
 			so_obj.transition_sales_order_invoiced()
+		so_obj.is_dirty = False
 		so_obj.last_synced_on = datetime.datetime.now()
 		so_obj.save()
 	return so_obj
