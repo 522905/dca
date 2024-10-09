@@ -2,7 +2,7 @@ from django.db import models
 from django_comments.models import Comment
 from django_comments_xtd.models import XtdComment
 
-from reference_data.enums import TokenExcludeEnum, CommentTypeEnum
+from reference_data.enums import TokenExcludeEnum, CommentTypeEnum, ProductUnitEnum, SDMSServiceRequestEnum
 
 
 class TokensExcluded(models.Model):
@@ -26,12 +26,45 @@ class CommentX(XtdComment):
 	comment_type = models.CharField(max_length=52, choices=CommentTypeEnum.choices, default=CommentTypeEnum.OTHERS)
 
 
+class Form(models.Model):
+	created_on = models.DateTimeField(auto_now_add=True)
+	updated_on = models.DateTimeField(auto_now=True)
+	enabled = models.BooleanField(default=True)
+	name = models.CharField(max_length=128)
+	html_content = models.TextField()
+	variable_list = models.TextField(null=True, blank=True)
+
+
 class ServiceType(models.Model):
+	created_on = models.DateTimeField(auto_now_add=True)
+	updated_on = models.DateTimeField(auto_now=True)
+	enabled = models.BooleanField(default=True)
 	name = models.CharField(max_length=48)
 	description = models.CharField(max_length=128)
+	# Many-to-Many relationship with Form
+	forms = models.ManyToManyField(Form, related_name='service_types')
 
 	def __str__(self):
 		return self.name
+
+
+class Product(models.Model):
+	created_on = models.DateTimeField(auto_now_add=True)
+	updated_on = models.DateTimeField(auto_now=True)
+	enabled = models.BooleanField(default=True)
+	code = models.CharField(max_length=48)
+	name = models.CharField(max_length=128)
+	unit = models.CharField(max_length=52, choices=ProductUnitEnum.choices, default=ProductUnitEnum.NOS)
+	price = models.FloatField()
+	description = models.TextField(null=True, blank=True)
+
+
+class SDMSServiceRequest(models.Model):
+	created_on = models.DateTimeField(auto_now_add=True)
+	updated_on = models.DateTimeField(auto_now=True)
+	enabled = models.BooleanField(default=True)
+	type = models.CharField(max_length=52, choices=SDMSServiceRequestEnum.choices)
+	description = models.TextField(null=True, blank=True)
 
 
 class Distributor(models.Model):

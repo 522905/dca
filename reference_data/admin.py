@@ -4,7 +4,8 @@ from django.contrib import admin
 # -*- coding: utf-8 -*-
 from django.contrib import admin
 
-from .models import TokensExcluded, IFSCodeList, ServiceType, Distributor, HTMLTemplate, HTMLTemplateVariable
+from .models import TokensExcluded, IFSCodeList, ServiceType, Distributor, HTMLTemplate, HTMLTemplateVariable, Product, \
+    Form
 
 
 @admin.register(TokensExcluded)
@@ -31,9 +32,22 @@ class HTMLTemplateAdmin(admin.ModelAdmin):
     inlines = [HTMLTemplateVariableInlineAdmin,]
 
 
+@admin.register(Form)
+class FormAdmin(admin.ModelAdmin):
+    list_display = ('id', 'enabled', 'created_on', 'updated_on', 'name',)
+    search_fields = ('name',)
+
+
 @admin.register(ServiceType)
 class ServiceTypeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'description')
+    list_display = ('id', 'enabled', 'created_on', 'updated_on', 'name', 'description')
+    search_fields = ('name', 'description')
+    filter_horizontal = ['forms', ]
+
+
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ('id', 'enabled', 'created_on', 'updated_on', 'name', 'unit', 'price', 'description')
     search_fields = ('name', 'description')
 
 
@@ -41,5 +55,3 @@ class ServiceTypeAdmin(admin.ModelAdmin):
 class DistributorAdmin(admin.ModelAdmin):
     list_display = ('id', 'code', 'name')
     search_fields = ('code', 'name')
-
-
