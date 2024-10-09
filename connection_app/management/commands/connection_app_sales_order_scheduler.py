@@ -32,20 +32,9 @@ class Command(BaseCommand):
 										"sdms_task": {"value": sales_order_type, "type": "String"},
 										"distributor_code": {"value": distributor_code, "type": "String"}
 								}
-				}
+						}
 
 				res = start_process_in_camunda_v2('Process_domestic_app', variables=variables)
 				print(res)
 
-				for i, so in enumerate(SalesOrder.objects.exclude(
-						order_status__in=[
-							SalesOrderStatusEnum.COMPLETED, SalesOrderStatusEnum.CANCELLED, SalesOrderStatusEnum.NOT_FOUND
-						]).order_by('id')):
-					try:
-						exist = is_process_exist_in_camunda(
-							'process_fetch_sales_order_details_from_sdms', 'sales_order_id', so.id)
-						if not exist:
-							start_process_fetch_sales_order_details_from_sdms(so.id, so.parent.distributor.code)
-					except Exception as e:
-						print(e)
-						continue
+
