@@ -1,5 +1,7 @@
 import datetime
+from collections import defaultdict
 
+import pandas as pd
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.urls import reverse
@@ -178,32 +180,57 @@ class BookSalesOrderViewSet(viewsets.ViewSet):
     @action(methods=['get'], detail=False, url_path='get_book_sales_order_delivery_boy_login')
     def get_book_sales_order_delivery_boy_login(self, request, *args, **kwargs):
         from connection_app.models import BookSalesOrder
-        from teams.models import UserProfile
+        import requests
 
-        data = []
+        # Base URL of your Camunda instance
+        CAMUNDA_URL = "https://camunda.dca.arungas.com/engine-rest"
 
-        userprofile_set = BookSalesOrder.objects.all().values_list(
-            'customer_profile__sdms_service_area__userprofile').distinct()
+        # Define the process definition key to filter on
+        PROCESS_DEFINITION_KEY = "Process_book_sales_order"  # Replace with the actual key
 
-        distributor_set = BookSalesOrder.objects.all().values_list(
-            'customer_profile__distributor__code').distinct()
+        process_instances_url = f"{CAMUNDA_URL}/process-instance"
 
-        # data['distributor'] = [distributor[0] for distributor in distributor_set]
+        response = requests.post(
+            process_instances_url,
+            json={
+                    "variables": [
+                        {
+                            "name": "sdms_task",
+                            "operator": "eq",
+                            "value": "cancel_booked_sales_order"
+                        },
+                    ],
+                    "processDefinitionKey": PROCESS_DEFINITION_KEY
+                }
+            )
 
-        for distributor in distributor_set:
-            for userprofile in userprofile_set:
-                try:
-                    userprofile_obj = UserProfile.objects.get(id=userprofile[0])
-                    data.append({
-                        "delivery_boy_login": userprofile_obj.sdmsuser_set.filter(
-                            distributor__code=distributor[0]).first().delivery_boy_login,
-                        "delivery_boy_password": userprofile_obj.sdmsuser_set.filter(
-                            distributor__code=distributor[0]).first().delivery_boy_password,
-                        "distributor_code": distributor[0]
-                        }
-                    )
-                except Exception as e:
-                    print(e)
-                    continue
+        result = []
 
-        return JsonResponse(data, safe=False)
+        if response.status_code == 200:
+            pids = [i['id'] for i in response.json()]
+
+            variable_instance_url = f"{CAMUNDA_URL}/variable-instance"
+            response = requests.post(variable_instance_url, json={'processInstanceIdIn': pids})
+            # Group variables by processInstanceId
+            grouped_variables = defaultdict(list)
+
+            for variable in response.json():
+                instance_id = variable['processInstanceId']
+                grouped_variables[instance_id].append({'name': variable['name'], 'value': variable['value']})
+
+            # Output the grouped variables
+            for instance_id, variables in grouped_variables.items():
+                row = {'process_instance_id': instance_id}
+                for var in variables:
+                    row[var['name']] = var['value']
+                print(row)
+                result.append(row)
+
+        # Convert list of dictionaries to DataFrame
+        df = pd.DataFrame(result)
+
+        # Get distinct delivery boy logins
+        # unique_delivery_boy_logins = df['delivery_boy_login'].unique().tolist()
+        unique_delivery_boy_logins = df['order_status'].unique().tolist()
+
+        return JsonResponse({'delivery_boy_login': unique_delivery_boy_logins}, safe=False)

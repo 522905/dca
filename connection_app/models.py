@@ -1065,7 +1065,8 @@ class SalesOrder(models.Model):
 	extra_data = models.JSONField(null=True)
 	auto_generated = models.BooleanField(default=False)
 	hide_from_view = models.BooleanField(default=False)
-	to_be_read_from_sdms = models.BooleanField(null=True, blank=True)
+	is_dirty = models.BooleanField(null=True, blank=True)
+	last_synced_on = models.DateTimeField(null=True, blank=True)
 
 	class Meta:
 		constraints = [

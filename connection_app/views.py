@@ -21,7 +21,7 @@ from django.views.generic import DetailView, ListView, FormView, TemplateView
 from django_currentuser.middleware import get_current_user
 from django_filters.views import FilterView
 
-from connection_app.camunda_functions import start_process_return_auto_sales_order
+from connection_app.camunda_functions import start_process_return_sales_order
 from connection_app.enums import PostInspectionStatusEnum, InspectionTypeEnum, PostInspectionActivityTypeEnum, \
 	ConnectionApplicationDocumentsEnum, SalesOrderStatusEnum
 from connection_app.forms import UpdateAddressForm, PostInspectionStartForm, PreviewPostInspectionForm, \
@@ -33,7 +33,7 @@ from connection_app.jobs import start_sales_order_portability_process, schedule_
 from connection_app.models import ConnectionApplication, PostInspection, CustomerProfile, Lead, SalesOrder, \
 	SalesOrderPortability, ImportData
 from domestic_app import settings
-from reference_data.models import ServiceType, Distributor
+from reference_data.models import ServiceType, Distributor, Product, SDMSServiceRequest
 from teams.models import SDMSUser, UserProfile
 
 
@@ -551,6 +551,32 @@ class CustomerProfileSearchView(FormView):
 	template_name = "connection_app/customer_profile_search.html"
 	form_class = CustomerProfileSearchForm
 
+	def get(self, request, *args, **kwargs):
+		# Check if there are any GET parameters (e.g., consumer_id or mobile_number)
+		consumer_id = request.GET.get('consumer_id')
+		mobile_number = request.GET.get('mobile_number')
+
+		if consumer_id or mobile_number:
+			# If parameters exist, bypass form rendering and search directly
+			cp_obj = None
+			if consumer_id:
+				cp_obj = CustomerProfile.objects.filter(consumer_id=consumer_id).first()
+			elif mobile_number:
+				cp_obj = CustomerProfile.objects.filter(mobile_number=mobile_number).first()
+
+			if not cp_obj:
+				messages.add_message(
+					request, messages.ERROR, "No Record Found For Given Consumer Id or Mobile Number"
+				)
+				# This will be changed To New Lead Creation Form
+				return HttpResponseRedirect(reverse('customer_profile_search'))
+
+			# Redirect to customer profile view if a match is found
+			return redirect('customer_profile', pk=cp_obj.pk)
+
+		# If no parameters, render the form normally
+		return super().get(request, *args, **kwargs)
+
 	def form_valid(self, form):
 		data = form.cleaned_data
 
@@ -600,42 +626,46 @@ class GenerateLeadFormView(FormView):
 	model = CustomerProfile
 	template_name = 'connection_app/generate_lead_form.html'
 	form_class = GenerateLeadForm
-	success_url = '.'
+	success_url = '/success/'  # Update to the correct success URL or leave as is
 
 	def get_object(self, queryset=None):
-		try:
-			obj = CustomerProfile.objects.get(pk=self.kwargs.get('pk'))
-		except:
-			raise Http404(
-				"No %(verbose_name)s found matching the query" %
-				{'verbose_name': queryset.model._meta.verbose_name}
-			)
-		return obj
+		pk = self.kwargs.get('pk')
+		return get_object_or_404(CustomerProfile, pk=pk)
 
 	def form_valid(self, form):
 		data = form.cleaned_data
 		customer_profile = self.get_object()
-		for service_type in data['service_list']:
+
+		# Create Leads based on the selected service types
+		service_types = data.get('service_types', [])
+		for service_type in service_types:
 			Lead.objects.create(
-				parent=self.get_object(),
-				generated_by=get_current_user(),
-				service_type=ServiceType.objects.get(name=service_type),
+				parent=customer_profile,
+				generated_by=self.request.user,  # Assuming you have a current user context
+				service_type=service_type,
 				name=customer_profile.name,
 				mobile_number=customer_profile.mobile_number
 			)
-		messages.add_message(self.request, messages.INFO,
-							 message="Generated Lead Successfully For {}".format(", ".join(data['service_list'])))
-		return redirect("customer_profile", pk=self.get_object().pk)
+
+		# Optionally, process products and SDMS service requests if included in the form
+		# (Implement additional processing logic as needed)
+
+		messages.success(self.request,
+		                 f"Generated Lead Successfully for {', '.join([st.name for st in service_types])}")
+		return redirect(reverse("customer_profile", kwargs={'pk': customer_profile.pk}))
 
 	def get_form_kwargs(self):
 		kwargs = super().get_form_kwargs()
-		kwargs['service_type_choices'] = tuple(ServiceType.objects.all().values_list('name', 'name'))
+		# Pass additional arguments if needed
 		return kwargs
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context.update({
 			'customer_profile': self.get_object(),
+			'service_types': ServiceType.objects.filter(enabled=True),
+			'products': Product.objects.filter(enabled=True),
+			'sdms_service_requests': SDMSServiceRequest.objects.filter(enabled=True),
 		})
 		return context
 
@@ -985,7 +1015,7 @@ class AdminToolsGridMenuView(TemplateView):
 				{
 					"name": "Cancel Auto Sales Order",
 					"icon": "fa-user-secret",
-					"url": reverse("connection_app:cancel_auto_sales_order_list"),
+					"url": reverse("connection_app:cancel_sales_order_list"),
 				},
 			]
 		}
@@ -1222,9 +1252,9 @@ class ImportDataView(FormView):
 			for chunk in csv_file.chunks():
 				destination.write(chunk)
 		id_obj = ImportData.objects.create(template=form_data.get('template'), file_path=save_path)
-		res = django_rq.enqueue(schedule_upload_data, args=(form_data.get('template'), id_obj))
-		messages.add_message(self.request, messages.INFO, "Job Scheduled: {}".format(res.id))
-		# schedule_upload_data(form_data.get('template'), id_obj)
+		# res = django_rq.enqueue(schedule_upload_data, args=(form_data.get('template'), id_obj))
+		# messages.add_message(self.request, messages.INFO, "Job Scheduled: {}".format(res.id))
+		schedule_upload_data(form_data.get('template'), id_obj)
 		return redirect(self.get_success_url())
 
 
@@ -1249,17 +1279,17 @@ class DownloadImportedFileView(View):
 		return response
 
 
-class CancelAutoGeneratedSalesOrderListView(FormView):
+class CancelSalesOrderListView(FormView):
 	form_class = CancelAutoGeneratedSalesOrderForm
 	template_name = "connection_app/sales-order/cancel_auto_generated_sales_order_listview.html"
 	permission = 'has_view_permission'
 	paginate_by = 10  # Number of items per page
 
 	def qs(self):
-		two_days_ago = datetime.datetime.now().date() - datetime.timedelta(days=2)
+		three_days_ago = datetime.datetime.now().date() - datetime.timedelta(days=3)
 		return SalesOrder.objects.filter(
-			auto_generated=True,
-			order_date__lte=two_days_ago,
+			# auto_generated=True,
+			order_date__lte=three_days_ago,
 			cancellation_camunda_pid__isnull=True
 		).exclude(
 			order_status__in=[
@@ -1267,6 +1297,8 @@ class CancelAutoGeneratedSalesOrderListView(FormView):
 				SalesOrderStatusEnum.CANCELLED,
 				SalesOrderStatusEnum.NOT_FOUND
 			]
+		).exclude(
+			portability_flag=True
 		).order_by('order_date')
 
 	def get_context_data(self, **kwargs):
@@ -1290,5 +1322,9 @@ class CancelAutoGeneratedSalesOrderListView(FormView):
 
 	def form_valid(self, form):
 		for so in self.qs():
-			django_rq.enqueue(start_process_return_auto_sales_order, args=(so.id, so.parent.distributor_code,))
-		return HttpResponseRedirect(reverse('connection_app:cancel_auto_sales_order_list'))
+			# Production Code
+			# django_rq.enqueue(start_process_return_auto_sales_order, args=(so.id, so.parent.distributor_code,))
+
+			# Local Code
+			start_process_return_sales_order(so.id, so.parent.distributor_code)
+		return HttpResponseRedirect(reverse('connection_app:cancel_sales_order_list'))

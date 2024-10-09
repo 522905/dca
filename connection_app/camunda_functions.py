@@ -75,7 +75,7 @@ def start_process_fetch_sales_order_details_from_sdms(so_id, distributor_code):
 		print(res)
 
 
-def start_process_return_auto_sales_order(so_id, distributor_code):
+def start_process_return_sales_order(so_id, distributor_code):
 	from connection_app.models import SalesOrder
 
 	so_obj: SalesOrder = SalesOrder.objects.get(pk=so_id)
@@ -116,6 +116,7 @@ def start_process_return_auto_sales_order(so_id, distributor_code):
 					"order_status": {"value": so_obj.order_status, "type": "String"},
 					"distributor_code": {"value": distributor_code, "type": "String"},
 					"sdms_task": {"value": "cancel_booked_sales_order", "type": "String"},
+					"delivery_boy_login": {"value": so_obj.delivery_boy_login, "type": "String"},
 				}
 			}
 		res, pid = start_process_in_camunda_v2('Process_book_sales_order', variables=variables)
@@ -818,19 +819,20 @@ def update_service_area_in_customer_profile(consumer_id, service_area):
 
 def get_next_next_nine_oclock():
 	now = datetime.datetime.now()
-	today_nine_am = now.replace(hour=9, minute=0, second=0, microsecond=0)
-
-	if now < today_nine_am:
-		# First 9:00 AM is today
-		next_nine_am = today_nine_am
-	else:
-		# First 9:00 AM is tomorrow
-		next_nine_am = today_nine_am + datetime.timedelta(days=1)
-
-	# Second 9:00 AM after now
-	next_next_nine_am = next_nine_am + datetime.timedelta(days=1)
-
-	return next_next_nine_am
+	# today_nine_am = now.replace(hour=9, minute=0, second=0, microsecond=0)
+	#
+	# if now < today_nine_am:
+	# 	# First 9:00 AM is today
+	# 	next_nine_am = today_nine_am
+	# else:
+	# 	# First 9:00 AM is tomorrow
+	# 	next_nine_am = today_nine_am + datetime.timedelta(days=1)
+	#
+	# # Second 9:00 AM after now
+	# next_next_nine_am = next_nine_am + datetime.timedelta(days=1)
+	#
+	# return next_next_nine_am
+	return now
 
 
 def update_returned_booked_order(sales_order_id, status):
@@ -842,6 +844,7 @@ def update_returned_booked_order(sales_order_id, status):
 	if status == 'RETURNED':
 		so_obj.transition_sales_order_returned()
 		variables['next_order_return_date_time'] = {"value": get_next_next_nine_oclock().isoformat()}
+		variables['order_canceled'] = {"value": False}
 	elif status == 'CANCELLED':
 		so_obj.transition_sales_order_cancelled()
 		variables['order_canceled'] = {"value": True}
