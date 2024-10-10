@@ -38,7 +38,7 @@ from ujjwala.communication_functions import send_whatsapp_message, send_sms
 from ujjwala.enums import UjjwalaApplicationDocumentsEnum, FamilyMemberRelationEnum, ResidentialStatusEnum, \
 	MaritalStatusEnum, UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, RoboSdmsDedeupStatusEnum, \
 	PrintDocumentsTypeEnum, DisbursementDriveStatusEnum, ChangeCylinderTypeRequestStatusEnum
-from utils.global_functions import upload_file_to_minio_bucket, sign_data_base64
+from utils.global_functions import upload_file_to_minio_bucket, sign_data_base64, generate_tiny_url
 from utils.qrcode import generate_base64_qr_code
 
 COMPILED_REGEX_PATTERN_AADHAR_EXISTS = re.compile(
@@ -1425,14 +1425,14 @@ def send_ujjwala_self_pre_inspection_share_link(contact_mobile, user_id, usernam
 	url = reverse('ujjwala:shared_self_pre_inspection_link_view', kwargs={'data': data})
 	url = url[1:]
 
-	req = requests.get(
-		"https://tinyurl.com/api-create.php",
-		# params={'url': "https://dca.arungas.com/{}".format(url)},
-		params={'url': "http://0.0.0.0:60610/{}".format(url)},
-		# params={'url': "https://dca.arungas.com/{}".format(url)},
-	)
+	# req = requests.get(
+	# 	"https://tinyurl.com/api-create.php",
+	# 	params={'url': "https://dca.arungas.com/{}".format(url)},
+	# )
+	#
+	# short_url = req.text
 
-	short_url = req.text
+	short_url = generate_tiny_url("https://dca.arungas.com/{}".format(url))
 
 	body_text = {
 		"countryCode": "+91",
@@ -1484,15 +1484,17 @@ def send_ujjwala_self_pre_inspection_share_link(contact_mobile, user_id, usernam
 def send_ujjwala_share_on_social_media_link(contact_mobile, application):
 	url = reverse('ujjwala:share_on_social_media', kwargs={'pk': application.connection_disbursement.id})
 	url = url[1:]
-	#url = request.build_absolute_uri(url)
-	req = requests.get(
-		"https://tinyurl.com/api-create.php",
-		params={'url': "https://dca.arungas.com/{}".format(url)},
-		# params={'url': url},
-		# params={'url': "https://dca.arungas.com/{}".format(url)},
-	)
+	# url = request.build_absolute_uri(url)
+	# req = requests.get(
+	# 	"https://tinyurl.com/api-create.php",
+	# 	params={'url': "https://dca.arungas.com/{}".format(url)},
+	# 	# params={'url': url},
+	# 	# params={'url': "https://dca.arungas.com/{}".format(url)},
+	# )
+	#
+	# short_url = req.text
 
-	short_url = req.text
+	short_url = generate_tiny_url("https://dca.arungas.com/{}".format(url))
 
 	body_text = {
 		"countryCode": "+91",

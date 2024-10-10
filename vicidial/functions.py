@@ -7,7 +7,7 @@ from django.urls import reverse
 from communication_log.functions import send_template_link_sms
 from reference_data.functions import create_tiny_html_template_url_for_sms
 from ujjwala.ujjwala_functions import get_signed_share_data
-from utils.global_functions import sign_data_base64
+from utils.global_functions import sign_data_base64, generate_tiny_url
 
 VICI_URL = 'http://192.168.168.3'
 
@@ -114,12 +114,14 @@ def send_new_connection_application_sms_link(contact_mobile, host=""):
 	# url = url[1:]
 
 	host = host if host else Site.objects.get_current().domain
-	req = requests.get(
-		"https://tinyurl.com/api-create.php", params={'url': f"{host}/connection_app/connection-application/start/"},
-	)
-	req.raise_for_status()
+	# req = requests.get(
+	# 	"https://tinyurl.com/api-create.php", params={'url': f"{host}/connection_app/connection-application/start/"},
+	# )
+	# req.raise_for_status()
 
-	return send_template_link_sms(contact_mobile, "New Connection Form", req.text)
+	short_url = generate_tiny_url(f"{host}/connection_app/connection-application/start/")
+
+	return send_template_link_sms(contact_mobile, "New Connection Form", short_url)
 
 
 def send_ujjwala_application_status_sms_link(contact_mobile, application_id, host=""):
@@ -134,9 +136,11 @@ def send_ujjwala_application_status_sms_link(contact_mobile, application_id, hos
 	url = url[1:]
 
 	host = host if host else Site.objects.get_current().domain
-	req = requests.get(
-		"https://tinyurl.com/api-create.php", params={'url': f"{host}/{url}"},
-	)
-	req.raise_for_status()
+	# req = requests.get(
+	# 	"https://tinyurl.com/api-create.php", params={'url': f"{host}/{url}"},
+	# )
+	# req.raise_for_status()
 
-	return send_template_link_sms(contact_mobile, "Ujjwala Application Status", req.text)
+	short_url = generate_tiny_url(f"{host}/{url}")
+
+	return send_template_link_sms(contact_mobile, "Ujjwala Application Status", short_url)
