@@ -1287,19 +1287,19 @@ class CancelSalesOrderListView(FormView):
 
 	def qs(self):
 		three_days_ago = datetime.datetime.now().date() - datetime.timedelta(days=3)
-		return SalesOrder.objects.filter(
+		so_list = SalesOrder.objects.filter(
 			# auto_generated=True,
-			order_date__lte=three_days_ago,
-			cancellation_camunda_pid__isnull=True
-		).exclude(
+			order_date__date__lte=three_days_ago,
+			cancellation_camunda_pid__isnull=True,
 			order_status__in=[
-				SalesOrderStatusEnum.COMPLETED,
-				SalesOrderStatusEnum.CANCELLED,
-				SalesOrderStatusEnum.NOT_FOUND
-			]
-		).exclude(
-			portability_flag=True
+				SalesOrderStatusEnum.INVOICED,
+				SalesOrderStatusEnum.OPEN,
+				SalesOrderStatusEnum.RETURNED
+			],
+			portability_flag=False
 		).order_by('order_date')
+
+		return so_list
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
