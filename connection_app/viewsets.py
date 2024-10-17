@@ -10,6 +10,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from teams.models import SDMSUser
 from . import models
 from .enums import ConnectionApplicationLeadStatus
 from .models import ConnectionApplication
@@ -231,6 +232,21 @@ class BookSalesOrderViewSet(viewsets.ViewSet):
 
         # Get distinct delivery boy logins
         # unique_delivery_boy_logins = df['delivery_boy_login'].unique().tolist()
-        unique_delivery_boy_logins = df['order_status'].unique().tolist()
+        unique_delivery_boy_logins = df['delivery_boy_login'].unique().tolist()
 
-        return JsonResponse({'delivery_boy_login': unique_delivery_boy_logins}, safe=False)
+        data = []
+        for unique_delivery_boy_login in unique_delivery_boy_logins:
+            if unique_delivery_boy_login is None:
+                continue
+
+            # Due To Incomplete Data Currently Using Filter To Make Sure Code Should Not Crash
+            sdmsuser_obj = SDMSUser.objects.filter(delivery_boy_login=unique_delivery_boy_login).first()
+
+            if not sdmsuser_obj:
+                print(f"Delivery Boy Login Not Found: {unique_delivery_boy_login}")
+                continue
+
+            data.append({'delivery_boy_login': unique_delivery_boy_login,
+                         'delivery_boy_password': sdmsuser_obj.delivery_boy_password})
+
+        return JsonResponse(data, safe=False)
