@@ -774,6 +774,16 @@ class CustomerProfile(models.Model):
 		return self.salesorder_set.order_by('-order_date').first()
 
 
+class CustomerProfileSettings(models.Model):
+	parent = models.OneToOneField(
+		CustomerProfile,
+		on_delete=models.CASCADE,
+		related_name='customer_profile_settings',
+		null=True
+	)
+	do_not_auto_generate_sales_order = models.BooleanField(default=False)
+
+
 class CustomerProfileDocuments(models.Model):
 	parent = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, related_name='documents', null=True)
 	type = models.CharField(max_length=48, choices=ConnectionApplicationDocumentsEnum.choices)

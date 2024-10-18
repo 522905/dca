@@ -613,6 +613,18 @@ class BookSalesOrderForm(forms.Form):
 	)
 
 
+class CustomerProfileSettingsForm(forms.Form):
+	do_not_auto_generate_sales_order = forms.BooleanField(
+		widget=forms.CheckboxInput,
+		required=True,
+		label="Do Not Auto Generate Sales Order"
+	)
+	is_dirty = forms.BooleanField(widget=forms.CheckboxInput,
+		required=True,
+		label="Is Dirty"
+	)
+
+
 class GenerateLeadForm(forms.Form):
 	service_types = forms.ModelMultipleChoiceField(
 		queryset=ServiceType.objects.filter(enabled=True),

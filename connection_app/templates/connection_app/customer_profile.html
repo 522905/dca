@@ -176,6 +176,9 @@
                     </tr>
                     <tr>
                         <td>
+                            <a href="{% url 'connection_app:customer_profile_settings' pk=obj.id %}" class="btn btn-primary text-white float-right">Settings</a>
+                        </td>
+                        <td>
                             <a href="{% url 'connection_app:customer_profile_contacts' pk=obj.id %}" class="btn btn-primary text-white float-right">Show More Contacts</a>
                         </td>
                         <td colspan="5">
