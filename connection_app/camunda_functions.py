@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 import django_rq
 import requests
@@ -10,6 +11,8 @@ from domestic_app.settings import CAMUNDA_BASE_URL
 from reference_data.models import Distributor
 from ujjwala.camunda_functions import start_process_in_camunda_v2, is_process_exist_in_camunda
 from ujjwala.ujjwala_functions import evaluate_change_cylinder_type_requests
+
+logger = logging.getLogger(__name__)
 
 
 def get_customer_profile(consumer_id, name, address, distributor_code):
@@ -124,6 +127,21 @@ def start_process_return_sales_order(so_id, distributor_code):
 			so_obj.cancellation_camunda_pid = pid
 			so_obj.save()
 		print(res)
+
+
+def start_process_fetch_subsidy_status_of_customer_from_sdms(phone_number):
+	from connection_app.models import ConnectionApplication
+	from connection_app.jobs import dialogflow_chat_assignment
+
+	# application = ConnectionApplication.objects.filter(mobile=phone_number).first()
+	try:
+		dialogflow_chat_assignment(phone_number)
+		return "हम आपके कनेक्शन का विवरण ढूंढने में असमर्थ हैं, इसलिए हम आपको व्हाट्सएप पर हमारे ग्राहक सेवा से जोड़ रहे हैं"
+	except Exception as e:
+		logger.error(f"the issue in chat assignment {str(e)}")
+		return "आपकी ऑर्डर जानकारी उपलब्ध नहीं है, कृपया अपनी ऑर्डर स्थिति की जांच करें। +91 161 520 1005"
+
+	# TODO
 
 
 def create_sales_order(so, distributor_code):
@@ -861,3 +879,32 @@ def update_returned_booked_order(sales_order_id, status):
 
 	so_obj.save()
 	return variables
+
+
+def start_book_sales_order_camunda_process():
+	from connection_app.models import BookSalesOrder
+	from connection_app.functions import get_delivery_boy_login
+
+	for bso_obj in BookSalesOrder.objects.all():
+		if not bso_obj.camunda_process_id:
+			try:
+				variables = {
+					"variables": {
+						"consumer_id": {"value": bso_obj.customer_profile.consumer_id, "type": "String"},
+						"book_sales_order_id": {"value": bso_obj.id, "type": "Long"},
+						"sdms_task": {"value": "book_sales_order", "type": "String"},
+						"distributor_code": {"value": bso_obj.customer_profile.distributor_code, "type": "String"},
+						"distributor_name": {"value": bso_obj.customer_profile.distributor_name, "type": "String"},
+						"delivery_boy_login": {
+							"value": get_delivery_boy_login(bso_obj.customer_profile.id), "type": "String"
+						},
+					}
+				}
+				res, pid = start_process_in_camunda_v2('Process_book_sales_order', variables=variables)
+				bso_obj.camunda_process_id = pid
+				bso_obj.save()
+				print(pid)
+			except Exception as e:
+				bso_obj.error_log = str(e)
+				bso_obj.save()
+				continue

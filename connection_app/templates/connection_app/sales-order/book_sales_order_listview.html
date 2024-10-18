@@ -1,0 +1,182 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block page_title %}Book Sales Order List{% endblock %}
+{% block content %}
+{% load material_form %}
+    <link rel="stylesheet" href="{% static '/css/style.css' %}" >
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <div class="p-2 pt-0 form_label" style="width: 100%;">
+        <div class="card mb-2 app_card">
+            <form method="post">
+                <div class="card-header">
+                    {% csrf_token %}
+                    <p class="float-left">{% form form=form %}{% endform %}<input type="submit" value="Submit">
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="p-2 pt-0 form_label" style="width: 100%;">
+        <div class="card-header">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+         </div>
+        {% for obj in object_list %}
+            <div class="card mb-2 app_card" id="{{ obj.id }}_div">
+                <div class="card-header pl-2">
+                    <p class="float-left">
+                        <i class="fa fa-file-text"></i><a href="{% url 'connection_app:sales_order_detail_view' pk=obj.id %}" data-turbolinks="false"> {{ obj.customer_profile.relationship_type }} - <b>{{ obj.customer_profile.customer_type }}</b></a>
+                    </p>
+                    <p class="float-right">
+                        <i class='fa fa-user-circle'></i><b class="text-danger"> {{ obj.customer_profile.name }}</b>
+                    </p>
+                </div>
+                <div class="card-body pb-0 p-2 block">
+                    <ul class="m-0 list-body">
+                        <li>
+                            <p class="float-left"><i class="fa fa-calendar" aria-hidden="true"></i> {{ obj.customer_profile.consumer_id }}</p>
+                            <p class="float-right"><i class="fa fa-sharp fa-solid fa-phone"></i>
+                                <a href="tel:{{obj.customer_profile.mobile_number}}" data-turbolinks="false">
+                                   <span class="text-primary" style="font-weight: 600;"> {{ obj.customer_profile.mobile_number }}</span>
+                                </a>
+                            </p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-footer p-2 block">
+                    <p style="font-size: 13px"><i class="fa fa-address-card-o" style="font-size: 14px"></i> {{ obj.customer_profile.address }}</p>
+                </div>
+                <div class="card-footer p-2 block">
+                    <p style="font-size: 13px">{{ obj.error_log }}</p>
+                </div>
+            </div>
+        {% endfor %}
+        <div class="card-footer">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+         </div>
+    </div>
+<style>
+.row{ margin:0;}
+    .block{ width:100%; float: left;}
+    .list-body { width:100%; float: left;}
+    .list-body li{ float: left; width: 100%;}
+    .float-left{ float: left;}
+    .float-right{ float: right;}
+    body{ font-family: Muli;}
+    .checkbox-field label{ margin: 0;}
+    #id_show_hidden_records{ display: block !important;}
+.hideDivButton:hover{color: dodgerblue;}
+.hideDivButton { border: 1px solid transparent; background-color: transparent; font-size: 14px; animation: blinkingText 2s infinite;}
+	@keyframes blinkingText{
+		0%		{ color: #FF0000;}
+		25%		{ color: #008080;}
+		50%		{ color: #ef0a1a;}
+		75%		{ color: #254878;}
+		100%	{ color: #04a1d5;}
+	}
+
+</style>
+<script>
+    // Function to get CSRF token from cookies
+    function getCSRFToken() {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Get the name of the cookie and check if it matches the CSRF cookie name
+                if (cookie.substring(0, 'csrftoken'.length + 1) === ('csrftoken' + '=')) {
+                    // Extract and return the CSRF token
+                    cookieValue = decodeURIComponent(cookie.substring('csrftoken'.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    $(document).ready(function(){
+        // Function to handle the click event for all buttons with the 'postButton' class
+        $(".hideDivButton").click(function(){
+            // Get the value written in the ID of the clicked button
+            var buttonId = $(this).attr('id');
+            var value = $(this).attr('value');
+            var button = $(this);
+
+            // Data to be sent in the POST request
+            var postData = {
+                sales_order_id: buttonId,
+                value: value// Use the button ID as a value
+                // Add more key-value pairs as needed
+            };
+
+            console.log(postData);
+
+            // Add CSRF token to the request headers
+            var csrfToken = getCSRFToken();
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            });
+
+            // AJAX POST request
+            $.ajax({
+                type: "POST",
+                url: "/connection-app/connection-application-api/toggle_sales_order_view/",
+                data: postData,
+                success: function(response){
+                    // Handle successful response
+                    console.log(response);
+                    {#debugger;#}
+                    if(postData.value === "1"){
+                        //if ($("#id_show_hidden_records").val() === "on"){
+                        //    button.html("<i class=\"fa fa-eye-slash\"></i> <b>Unhide</b>");
+                        //    button.val("0");
+                        //} else {
+                        //   $("#" + buttonId + "_div").remove();
+                        //}
+                        $("#" + buttonId + "_div").remove();
+                    } else {
+                        button.html("<i class=\"fa fa-eye-slash\"></i> <b>Hide</b>");
+                        button.val("1");
+                    }
+
+                },
+                error: function(xhr, status, error){
+                    // Handle errors
+                    console.error(xhr.statusText);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

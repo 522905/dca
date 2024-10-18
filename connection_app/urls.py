@@ -114,6 +114,12 @@ urlpatterns = [
         views.CancelSalesOrderListView.as_view(),
         name="cancel_sales_order_list"
     ),
+    path(
+        'book-sales-order-list/',
+        # views.SalesOrderListView.as_view(),
+        views.BookSalesOrderListView.as_view(),
+        name="book_sales_order_list"
+    ),
     url(
         '^sales-order-view/(?P<pk>[^/.]+)/$',
         views.SalesOrderDetailFormView.as_view(),
