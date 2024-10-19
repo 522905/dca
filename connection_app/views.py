@@ -953,6 +953,16 @@ class CustomerProfileSettingsView(FormView):
 		})
 		return context
 
+	def get_form_kwargs(self):
+		kwargs = super().get_form_kwargs()
+		cps_obj = CustomerProfileSettings.objects.filter(parent=self.get_object()).first()
+		if cps_obj is not None:
+			kwargs['initial'] = {
+				'is_dirty': self.get_object().is_dirty,
+				'do_not_auto_generate_sales_order': cps_obj.do_not_auto_generate_sales_order
+			}
+		return kwargs
+
 
 	def form_valid(self, form):
 		data = form.cleaned_data

@@ -741,6 +741,12 @@ class CustomerProfile(models.Model):
 	verified = models.BooleanField(null=True, blank=True)
 	verified_on = models.DateTimeField(null=True, blank=True)
 	verification_source = models.CharField(max_length=128, null=True, blank=True)
+	is_dirty = models.BooleanField(null=True, blank=True)
+
+	def get_do_not_auto_generate_sales_order(self):
+		if self.customer_profile_settings:
+			return self.customer_profile_settings.do_not_auto_generate_sales_order
+		return False
 
 	def days_since_last_sales_order(self):
 		last_order = self.salesorder_set.filter(
