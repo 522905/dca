@@ -2,6 +2,7 @@ import datetime
 from collections import defaultdict
 
 import pandas as pd
+import requests
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.urls import reverse
@@ -176,62 +177,143 @@ class ConnectionApplicationAPIViewSet(viewsets.ViewSet):
             ).filter(delivery_boy_login=delivery_boy_login, order_date__gte=from_order_date.date()), many=True).data
         return JsonResponse(data, safe=False)
 
+#
+# class BookSalesOrderViewSet(viewsets.ViewSet):
+#     @action(methods=['get'], detail=False, url_path='get_book_sales_order_delivery_boy_login')
+#     def get_book_sales_order_delivery_boy_login(self, request, *args, **kwargs):
+#         from connection_app.models import BookSalesOrder
+#         import requests
+#
+#         # Base URL of your Camunda instance
+#         CAMUNDA_URL = "https://camunda.dca.arungas.com/engine-rest"
+#
+#         # Define the process definition key to filter on
+#         PROCESS_DEFINITION_KEY = "Process_book_sales_order"  # Replace with the actual key
+#
+#         process_instances_url = f"{CAMUNDA_URL}/process-instance"
+#
+#         response = requests.post(
+#             process_instances_url,
+#             json={
+#                     "variables": [
+#                         {
+#                             "name": "sdms_task",
+#                             "operator": "eq",
+#                             "value": "cancel_booked_sales_order"
+#                         },
+#                     ],
+#                     "processDefinitionKey": PROCESS_DEFINITION_KEY
+#                 }
+#             )
+#
+#         result = []
+#
+#         if response.status_code == 200:
+#             pids = [i['id'] for i in response.json()]
+#
+#             variable_instance_url = f"{CAMUNDA_URL}/variable-instance"
+#             response = requests.post(variable_instance_url, json={'processInstanceIdIn': pids})
+#             # Group variables by processInstanceId
+#             grouped_variables = defaultdict(list)
+#
+#             for variable in response.json():
+#                 instance_id = variable['processInstanceId']
+#                 grouped_variables[instance_id].append({'name': variable['name'], 'value': variable['value']})
+#
+#             # Output the grouped variables
+#             for instance_id, variables in grouped_variables.items():
+#                 row = {'process_instance_id': instance_id}
+#                 for var in variables:
+#                     row[var['name']] = var['value']
+#                 print(row)
+#                 result.append(row)
+#
+#         # Convert list of dictionaries to DataFrame
+#         df = pd.DataFrame(result)
+#
+#         # Get distinct delivery boy logins
+#         # unique_delivery_boy_logins = df['delivery_boy_login'].unique().tolist()
+#         unique_delivery_boy_logins = df['delivery_boy_login'].unique().tolist()
+#
+#         data = []
+#         for unique_delivery_boy_login in unique_delivery_boy_logins:
+#             if unique_delivery_boy_login is None:
+#                 continue
+#
+#             # Due To Incomplete Data Currently Using Filter To Make Sure Code Should Not Crash
+#             sdmsuser_obj = SDMSUser.objects.filter(delivery_boy_login=unique_delivery_boy_login).first()
+#
+#             if not sdmsuser_obj:
+#                 print(f"Delivery Boy Login Not Found: {unique_delivery_boy_login}")
+#                 continue
+#
+#             data.append({'delivery_boy_login': unique_delivery_boy_login,
+#                          'delivery_boy_password': sdmsuser_obj.delivery_boy_password})
+#
+#         return JsonResponse(data, safe=False)
+
 
 class BookSalesOrderViewSet(viewsets.ViewSet):
     @action(methods=['get'], detail=False, url_path='get_book_sales_order_delivery_boy_login')
     def get_book_sales_order_delivery_boy_login(self, request, *args, **kwargs):
-        from connection_app.models import BookSalesOrder
-        import requests
-
-        # Base URL of your Camunda instance
         CAMUNDA_URL = "https://camunda.dca.arungas.com/engine-rest"
+        PROCESS_DEFINITION_KEY = "Process_book_sales_order"
+        ACTIVITY_ID = "Activity_return_booked_order"  # Activity instance to filter on
 
-        # Define the process definition key to filter on
-        PROCESS_DEFINITION_KEY = "Process_book_sales_order"  # Replace with the actual key
-
-        process_instances_url = f"{CAMUNDA_URL}/process-instance"
-
-        response = requests.post(
-            process_instances_url,
-            json={
-                    "variables": [
-                        {
-                            "name": "sdms_task",
-                            "operator": "eq",
-                            "value": "cancel_booked_sales_order"
-                        },
-                    ],
-                    "processDefinitionKey": PROCESS_DEFINITION_KEY
+        # Get unfinished activity instances for the specific activity
+        activity_instance_url = f"{CAMUNDA_URL}/history/activity-instance"
+        try:
+            response = requests.post(
+                activity_instance_url,
+                json={
+                    "activityId": ACTIVITY_ID,
+                    "processDefinitionKey": PROCESS_DEFINITION_KEY,
+                    "unfinished": True  # Only get unfinished (running) activity instances
                 }
             )
+            response.raise_for_status()  # Check for request errors
+        except requests.exceptions.RequestException as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+        if response.status_code != 200:
+            return JsonResponse({'error': 'Failed to fetch activity instances'}, status=response.status_code)
+
+        activity_instances = response.json()
+
+        if not activity_instances:
+            return JsonResponse({'error': 'No unfinished activity instances found'}, status=404)
+
+        # Extract process instance IDs from the unfinished activity instances
+        pids = [instance['processInstanceId'] for instance in activity_instances]
+
+        # Fetch process variables for the filtered process instance IDs
+        variable_instance_url = f"{CAMUNDA_URL}/variable-instance"
+        try:
+            response = requests.post(variable_instance_url, json={'processInstanceIdIn': pids})
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+        grouped_variables = defaultdict(list)
+
+        for variable in response.json():
+            instance_id = variable['processInstanceId']
+            grouped_variables[instance_id].append({'name': variable['name'], 'value': variable['value']})
 
         result = []
+        for instance_id, variables in grouped_variables.items():
+            row = {'process_instance_id': instance_id}
+            for var in variables:
+                row[var['name']] = var['value']
+            result.append(row)
 
-        if response.status_code == 200:
-            pids = [i['id'] for i in response.json()]
-
-            variable_instance_url = f"{CAMUNDA_URL}/variable-instance"
-            response = requests.post(variable_instance_url, json={'processInstanceIdIn': pids})
-            # Group variables by processInstanceId
-            grouped_variables = defaultdict(list)
-
-            for variable in response.json():
-                instance_id = variable['processInstanceId']
-                grouped_variables[instance_id].append({'name': variable['name'], 'value': variable['value']})
-
-            # Output the grouped variables
-            for instance_id, variables in grouped_variables.items():
-                row = {'process_instance_id': instance_id}
-                for var in variables:
-                    row[var['name']] = var['value']
-                print(row)
-                result.append(row)
-
-        # Convert list of dictionaries to DataFrame
+        # Convert the results into a DataFrame
         df = pd.DataFrame(result)
 
+        if 'delivery_boy_login' not in df.columns:
+            return JsonResponse({'error': 'No delivery_boy_login found in variables'}, status=404)
+
         # Get distinct delivery boy logins
-        # unique_delivery_boy_logins = df['delivery_boy_login'].unique().tolist()
         unique_delivery_boy_logins = df['delivery_boy_login'].unique().tolist()
 
         data = []
@@ -239,14 +321,16 @@ class BookSalesOrderViewSet(viewsets.ViewSet):
             if unique_delivery_boy_login is None:
                 continue
 
-            # Due To Incomplete Data Currently Using Filter To Make Sure Code Should Not Crash
+            # Fetch SDMSUser data based on the delivery boy login
             sdmsuser_obj = SDMSUser.objects.filter(delivery_boy_login=unique_delivery_boy_login).first()
 
             if not sdmsuser_obj:
                 print(f"Delivery Boy Login Not Found: {unique_delivery_boy_login}")
                 continue
 
-            data.append({'delivery_boy_login': unique_delivery_boy_login,
-                         'delivery_boy_password': sdmsuser_obj.delivery_boy_password})
+            data.append({
+                'delivery_boy_login': unique_delivery_boy_login,
+                'delivery_boy_password': sdmsuser_obj.delivery_boy_password  # Consider hashing/encrypting passwords
+            })
 
         return JsonResponse(data, safe=False)
