@@ -295,7 +295,8 @@ class ConnectionApplication(models.Model):
 					"regional": {
 						"indiaDlt": {
 							"principalEntityId": "1101546710000030317",
-							"contentTemplateId": "1107161183026272363"
+							# "contentTemplateId": "1107161183026272363"
+							"contentTemplateId": "1107164508265878553"
 						}
 					},
 					"notifyUrl": "https://dca.arungas.com/commlog/infobip/webhook/",
