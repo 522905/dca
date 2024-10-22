@@ -842,22 +842,12 @@ def update_service_area_in_customer_profile(consumer_id, service_area):
 		raise Exception("Customer Profile Not Found.")
 
 
-def get_next_next_nine_oclock():
+def get_next_midnight():
 	now = datetime.datetime.now()
-	# today_nine_am = now.replace(hour=9, minute=0, second=0, microsecond=0)
-	#
-	# if now < today_nine_am:
-	# 	# First 9:00 AM is today
-	# 	next_nine_am = today_nine_am
-	# else:
-	# 	# First 9:00 AM is tomorrow
-	# 	next_nine_am = today_nine_am + datetime.timedelta(days=1)
-	#
-	# # Second 9:00 AM after now
-	# next_next_nine_am = next_nine_am + datetime.timedelta(days=1)
-	#
-	# return next_next_nine_am
-	return now
+	# Replace current time with 12:00:00 AM (midnight) of the next day
+	next_midnight = (now + datetime.timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+
+	return next_midnight
 
 
 def update_returned_booked_order(sales_order_id, status):
@@ -868,7 +858,7 @@ def update_returned_booked_order(sales_order_id, status):
 	variables = {}
 	if status == 'RETURNED':
 		so_obj.transition_sales_order_returned()
-		variables['next_order_return_date_time'] = {"value": get_next_next_nine_oclock().isoformat()}
+		variables['next_order_return_date_time'] = {"value": get_next_midnight().isoformat()}
 		variables['order_canceled'] = {"value": False}
 	elif status == 'CANCELLED':
 		so_obj.transition_sales_order_cancelled()
