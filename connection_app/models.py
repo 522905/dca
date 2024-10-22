@@ -30,6 +30,7 @@ from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, F
 from domestic_app.utils import get_minio_public_url
 from reference_data.models import ServiceType, Distributor
 from teams.models import SDMSServiceArea
+from utils.global_functions import generate_tiny_url
 
 minio_client = Minio(
 	settings.MINIO_API_ENDPOINT,
@@ -541,7 +542,8 @@ class ConnectionApplication(models.Model):
 		send_template_link_sms(
 			self.mobile,
 			"Installation",
-			"https://dca.arungas.com/connection-app/connection-application/{}/installation".format(self.id)
+			generate_tiny_url(
+				"https://dca.arungas.com/connection-app/connection-application/{}/installation".format(self.id))
 		)
 
 	def event_reupload_channel_whatsapp(self):
