@@ -156,12 +156,13 @@
                     <tr>
                         <td colspan="6" class="p-0">
                             <table class="last_sale_order ">
-                                {% for so in obj.salesorder_set.all|dictsortreversed:"order_date"|slice:":4" %}
+                                {% for so in obj.salesorder_set.all|dictsortreversed:"order_date"|slice:":6" %}
                                     <tr>
                                         <td>{{ so.order_date|date:'d-m-Y' }}</td>
                                         <td>{{ so.invoice_number }}</td>
                                         <td>{{ so.order_status }}</td>
-                                        <td>{{ so.delivery_type }}</td>
+                                        <td>{{ so.channel }}</td>
+                                        <td>{{ so.delivery_confirmation_type }}</td>
                                         <td>{{ so.delivery_date|date:'d-m-Y' }}</td>
                                     </tr>
                                 {% endfor %}
@@ -184,7 +185,7 @@
                             <a href="{% url 'connection_app:customer_profile_contacts' pk=obj.id %}" class="btn btn-primary text-white float-right">Show More Contacts</a>
                         </td>
                         <td colspan="5">
-                            <a class="btn btn-primary text-white float-right" href="{% url 'generate_lead_form' pk=obj.pk %}">Generate Lead</a>
+                            <a class="btn btn-primary text-white float-right" href="{% url 'generate_lead_form' %}?pk={{ obj.pk }}">Generate Lead</a>
                         </td>
                     </tr>
                 </table>
