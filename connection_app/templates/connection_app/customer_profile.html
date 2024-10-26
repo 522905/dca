@@ -154,18 +154,38 @@
                         <th class="p-2" colspan="6" style="font-weight:bold; padding-left: 10px;"><b>Last Sales Order:</b> </th>
                     </tr>
                     <tr>
-                        <td colspan="6" class="p-0">
+                        <td colspan="8" class="p-0">
                             <table class="last_sale_order ">
-                                {% for so in obj.salesorder_set.all|dictsortreversed:"order_date"|slice:":6" %}
-                                    <tr>
-                                        <td>{{ so.order_date|date:'d-m-Y' }}</td>
-                                        <td>{{ so.invoice_number }}</td>
-                                        <td>{{ so.order_status }}</td>
-                                        <td>{{ so.channel }}</td>
-                                        <td>{{ so.delivery_confirmation_type }}</td>
-                                        <td>{{ so.delivery_date|date:'d-m-Y' }}</td>
-                                    </tr>
-                                {% endfor %}
+                                <thead>
+                                <tr>
+                                    <td colspan="5"></td>
+                                    <td colspan="3">Delivery Information</td>
+                                </tr>
+                                <tr>
+                                    <td>Order Date</td>
+                                    <td>Inv No</td>
+                                    <td>Status</td>
+                                    <td>Channel</td>
+                                    <td>Type</td>
+                                    <td>Allocated To</td>
+                                    <td>Delivered By</td>
+                                    <td>Date</td>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                    {% for so in obj.salesorder_set.all|dictsortreversed:"order_date"|slice:":6" %}
+                                        <tr>
+                                            <td>{{ so.order_date|date:'d-m-Y' }}</td>
+                                            <td>{{ so.invoice_number }}</td>
+                                            <td>{{ so.order_status }}</td>
+                                            <td>{{ so.channel }}</td>
+                                            <td>{{ so.delivery_confirmation_type }}</td>
+                                            <td>{{ so.delivery_boy_full_name }}</td>
+                                            <td>{{ so.delivery_confirm_full_name }}</td>
+                                            <td>{{ so.delivery_date|date:'d-m-Y' }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
                             </table>
                         </td>
                     </tr>
@@ -185,7 +205,7 @@
                             <a href="{% url 'connection_app:customer_profile_contacts' pk=obj.id %}" class="btn btn-primary text-white float-right">Show More Contacts</a>
                         </td>
                         <td colspan="5">
-                            <a class="btn btn-primary text-white float-right" href="{% url 'generate_lead_form' %}?pk={{ obj.pk }}">Generate Lead</a>
+{#                            <a class="btn btn-primary text-white float-right" href="{% url 'generate_lead_form' %}?pk={{ obj.pk }}">Generate Lead</a>#}
                         </td>
                     </tr>
                 </table>
@@ -211,6 +231,28 @@
     .link_wh:hover{ text-decoration: underline !important;}
     .back_button input{ border:1px solid transparent; padding: 0 10px !important; margin: 0 0 10px 0 !important; cursor: pointer; margin-right:10px; padding: 5px 10px; 
         height: 30px !important;}
-    body .form_label .back_button .btn { height: 30px !important; text-transform:capitalize; margin: 0 10px 0 0 !important; }  
+    body .form_label .back_button .btn { height: 30px !important; text-transform:capitalize; margin: 0 10px 0 0 !important; }
+    /* Existing styles */
+
+        .last_sale_order {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem; /* Adjust font size */
+    }
+
+    .last_sale_order th, .last_sale_order td {
+        border: 1px solid #ccc; /* Add border */
+        padding: 8px;
+        text-align: center;
+    }
+
+    .last_sale_order thead tr td {
+        font-weight: bold;
+        background-color: #f8f8f8;
+    }
+
+    .last_sale_order tbody tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
 </style>
 {% endblock %}
