@@ -1172,7 +1172,7 @@ class SalesOrder(models.Model):
 			elif "arun gas" in self.distributor_name.lower():
 				start_process_fetch_sales_order_details_from_sdms(self.id, "0000110338")
 			elif "arun indane" in self.distributor_name.lower():
-				start_process_fetch_sales_order_details_from_sdms(so.id, "0000305948")
+				start_process_fetch_sales_order_details_from_sdms(self.id, "0000305948")
 			else:
 				print("Could Not Find Valid Distributor")
 
