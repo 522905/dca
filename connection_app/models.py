@@ -18,6 +18,7 @@ from taggit.managers import TaggableManager
 from communication_log.functions import send_template_link_sms
 from communication_log.jobs import move_sv_doc_file_tus_to_minio, move_files_to_minio_processing
 from communication_log.models import CommunicationLog
+from connection_app.camunda_functions import start_process_fetch_sales_order_details_from_sdms
 from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTypeEnum, \
 	ConnectionApplicationProcessType, ConnectionApplicationLeadStatus, ConnectionApplicationDocumentsEnum, \
 	ConnectionApplicationLeadCommunicationMode, ConnectionInstallationStatus, \
@@ -30,6 +31,7 @@ from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, F
 from domestic_app.utils import get_minio_public_url
 from reference_data.models import ServiceType, Distributor
 from teams.models import SDMSServiceArea
+from ujjwala.camunda_functions import is_process_exist_in_camunda
 from utils.global_functions import generate_tiny_url
 
 minio_client = Minio(
@@ -1086,6 +1088,7 @@ class SalesOrder(models.Model):
 	hide_from_view = models.BooleanField(default=False)
 	is_dirty = models.BooleanField(null=True, blank=True)
 	last_synced_on = models.DateTimeField(null=True, blank=True)
+	last_refill_date = models.DateTimeField(null=True, blank=True)
 
 	class Meta:
 		constraints = [
@@ -1160,7 +1163,19 @@ class SalesOrder(models.Model):
 		),
 	)
 	def transition_sales_order_returned(self, *args, **kwargs):
-		pass
+		exist = is_process_exist_in_camunda(
+			'process_fetch_sales_order_details_from_sdms', 'sales_order_id', so.id
+		)
+		if not exist:
+			if self.parent.distributor:
+				start_process_fetch_sales_order_details_from_sdms(self.id, self.parent.distributor.code)
+			elif "arun gas" in self.distributor_name.lower():
+				start_process_fetch_sales_order_details_from_sdms(self.id, "0000110338")
+			elif "arun indane" in self.distributor_name.lower():
+				start_process_fetch_sales_order_details_from_sdms(so.id, "0000305948")
+			else:
+				print("Could Not Find Valid Distributor")
+
 
 class SalesOrderInvoice(models.Model):
 	"""
@@ -1239,6 +1254,7 @@ class Lead(models.Model):
 	updated_on = models.DateTimeField(auto_now=True)
 	name = models.CharField(max_length=128)
 	mobile_number = models.CharField(max_length=10)
+	remarks = models.CharField(max_length=128, null=True, blank=True)
 	generated_by = models.ForeignKey(User, on_delete=models.CASCADE)
 	service_type = models.ForeignKey(ServiceType, on_delete=models.CASCADE)
 	due_on = models.DateTimeField(null=True)
