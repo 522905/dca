@@ -1164,18 +1164,14 @@ class SalesOrder(models.Model):
 		),
 	)
 	def transition_sales_order_returned(self, *args, **kwargs):
-		exist = is_process_exist_in_camunda(
-			'process_fetch_sales_order_details_from_sdms', 'sales_order_id', so.id
-		)
-		if not exist:
-			if self.parent.distributor:
-				start_process_fetch_sales_order_details_from_sdms(self.id, self.parent.distributor.code)
-			elif "arun gas" in self.distributor_name.lower():
-				start_process_fetch_sales_order_details_from_sdms(self.id, "0000110338")
-			elif "arun indane" in self.distributor_name.lower():
-				start_process_fetch_sales_order_details_from_sdms(self.id, "0000305948")
-			else:
-				print("Could Not Find Valid Distributor")
+		if self.parent.distributor:
+			start_process_fetch_sales_order_details_from_sdms(self.id, self.parent.distributor.code)
+		elif "arun gas" in self.distributor_name.lower():
+			start_process_fetch_sales_order_details_from_sdms(self.id, "0000110338")
+		elif "arun indane" in self.distributor_name.lower():
+			start_process_fetch_sales_order_details_from_sdms(self.id, "0000305948")
+		else:
+			print("Could Not Find Valid Distributor")
 
 
 class SalesOrderInvoice(models.Model):
