@@ -764,6 +764,15 @@ class CustomerProfile(models.Model):
 			return delta.days
 		return None
 
+	def update_last_refill_date(self):
+		last_order = self.salesorder_set.filter(
+			order_status__in=[SalesOrderStatusEnum.COMPLETED]).order_by('-order_date').first()
+		if last_order:
+			self.last_refill_date = last_order.order_date
+			self.save()
+			return last_order.order_date
+		return None
+
 	def document_self(self):
 		sd = self.documents.filter(type=ConnectionApplicationDocumentsEnum.CUSTOMER_PHOTO).first()
 		if not sd:
@@ -1108,7 +1117,7 @@ class SalesOrder(models.Model):
 		),
 	)
 	def transition_sales_order_completed(self, *args, **kwargs):
-		pass
+		self.parent.update_last_refill_date()
 
 	@fsm_log_description
 	@fsm_log_by
