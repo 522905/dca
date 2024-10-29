@@ -747,6 +747,8 @@ class CustomerProfile(models.Model):
 	verified_on = models.DateTimeField(null=True, blank=True)
 	verification_source = models.CharField(max_length=128, null=True, blank=True)
 	is_dirty = models.BooleanField(null=True, blank=True)
+	last_refill_date = models.DateTimeField(null=True, blank=True)
+	last_synced_date = models.DateTimeField(null=True, blank=True)
 
 	def get_do_not_auto_generate_sales_order(self):
 		if self.customer_profile_settings:
@@ -1088,7 +1090,6 @@ class SalesOrder(models.Model):
 	hide_from_view = models.BooleanField(default=False)
 	is_dirty = models.BooleanField(null=True, blank=True)
 	last_synced_on = models.DateTimeField(null=True, blank=True)
-	last_refill_date = models.DateTimeField(null=True, blank=True)
 
 	class Meta:
 		constraints = [
