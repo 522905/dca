@@ -82,11 +82,11 @@
                     </tr>
                     {% endfor %}
                 </table>
-                <table class="post_inspection"> 
+                <table class="post_inspection">
                     <tr class="card-header">
                         <th colspan="6" style="font-weight:bold; padding-left: 10px;"><b>Post-Inspection Status:</b> </th>
                     </tr>
-                    <tr >
+                    <tr>
                         <td>
                             Kitchen
                             <p>
@@ -108,7 +108,7 @@
                             {% endif %}
                             </p>
                         </td>
-                    <td>
+                        <td>
                             Address
                             <p>
                             {% if obj.post_inspection.address_updated %}
@@ -118,9 +118,7 @@
                             {% endif %}
                             </p>
                         </td>
-
-                        </td>
-                    <td>Suraksha Pipe
+                        <td>Suraksha Pipe
                             <p>
                             {% if obj.post_inspection.suraksha_pipe_updated %}
                                 <i class="fa fa-check-square text-success" aria-hidden="true"></i>
@@ -130,7 +128,7 @@
                             </p>
 
                         </td>
-                    <td>Profile Photo
+                        <td>Profile Photo
                             <p>
                             {% if obj.post_inspection.profile_photo_updated %}
                                 <i class="fa fa-check-square text-success" aria-hidden="true"></i>
@@ -139,8 +137,7 @@
                             {% endif %}
                             </p>
                         </td>
-
-                    <td>UID Photos
+                        <td>UID Photos
                             <p>
                             {% if obj.post_inspection.uid_photo_updated %}
                                 <i class="fa fa-check-square text-success" aria-hidden="true"></i>
@@ -154,7 +151,7 @@
                         <th class="p-2" colspan="6" style="font-weight:bold; padding-left: 10px;"><b>Last Sales Order:</b> </th>
                     </tr>
                     <tr>
-                        <td colspan="8" class="p-0">
+                        <td colspan="6" class="p-0">
                             <table class="last_sale_order ">
                                 <thead>
                                 <tr>
@@ -163,7 +160,7 @@
                                 </tr>
                                 <tr>
                                     <td>Order Date</td>
-                                    <td>Inv No</td>
+                                    <td>Order No</td>
                                     <td>Status</td>
                                     <td>Channel</td>
                                     <td>Type</td>
@@ -176,7 +173,7 @@
                                     {% for so in obj.salesorder_set.all|dictsortreversed:"order_date"|slice:":6" %}
                                         <tr>
                                             <td>{{ so.order_date|date:'d-m-Y' }}</td>
-                                            <td>{{ so.invoice_number }}</td>
+                                            <td>{{ so.sales_order }}</td>
                                             <td>{{ so.order_status }}</td>
                                             <td>{{ so.channel }}</td>
                                             <td>{{ so.delivery_confirmation_type }}</td>
