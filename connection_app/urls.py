@@ -87,16 +87,16 @@ urlpatterns = [
         views.CustomerProfileView.as_view(),
         name="customer_profile"
     ),
-    url(
-        '^generate-lead-form/(?P<pk>[^/.]+)/$',
+    path(
+        'generate-lead-form/',
         views.GenerateLeadFormView.as_view(),
         name="generate_lead_form"
     ),
-    path(
-        'generate-non-customer-lead-form/',
-        views.GenerateNonCustomerLeadFormView.as_view(),
-        name="generate_non_customer_lead_form"
-    ),
+    # path(
+    #     'generate-non-customer-lead-form/',
+    #     views.GenerateNonCustomerLeadFormView.as_view(),
+    #     name="generate_non_customer_lead_form"
+    # ),
     url(
         '^customer-profile/document-upload/(?P<pk>[^/.]+)/$',
         views.CustomerProfileDocumentUploadFormView.as_view(),
@@ -189,5 +189,10 @@ urlpatterns = [
         '^download-imported-file/(?P<pk>[^/.]+)/$',
         views.DownloadImportedFileView.as_view(),
         name="download_imported_file"
+    ),
+    path(
+        'override-sale/',
+        views.OverrideSaleView.as_view(),
+        name="override_sale"
     ),
 ] + router.urls

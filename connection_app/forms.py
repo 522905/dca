@@ -641,3 +641,15 @@ class GenerateLeadForm(forms.Form):
 		widget=forms.Select,  # This will be dynamically handled in the template
 		required=False
 	)
+
+
+class OverrideSalesForm(forms.Form):
+	customer_photo = forms.CharField(
+		widget=forms.HiddenInput, label='Kitchen Photo', required=True
+	)
+	phone_no = forms.CharField(
+		widget=forms.TextInput, label='Phone No', required=True
+	)
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
