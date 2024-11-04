@@ -1298,3 +1298,11 @@ class ImportData(models.Model):
 		permissions = (
 			("can_use_admin_tools", "Can Use Admin Tools"),
 		)
+
+
+class OverrideSale(models.Model):
+	created_on = models.DateTimeField(auto_now_add=True)
+	updated_on = models.DateTimeField(auto_now=True)
+	customer_photo = models.URLField()
+	phone_no = models.CharField(max_length=10)
+	sold_by = models.ForeignKey(User, on_delete=models.CASCADE)
