@@ -195,4 +195,9 @@ urlpatterns = [
         views.OverrideSaleView.as_view(),
         name="override_sale"
     ),
+    path(
+        'override-sale-list/',
+        views.OverrideSaleListView.as_view(),
+        name="override_sale_list"
+    ),
 ] + router.urls
