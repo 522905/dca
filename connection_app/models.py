@@ -1305,4 +1305,5 @@ class OverrideSale(models.Model):
 	updated_on = models.DateTimeField(auto_now=True)
 	customer_photo = models.URLField()
 	phone_no = models.CharField(max_length=10)
+	customer_profile = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, null=True)
 	sold_by = models.ForeignKey(User, on_delete=models.CASCADE)

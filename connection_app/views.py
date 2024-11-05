@@ -1110,6 +1110,11 @@ class SalesOrderGridMenuView(TemplateView):
 					"name": "Override Sale",
 					"icon": "fa-bars",
 					"url": reverse("connection_app:override_sale"),
+				},
+				{
+					"name": "Override Sale List",
+					"icon": "fa-bars",
+					"url": reverse("connection_app:override_sale_list"),
 				}
 			]
 		}
@@ -1533,7 +1538,7 @@ class BookSalesOrderListView(FormView):
 @method_decorator(login_required, 'dispatch')
 class OverrideSaleView(FormView):
 	form_class = OverrideSalesForm
-	template_name = "connection_app/override_sales.html"
+	template_name = "connection_app/override-sale/override_sale.html"
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
@@ -1551,3 +1556,32 @@ class OverrideSaleView(FormView):
 		)
 		messages.add_message(self.request, messages.INFO, "Sale Overridden Successfully")
 		return HttpResponseRedirect(reverse("connection_app:sales_order_grid_menu_view"))
+
+
+class OverrideSaleListView(ListView):
+	model = OverrideSale
+	template_name = "connection_app/override-sale/override_sale_listview.html"
+	permission = 'has_view_permission'
+	paginate_by = 10  # Number of items per page
+
+	def get_queryset(self):
+		return OverrideSale.objects.filter(sold_by=get_current_user()).order_by('-created_on')
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		sales_orders = self.get_queryset()
+
+		paginator = Paginator(sales_orders, self.paginate_by)
+		page = self.request.GET.get('page')
+
+		try:
+			sales_orders_page = paginator.page(page)
+		except PageNotAnInteger:
+			sales_orders_page = paginator.page(1)
+		except EmptyPage:
+			sales_orders_page = paginator.page(paginator.num_pages)
+
+		context['object_list'] = sales_orders_page
+		context['page_obj'] = sales_orders_page
+		return context
+
