@@ -1307,3 +1307,15 @@ class OverrideSale(models.Model):
 	phone_no = models.CharField(max_length=10)
 	customer_profile = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, null=True)
 	sold_by = models.ForeignKey(User, on_delete=models.CASCADE)
+
+
+class PromotionalSale(models.Model):
+	created_on = models.DateTimeField(auto_now_add=True)
+	updated_on = models.DateTimeField(auto_now=True)
+	customer_photo = models.URLField()
+	phone_no = models.CharField(max_length=10)
+	cylinder_type = models.CharField(max_length=128, null=True, blank=True)
+	customer_profile = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, null=True)
+	sold_by = models.ForeignKey(User, on_delete=models.CASCADE)
+	prize_given = models.BooleanField(blank=True, default=False)
+	prize_given_photo = models.URLField(null=True, blank=True)

@@ -41,6 +41,9 @@
             <li class="submenu_level2">
                 <a href="{% url 'connection_app:sales_order_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-book" aria-hidden="true"></i>Sales Order</a>
             </li>
+            <li class="submenu_level2">
+                <a href="{% url 'connection_app:sales_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-book" aria-hidden="true"></i>Sales</a>
+            </li>
             {% if user|allowed_admin_tools %}
                 <li class="submenu_level2">
                     <a href="{% url 'connection_app:admin_tools_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-book" aria-hidden="true"></i>Admin Tools</a>

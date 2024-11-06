@@ -165,6 +165,11 @@ urlpatterns = [
       views.CustomerGridMenuView.as_view(),
       name="customer_grid_menu_view"
     ),
+    path(
+        'sales-grid-menu-view/',
+        views.SalesGridMenuView.as_view(),
+        name="sales_grid_menu_view"
+    ),
     # path(
     #     'sales-order-portability/',
     #     views.SalesOrderPortabilityFormView.as_view(),
@@ -200,4 +205,19 @@ urlpatterns = [
         views.OverrideSaleListView.as_view(),
         name="override_sale_list"
     ),
+    path(
+        'promotional-sale/',
+        views.PromotionalSaleView.as_view(),
+        name="promotional_sale"
+    ),
+    path(
+        'promotional-sale-list/',
+        views.PromotionalSaleListView.as_view(),
+        name="promotional_sale_list"
+    ),
+    url(
+        '^promotional-sale-allocation-prize/(?P<phone_no>[^/.]+)/$',
+        views.PromotionalSalePrizeAllocationView.as_view(),
+        name="promotional_sale_allocation_prize"
+    )
 ] + router.urls

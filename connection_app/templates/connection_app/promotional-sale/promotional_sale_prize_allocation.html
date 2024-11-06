@@ -1,0 +1,59 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+
+{% block content %}
+{% load material_form %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap"
+    rel="stylesheet">
+<script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
+<div class="main p-2 pt-0 form_label">
+    <form method="post" id="">
+        {% csrf_token %}
+        <div class="card">
+            <div class="card-header">
+                <p class="align-center"><img src="https://arungas.com/public/chhath-puja.jpeg" style="height: 270px" /></p>
+            </div>
+            <div class="card-body">
+                {% form form=form %}{% endform %}
+                <p id="prize_given_photo"></p>
+            </div>
+            <div class="card-footer float-right">
+                <input class="btn btn-success float-right rounded-0" type="submit" value="Submit" />
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+     window.kitchenPhotoUppy = new Uppy.Core({
+		debug: true,
+		autoProceed: true,
+		restrictions: {
+			maxFileSize: 50000000,
+			maxNumberOfFiles: 1,
+			minNumberOfFiles: 1,
+			allowedFileTypes: ['image/*'],
+		}
+	})
+    .use(Uppy.Dashboard, {
+        trigger: '#prize_given_photo',
+        inline: true,
+        target: '#prize_given_photo',
+        showProgressDetails: true,
+        note: 'Image only, 1 file',
+        height: 200,
+        metaFields: [],
+        id: 'prize_given_photo',
+        browserBackButtonClose: false
+    })
+    .use(Uppy.Tus, {
+        endpoint: 'https://tus.dca.arungas.com/files/',
+    })
+    kitchenPhotoUppy.on('complete', result => {
+		$('#id_prize_given_photo').val(result.successful[0].uploadURL);
+	})
+
+</script>
+{% endblock %}

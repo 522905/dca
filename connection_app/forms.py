@@ -183,6 +183,10 @@ class CustomerProfileSearchForm(forms.Form):
 			raise forms.ValidationError("Please enter one of 'Consumer Id' or 'Mobile Number'")
 
 
+class PromotionalSaleSearchForm(forms.Form):
+	phone_number = forms.CharField(required=True)
+
+
 class UpdateAddressForm(forms.Form):
 	house_type = forms.ChoiceField(
 		widget=forms.Select,
@@ -625,17 +629,29 @@ class CustomerProfileSettingsForm(forms.Form):
 	)
 
 
-class GenerateLeadForm(forms.Form):
+class GenerateLeadFormCustomerProfileForm(forms.Form):
+	name = forms.CharField(max_length=128)
+	mobile_number = forms.CharField(max_length=10)
+	address = forms.CharField(
+		widget=forms.Textarea(attrs={'rows': 3})
+	)
+
+
+class GenerateLeadForm(GenerateLeadFormCustomerProfileForm):
+	customer_profile_id = forms.CharField(
+		widget=forms.HiddenInput,
+		required=False
+	)
 	service_types = forms.ModelMultipleChoiceField(
 		queryset=ServiceType.objects.filter(enabled=True),
 		widget=forms.CheckboxSelectMultiple,
 		required=False
 	)
-	products = forms.ModelMultipleChoiceField(
-		queryset=Product.objects.filter(enabled=True),
-		widget=forms.HiddenInput,  # We will handle products dynamically with JavaScript
-		required=False
-	)
+	# products = forms.ModelMultipleChoiceField(
+	# 	queryset=Product.objects.filter(enabled=True),
+	# 	widget=forms.CheckboxSelectMultiple,  # Change this in the template to render in a grid
+	# 	required=False
+	# )
 	sdms_service_requests = forms.ModelChoiceField(
 		queryset=SDMSServiceRequest.objects.filter(enabled=True),
 		widget=forms.Select,  # This will be dynamically handled in the template
@@ -653,3 +669,56 @@ class OverrideSalesForm(forms.Form):
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
+
+
+from django import forms
+
+
+class PromotionalSaleForm(forms.Form):
+	CYLINDER_TYPE_CHOICES = [
+		('14.2Kg', '14.2Kg'),
+		('5Kg', '5Kg'),
+	]
+
+	customer_photo = forms.CharField(
+		widget=forms.HiddenInput, label='Customer Photo', required=True
+	)
+	phone_no = forms.CharField(
+		widget=forms.TextInput, label='Phone No', required=True
+	)
+	cylinder_type = forms.ChoiceField(
+		choices=CYLINDER_TYPE_CHOICES,
+		label='Cylinder Type',
+		required=True
+	)
+
+	def clean(self):
+		from connection_app.models import PromotionalSale
+
+		data = self.cleaned_data
+		if data['cylinder_type'] == '14.2Kg':
+			if PromotionalSale.objects.filter(prize_given=False, phone_no=data['phone_no'],
+			                                  cylinder_type=data['cylinder_type']).count() == 2:
+				raise forms.ValidationError(
+					"Already 2 purchases of 14.2 Kg cyilnder done by customer. Please allocate prize first.")
+
+		if data['cylinder_type'] == '5Kg':
+			if PromotionalSale.objects.filter(prize_given=False, phone_no=data['phone_no'],
+			                                  cylinder_type=data['cylinder_type']).count() == 4:
+				raise forms.ValidationError("Already 4 purchases of 5 Kg cylinder done by customer. Please allocate prize first.")
+
+		return data
+
+
+class PromotionalSalePrizeAllocationForm(forms.Form):
+	phone_no = forms.CharField(
+		widget=forms.TextInput(attrs={'readonly': 'readonly'}), label='Phone No', required=True
+	)
+	prize_given_photo = forms.CharField(
+		widget=forms.HiddenInput, label='Prize Photo', required=True
+	)
+
+	def __init__(self, phone_no=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.fields['phone_no'].initial = phone_no
+		self.fields['phone_no'].disabled = True
