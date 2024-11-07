@@ -717,8 +717,11 @@ class PromotionalSalePrizeAllocationForm(forms.Form):
 	prize_given_photo = forms.CharField(
 		widget=forms.HiddenInput, label='Prize Photo', required=True
 	)
+	cylinder_type = forms.CharField(widget=forms.TextInput, required=True)
 
-	def __init__(self, phone_no=None, *args, **kwargs):
+	def __init__(self, phone_no=None, cylinder_type=None, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.fields['phone_no'].initial = phone_no
 		self.fields['phone_no'].disabled = True
+		self.fields['cylinder_type'].initial = cylinder_type
+		self.fields['cylinder_type'].disabled = True
