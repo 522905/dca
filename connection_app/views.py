@@ -1709,12 +1709,17 @@ class PromotionalSalePrizeAllocationView(FormView):
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
+		context['customer_photos'] = PromotionalSale.objects.filter(
+			phone_no=self.kwargs.get('phone_no'),
+			cylinder_type=self.kwargs.get('cylinder_type'),
+			prize_given=False).all().values('customer_photo').distinct()
 		return context
 
 	def get_form_kwargs(self):
 		kwargs = super().get_form_kwargs()
 		kwargs['initial'] = {
-			'phone_no': self.kwargs.get('phone_no')
+			'phone_no': self.kwargs.get('phone_no'),
+			'cylinder_type': self.kwargs.get('cylinder_type'),
 		}
 		return kwargs
 
@@ -1723,6 +1728,7 @@ class PromotionalSalePrizeAllocationView(FormView):
 
 		for obj in PromotionalSale.objects.filter(
 			phone_no=cleaned_data.get('phone_no'),
+			cylinder_type=cleaned_data.get('cylinder_type'),
 			prize_given=False
 		).all():
 			obj.prize_given = True

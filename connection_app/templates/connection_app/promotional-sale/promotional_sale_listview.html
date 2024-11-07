@@ -34,8 +34,8 @@
                     {% if obj.cylinder_type == '14.2Kg' %}
                         <p class="float-right">
                             {% if obj.phone_count == 2 %}
-                                <a href="{% url 'connection_app:promotional_sale_allocation_prize' phone_no=obj.phone_no %}" data-turbolinks="false">
-                                    ({{ obj.cylinder_type }}) {{ obj.phone_count }} </a>
+                                <a href="{% url 'connection_app:promotional_sale_allocation_prize' phone_no=obj.phone_no cylinder_type=obj.cylinder_type %}" data-turbolinks="false">
+                                    Allocate Prize For {{ obj.cylinder_type }} ({{ obj.phone_count }}) </a>
                             {% else %}
                                 ({{ obj.cylinder_type }}) {{ obj.phone_count }}
                             {% endif %}
@@ -44,8 +44,8 @@
                         {% if obj.cylinder_type == '5Kg' %}
                             <p class="float-right">
                                 {% if obj.phone_count == 4 %}
-                                    <a href="{% url 'connection_app:promotional_sale_allocation_prize' phone_no=obj.phone_no %}" data-turbolinks="false">
-                                        ({{ obj.cylinder_type }}) {{ obj.phone_count }} </a>
+                                    <a href="{% url 'connection_app:promotional_sale_allocation_prize' phone_no=obj.phone_no cylinder_type=obj.cylinder_type %}" data-turbolinks="false">
+                                        Allocate Prize For {{ obj.cylinder_type }} ({{ obj.phone_count }}) </a>
                                 {% else %}
                                     ({{ obj.cylinder_type }}) {{ obj.phone_count }}
                                 {% endif %}

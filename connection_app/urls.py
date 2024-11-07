@@ -215,9 +215,9 @@ urlpatterns = [
         views.PromotionalSaleListView.as_view(),
         name="promotional_sale_list"
     ),
-    url(
-        '^promotional-sale-allocation-prize/(?P<phone_no>[^/.]+)/$',
+    path(
+        'promotional-sale-allocation-prize/<str:phone_no>/<str:cylinder_type>/',
         views.PromotionalSalePrizeAllocationView.as_view(),
-        name="promotional_sale_allocation_prize"
-    )
+        name='promotional_sale_allocation_prize'
+    ),
 ] + router.urls

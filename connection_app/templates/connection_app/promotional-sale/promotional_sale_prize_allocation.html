@@ -1,6 +1,6 @@
 {% extends "material/frontend/base_module.html" %}
 {% load static %}
-
+{% block page_title %}Prize Allocation Form{% endblock %}
 {% block content %}
 {% load material_form %}
 <link rel="stylesheet" href="{% static '/css/style.css' %}" >
@@ -14,7 +14,12 @@
         {% csrf_token %}
         <div class="card">
             <div class="card-header">
-                <p class="align-center"><img src="https://arungas.com/public/chhath-puja.jpeg" style="height: 270px" /></p>
+                <p class="align-center">Prize Allocation</p>
+            </div>
+            <div class="card-body">
+                {% for customer_photo in customer_photos %}
+                    <p><a href="{{ customer_photo.customer_photo }}"><img src="{{ customer_photo.customer_photo }}" alt="Customer Photo" style="height: 75px" /></a></p>
+                {% endfor %}
             </div>
             <div class="card-body">
                 {% form form=form %}{% endform %}
