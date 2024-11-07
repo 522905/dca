@@ -216,8 +216,13 @@ urlpatterns = [
         name="promotional_sale_list"
     ),
     path(
-        'promotional-sale-allocation-prize/<str:phone_no>/<str:cylinder_type>/',
+        'promotional-sale-allocation-prize/<str:parent>/<str:cylinder_type>/',
         views.PromotionalSalePrizeAllocationView.as_view(),
         name='promotional_sale_allocation_prize'
+    ),
+    path(
+        'get-customer-details',
+        views.get_customer_details,
+        name='get_customer_details'
     ),
 ] + router.urls

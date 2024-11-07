@@ -1309,13 +1309,35 @@ class OverrideSale(models.Model):
 	sold_by = models.ForeignKey(User, on_delete=models.CASCADE)
 
 
+class PromotionalSaleCustomer(models.Model):
+	created_on = models.DateTimeField(auto_now_add=True)
+	updated_on = models.DateTimeField(auto_now=True)
+	customer_name = models.CharField(max_length=255)
+	customer_address = models.TextField()
+	phone_no = models.CharField(max_length=10)
+	customer_profile = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, null=True)
+	onboard_by = models.ForeignKey(User, on_delete=models.CASCADE)
+
+
 class PromotionalSale(models.Model):
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
+	parent = models.ForeignKey(PromotionalSaleCustomer, on_delete=models.CASCADE, related_name='promotional_sales')
+	agency_name = models.CharField(max_length=255)
+	sale_order_no = models.CharField(max_length=30)
 	customer_photo = models.URLField()
-	phone_no = models.CharField(max_length=10)
 	cylinder_type = models.CharField(max_length=128, null=True, blank=True)
-	customer_profile = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, null=True)
 	sold_by = models.ForeignKey(User, on_delete=models.CASCADE)
-	prize_given = models.BooleanField(blank=True, default=False)
-	prize_given_photo = models.URLField(null=True, blank=True)
+	prize_allocated = models.BooleanField(default=False)
+	prize_allocation = models.ForeignKey('PrizeAllocation', on_delete=models.CASCADE, null=True, blank=True)
+
+
+class PrizeAllocation(models.Model):
+	created_on = models.DateTimeField(auto_now_add=True)
+	updated_on = models.DateTimeField(auto_now=True)
+	parent = models.ForeignKey(PromotionalSaleCustomer, on_delete=models.CASCADE, related_name='prize_allocation')
+	uid_front_photo = models.URLField()
+	uid_back_photo = models.URLField()
+	prize_given_photo = models.URLField()
+	allocated_by = models.ForeignKey(User, on_delete=models.CASCADE)
+	allocated_on = models.DateTimeField(auto_now_add=True)

@@ -1,59 +1,121 @@
 {% extends "material/frontend/base_module.html" %}
 {% load static %}
-
-{% block content %}
+{% block page_title %}Promotional Sale{% endblock %}
 {% load material_form %}
-<link rel="stylesheet" href="{% static '/css/style.css' %}" >
-<link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css" >
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
-<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap"
-    rel="stylesheet">
-<script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
-<div class="main p-2 pt-0 form_label">
-    <form method="post" id="">
-        {% csrf_token %}
-        <div class="card">
-            <div class="card-header">
-                <p class="align-center"><img src="https://arungas.com/public/chhath-puja.jpeg" style="height: 270px" /></p>
-            </div>
-            <div class="card-body">
-                {% form form=form %}{% endform %}
-                <p id="customer_photo"></p>
-            </div>
-            <div class="card-footer float-right">
-                <input class="btn btn-success float-right rounded-0" type="submit" value="Submit" />
-            </div>
-        </div>
-    </form>
-</div>
-<script>
-     window.kitchenPhotoUppy = new Uppy.Core({
-		debug: true,
-		autoProceed: true,
-		restrictions: {
-			maxFileSize: 50000000,
-			maxNumberOfFiles: 1,
-			minNumberOfFiles: 1,
-			allowedFileTypes: ['image/*'],
-		}
-	})
-    .use(Uppy.Dashboard, {
-        trigger: '#customer_photo',
-        inline: true,
-        target: '#customer_photo',
-        showProgressDetails: true,
-        note: 'Image only, 1 file',
-        height: 200,
-        metaFields: [],
-        id: 'customer_photo',
-        browserBackButtonClose: false
-    })
-    .use(Uppy.Tus, {
-        endpoint: 'https://tus.dca.arungas.com/files/',
-    })
-    kitchenPhotoUppy.on('complete', result => {
-		$('#id_customer_photo').val(result.successful[0].uploadURL);
-	})
+{% block content %}
+    <link rel="stylesheet" href="{% static '/css/style.css' %}">
+    <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap" rel="stylesheet">
+    <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
 
-</script>
+    <div class="main p-2 pt-0 form_label">
+        <form method="post" id="promotional-sale-form">
+            {% csrf_token %}
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p><img src="https://arungas.com/public/chhath-puja.jpeg" style="height: 200px" alt="banner"/></p>
+                        </div>
+                        <div class="col-md-12">
+                            <ul style="font-size: 13px">
+                                <li>*नियम और शर्तें:**</li>
+                                <li>1. इंडेन का ग्राहक होना चाहिए</li>
+                                <li>2. **ई-केवाईसी एवं बेसिक सेफ्टी चेक आवश्यक है**</li>
+                                <li>3. **सेल DAC के साथ होनी चाहिए**</li>
+                                <li>4. **सिलिंडर की संख्या और समय सीमा**:</li>
+                                <li>- 14.2 KG के दो सिलिंडर</li>
+                                <li>- 5 KG के चार सिलिंडर</li>
+                                <li>* यह खरीदारी 20 दिनों के भीतर (8 नवंबर 2024 से 30 नवंबर 2024) तक पूरी होनी चाहिए *</li>
+                                <li>**नोट: इन नियमों और शर्तों का पालन करना अनिवार्य है**</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    {% form form=form %}{% endform %}
+
+                    <!-- Additional input field for agency name if 'Other' is selected -->
+                    <div id="other-agency" style="display:none;">
+                        <label for="id_other_agency_name">Please enter your agency name:</label>
+                        <input type="text" name="other_agency_name" id="id_other_agency_name" class="form-control" />
+                    </div>
+
+                    <label>Cylinder Delivery Photo</label>
+                    <p id="customer_photo"></p>
+                </div>
+
+                <div class="card-footer float-right">
+                    <input class="btn btn-success float-right rounded-0" type="submit" value="Submit" />
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Toggle 'Other' agency name input field based on selection
+        document.getElementById('id_agency_name').addEventListener('change', function() {
+            var otherAgencyField = document.getElementById('other-agency');
+            if (this.value === 'Other') {
+                otherAgencyField.style.display = 'block';
+            } else {
+                otherAgencyField.style.display = 'none';
+                document.getElementById('id_other_agency_name').value = '';
+            }
+        });
+
+        // Initialize Uppy for customer photo upload
+        // Uppy for photo upload
+        window.customerPhotoUppy = new Uppy.Core({
+            debug: true,
+            autoProceed: true,
+            restrictions: {
+                maxFileSize: 50000000,
+                maxNumberOfFiles: 1,
+                minNumberOfFiles: 1,
+                allowedFileTypes: ['image/*'],
+            }
+        })
+        .use(Uppy.Dashboard, {
+            trigger: '#customer_photo',
+            inline: true,
+            target: '#customer_photo',
+            showProgressDetails: true,
+            note: 'Image only, 1 file',
+            height: 200,
+            metaFields: [],
+            id: 'customer_photo',
+            browserBackButtonClose: false
+        })
+        .use(Uppy.Tus, {
+            endpoint: 'https://tus.dca.arungas.com/files/',
+        });
+
+        customerPhotoUppy.on('complete', result => {
+            $('#id_customer_photo').val(result.successful[0].uploadURL);
+        });
+
+        // Phone number search API logic
+        document.getElementById('id_phone_no').addEventListener('blur', function() {
+            var phoneNo = this.value;
+            if (phoneNo) {
+                fetch(`/connection_app/get-customer-details?phone_no=${phoneNo}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.exists) {
+                            document.getElementById('id_customer_name').value = data.customer_name;
+                            document.getElementById('id_customer_address').value = data.customer_address;
+                        } else {
+                            alert("No data found for this phone number.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching customer data:", error);
+                        alert("Failed to fetch customer data.");
+                    });
+            }
+        });
+    </script>
 {% endblock %}

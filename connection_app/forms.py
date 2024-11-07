@@ -671,57 +671,69 @@ class OverrideSalesForm(forms.Form):
 		super().__init__(*args, **kwargs)
 
 
-from django import forms
-
-
 class PromotionalSaleForm(forms.Form):
 	CYLINDER_TYPE_CHOICES = [
 		('14.2Kg', '14.2Kg'),
 		('5Kg', '5Kg'),
 	]
+	AGENCY_NAME_CHOICES = [
+		('Arun Indane', 'Arun Indane'),
+		('Arun Gas Service', 'Arun Gas Service'),
+		('Other', 'Other'),
+	]
 
-	customer_photo = forms.CharField(
-		widget=forms.HiddenInput, label='Customer Photo', required=True
-	)
-	phone_no = forms.CharField(
-		widget=forms.TextInput, label='Phone No', required=True
-	)
-	cylinder_type = forms.ChoiceField(
-		choices=CYLINDER_TYPE_CHOICES,
-		label='Cylinder Type',
-		required=True
-	)
+	sale_order_no = forms.CharField(widget=forms.TextInput, label='Sales Order No', required=True)
+	phone_no = forms.CharField(widget=forms.TextInput, label='Phone No', required=True)
+	agency_name = forms.ChoiceField(choices=AGENCY_NAME_CHOICES, label='Agency Name', required=True)
+	cylinder_type = forms.ChoiceField(choices=CYLINDER_TYPE_CHOICES, label='Cylinder Type', required=True)
+	customer_name = forms.CharField(widget=forms.TextInput, label='Customer Name', required=True)
+	customer_address = forms.CharField(widget=forms.Textarea, label='Address', required=False)
+	customer_photo = forms.CharField(widget=forms.HiddenInput, label='Customer Photo', required=True)
+	other_agency_name = forms.CharField(widget=forms.HiddenInput(), required=False)
 
 	def clean(self):
 		from connection_app.models import PromotionalSale
-
 		data = self.cleaned_data
-		if data['cylinder_type'] == '14.2Kg':
-			if PromotionalSale.objects.filter(prize_given=False, phone_no=data['phone_no'],
-			                                  cylinder_type=data['cylinder_type']).count() == 2:
-				raise forms.ValidationError(
-					"Already 2 purchases of 14.2 Kg cyilnder done by customer. Please allocate prize first.")
 
-		if data['cylinder_type'] == '5Kg':
-			if PromotionalSale.objects.filter(prize_given=False, phone_no=data['phone_no'],
-			                                  cylinder_type=data['cylinder_type']).count() == 4:
-				raise forms.ValidationError("Already 4 purchases of 5 Kg cylinder done by customer. Please allocate prize first.")
+		# Replace 'Other' with the entered agency name if applicable
+		if data.get('agency_name') == 'Other':
+			if not data.get('other_agency_name'):
+				raise forms.ValidationError("Please enter the agency name if 'Other' is selected.")
+			data['agency_name'] = data.get('other_agency_name')
+
+		# Validate sales order uniqueness
+		if PromotionalSale.objects.filter(sale_order_no=data['sale_order_no']).exists():
+			raise forms.ValidationError("Sales Order No already exists.")
+
+		# # Additional validations for cylinder type purchase limits
+		# if data['cylinder_type'] == '14.2Kg' and PromotionalSale.objects.filter(
+		# 		prize_given=False, phone_no=data['phone_no'], cylinder_type=data['cylinder_type']).count() == 2:
+		# 	raise forms.ValidationError("Already 2 purchases of 14.2 Kg cylinder done by customer. Please allocate prize first.")
+		#
+		# if data['cylinder_type'] == '5Kg' and PromotionalSale.objects.filter(
+		# 		prize_given=False, phone_no=data['phone_no'], cylinder_type=data['cylinder_type']).count() == 4:
+		# 	raise forms.ValidationError("Already 4 purchases of 5 Kg cylinder done by customer. Please allocate prize first.")
 
 		return data
 
 
 class PromotionalSalePrizeAllocationForm(forms.Form):
-	phone_no = forms.CharField(
-		widget=forms.TextInput(attrs={'readonly': 'readonly'}), label='Phone No', required=True
+	uid_no = forms.CharField(widget=forms.TextInput, required=True)
+	uid_front_photo = forms.CharField(
+		widget=forms.HiddenInput, label='UID Front Photo', required=True
+	)
+	uid_back_photo = forms.CharField(
+		widget=forms.HiddenInput, label='UID Back Photo', required=True
 	)
 	prize_given_photo = forms.CharField(
 		widget=forms.HiddenInput, label='Prize Photo', required=True
 	)
 	cylinder_type = forms.CharField(widget=forms.TextInput, required=True)
 
-	def __init__(self, phone_no=None, cylinder_type=None, *args, **kwargs):
+	def __init__(self, promotional_sale_customer=None, cylinder_type=None, promotional_sales=None, *args, **kwargs):
 		super().__init__(*args, **kwargs)
-		self.fields['phone_no'].initial = phone_no
-		self.fields['phone_no'].disabled = True
+		self.promotional_sales = promotional_sales
+		self.cylinder_type = cylinder_type
+		self.promotional_sale_customer = promotional_sale_customer
 		self.fields['cylinder_type'].initial = cylinder_type
-		self.fields['cylinder_type'].disabled = True
+		self.fields['cylinder_type'].widget.attrs['readonly'] = True

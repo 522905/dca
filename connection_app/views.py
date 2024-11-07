@@ -12,7 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import F, ExpressionWrapper, fields, Count
-from django.http import Http404, HttpResponseRedirect, HttpResponse
+from django.http import Http404, HttpResponseRedirect, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
@@ -35,7 +35,8 @@ from connection_app.forms import UpdateAddressForm, PostInspectionStartForm, Pre
 from connection_app.jobs import dialogflow_chat_assignment
 from connection_app.jobs import start_sales_order_portability_process, schedule_upload_data
 from connection_app.models import ConnectionApplication, PostInspection, CustomerProfile, Lead, SalesOrder, \
-	SalesOrderPortability, ImportData, BookSalesOrder, CustomerProfileSettings, OverrideSale, PromotionalSale
+	SalesOrderPortability, ImportData, BookSalesOrder, CustomerProfileSettings, OverrideSale, PromotionalSale, \
+	PromotionalSaleCustomer, PrizeAllocation
 from domestic_app import settings
 from reference_data.models import ServiceType, Distributor, Product, SDMSServiceRequest
 from teams.models import SDMSUser, UserProfile
@@ -721,7 +722,7 @@ class GenerateLeadFormView(FormView):
 		# (Implement additional processing logic as needed)
 
 		messages.success(self.request,
-		                 f"Generated Lead Successfully for {', '.join([st.name for st in service_types])}")
+						 f"Generated Lead Successfully for {', '.join([st.name for st in service_types])}")
 		return redirect(reverse("customer_profile", kwargs={'pk': customer_profile.pk}))
 
 	def get_form(self, form_class=None):
@@ -1599,9 +1600,6 @@ class OverrideSaleView(FormView):
 		context = super().get_context_data(**kwargs)
 		return context
 
-	def form_invalid(self, form):
-		print(form)
-
 	def form_valid(self, form):
 		cleaned_data = form.cleaned_data
 		OverrideSale.objects.create(
@@ -1652,19 +1650,24 @@ class PromotionalSaleView(FormView):
 
 	def form_valid(self, form):
 		cleaned_data = form.cleaned_data
-		PromotionalSale.objects.create(
-			phone_no=cleaned_data.get('phone_no'),
-			customer_photo=cleaned_data.get('customer_photo'),
-			sold_by=get_current_user(),
+		customer: PromotionalSaleCustomer = PromotionalSaleCustomer.objects.filter(phone_no=cleaned_data.get('phone_no')).first()
+
+		if not customer:
+			customer = PromotionalSaleCustomer.objects.create(
+				phone_no=cleaned_data.get('phone_no'),
+				customer_name=cleaned_data.get('customer_name'),
+				customer_address=cleaned_data.get('customer_address'),
+				onboard_by=get_current_user()
+			)
+		customer.promotional_sales.create(
+			sale_order_no=cleaned_data.get('sale_order_no'),
 			cylinder_type=cleaned_data.get('cylinder_type'),
+			sold_by=get_current_user(),
+			customer_photo=cleaned_data.get('customer_photo'),
+			agency_name=cleaned_data.get('agency_name'),
 		)
 		messages.add_message(self.request, messages.INFO, "Promotional Sale Added Successfully")
-		if PromotionalSale.objects.filter(phone_no=cleaned_data.get('phone_no'), prize_given=False).count() >= 2:
-			messages.add_message(self.request, messages.INFO, "Eligible For Prize")
-			return HttpResponseRedirect(reverse("connection_app:sales_grid_menu_view"))
-		else:
-			messages.add_message(self.request, messages.INFO, "Promotional Sale Added Successfully")
-			return HttpResponseRedirect(reverse("connection_app:sales_grid_menu_view"))
+		return HttpResponseRedirect(reverse("connection_app:sales_grid_menu_view"))
 
 
 class PromotionalSaleListView(ListView):
@@ -1674,14 +1677,16 @@ class PromotionalSaleListView(ListView):
 	paginate_by = 10  # Number of items per page
 
 	def get_queryset(self):
-		# Get distinct phone numbers and their counts, ignoring duplicates
-		return (
+		# Group by `parent` and count the number of `cylinder_type` where `prize_allocated` is False
+		sales = (
 			PromotionalSale.objects
-			.filter(sold_by=get_current_user(), prize_given=False)  # Filter by the current user
-			.values('cylinder_type', 'phone_no')  # Group by phone_no
-			.annotate(phone_count=Count('phone_no'))  # Count occurrences of each unique phone_no
-			.order_by('-phone_count')  # Order by the count of records
+			.filter(sold_by=self.request.user, prize_allocated=False)
+			.values('parent', 'parent__customer_name', 'parent__customer_address', 'parent__phone_no', 'cylinder_type')
+			.annotate(cylinder_count=Count('cylinder_type'))
+			.order_by('-cylinder_count')
 		)
+
+		return sales
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
@@ -1709,31 +1714,55 @@ class PromotionalSalePrizeAllocationView(FormView):
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
-		context['customer_photos'] = PromotionalSale.objects.filter(
-			phone_no=self.kwargs.get('phone_no'),
+		context['promotional_sale_customer'] = PromotionalSaleCustomer.objects.get(id=self.kwargs.get('parent'))
+		context['promotional_sales'] = PromotionalSale.objects.filter(
 			cylinder_type=self.kwargs.get('cylinder_type'),
-			prize_given=False).all().values('customer_photo').distinct()
+			prize_allocated=False, parent_id=self.kwargs.get('parent')).all()
 		return context
 
 	def get_form_kwargs(self):
 		kwargs = super().get_form_kwargs()
-		kwargs['initial'] = {
-			'phone_no': self.kwargs.get('phone_no'),
-			'cylinder_type': self.kwargs.get('cylinder_type'),
-		}
+
+		kwargs['promotional_sale_customer'] = PromotionalSaleCustomer.objects.get(id=self.kwargs.get('parent'))
+		kwargs['cylinder_type'] = self.kwargs.get('cylinder_type')
+		kwargs['promotional_sales'] = PromotionalSale.objects.filter(
+					cylinder_type=self.kwargs.get('cylinder_type'),
+					prize_allocated=False, parent_id=self.kwargs.get('parent')).all()
 		return kwargs
+
+	def form_invalid(self, form):
+		print(form)
 
 	def form_valid(self, form):
 		cleaned_data = form.cleaned_data
 
-		for obj in PromotionalSale.objects.filter(
-			phone_no=cleaned_data.get('phone_no'),
-			cylinder_type=cleaned_data.get('cylinder_type'),
-			prize_given=False
-		).all():
-			obj.prize_given = True
-			obj.prize_given_photo = cleaned_data.get('prize_given_photo')
+		pa_obj = PrizeAllocation.objects.create(parent=form.promotional_sale_customer,
+									   uid_front_photo=cleaned_data.get('uid_front_photo'),
+									   uid_back_photo=cleaned_data.get('uid_back_photo'),
+									   prize_given_photo=cleaned_data.get('prize_given_photo'),
+									   allocated_by=get_current_user())
+
+		for obj in form.promotional_sales:
+			obj.prize_allocation = pa_obj
+			obj.prize_allocated = True
 			obj.save()
+
 		messages.add_message(self.request, messages.INFO, "Promotional Sale Prize Allocated Added Successfully")
 
 		return HttpResponseRedirect(reverse("connection_app:sales_grid_menu_view"))
+
+
+def get_customer_details(request):
+	phone_no = request.GET.get('phone_no')
+	if not phone_no:
+		return JsonResponse({'exists': False}, safe=False)
+
+	try:
+		customer = PromotionalSaleCustomer.objects.get(phone_no=phone_no)
+		return JsonResponse({
+			'exists': True,
+			'customer_name': customer.customer_name,
+			'customer_address': customer.customer_address,
+		}, safe=False)
+	except PromotionalSale.DoesNotExist:
+		return JsonResponse({'exists': False}, safe=False)

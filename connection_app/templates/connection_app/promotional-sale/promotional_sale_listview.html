@@ -26,35 +26,35 @@
             </span>
          </div>
         {% for obj in object_list %}
-            <div class="card mb-2 app_card" id="{{ obj.id }}_div">
+            <div class="card mb-2 app_card" id="{{ obj.parent }}_div">
                 <div class="card-header pl-2">
                     <p class="float-left">
-                        {{ obj.phone_no }}
+                        {{ obj.parent__customer_name }} - {{ obj.parent__phone_no }}
                     </p>
                     {% if obj.cylinder_type == '14.2Kg' %}
                         <p class="float-right">
-                            {% if obj.phone_count == 2 %}
-                                <a href="{% url 'connection_app:promotional_sale_allocation_prize' phone_no=obj.phone_no cylinder_type=obj.cylinder_type %}" data-turbolinks="false">
-                                    Allocate Prize For {{ obj.cylinder_type }} ({{ obj.phone_count }}) </a>
+                            {% if obj.cylinder_count == 2 %}
+                                <a href="{% url 'connection_app:promotional_sale_allocation_prize' parent=obj.parent cylinder_type=obj.cylinder_type %}" data-turbolinks="false">
+                                    Allocate Prize For {{ obj.cylinder_type }} ({{ obj.cylinder_count }}) </a>
                             {% else %}
-                                ({{ obj.cylinder_type }}) {{ obj.phone_count }}
+                                ({{ obj.cylinder_type }}) {{ obj.cylinder_count }}
                             {% endif %}
                         </p>
                     {% else %}
                         {% if obj.cylinder_type == '5Kg' %}
                             <p class="float-right">
-                                {% if obj.phone_count == 4 %}
-                                    <a href="{% url 'connection_app:promotional_sale_allocation_prize' phone_no=obj.phone_no cylinder_type=obj.cylinder_type %}" data-turbolinks="false">
-                                        Allocate Prize For {{ obj.cylinder_type }} ({{ obj.phone_count }}) </a>
+                                {% if obj.cylinder_count == 4 %}
+                                    <a href="{% url 'connection_app:promotional_sale_allocation_prize' parent=obj.parent cylinder_type=obj.cylinder_type %}" data-turbolinks="false">
+                                        Allocate Prize For {{ obj.cylinder_type }} ({{ obj.cylinder_count }}) </a>
                                 {% else %}
-                                    ({{ obj.cylinder_type }}) {{ obj.phone_count }}
+                                    ({{ obj.cylinder_type }}) {{ obj.cylinder_count }}
                                 {% endif %}
                             </p>
                         {% endif %}
                     {% endif %}
                 </div>
                 <div class="card-footer p-2 block">
-
+                    <p class="float-left">{{ obj.parent__customer_address }}</p>
                 </div>
             </div>
         {% endfor %}

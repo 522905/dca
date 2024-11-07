@@ -17,13 +17,72 @@
                 <p class="align-center">Prize Allocation</p>
             </div>
             <div class="card-body">
-                {% for customer_photo in customer_photos %}
-                    <p><a href="{{ customer_photo.customer_photo }}"><img src="{{ customer_photo.customer_photo }}" alt="Customer Photo" style="height: 75px" /></a></p>
-                {% endfor %}
+                <table>
+                    <tr>
+                        <td>Name:</td>
+                        <td>{{ promotional_sale_customer.customer_name }}</td>
+                    </tr>
+                    <tr>
+                        <td>Address:</td>
+                        <td>{{ promotional_sale_customer.customer_address }}</td>
+                    </tr>
+                    <tr>
+                        <td>Phone No:</td>
+                        <td>{{ promotional_sale_customer.phone_no }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="card-header">
+                <p class="align-center">Valid Purchases By Customer</p>
+            </div>
+            <div class="card-body">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date/Time</th>
+                            <th>Sale Order No</th>
+                            <th>Sold By</th>
+                            <th>Photo</th>
+                        </tr>
+                    </thead>
+                    {% for promotional_sale in promotional_sales %}
+                        <tr>
+                            <td>
+                                {{ promotional_sale.created_on }}
+                            </td>
+                            <td>
+                                {{ promotional_sale.sale_order_no }}
+                            </td>
+                            <td>
+                                {{ promotional_sale.sold_by }}
+                            </td>
+                            <td>
+                                <a href="{{ promotional_sale.customer_photo }}" target="_blank"><img src="{{ promotional_sale.customer_photo }}" alt="photo" style="height: 75px"/></a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
             </div>
             <div class="card-body">
                 {% form form=form %}{% endform %}
-                <p id="prize_given_photo"></p>
+            </div>
+            <div class="card-body">
+                <table>
+                    <tr>
+                        <td>
+                            <label>UID Front Photo</label>
+                            <p id="uid_front_photo"></p>
+                        </td>
+                        <td>
+                            <label>UID Back Photo</label>
+                            <p id="uid_back_photo"></p>
+                        </td>
+                        <td>
+                            <label>Prize Photo</label>
+                            <p id="prize_given_photo"></p>
+                        </td>
+                    </tr>
+                </table>
             </div>
             <div class="card-footer float-right">
                 <input class="btn btn-success float-right rounded-0" type="submit" value="Submit" />
@@ -32,7 +91,7 @@
     </form>
 </div>
 <script>
-     window.kitchenPhotoUppy = new Uppy.Core({
+     window.prizeGivenPhotoUppy = new Uppy.Core({
 		debug: true,
 		autoProceed: true,
 		restrictions: {
@@ -48,7 +107,7 @@
         target: '#prize_given_photo',
         showProgressDetails: true,
         note: 'Image only, 1 file',
-        height: 200,
+        height: 150,
         metaFields: [],
         id: 'prize_given_photo',
         browserBackButtonClose: false
@@ -56,8 +115,64 @@
     .use(Uppy.Tus, {
         endpoint: 'https://tus.dca.arungas.com/files/',
     })
-    kitchenPhotoUppy.on('complete', result => {
+    prizeGivenPhotoUppy.on('complete', result => {
 		$('#id_prize_given_photo').val(result.successful[0].uploadURL);
+	});
+
+    window.uidFrontPhotoUppy = new Uppy.Core({
+		debug: true,
+		autoProceed: true,
+		restrictions: {
+			maxFileSize: 50000000,
+			maxNumberOfFiles: 1,
+			minNumberOfFiles: 1,
+			allowedFileTypes: ['image/*'],
+		}
+	})
+    .use(Uppy.Dashboard, {
+        trigger: '#uid_front_photo',
+        inline: true,
+        target: '#uid_front_photo',
+        showProgressDetails: true,
+        note: 'Image only, 1 file',
+        height: 150,
+        metaFields: [],
+        id: 'uid_front_photo',
+        browserBackButtonClose: false
+    })
+    .use(Uppy.Tus, {
+        endpoint: 'https://tus.dca.arungas.com/files/',
+    })
+    uidFrontPhotoUppy.on('complete', result => {
+		$('#id_uid_front_photo').val(result.successful[0].uploadURL);
+	});
+
+    window.uidBackPhotoUppy = new Uppy.Core({
+		debug: true,
+		autoProceed: true,
+		restrictions: {
+			maxFileSize: 50000000,
+			maxNumberOfFiles: 1,
+			minNumberOfFiles: 1,
+			allowedFileTypes: ['image/*'],
+		}
+	})
+    .use(Uppy.Dashboard, {
+        trigger: '#uid_back_photo',
+        inline: true,
+        target: '#uid_back_photo',
+        showProgressDetails: true,
+        note: 'Image only, 1 file',
+        height: 150,
+        metaFields: [],
+        id: 'uid_back_photo',
+        browserBackButtonClose: false
+    })
+    .use(Uppy.Tus, {
+        endpoint: 'https://tus.dca.arungas.com/files/',
+    })
+    uidBackPhotoUppy.on('complete', result => {
+		$('#id_uid_back_photo').val(result.successful[0].uploadURL);
 	})
 
 </script>
