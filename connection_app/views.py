@@ -1763,14 +1763,19 @@ class PromotionalSalePrizeAllocationView(FormView):
 					prize_allocated=False, parent_id=self.kwargs.get('parent')).all()
 		return kwargs
 
+	def form_invalid(self, form):
+		print(form.errors)
+
 	def form_valid(self, form):
 		cleaned_data = form.cleaned_data
 
 		pa_obj = PrizeAllocation.objects.create(parent=form.promotional_sale_customer,
-									   uid_front_photo=cleaned_data.get('uid_front_photo'),
-									   uid_back_photo=cleaned_data.get('uid_back_photo'),
-									   prize_given_photo=cleaned_data.get('prize_given_photo'),
-									   allocated_by=get_current_user())
+		                                        proof_type=cleaned_data.get('proof_type'),
+		                                        proof_id_no=cleaned_data.get('proof_id_no'),
+		                                        proof_photo_1=cleaned_data.get('proof_photo_1'),
+		                                        proof_photo_2=cleaned_data.get('proof_photo_2'),
+		                                        prize_given_photo=cleaned_data.get('prize_given_photo'),
+		                                        allocated_by=get_current_user())
 
 		for obj in form.promotional_sales:
 			obj.prize_allocation = pa_obj
@@ -1815,11 +1820,15 @@ def get_customer_details_from_consumer_id(request):
 		return JsonResponse({'exists': False}, safe=False)
 
 	try:
-		customer = PromotionalSaleCustomer.objects.get(consumer_id=consumer_id)
+		customer_profile = CustomerProfile.objects.get(consumer_id=consumer_id)
+
 		return JsonResponse({
 			'exists': True,
-			'customer_name': customer.customer_name,
-			'customer_address': customer.customer_address,
+			'customer_name': customer_profile.name,
+			'customer_address': customer_profile.address,
+			'bsc_due_flag': customer_profile.bsc_due_flag,
+			'ekyc': customer_profile.ekyc_flag
 		}, safe=False)
-	except PromotionalSale.DoesNotExist:
+
+	except CustomerProfile.DoesNotExist:
 		return JsonResponse({'exists': False}, safe=False)

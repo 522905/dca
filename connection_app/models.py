@@ -24,7 +24,7 @@ from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTy
 	ConnectionApplicationLeadCommunicationMode, ConnectionInstallationStatus, \
 	PaymentProfileApprovalStatusEnum, CustomerTypeEnum, SalesOrderStatusEnum, InspectionTypeEnum, \
 	PostInspectionStatusEnum, PostInspectionActivityTypeEnum, LeadStatusEnum, SalesOrderPortabilityStatusEnum, \
-	TemplateEnum, ImportDataStatusEnum
+	TemplateEnum, ImportDataStatusEnum, ProofTypeEnum
 from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, FrontOfficeCompleted, \
 	BackOfficeReactivation, BackOfficeRegularisation, \
 	BackOfficeNewConnection, DocumentsReupload, InstallationReviewForm
@@ -749,6 +749,8 @@ class CustomerProfile(models.Model):
 	is_dirty = models.BooleanField(null=True, blank=True)
 	last_refill_date = models.DateTimeField(null=True, blank=True)
 	last_synced_date = models.DateTimeField(null=True, blank=True)
+	bsc_due_flag = models.BooleanField(null=True, blank=True)
+	x_bsc_date = models.DateField(null=True, blank=True)
 
 	def get_do_not_auto_generate_sales_order(self):
 		if self.customer_profile_settings:
@@ -1338,8 +1340,10 @@ class PrizeAllocation(models.Model):
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
 	parent = models.ForeignKey(PromotionalSaleCustomer, on_delete=models.CASCADE, related_name='prize_allocation')
-	uid_front_photo = models.URLField()
-	uid_back_photo = models.URLField()
+	proof_type = models.CharField(max_length=128, choices=ProofTypeEnum.choices, default=ProofTypeEnum.AADHAR)
+	proof_id_no = models.CharField(max_length=128)
+	proof_photo_1 = models.URLField()
+	proof_photo_2 = models.URLField()
 	prize_given_photo = models.URLField()
 	allocated_by = models.ForeignKey(User, on_delete=models.CASCADE)
 	allocated_on = models.DateTimeField(auto_now_add=True)

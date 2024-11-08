@@ -6,7 +6,7 @@ from django_currentuser.middleware import get_current_user
 
 from connection_app.enums import ConnectionApplicationProcessType, ConnectionApplicationLeadStatus, \
 	ConnectionApplicationDocumentsEnum, HouseTypeEnum, PostInspectionActivityTypeEnum, PostInspectionStatusEnum, \
-	TemplateEnum
+	TemplateEnum, ProofTypeEnum
 from inactive_customers.models import InactiveCustomer
 from reference_data.models import ServiceType, Product, SDMSServiceRequest
 from teams.models import SDMSServiceArea, UserProfile
@@ -681,15 +681,16 @@ class PromotionalSaleForm(forms.Form):
 		('Arun Gas Service', 'Arun Gas Service'),
 		('Other', 'Other'),
 	]
-	consumer_id = forms.CharField(widget=forms.TextInput, label='Consumer Id', required=False)
-	sale_order_no = forms.CharField(widget=forms.TextInput, label='Sales Order No', required=True)
-	phone_no = forms.CharField(widget=forms.TextInput, label='Phone No', required=True)
 	agency_name = forms.ChoiceField(choices=AGENCY_NAME_CHOICES, label='Agency Name', required=True)
-	cylinder_type = forms.ChoiceField(choices=CYLINDER_TYPE_CHOICES, label='Cylinder Type', required=True)
+	other_agency_name = forms.CharField(widget=forms.HiddenInput(), required=False)
+	consumer_id = forms.CharField(widget=forms.TextInput, label='Consumer Id', required=False)
 	customer_name = forms.CharField(widget=forms.TextInput, label='Customer Name', required=True)
 	customer_address = forms.CharField(widget=forms.Textarea, label='Address', required=False)
+	sale_order_no = forms.CharField(widget=forms.TextInput, label='Sales Order No', required=True)
+	phone_no = forms.CharField(widget=forms.TextInput, label='Phone No', required=True)
+	cylinder_type = forms.ChoiceField(choices=CYLINDER_TYPE_CHOICES, label='Cylinder Type', required=True)
 	customer_photo = forms.CharField(widget=forms.HiddenInput, label='Customer Photo', required=True)
-	other_agency_name = forms.CharField(widget=forms.HiddenInput(), required=False)
+
 
 	def clean(self):
 		from connection_app.models import PromotionalSale
@@ -709,17 +710,21 @@ class PromotionalSaleForm(forms.Form):
 
 
 class PromotionalSalePrizeAllocationForm(forms.Form):
-	uid_no = forms.CharField(widget=forms.TextInput, required=True)
-	uid_front_photo = forms.CharField(
-		widget=forms.HiddenInput, label='UID Front Photo', required=True
+	proof_type = forms.ChoiceField(
+		choices=ProofTypeEnum.choices,
+		help_text="Select Process Type New Connection, Regularisation, Re-activation"
 	)
-	uid_back_photo = forms.CharField(
-		widget=forms.HiddenInput, label='UID Back Photo', required=True
+	proof_id_no = forms.CharField(widget=forms.TextInput, required=True)
+	proof_photo_1 = forms.CharField(
+		widget=forms.HiddenInput, label='Proof Photo 1', required=True
+	)
+	proof_photo_2 = forms.CharField(
+		widget=forms.HiddenInput, label='Proof Photo 2', required=False
 	)
 	prize_given_photo = forms.CharField(
 		widget=forms.HiddenInput, label='Prize Photo', required=True
 	)
-	cylinder_type = forms.CharField(widget=forms.TextInput, required=True)
+	cylinder_type = forms.CharField(widget=forms.TextInput, label='Cylinder Type', required=True)
 
 	def __init__(self, promotional_sale_customer=None, cylinder_type=None, promotional_sales=None, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -728,3 +733,11 @@ class PromotionalSalePrizeAllocationForm(forms.Form):
 		self.promotional_sale_customer = promotional_sale_customer
 		self.fields['cylinder_type'].initial = cylinder_type
 		self.fields['cylinder_type'].widget.attrs['readonly'] = True
+
+
+	def clean(self):
+		data = self.cleaned_data
+		# Check if proof id already exists
+		if data.get('proof_type') == 'AADHAR' and not data.get('proof_photo_2'):
+			raise forms.ValidationError("Aadhar Front and Back Both Photos are required.")
+		return data

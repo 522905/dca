@@ -86,16 +86,24 @@
 
         // Phone number search API logic
         document.getElementById('id_consumer_id').addEventListener('blur', function() {
+            var agencyName = document.getElementById('id_agency_name').value;
+            if (agencyName === 'Other') {
+                return;
+            }
             var consumerId = this.value;
             if (consumerId) {
                 fetch(`/connection_app/get-customer-details-from-consumer-id?consumer_id=${consumerId}`)
                     .then(response => response.json())
                     .then(data => {
-                        if (data.exists) {
-                            document.getElementById('id_customer_name').value = data.customer_name;
-                            document.getElementById('id_customer_address').value = data.customer_address;
+                        if (!data.exists) {
+                            alert("No data found for this Consumer Id.");
                         } else {
-                            alert("No data found for this phone number.");
+                            if (data.ekyc_flag === false && data.bsc_due_flag === true) {
+                                alert("Customer E-Kyc Pending and Basic Safety Check Is Pending.");
+                            } else {
+                                document.getElementById('id_customer_name').value = data.customer_name;
+                                document.getElementById('id_customer_address').value = data.customer_address;
+                            }
                         }
                     })
                     .catch(error => {

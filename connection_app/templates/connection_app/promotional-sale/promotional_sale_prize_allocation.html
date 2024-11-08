@@ -95,14 +95,14 @@
                 <div class="row prize_update" style="margin: 0;">
                     <div class="col-md-4">
                         <div class="prize_update_wrap">
-                            <label for="id_uid_front_photo">UID Front</label>
-                            <div id="uid_front_photo"></div>
+                            <label for="id_proof_photo_1">Proof Photo 1</label>
+                            <div id="proof_photo_1"></div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="prize_update_wrap">
-                            <label for="id_uid_back_photo">UID Back</label>
-                            <div id="uid_back_photo"></div>
+                            <label for="id_proof_photo_2">Proof Photo 2</label>
+                            <div id="proof_photo_2"></div>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -189,7 +189,7 @@
 		$('#id_prize_given_photo').val(result.successful[0].uploadURL);
 	});
 
-    window.uidFrontPhotoUppy = new Uppy.Core({
+    window.proofPhoto1PhotoUppy = new Uppy.Core({
 		debug: true,
 		autoProceed: true,
 		restrictions: {
@@ -200,24 +200,24 @@
 		}
 	})
     .use(Uppy.Dashboard, {
-        trigger: '#uid_front_photo',
+        trigger: '#proof_photo_1',
         inline: true,
-        target: '#uid_front_photo',
+        target: '#proof_photo_1',
         showProgressDetails: true,
         note: 'Image only, 1 file',
         height: 200,
         metaFields: [],
-        id: 'uid_front_photo',
+        id: 'proof_photo_1',
         browserBackButtonClose: false
     })
     .use(Uppy.Tus, {
         endpoint: 'https://tus.dca.arungas.com/files/',
     })
-    uidFrontPhotoUppy.on('complete', result => {
-		$('#id_uid_front_photo').val(result.successful[0].uploadURL);
+    proofPhoto1PhotoUppy.on('complete', result => {
+		$('#id_proof_photo_1').val(result.successful[0].uploadURL);
 	});
 
-    window.uidBackPhotoUppy = new Uppy.Core({
+    window.proofPhoto2PhotoUppy = new Uppy.Core({
 		debug: true,
 		autoProceed: true,
 		restrictions: {
@@ -228,21 +228,21 @@
 		}
 	})
     .use(Uppy.Dashboard, {
-        trigger: '#uid_back_photo',
+        trigger: '#proof_photo_2',
         inline: true,
-        target: '#uid_back_photo',
+        target: '#proof_photo_2',
         showProgressDetails: true,
         note: 'Image only, 1 file',
         height: 200,
         metaFields: [],
-        id: 'uid_back_photo',
+        id: 'proof_photo_2',
         browserBackButtonClose: false
     })
     .use(Uppy.Tus, {
         endpoint: 'https://tus.dca.arungas.com/files/',
     })
-    uidBackPhotoUppy.on('complete', result => {
-		$('#id_uid_back_photo').val(result.successful[0].uploadURL);
+    proofPhoto2PhotoUppy.on('complete', result => {
+		$('#id_proof_photo_2').val(result.successful[0].uploadURL);
 	})
 
 </script>
