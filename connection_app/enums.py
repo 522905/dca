@@ -191,3 +191,9 @@ class ImportDataStatusEnum(models.TextChoices):
 	TEMPLATE_ERROR = 'TEMPLATE_ERROR', 'Template Error'
 	FAILED = 'FAILED', 'Failed'
 	COMPLETED = 'COMPLETED', 'Completed'
+
+
+class ProofTypeEnum(models.TextChoices):
+	PAN_CARD = 'PAN CARD', 'Pan Card'
+	AADHAR = 'AADHAR', 'Aadhar'
+	DRIVING_LICENSE = 'DRIVING_LICENSE', 'Driving License'
