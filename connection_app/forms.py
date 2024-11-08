@@ -661,7 +661,7 @@ class GenerateLeadForm(GenerateLeadFormCustomerProfileForm):
 
 class OverrideSalesForm(forms.Form):
 	customer_photo = forms.CharField(
-		widget=forms.HiddenInput, label='Kitchen Photo', required=True
+		widget=forms.HiddenInput, label='Customer Photo', required=True
 	)
 	phone_no = forms.CharField(
 		widget=forms.TextInput, label='Phone No', required=True
@@ -681,7 +681,7 @@ class PromotionalSaleForm(forms.Form):
 		('Arun Gas Service', 'Arun Gas Service'),
 		('Other', 'Other'),
 	]
-
+	consumer_id = forms.CharField(widget=forms.TextInput, label='Consumer Id', required=False)
 	sale_order_no = forms.CharField(widget=forms.TextInput, label='Sales Order No', required=True)
 	phone_no = forms.CharField(widget=forms.TextInput, label='Phone No', required=True)
 	agency_name = forms.ChoiceField(choices=AGENCY_NAME_CHOICES, label='Agency Name', required=True)
@@ -704,15 +704,6 @@ class PromotionalSaleForm(forms.Form):
 		# Validate sales order uniqueness
 		if PromotionalSale.objects.filter(sale_order_no=data['sale_order_no']).exists():
 			raise forms.ValidationError("Sales Order No already exists.")
-
-		# # Additional validations for cylinder type purchase limits
-		# if data['cylinder_type'] == '14.2Kg' and PromotionalSale.objects.filter(
-		# 		prize_given=False, phone_no=data['phone_no'], cylinder_type=data['cylinder_type']).count() == 2:
-		# 	raise forms.ValidationError("Already 2 purchases of 14.2 Kg cylinder done by customer. Please allocate prize first.")
-		#
-		# if data['cylinder_type'] == '5Kg' and PromotionalSale.objects.filter(
-		# 		prize_given=False, phone_no=data['phone_no'], cylinder_type=data['cylinder_type']).count() == 4:
-		# 	raise forms.ValidationError("Already 4 purchases of 5 Kg cylinder done by customer. Please allocate prize first.")
 
 		return data
 

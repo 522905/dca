@@ -225,4 +225,9 @@ urlpatterns = [
         views.get_customer_details,
         name='get_customer_details'
     ),
+    path(
+        'get-customer-details-from-consumer-id',
+        views.get_customer_details_from_consumer_id,
+        name='get_customer_details_from_consumer_id'
+    ),
 ] + router.urls

@@ -1314,7 +1314,8 @@ class PromotionalSaleCustomer(models.Model):
 	updated_on = models.DateTimeField(auto_now=True)
 	customer_name = models.CharField(max_length=255)
 	customer_address = models.TextField()
-	phone_no = models.CharField(max_length=10)
+	consumer_id = models.CharField(max_length=28)
+	# phone_no = models.CharField(max_length=10)
 	customer_profile = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, null=True)
 	onboard_by = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -1325,6 +1326,7 @@ class PromotionalSale(models.Model):
 	parent = models.ForeignKey(PromotionalSaleCustomer, on_delete=models.CASCADE, related_name='promotional_sales')
 	agency_name = models.CharField(max_length=255)
 	sale_order_no = models.CharField(max_length=30)
+	phone_no = models.CharField(max_length=10)
 	customer_photo = models.URLField()
 	cylinder_type = models.CharField(max_length=128, null=True, blank=True)
 	sold_by = models.ForeignKey(User, on_delete=models.CASCADE)

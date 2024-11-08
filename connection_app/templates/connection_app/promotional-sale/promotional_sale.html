@@ -16,20 +16,7 @@
                 <div class="card-header">
                     <div class="row">
                         <div class="col-md-12">
-                            <p><img src="https://arungas.com/public/chhath-puja.jpeg" style="height: 200px" alt="banner"/></p>
-                        </div>
-                        <div class="col-md-12">
-                            <ul style="font-size: 13px">
-                                <li>*नियम और शर्तें:**</li>
-                                <li>1. इंडेन का ग्राहक होना चाहिए</li>
-                                <li>2. **ई-केवाईसी एवं बेसिक सेफ्टी चेक आवश्यक है**</li>
-                                <li>3. **सेल DAC के साथ होनी चाहिए**</li>
-                                <li>4. **सिलिंडर की संख्या और समय सीमा**:</li>
-                                <li>- 14.2 KG के दो सिलिंडर</li>
-                                <li>- 5 KG के चार सिलिंडर</li>
-                                <li>* यह खरीदारी 20 दिनों के भीतर (8 नवंबर 2024 से 30 नवंबर 2024) तक पूरी होनी चाहिए *</li>
-                                <li>**नोट: इन नियमों और शर्तों का पालन करना अनिवार्य है**</li>
-                            </ul>
+                            <p><img src="https://arungas.com/public/chhath-puja.jpeg" style="height: 268px" alt="banner"/></p>
                         </div>
                     </div>
                 </div>
@@ -98,10 +85,10 @@
         });
 
         // Phone number search API logic
-        document.getElementById('id_phone_no').addEventListener('blur', function() {
-            var phoneNo = this.value;
-            if (phoneNo) {
-                fetch(`/connection_app/get-customer-details?phone_no=${phoneNo}`)
+        document.getElementById('id_consumer_id').addEventListener('blur', function() {
+            var consumerId = this.value;
+            if (consumerId) {
+                fetch(`/connection_app/get-customer-details-from-consumer-id?consumer_id=${consumerId}`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.exists) {

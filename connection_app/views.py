@@ -1650,16 +1650,19 @@ class PromotionalSaleView(FormView):
 
 	def form_valid(self, form):
 		cleaned_data = form.cleaned_data
-		customer: PromotionalSaleCustomer = PromotionalSaleCustomer.objects.filter(phone_no=cleaned_data.get('phone_no')).first()
+		customer: PromotionalSaleCustomer = PromotionalSaleCustomer.objects.filter(
+			consumer_id=cleaned_data.get('consumer_id')).first()
 
 		if not customer:
 			customer = PromotionalSaleCustomer.objects.create(
-				phone_no=cleaned_data.get('phone_no'),
+				consumer_id=cleaned_data.get('consumer_id'),
+				# phone_no=cleaned_data.get('phone_no'),
 				customer_name=cleaned_data.get('customer_name'),
 				customer_address=cleaned_data.get('customer_address'),
 				onboard_by=get_current_user()
 			)
 		customer.promotional_sales.create(
+			phone_no=cleaned_data.get('phone_no'),
 			sale_order_no=cleaned_data.get('sale_order_no'),
 			cylinder_type=cleaned_data.get('cylinder_type'),
 			sold_by=get_current_user(),
@@ -1681,7 +1684,7 @@ class PromotionalSaleListView(ListView):
 		sales = (
 			PromotionalSale.objects
 			.filter(sold_by=self.request.user, prize_allocated=False)
-			.values('parent', 'parent__customer_name', 'parent__customer_address', 'parent__phone_no', 'cylinder_type')
+			.values('parent', 'parent__customer_name', 'parent__customer_address', 'parent__consumer_id', 'cylinder_type')
 			.annotate(cylinder_count=Count('cylinder_type'))
 			.order_by('-cylinder_count')
 		)
@@ -1730,9 +1733,6 @@ class PromotionalSalePrizeAllocationView(FormView):
 					prize_allocated=False, parent_id=self.kwargs.get('parent')).all()
 		return kwargs
 
-	def form_invalid(self, form):
-		print(form)
-
 	def form_valid(self, form):
 		cleaned_data = form.cleaned_data
 
@@ -1759,6 +1759,22 @@ def get_customer_details(request):
 
 	try:
 		customer = PromotionalSaleCustomer.objects.get(phone_no=phone_no)
+		return JsonResponse({
+			'exists': True,
+			'customer_name': customer.customer_name,
+			'customer_address': customer.customer_address,
+		}, safe=False)
+	except PromotionalSale.DoesNotExist:
+		return JsonResponse({'exists': False}, safe=False)
+
+
+def get_customer_details_from_consumer_id(request):
+	consumer_id = request.GET.get('consumer_id')
+	if not consumer_id:
+		return JsonResponse({'exists': False}, safe=False)
+
+	try:
+		customer = PromotionalSaleCustomer.objects.get(consumer_id=consumer_id)
 		return JsonResponse({
 			'exists': True,
 			'customer_name': customer.customer_name,

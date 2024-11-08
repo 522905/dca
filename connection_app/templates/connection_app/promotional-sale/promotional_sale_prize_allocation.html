@@ -13,34 +13,35 @@
     <form method="post" id="">
         {% csrf_token %}
         <div class="card">
-            <div class="card-header">
-                <p class="align-center">Prize Allocation</p>
-            </div>
             <div class="card-body">
-                <table>
+                <table class="compact-table">
+                    <thead>
+                        <tr>
+                            <th colspan="2">Customer Information</th>
+                        </tr>
+                    </thead>
                     <tr>
-                        <td>Name:</td>
+                        <td><b>Name</b></td>
                         <td>{{ promotional_sale_customer.customer_name }}</td>
                     </tr>
                     <tr>
-                        <td>Address:</td>
+                        <td><b>Address</b></td>
                         <td>{{ promotional_sale_customer.customer_address }}</td>
                     </tr>
                     <tr>
-                        <td>Phone No:</td>
-                        <td>{{ promotional_sale_customer.phone_no }}</td>
+                        <td><b>Consumer Id</b></td>
+                        <td>{{ promotional_sale_customer.consumer_id }}</td>
                     </tr>
                 </table>
-            </div>
-            <div class="card-header">
-                <p class="align-center">Valid Purchases By Customer</p>
-            </div>
-            <div class="card-body">
-                <table>
+                <table class="compact-table">
                     <thead>
+                        <tr>
+                            <th colspan="5">Promotional Sales</th>
+                        </tr>
                         <tr>
                             <th>Date/Time</th>
                             <th>Sale Order No</th>
+                            <th>Phone No</th>
                             <th>Sold By</th>
                             <th>Photo</th>
                         </tr>
@@ -54,35 +55,63 @@
                                 {{ promotional_sale.sale_order_no }}
                             </td>
                             <td>
+                                {{ promotional_sale.phone_no }}
+                            </td>
+                            <td>
                                 {{ promotional_sale.sold_by }}
                             </td>
                             <td>
-                                <a href="{{ promotional_sale.customer_photo }}" target="_blank"><img src="{{ promotional_sale.customer_photo }}" alt="photo" style="height: 75px"/></a>
+                                <a href="{{ promotional_sale.customer_photo }}" target="_blank"><img src="{{ promotional_sale.customer_photo }}" alt="photo" style="height: 65px"/></a>
                             </td>
                         </tr>
                     {% endfor %}
-                </table>
-            </div>
-            <div class="card-body">
-                {% form form=form %}{% endform %}
-            </div>
-            <div class="card-body">
-                <table>
                     <tr>
-                        <td>
-                            <label>UID Front Photo</label>
-                            <p id="uid_front_photo"></p>
-                        </td>
-                        <td>
-                            <label>UID Back Photo</label>
-                            <p id="uid_back_photo"></p>
-                        </td>
-                        <td>
-                            <label>Prize Photo</label>
-                            <p id="prize_given_photo"></p>
+                        <td colspan="5">
+                            {% form form=form %}{% endform %}
                         </td>
                     </tr>
                 </table>
+                {% comment %} <table class="compact-table">
+                    <thead>
+                        <tr>
+                            <th>UID Front</th>
+                            <th>UID Back</th>
+                            <th>Prize</th>
+                        </tr>
+
+                    </thead>
+                    <tr>
+                        <td>
+                            <p id="uid_front_photo"></p>
+                        </td>
+                        <td>
+                            <p id="uid_back_photo"></p>
+                        </td>
+                        <td>
+                            <p id="prize_given_photo"></p>
+                        </td>
+                    </tr>
+                </table> {% endcomment %}
+                <div class="row prize_update" style="margin: 0;">
+                    <div class="col-md-4">
+                        <div class="prize_update_wrap">
+                            <label for="id_uid_front_photo">UID Front</label>
+                            <div id="uid_front_photo"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="prize_update_wrap">
+                            <label for="id_uid_back_photo">UID Back</label>
+                            <div id="uid_back_photo"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="prize_update_wrap">
+                        <label for="id_prize_given_photo">Prize</label>
+                        <div id="prize_given_photo"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="card-footer float-right">
                 <input class="btn btn-success float-right rounded-0" type="submit" value="Submit" />
@@ -90,6 +119,47 @@
         </div>
     </form>
 </div>
+<style>
+    .uppy-Dashboard-innerWrap{ width: 160px !important;}
+    .uppy-Dashboard{ width: 160px !important; margin: 0 auto;}
+    .compact-table {
+        width: 100%; /* Ensures table spans the full width of the parent container */
+        border-collapse: collapse; /* Merges table borders */
+        table-layout: fixed; /* Ensures columns have equal width */
+    }
+    .compact-table th, .compact-table td {
+        padding: 5px; /* Adjust padding as needed */
+        font-size: 13px; /* Font size */
+        border: 1px solid #ddd; /* Adds grid lines */
+        text-align: center; /* Center-aligns text */
+        word-wrap: break-word; /* Allows text to wrap within cells */
+    }
+    .compact-table th {
+        background-color: #f2f2f2; /* Light gray header background */
+        font-weight: bold;
+    }
+    .compact-table tr:nth-child(even) {
+        background-color: #f9f9f9; /* Alternate row color */
+    }
+    {#.compact-table tr:hover {#}
+    {#    background-color: #f1f1f1; /* Hover effect for rows */#}
+    {#}#}
+    .prize_update{ margin-top: 20px;}
+    .prize_update .col-md-4{border: 1px solid #ccc; border-right: 1px solid transparent; margin-bottom: 10px; padding-bottom: 10px !important;}
+    .prize_update .col-md-4:last-child{border-right: 1px solid #ccc;}
+    .prize_update .col-md-4 label{
+        padding: 10px 0 10px 10px;
+        background-color: #f2f2f2;
+        color: #222;
+        display: block;
+        text-align: center;
+        font-weight: bold;
+    }
+    .prize_update .col-md-4{
+       padding: 0;
+    }
+</style>
+
 <script>
      window.prizeGivenPhotoUppy = new Uppy.Core({
 		debug: true,
@@ -107,7 +177,7 @@
         target: '#prize_given_photo',
         showProgressDetails: true,
         note: 'Image only, 1 file',
-        height: 150,
+        height: 200,
         metaFields: [],
         id: 'prize_given_photo',
         browserBackButtonClose: false
@@ -135,7 +205,7 @@
         target: '#uid_front_photo',
         showProgressDetails: true,
         note: 'Image only, 1 file',
-        height: 150,
+        height: 200,
         metaFields: [],
         id: 'uid_front_photo',
         browserBackButtonClose: false
@@ -163,7 +233,7 @@
         target: '#uid_back_photo',
         showProgressDetails: true,
         note: 'Image only, 1 file',
-        height: 150,
+        height: 200,
         metaFields: [],
         id: 'uid_back_photo',
         browserBackButtonClose: false

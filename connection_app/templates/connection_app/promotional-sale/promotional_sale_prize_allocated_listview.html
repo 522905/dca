@@ -10,45 +10,58 @@
     <div class="p-2 pt-0 form_label" style="width: 100%;">
         <div class="card">
             <div class="card-body">
-                <table class="compact-table">
+            <table class="compact-table">
+                <tr>
+                    <th>Customer Name</th>
+                    <th>Consumer Id</th>
+                    <th>Address</th>
+                    <th>Cylinder Count</th>
+                </tr>
+                {% for obj in object_list %}
                     <tr>
-                        <th>Customer Name</th>
-                        <th>Consumer Id</th>
-                        <th>Address</th>
-                        <th>Cylinder Count</th>
-                    </tr>
-                    {% for obj in object_list %}
-                        <tr>
-                            <td>{{ obj.parent__customer_name }}</td>
-                            <td>{{ obj.parent__consumer_id }}</td>
-                            <td>{{ obj.parent__customer_address }}</td>
-                            <td>
-                                {% if obj.cylinder_type == '14.2Kg' %}
+                        <td>{{ obj.parent__customer_name }}</td>
+                        <td>{{ obj.parent__consumer_id }}</td>
+                        <td>{{ obj.parent__customer_address }}</td>
+                        <td>
+                            {% if obj.cylinder_type == '14.2Kg' %}
+                                <p>
+                                    {% if obj.cylinder_count == 2 %}
+                                        <a href="{% url 'connection_app:promotional_sale_allocation_prize' parent=obj.parent cylinder_type=obj.cylinder_type %}" data-turbolinks="false">
+                                            <b>{{ obj.cylinder_type }} ({{ obj.cylinder_count }})</b></a>
+                                    {% else %}
+                                        ({{ obj.cylinder_type }}) {{ obj.cylinder_count }}
+                                    {% endif %}
+                                </p>
+                            {% else %}
+                                {% if obj.cylinder_type == '5Kg' %}
                                     <p>
-                                        {% if obj.cylinder_count == 2 %}
+                                        {% if obj.cylinder_count == 4 %}
                                             <a href="{% url 'connection_app:promotional_sale_allocation_prize' parent=obj.parent cylinder_type=obj.cylinder_type %}" data-turbolinks="false">
                                                 <b>{{ obj.cylinder_type }} ({{ obj.cylinder_count }})</b></a>
                                         {% else %}
                                             ({{ obj.cylinder_type }}) {{ obj.cylinder_count }}
                                         {% endif %}
                                     </p>
-                                {% else %}
-                                    {% if obj.cylinder_type == '5Kg' %}
-                                        <p>
-                                            {% if obj.cylinder_count == 4 %}
-                                                <a href="{% url 'connection_app:promotional_sale_allocation_prize' parent=obj.parent cylinder_type=obj.cylinder_type %}" data-turbolinks="false">
-                                                    <b>{{ obj.cylinder_type }} ({{ obj.cylinder_count }})</b></a>
-                                            {% else %}
-                                                ({{ obj.cylinder_type }}) {{ obj.cylinder_count }}
-                                            {% endif %}
-                                        </p>
-                                    {% endif %}
                                 {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </table>
-            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+{#        {% for obj in object_list %}#}
+{#            <div class="card mb-2 app_card" id="{{ obj.parent }}_div">#}
+{#                <div class="card-header pl-2">#}
+{#                    <p class="float-left">#}
+{#                        {{ obj.parent__customer_name }} - {{ obj.parent__phone_no }}#}
+{#                    </p>#}
+{##}
+{#                </div>#}
+{#                <div class="card-footer p-2 block">#}
+{#                    <p class="float-left">{{ obj.parent__customer_address }}</p>#}
+{#                </div>#}
+{#            </div>#}
+{#        {% endfor %}#}
             <div class="card-footer">
                 <span class="step-links">
                     {% if page_obj.has_previous %}
