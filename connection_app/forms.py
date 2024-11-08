@@ -681,9 +681,9 @@ class PromotionalSaleForm(forms.Form):
 		('Arun Gas Service', 'Arun Gas Service'),
 		('Other', 'Other'),
 	]
-	agency_name = forms.ChoiceField(choices=AGENCY_NAME_CHOICES, label='Agency Name', required=True)
-	other_agency_name = forms.CharField(widget=forms.HiddenInput(), required=False)
 	consumer_id = forms.CharField(widget=forms.TextInput, label='Consumer Id', required=False)
+	agency_name = forms.CharField(widget=forms.TextInput, label='Agency Name', required=True)
+	other_agency_name = forms.CharField(widget=forms.HiddenInput(), required=False)
 	customer_name = forms.CharField(widget=forms.TextInput, label='Customer Name', required=True)
 	customer_address = forms.CharField(widget=forms.Textarea, label='Address', required=False)
 	sale_order_no = forms.CharField(widget=forms.TextInput, label='Sales Order No', required=True)

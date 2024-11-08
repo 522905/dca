@@ -24,16 +24,22 @@
                 <div class="card-body">
                     {% form form=form %}{% endform %}
 
-                    <!-- Additional input field for agency name if 'Other' is selected -->
-                    <div id="other-agency" style="display:none;">
-                        <label for="id_other_agency_name">Please enter your agency name:</label>
-                        <input type="text" name="other_agency_name" id="id_other_agency_name" class="form-control" />
+{#                    <!-- Additional input field for agency name if 'Other' is selected -->#}
+{#                    <div id="other-agency" style="display:none;">#}
+{#                        <label for="id_other_agency_name">Please enter your agency name:</label>#}
+{#                        <input type="text" name="other_agency_name" id="id_other_agency_name" class="form-control" />#}
+{#                    </div>#}
+
+                      <div class="row">
+                        <div class="col-xs-6">
+                            <label>Cylinder Delivery Photo</label>
+                            <p id="customer_photo"></p>
+                        </div>
+                        <div class="col-xs-6 d-flex align-items-center justify-content-center" style="font-size: 20px;">
+                            <div id="customer_details"></div>
+                        </div>
                     </div>
-
-                    <label>Cylinder Delivery Photo</label>
-                    <p id="customer_photo"></p>
                 </div>
-
                 <div class="card-footer float-right">
                     <input class="btn btn-success float-right rounded-0" type="submit" value="Submit" />
                 </div>
@@ -98,11 +104,19 @@
                         if (!data.exists) {
                             alert("No data found for this Consumer Id.");
                         } else {
-                            if (data.ekyc_flag === false && data.bsc_due_flag === true) {
+                            if (data.ekyc_flag === false && data.bsc_due_flag === true && data.customer_type !== 'UJJWALA') {
                                 alert("Customer E-Kyc Pending and Basic Safety Check Is Pending.");
                             } else {
+                                {#document.getElementById('ekyc_status').value = "E-KYC Status: " + data.ekyc + " Basic Safety Check Status: " + data.bsc_due_flag;#}
+                                document.getElementById('id_agency_name').value = data.distributor_name;
                                 document.getElementById('id_customer_name').value = data.customer_name;
                                 document.getElementById('id_customer_address').value = data.customer_address;
+                                // populate ekyc anmd basic safety check data details in the div customer_details
+                                document.getElementById('customer_details').innerHTML = `
+                                    <p>Customer Type: ${data.customer_type}</p>
+                                    <p>E-KYC Status: ${data.ekyc}</p>
+                                    <p>Basic Safety Check Due: ${data.bsc_due_flag}</p>
+                                `;
                             }
                         }
                     })

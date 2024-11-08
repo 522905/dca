@@ -1826,8 +1826,10 @@ def get_customer_details_from_consumer_id(request):
 			'exists': True,
 			'customer_name': customer_profile.name,
 			'customer_address': customer_profile.address,
-			'bsc_due_flag': customer_profile.bsc_due_flag,
-			'ekyc': customer_profile.ekyc_flag
+			'bsc_due_flag': 'No' if customer_profile.x_bsc_date is not None else 'Yes',
+			'ekyc': 'Not Done' if customer_profile.ekyc_flag is None or customer_profile.ekyc_flag == False else 'Done',
+			'distributor_name': customer_profile.distributor_name,
+			'customer_type': customer_profile.customer_type
 		}, safe=False)
 
 	except CustomerProfile.DoesNotExist:
