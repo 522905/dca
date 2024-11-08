@@ -75,17 +75,19 @@
                     <div class="col-md-4">
                         <div class="prize_update_wrap">
                             <label for="id_uid_front_photo">Proof Photo 1</label>
-                            <a href="{{ prize_allocation.uid_front_photo }}" target="_blank">
-                                <img src="{{ prize_allocation.uid_front_photo }}" style="height: 100px" alt="UID Front Photo">
+                            <a href="{{ prize_allocation.proof_photo_1 }}" target="_blank">
+                                <img src="{{ prize_allocation.proof_photo_1 }}" style="height: 100px" alt="UID Front Photo">
                             </a>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="prize_update_wrap">
                             <label for="id_uid_back_photo">Proof Photo 2</label>
-                            <a href="{{ prize_allocation.uid_back_photo }}" target="_blank">
-                                <img src="{{ prize_allocation.uid_back_photo }}" style="height: 100px" alt="UID Back Photo">
-                            </a>
+                            {% if prize_allocation.proof_photo_2 %}
+                                <a href="{{ prize_allocation.proof_photo_2 }}" target="_blank">
+                                    <img src="{{ prize_allocation.proof_photo_2 }}" style="height: 100px" alt="UID Back Photo">
+                                </a>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-md-4">
