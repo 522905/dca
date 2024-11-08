@@ -1205,6 +1205,11 @@ class SalesGridMenuView(TemplateView):
 					"name": "Promotional Sale List",
 					"icon": "fa-bars",
 					"url": reverse("connection_app:promotional_sale_list"),
+				},
+				{
+					"name": "Prize Allocation List",
+					"icon": "fa-bars",
+					"url": reverse("connection_app:prize_allocation_list"),
 				}
 			]
 		}
@@ -1710,6 +1715,31 @@ class PromotionalSaleListView(ListView):
 		return context
 
 
+class PrizeAllocationListView(ListView):
+	model = PrizeAllocation
+	template_name = "connection_app/promotional-sale/prize_allocation_listview.html"
+	permission = 'has_view_permission'
+	paginate_by = 10  # Number of items per page
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		sales_orders = self.get_queryset()
+
+		paginator = Paginator(sales_orders, self.paginate_by)
+		page = self.request.GET.get('page')
+
+		try:
+			sales_orders_page = paginator.page(page)
+		except PageNotAnInteger:
+			sales_orders_page = paginator.page(1)
+		except EmptyPage:
+			sales_orders_page = paginator.page(paginator.num_pages)
+
+		context['object_list'] = sales_orders_page
+		context['page_obj'] = sales_orders_page
+		return context
+
+
 @method_decorator(login_required, 'dispatch')
 class PromotionalSalePrizeAllocationView(FormView):
 	form_class = PromotionalSalePrizeAllocationForm
@@ -1750,6 +1780,17 @@ class PromotionalSalePrizeAllocationView(FormView):
 		messages.add_message(self.request, messages.INFO, "Promotional Sale Prize Allocated Added Successfully")
 
 		return HttpResponseRedirect(reverse("connection_app:sales_grid_menu_view"))
+
+
+@method_decorator(login_required, 'dispatch')
+class PrizeAllocationView(TemplateView):
+	template_name = "connection_app/promotional-sale/prize_allocation.html"
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['prize_allocation'] = PrizeAllocation.objects.get(id=kwargs.get('pk'))
+		context['promotional_sales'] = PromotionalSale.objects.filter(prize_allocation_id=kwargs.get('pk')).all()
+		return context
 
 
 def get_customer_details(request):

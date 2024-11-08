@@ -1,0 +1,232 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block page_title %}Prize Allocation Form{% endblock %}
+{% block content %}
+{% load material_form %}
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap"
+    rel="stylesheet">
+<script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
+<div class="main p-2 pt-0 form_label">
+    <form method="post" id="">
+        {% csrf_token %}
+        <div class="card">
+            <div class="card-body">
+                <table class="compact-table">
+                    <thead>
+                        <tr>
+                            <th colspan="2">Customer Information</th>
+                        </tr>
+                    </thead>
+                    <tr>
+                        <td><b>Name</b></td>
+                        <td>{{ prize_allocation.parent.customer_name }}</td>
+                    </tr>
+                    <tr>
+                        <td><b>Address</b></td>
+                        <td>{{ prize_allocation.parent.customer_address }}</td>
+                    </tr>
+                    <tr>
+                        <td><b>Consumer Id</b></td>
+                        <td>{{ prize_allocation.parent.consumer_id }}</td>
+                    </tr>
+                </table>
+                <table class="compact-table">
+                    <thead>
+                        <tr>
+                            <th colspan="5">Promotional Sales</th>
+                        </tr>
+                        <tr>
+                            <th>Date/Time</th>
+                            <th>Sale Order No</th>
+                            <th>Phone No</th>
+                            <th>Sold By</th>
+                            <th>Photo</th>
+                        </tr>
+                    </thead>
+                    {% for promotional_sale in promotional_sales %}
+                        <tr>
+                            <td>
+                                {{ promotional_sale.created_on }}
+                            </td>
+                            <td>
+                                {{ promotional_sale.sale_order_no }}
+                            </td>
+                            <td>
+                                {{ promotional_sale.phone_no }}
+                            </td>
+                            <td>
+                                {{ promotional_sale.sold_by }}
+                            </td>
+                            <td>
+                                <a href="{{ promotional_sale.customer_photo }}" target="_blank"><img src="{{ promotional_sale.customer_photo }}" alt="photo" style="height: 65px"/></a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    <tr>
+                        <td colspan="5">
+                            {% form form=form %}{% endform %}
+                        </td>
+                    </tr>
+                </table>
+                <div class="row prize_update" style="margin: 0;">
+                    <div class="col-md-4">
+                        <div class="prize_update_wrap">
+                            <label for="id_uid_front_photo">UID Front</label>
+                            <img src="{{ prize_allocation.uid_front_photo }}" style="height: 100px" alt="UID Front Photo">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="prize_update_wrap">
+                            <label for="id_uid_back_photo">UID Back</label>
+                            <img src="{{ prize_allocation.uid_back_photo }}" style="height: 100px" alt="UID Back Photo">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="prize_update_wrap">
+                            <label for="id_prize_given_photo">Prize</label>
+                            <img src="{{ prize_allocation.prize_given_photo }}" style="height: 100px" alt="Prize Given Photo">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer float-right">
+                <p class="float-right">
+                    <span class="text-black back_button">
+                        <input class="btn btn-secondary" type="button" value="Back" onclick="history.back()" />
+                    </span>
+                </p>
+            </div>
+        </div>
+    </form>
+</div>
+<style>
+    .uppy-Dashboard-innerWrap{ width: 160px !important;}
+    .uppy-Dashboard{ width: 160px !important; margin: 0 auto;}
+    .compact-table {
+        width: 100%; /* Ensures table spans the full width of the parent container */
+        border-collapse: collapse; /* Merges table borders */
+        table-layout: fixed; /* Ensures columns have equal width */
+    }
+    .compact-table th, .compact-table td {
+        padding: 5px; /* Adjust padding as needed */
+        font-size: 13px; /* Font size */
+        border: 1px solid #ddd; /* Adds grid lines */
+        text-align: center; /* Center-aligns text */
+        word-wrap: break-word; /* Allows text to wrap within cells */
+    }
+    .compact-table th {
+        background-color: #f2f2f2; /* Light gray header background */
+        font-weight: bold;
+    }
+    .compact-table tr:nth-child(even) {
+        background-color: #f9f9f9; /* Alternate row color */
+    }
+    {#.compact-table tr:hover {#}
+    {#    background-color: #f1f1f1; /* Hover effect for rows */#}
+    {#}#}
+    .prize_update{ margin-top: 20px;}
+    .prize_update .col-md-4{border: 1px solid #ccc; border-right: 1px solid transparent; margin-bottom: 10px; padding-bottom: 10px !important;}
+    .prize_update .col-md-4:last-child{border-right: 1px solid #ccc;}
+    .prize_update .col-md-4 label{
+        padding: 10px 0 10px 10px;
+        background-color: #f2f2f2;
+        color: #222;
+        display: block;
+        text-align: center;
+        font-weight: bold;
+    }
+    .prize_update .col-md-4{
+       padding: 0;
+    }
+</style>
+
+<script>
+     window.prizeGivenPhotoUppy = new Uppy.Core({
+		debug: true,
+		autoProceed: true,
+		restrictions: {
+			maxFileSize: 50000000,
+			maxNumberOfFiles: 1,
+			minNumberOfFiles: 1,
+			allowedFileTypes: ['image/*'],
+		}
+	})
+    .use(Uppy.Dashboard, {
+        trigger: '#prize_given_photo',
+        inline: true,
+        target: '#prize_given_photo',
+        showProgressDetails: true,
+        note: 'Image only, 1 file',
+        height: 200,
+        metaFields: [],
+        id: 'prize_given_photo',
+        browserBackButtonClose: false
+    })
+    .use(Uppy.Tus, {
+        endpoint: 'https://tus.dca.arungas.com/files/',
+    })
+    prizeGivenPhotoUppy.on('complete', result => {
+		$('#id_prize_given_photo').val(result.successful[0].uploadURL);
+	});
+
+    window.uidFrontPhotoUppy = new Uppy.Core({
+		debug: true,
+		autoProceed: true,
+		restrictions: {
+			maxFileSize: 50000000,
+			maxNumberOfFiles: 1,
+			minNumberOfFiles: 1,
+			allowedFileTypes: ['image/*'],
+		}
+	})
+    .use(Uppy.Dashboard, {
+        trigger: '#uid_front_photo',
+        inline: true,
+        target: '#uid_front_photo',
+        showProgressDetails: true,
+        note: 'Image only, 1 file',
+        height: 200,
+        metaFields: [],
+        id: 'uid_front_photo',
+        browserBackButtonClose: false
+    })
+    .use(Uppy.Tus, {
+        endpoint: 'https://tus.dca.arungas.com/files/',
+    })
+    uidFrontPhotoUppy.on('complete', result => {
+		$('#id_uid_front_photo').val(result.successful[0].uploadURL);
+	});
+
+    window.uidBackPhotoUppy = new Uppy.Core({
+		debug: true,
+		autoProceed: true,
+		restrictions: {
+			maxFileSize: 50000000,
+			maxNumberOfFiles: 1,
+			minNumberOfFiles: 1,
+			allowedFileTypes: ['image/*'],
+		}
+	})
+    .use(Uppy.Dashboard, {
+        trigger: '#uid_back_photo',
+        inline: true,
+        target: '#uid_back_photo',
+        showProgressDetails: true,
+        note: 'Image only, 1 file',
+        height: 200,
+        metaFields: [],
+        id: 'uid_back_photo',
+        browserBackButtonClose: false
+    })
+    .use(Uppy.Tus, {
+        endpoint: 'https://tus.dca.arungas.com/files/',
+    })
+    uidBackPhotoUppy.on('complete', result => {
+		$('#id_uid_back_photo').val(result.successful[0].uploadURL);
+	})
+
+</script>
+{% endblock %}

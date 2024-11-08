@@ -216,9 +216,19 @@ urlpatterns = [
         name="promotional_sale_list"
     ),
     path(
+        'prize-allocation-list/',
+        views.PrizeAllocationListView.as_view(),
+        name="prize_allocation_list"
+    ),
+    path(
         'promotional-sale-allocation-prize/<str:parent>/<str:cylinder_type>/',
         views.PromotionalSalePrizeAllocationView.as_view(),
         name='promotional_sale_allocation_prize'
+    ),
+    url(
+        '^prize-allocation/(?P<pk>[^/.]+)/$',
+        views.PrizeAllocationView.as_view(),
+        name="prize_allocation"
     ),
     path(
         'get-customer-details',
