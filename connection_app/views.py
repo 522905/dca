@@ -23,7 +23,8 @@ from django.views.generic import DetailView, ListView, FormView, TemplateView
 from django_currentuser.middleware import get_current_user
 from django_filters.views import FilterView
 
-from connection_app.camunda_functions import start_process_return_sales_order, start_book_sales_order_camunda_process
+from connection_app.camunda_functions import start_process_return_sales_order, start_book_sales_order_camunda_process, \
+	start_processes_for_return_sales_order_list
 from connection_app.enums import PostInspectionStatusEnum, InspectionTypeEnum, PostInspectionActivityTypeEnum, \
 	ConnectionApplicationDocumentsEnum, SalesOrderStatusEnum
 from connection_app.forms import UpdateAddressForm, PostInspectionStartForm, PreviewPostInspectionForm, \
@@ -1550,12 +1551,17 @@ class CancelSalesOrderListView(FormView):
 		return context
 
 	def form_valid(self, form):
-		for so in self.qs():
-			# Production Code
-			# django_rq.enqueue(start_process_return_auto_sales_order, args=(so.id, so.parent.distributor_code,))
+		# Production Code
+		django_rq.enqueue(
+			start_processes_for_return_sales_order_list,
+			args=(
+				self.qs
+			)
+		)
 
-			# Local Code
-			start_process_return_sales_order(so.id, so.parent.distributor_code)
+		# Local Code
+		# start_processes_for_return_sales_order_list(self.qs)
+
 		return HttpResponseRedirect(reverse('connection_app:cancel_sales_order_list'))
 
 

@@ -6,10 +6,11 @@ import requests
 
 from connection_app.enums import SalesOrderStatusEnum
 from connection_app.jobs import start_read_customer_profile
-from connection_app.models import SalesOrder
+
 from domestic_app.settings import CAMUNDA_BASE_URL
 from reference_data.models import Distributor
 from ujjwala.camunda_functions import start_process_in_camunda_v2, is_process_exist_in_camunda
+from ujjwala.jobs import ensure_db_connection
 from ujjwala.ujjwala_functions import evaluate_change_cylinder_type_requests
 
 logger = logging.getLogger(__name__)
@@ -19,7 +20,7 @@ def get_customer_profile(consumer_id, name, address, distributor_code):
 	from connection_app.models import CustomerProfile
 	from connection_app.jobs import start_read_customer_profile
 
-	distributor = Distributor.objects.filter(code=distributor_code).first()
+	distributor: Distributor = Distributor.objects.filter(code=distributor_code).first()
 	cp_obj: CustomerProfile = CustomerProfile.objects.filter(consumer_id=consumer_id).first()
 
 	if not cp_obj:
@@ -31,6 +32,12 @@ def get_customer_profile(consumer_id, name, address, distributor_code):
 			distributor_code=distributor_code,
 		)
 		django_rq.enqueue(start_read_customer_profile, args=(cp_obj.id,))
+	else:
+		if cp_obj.distributor != distributor:
+			cp_obj.distributor = distributor
+			cp_obj.distributor_code = distributor.code
+			cp_obj.distributor_name = distributor.name
+			cp_obj.save()
 	return cp_obj
 
 
@@ -78,6 +85,11 @@ def start_process_fetch_sales_order_details_from_sdms(so_id, distributor_code):
 		print(res)
 
 
+def start_processes_for_return_sales_order_list(qs):
+	for so in qs:
+		start_process_return_sales_order(so.id, so.parent.distributor_code)
+
+
 def start_process_return_sales_order(so_id, distributor_code):
 	from connection_app.models import SalesOrder
 
@@ -86,6 +98,7 @@ def start_process_return_sales_order(so_id, distributor_code):
 	if not so_obj:
 		raise Exception("Sales Order Id Not Found")
 
+	data = []
 	existing = requests.post(
 		f'{CAMUNDA_BASE_URL}/process-instance',
 		json={
@@ -93,7 +106,7 @@ def start_process_return_sales_order(so_id, distributor_code):
 				{
 					"name": "sales_order_id",
 					"operator": "eq",
-					"value": str(so_id)
+					"value": so_id
 				},
 				{
 					"name": "distributor_code",
@@ -103,12 +116,12 @@ def start_process_return_sales_order(so_id, distributor_code):
 			],
 			"processDefinitionKey": "Process_book_sales_order"
 		}).json()
-
 	# distributor_code = "0000110338" if "gas" in distributor_code else "0000305948"
 
 	# if so_obj.parent.distributor_code != distributor_code:
 	# 	so_obj.parent.distributor_code = distributor_code
 	# 	so_obj.parent.save()
+	#
 
 	if len(existing) == 0:
 		variables = {
@@ -144,13 +157,15 @@ def start_process_fetch_subsidy_status_of_customer_from_sdms(phone_number):
 	# TODO
 
 
+@ensure_db_connection
 def create_sales_order(so, distributor_code):
 	"""
 		Create Sales Order In Connection App For Given Sales Order Object From SDMS
 	"""
-	from connection_app.models import SalesOrder
+	from connection_app.models import SalesOrder, Distributor
 
 	cp_obj = get_customer_profile(so["Relationship Id"], so["Consumer Name"], so["Consumer Address"], distributor_code)
+	distributor: Distributor = Distributor.objects.filter(code=distributor_code).first()
 
 	so_obj = SalesOrder.objects.create(
 		parent=cp_obj,
@@ -178,7 +193,8 @@ def create_sales_order(so, distributor_code):
 		delivery_confirm_full_name=so['Delivery Confirm Full Name'],
 		mobile_number=so['Mobile Number'],
 		tatkal_order=so['Tatkal Order'],
-		portability_flag=True if so['Portability Flag'] else False
+		portability_flag=True if so['Portability Flag'] else False,
+		distributor_name=distributor.name
 	)
 	print(so_obj)
 	return so_obj
@@ -258,6 +274,8 @@ def process_update_sales_order_in_dca(sales_order_list, distributor_code):
 			"Portability Flag": "N"
 		 }
 	"""
+	from connection_app.models import SalesOrder
+
 	for so in sales_order_list:
 		try:
 			so_obj: SalesOrder = SalesOrder.objects.filter(
