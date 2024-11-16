@@ -875,6 +875,7 @@ def update_returned_booked_order(sales_order_id, status):
 
 	variables = {}
 	if status == 'RETURNED':
+		so_obj.return_marked = True
 		so_obj.transition_sales_order_returned()
 		variables['next_order_return_date_time'] = {"value": get_next_midnight().isoformat()}
 		variables['order_canceled'] = {"value": False}
@@ -886,6 +887,17 @@ def update_returned_booked_order(sales_order_id, status):
 		variables['order_canceled'] = {"value": True}
 
 	so_obj.save()
+
+	if status in ['RETURNED', 'CANCELLED']:
+		if so_obj.parent.distributor:
+			start_process_fetch_sales_order_details_from_sdms(so_obj.id, so_obj.parent.distributor.code)
+		elif "arun gas" in so_obj.distributor_name.lower():
+			start_process_fetch_sales_order_details_from_sdms(so_obj.id, "0000110338")
+		elif "arun indane" in so_obj.distributor_name.lower():
+			start_process_fetch_sales_order_details_from_sdms(so_obj.id, "0000305948")
+		else:
+			print("Could Not Find Valid Distributor")
+
 	return variables
 
 

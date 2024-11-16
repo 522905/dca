@@ -1102,6 +1102,7 @@ class SalesOrder(models.Model):
 	hide_from_view = models.BooleanField(default=False)
 	is_dirty = models.BooleanField(null=True, blank=True)
 	last_synced_on = models.DateTimeField(null=True, blank=True)
+	return_marked = models.BooleanField(null=True, blank=True)
 
 	class Meta:
 		constraints = [
@@ -1176,14 +1177,7 @@ class SalesOrder(models.Model):
 		),
 	)
 	def transition_sales_order_returned(self, *args, **kwargs):
-		if self.parent.distributor:
-			start_process_fetch_sales_order_details_from_sdms(self.id, self.parent.distributor.code)
-		elif "arun gas" in self.distributor_name.lower():
-			start_process_fetch_sales_order_details_from_sdms(self.id, "0000110338")
-		elif "arun indane" in self.distributor_name.lower():
-			start_process_fetch_sales_order_details_from_sdms(self.id, "0000305948")
-		else:
-			print("Could Not Find Valid Distributor")
+		pass
 
 
 class SalesOrderInvoice(models.Model):
