@@ -194,7 +194,7 @@ def create_sales_order(so, distributor_code):
 		mobile_number=so['Mobile Number'],
 		tatkal_order=so['Tatkal Order'],
 		portability_flag=True if so['Portability Flag'] else False,
-		distributor_name=distributor.name
+		full_filled_by_distributor=distributor
 	)
 	print(so_obj)
 	return so_obj

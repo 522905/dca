@@ -1102,6 +1102,7 @@ class SalesOrder(models.Model):
 	hide_from_view = models.BooleanField(default=False)
 	is_dirty = models.BooleanField(null=True, blank=True)
 	last_synced_on = models.DateTimeField(null=True, blank=True)
+	full_filled_by_distributor = models.ForeignKey(Distributor, on_delete=models.PROTECT, null=True, blank=True)
 	return_marked = models.BooleanField(null=True, blank=True)
 
 	class Meta:
