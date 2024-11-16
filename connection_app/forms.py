@@ -741,3 +741,57 @@ class PromotionalSalePrizeAllocationForm(forms.Form):
 		if data.get('proof_type') == 'AADHAR' and not data.get('proof_photo_2'):
 			raise forms.ValidationError("Aadhar Front and Back Both Photos are required.")
 		return data
+
+
+class ChangeAddressForm(forms.Form):
+	house_type = forms.ChoiceField(
+		widget=forms.Select,
+		choices=HouseTypeEnum.choices,
+		required=False
+	)
+	house_no = forms.CharField(
+		widget=forms.TextInput, label='House No.', required=True
+	)
+	room_no = forms.CharField(
+		widget=forms.TextInput, label='Room No', required=True
+	)
+	floor = forms.CharField(
+		widget=forms.TextInput, label='Floor', required=True
+	)
+	street_no = forms.CharField(
+		widget=forms.TextInput, label='Street No', required=True
+	)
+	landmark = forms.CharField(
+		widget=forms.TextInput, label='Landmark', required=True
+	)
+	village = forms.CharField(
+		widget=forms.TextInput, label='Village', required=True
+	)
+	pincode = forms.CharField(
+		widget=forms.TextInput, label='Pin Code', required=True
+	)
+
+	# def save(self):
+	# 	data = self.cleaned_data
+		# obj = self.post_inspection
+		# obj.address_json = {
+		# 	"house_type": data.get('house_type', ''),
+		# 	"house_no": data.get('house_no', ''),
+		# 	"room_no": data.get('room_no', ''),
+		# 	"floor": data.get('floor', ''),
+		# 	"street_no": data.get('street_no', ''),
+		# 	"landmark": data.get('landmark', ''),
+		# 	"village": data.get('village', ''),
+		# 	# "ward_no": data.get('ward_no', ''),
+		# 	# "post_office": data.get('post_office', ''),
+		# 	"pincode": data.get('pincode', '')
+		# }
+		# obj.mobile_number = data['mobile_number']
+		# obj.save()
+		#
+		# post_inspection_activity_obj = self.post_inspection.activities.get(
+		# 	activity_type=PostInspectionActivityTypeEnum.ADDRESS_UPDATE)
+		# post_inspection_activity_obj.completed = True
+		# post_inspection_activity_obj.completed_by = get_current_user()
+		# post_inspection_activity_obj.data = data
+		# post_inspection_activity_obj.save()
