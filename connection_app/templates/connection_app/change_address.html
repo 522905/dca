@@ -1,0 +1,59 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block page_title %}Change Address - {{ obj.name }}{% endblock %}
+{% load material_form %}
+{% block content %}
+    <link rel="stylesheet" href="{% static '/css/style.css' %}" >
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <div id="address_form" class="row m-0 form_label p-2">
+        <div class="card card-profile pt-0 mt-0 " style="width: 100%;" >
+            <div class="row justify-content-center m-0" style="width: 100%; margin: 0 auto !important; padding: 10px;">
+                <div style="width: 30%; float:left">
+                    <div class="card-profile-image">
+                        <a href="#">
+                            <img style="width:100%; max-height: 150px;" src="{{obj.document_self}}">
+                        </a>
+                    </div>
+                </div>
+                <div style="width: 70%; float:right">
+                    <div class="card-body pt-0">
+                        <div class="text-center">
+                            <h5 class="h3">{{ obj.name }}({{ obj.id }})<span class="font-weight-light"></span></h5>
+                            <div class="h5 font-weight-300">
+                                <i class="ni location_pin mr-2"></i>{{ obj.mobile_number }}
+                            </div>
+                            <div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
+                                {{ obj.address }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <form method="post" id="form" style="width: 100%;">
+            {% csrf_token %}
+            <div class="card address_form">
+                <div class="p-4 form_block">
+                    {% form form=form %}{% endform %}
+                </div>
+                <div class="card-footer">
+                    <input class="btn btn-secondary rounded-0 float-right" type="button" id="form" onclick="submit()"  value="Submit"/>
+                </div>
+            </div>
+
+        </form>
+    </div>
+    <script>
+        function validate_pincode() {
+            if(!$('#id_pincode')[0].reportValidity()) {
+                return;
+            }
+            pincode = parseInt($('#id_pincode').val());
+            if(pincode && pincode >= 141001 && pincode <= 141014) {
+                return true;
+            }
+            alert("We don't provide service this Pin code area. हम इस पिन कोड क्षेत्र में सेवा प्रदान नहीं करते हैं");
+            return false;
+        }
+    </script>
+{% endblock %}

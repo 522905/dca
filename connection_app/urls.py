@@ -240,4 +240,9 @@ urlpatterns = [
         views.get_customer_details_from_consumer_id,
         name='get_customer_details_from_consumer_id'
     ),
+    url(
+        '^service-request/change-address/(?P<pk>[^/.]+)/$',
+        views.ChangeAddressView.as_view(),
+        name="change_address"
+    ),
 ] + router.urls

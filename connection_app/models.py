@@ -751,6 +751,7 @@ class CustomerProfile(models.Model):
 	last_synced_date = models.DateTimeField(null=True, blank=True)
 	bsc_due_flag = models.BooleanField(null=True, blank=True)
 	x_bsc_date = models.DateField(null=True, blank=True)
+	status = models.CharField(max_length=128, null=True, blank=True)
 
 	def get_do_not_auto_generate_sales_order(self):
 		if self.customer_profile_settings:

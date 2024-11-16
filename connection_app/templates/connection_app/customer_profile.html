@@ -188,9 +188,14 @@
                     </tr>
                     <tr>
                         <td colspan="2"><p>Bank Certificate Photo</p></td>
-                        <td colspan="4">
+                        <td colspan="2">
                             <p style="float: right;">
                                 <a href="{% url 'customer_profile_document_upload'  pk=obj.pk %}" data-turbolinks="false" class="text_link text-primary">Update Bank Certificate Photo</a>
+                            </p>
+                        </td>
+                        <td colspan="2">
+                            <p style="float: right;">
+                                <a href="{% url 'connection_app:change_address'  pk=obj.pk %}" data-turbolinks="false" class="text_link text-primary">Change Address</a>
                             </p>
                         </td>
                     </tr>
