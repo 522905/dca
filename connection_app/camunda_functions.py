@@ -87,7 +87,7 @@ def start_process_fetch_sales_order_details_from_sdms(so_id, distributor_code):
 
 def start_processes_for_return_sales_order_list(qs):
 	for so in qs:
-		start_process_return_sales_order(so.id, so.parent.distributor_code)
+		start_process_return_sales_order(so.id, so.full_filled_by_distributor.code)
 
 
 def start_process_return_sales_order(so_id, distributor_code):
@@ -889,14 +889,7 @@ def update_returned_booked_order(sales_order_id, status):
 	so_obj.save()
 
 	if status in ['RETURNED', 'CANCELLED']:
-		if so_obj.parent.distributor:
-			start_process_fetch_sales_order_details_from_sdms(so_obj.id, so_obj.parent.distributor.code)
-		elif "arun gas" in so_obj.distributor_name.lower():
-			start_process_fetch_sales_order_details_from_sdms(so_obj.id, "0000110338")
-		elif "arun indane" in so_obj.distributor_name.lower():
-			start_process_fetch_sales_order_details_from_sdms(so_obj.id, "0000305948")
-		else:
-			print("Could Not Find Valid Distributor")
+		start_process_fetch_sales_order_details_from_sdms(so_obj.id, so_obj.full_filled_by_distributor.code)
 
 	return variables
 

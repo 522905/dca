@@ -26,7 +26,28 @@ class Command(BaseCommand):
 			distributor_code = options.get('distributor_code')
 
 			less_than_date = datetime.datetime.strptime(from_date, '%d-%b-%Y').date()
-			for i, so in enumerate(SalesOrder.objects.filter(order_date__lt=less_than_date, is_dirty=True).exclude(
+			# for i, so in enumerate(SalesOrder.objects.filter(order_date__lt=less_than_date, is_dirty=True).exclude(
+			# 		order_status__in=[
+			# 			SalesOrderStatusEnum.COMPLETED, SalesOrderStatusEnum.CANCELLED, SalesOrderStatusEnum.NOT_FOUND
+			# 		]).order_by('id')):
+			# 	try:
+			# 		exist = is_process_exist_in_camunda(
+			# 			'process_fetch_sales_order_details_from_sdms', 'sales_order_id', so.id
+			# 		)
+			# 		if not exist:
+			# 			if so.parent.distributor:
+			# 				start_process_fetch_sales_order_details_from_sdms(so.id, so.parent.distributor.code)
+			# 			elif "arun gas" in so.distributor_name.lower():
+			# 				start_process_fetch_sales_order_details_from_sdms(so.id, "0000110338")
+			# 			elif "arun indane" in so.distributor_name.lower():
+			# 				start_process_fetch_sales_order_details_from_sdms(so.id, "0000305948")
+			# 			else:
+			# 				print("Could Not Find Valid Distributor")
+			# 	except Exception as e:
+			# 		print(e)
+			# 		continue
+
+			for i, so in enumerate(SalesOrder.objects.exclude(
 					order_status__in=[
 						SalesOrderStatusEnum.COMPLETED, SalesOrderStatusEnum.CANCELLED, SalesOrderStatusEnum.NOT_FOUND
 					]).order_by('id')):
@@ -35,14 +56,8 @@ class Command(BaseCommand):
 						'process_fetch_sales_order_details_from_sdms', 'sales_order_id', so.id
 					)
 					if not exist:
-						if so.parent.distributor:
-							start_process_fetch_sales_order_details_from_sdms(so.id, so.parent.distributor.code)
-						elif "arun gas" in so.distributor_name.lower():
-							start_process_fetch_sales_order_details_from_sdms(so.id, "0000110338")
-						elif "arun indane" in so.distributor_name.lower():
-							start_process_fetch_sales_order_details_from_sdms(so.id, "0000305948")
-						else:
-							print("Could Not Find Valid Distributor")
+						start_process_fetch_sales_order_details_from_sdms(so.id, so.full_filled_by_distributor.code)
+
 				except Exception as e:
 					print(e)
 					continue
