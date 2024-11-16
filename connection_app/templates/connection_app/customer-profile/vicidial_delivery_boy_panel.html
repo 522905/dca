@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Delivery Agent Panel</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 1rem;
+            box-sizing: border-box;
+            background-color: #f8f9fa;
+        }
+
+        .delivery-agent-main-panel {
+            max-width: 1280px;
+            width: 100%;
+            margin: auto;
+            padding: 1rem;
+            background-color: #e5e7eb;
+            border-radius: 0.375rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .delivery-agent-controls-section {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .delivery-agent-control {
+            min-width: 150px;
+            padding: 0.5rem;
+        }
+
+        .modal .form-control {
+            margin-bottom: 1rem;
+        }
+
+        .delivery-agent-customer-info {
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 640px) {
+            .delivery-agent-controls-section {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .delivery-agent-form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="delivery-agent-main-panel" id="MainPanel">
+    <div class="delivery-agent-container">
+        <!-- Delivery Agent Info -->
+        <div class="delivery-agent-info mb-3">
+            <p>Delivery Agent: <strong>{{ user.username }}</strong> <span id="agentchannelSPAN"></span></p>
+        </div>
+
+        <!-- User Info and Logout -->
+        <div class="delivery-agent-user-info d-flex justify-content-between mb-3 flex-wrap">
+            <p>
+                Logged in as <strong>{{ user.username }}</strong> on Phone: <strong id="phone_data"></strong>
+                to campaign: <strong>{{ user.username }}</strong>
+            </p>
+            <div id="auth_btn">
+                <button style="display: none" type="button" style="display: none" class="btn btn-primary"
+                        id="logoutButton">
+                    logout
+                </button>
+                <button type="button" id="loginbtn" class="btn btn-primary" data-bs-toggle="modal"
+                        data-bs-target="#staticBackdrop1">
+                    login
+                </button>
+            </div>
+        </div>
+
+
+        <!-- login vicidial Modal -->
+        <div class="modal fade" id="staticBackdrop1" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false"
+             aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" style="max-width:600px;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel1">login in</h5>
+                    </div>
+                    <div class="modal-body">
+                        <iframe src="http://192.168.168.3/agc/vicidial.php?relogin=YES" title="vicidial login website"
+                                height="400" width="500"></iframe>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="loginForm_vicidial" class="btn btn-primary">go to main panel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- dispo Modal -->
+        <div class="modal fade" id="dispositionModal" tabindex="-1" aria-labelledby="dispositionModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="dispositionModalLabel">Select Call Disposition</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Please select the appropriate disposition for the call:</p>
+                        <div class="d-flex justify-content-around">
+                            <button type="button" class="btn btn-secondary" id="dispo1"
+                            >Call back
+                            </button>
+                            <button type="button" class="btn btn-success" id="disp2">
+                                Interested
+                            </button>
+                            <button type="button" class="btn btn-danger" id="dispo3"
+                            >Not
+                                Interested
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Controls Section -->
+        <div class="delivery-agent-controls-section">
+            <button disabled id="DiaLControl_agent" class="btn btn-outline-secondary delivery-agent-control">start
+                Call
+            </button>
+            <button disabled id="HangupControl_agent" class="btn btn-danger delivery-agent-control">
+                Hang Up
+            </button>
+            <button disabled id="AgentCall" class="btn btn-outline-success delivery-agent-control">
+                recall
+            </button>
+        </div>
+
+        <!-- Customer Info Section -->
+        <div class="delivery-agent-customer-info">
+            <h5 class="mb-3">Customer Information</h5>
+            <div class="delivery-agent-customer-form p-3 bg-white rounded">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" id="title" class="form-control" readonly maxlength="4">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="first_name" class="form-label">First Name</label>
+                        <input type="text" id="first_name" class="form-control" readonly maxlength="30">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="last_name" class="form-label">Last Name</label>
+                        <input type="text" id="last_name" class="form-control" readonly maxlength="30">
+                    </div>
+                    <div class="col-12">
+                        <label for="address1" class="form-label">Address</label>
+                        <input type="text" id="address1" class="form-control" readonly maxlength="100">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="address3" class="form-label">Consumer No</label>
+                        <input type="text" id="address3" class="form-control" readonly maxlength="100">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="city" class="form-label">City</label>
+                        <input type="text" id="city" class="form-control" readonly maxlength="50">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="state" class="form-label">State</label>
+                        <input type="text" id="state" class="form-control" readonly maxlength="2">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="postal_code" class="form-label">Postcode</label>
+                        <input type="text" id="postal_code" class="form-control" readonly maxlength="10">
+                    </div>
+                    <div class="col-12">
+                        <label for="comments" class="form-label">Comments</label>
+                        <textarea id="comments" rows="3" class="form-control" maxlength="255"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let socket = null;
+        const session_id = "{{ user.username }}".replace(".", "").toUpperCase();
+        console.log("the session id is", session_id);
+        openSocket(session_id);
+
+        // Helper function to make API calls
+        async function makeApiCall(url, method, data = {}) {
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.error("API Error:", error);
+                alert("An error occurred. Please try again.");
+            }
+        }
+
+        // WebSocket connection management
+        function openSocket(session_id) {
+            socket = new WebSocket(`ws://${window.location.host}/ws/vicidial/${session_id}/`);
+
+            socket.onopen = () => console.log("WebSocket connection established.");
+            socket.onmessage = (event) => {
+                console.log("WebSocket message received:", event.data);
+                updateUI(JSON.parse(event.data)
+                );
+                socket.onclose = () => console.log("WebSocket connection closed.");
+                socket.onerror = (error) => console.error("WebSocket error:", error);
+            }
+
+            function closeSocket() {
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    socket.close();
+                }
+            }
+
+            // Function to handle UI update from WebSocket data
+            function updateUI(data) {
+                document.getElementById("title").value = data.title || "";
+                document.getElementById("phone_data").value = data.customer_zap_channel || "";
+                document.getElementById("first_name").value = data.first_name || "";
+                document.getElementById("last_name").value = data.last_name || "";
+                document.getElementById("address1").value = data.address1 || "";
+                document.getElementById("address3").value = data.address2 || "";
+                document.getElementById("city").value = data.city || "";
+                document.getElementById("state").value = data.state || "";
+                document.getElementById("postal_code").value = data.postal_code || "";
+                document.getElementById("comments").value = data.comments || "";
+            }
+
+            // Function to handle normal logout
+            async function NormalLogout() {
+                const result = await makeApiCall("{% url 'agent_action' 'logout' %}", "POST", {agent_user: "{{ user.username }}"});
+                {#const parse_result = JSON.parse(result);#}
+                console.log(`the result is ${result} and the status is ${typeof result}`);
+
+                if (result && result.status === "success") {
+                    closeSocket();
+                    window.localStorage.clear();
+                    alert("Successfully logged out.");
+                    window.location.reload();
+                }
+                console.log("the result is", result)
+            }
+
+            // Hangup and open disposition modal
+            async function hangupComplete() {
+                const result = await makeApiCall("{% url 'agent_action' 'hangup' %}", "POST", {agent_user: "{{ user.username }}"});
+                if (result && result.status === "success") {
+                    const modal = new bootstrap.Modal(document.getElementById('dispositionModal'));
+                    modal.show();
+                }
+            }
+
+            async function isLoggedIn() {
+                const result = await makeApiCall("{% url 'agent_action' 'isloggedin' %}", "POST", {agent_user: "{{ user.username }}"});
+                {#const parse_result = JSON.parse(result);#}
+                console.log(result, typeof result, result.status, result.message)
+                if (result && result.status === "success") {
+                    const modalElement = document.getElementById('staticBackdrop1');
+
+                    const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                    modalInstance.hide();
+                    document.getElementById("logoutButton").style.display = "block";
+                    document.getElementById("loginbtn").hidden = true;
+                    document.getElementById("HangupControl_agent").disabled = false;
+                    document.getElementById("DiaLControl_agent").disabled = false;
+                    document.getElementById("AgentCall").style.display = "block";
+                } else {
+                    alert("Please login to start calling.");
+                }
+
+
+            }
+
+            async function CallAgent(){
+                const result = await makeApiCall("{% url "agent_action" "CallAgent" %} ", "POST", {agent_user: "{{ user.username }}"});
+                if(result && result.status === "success"){
+                    alert("Call Agent started successfully.");
+                }
+                else{
+                    alert("Call Agent failed to start.");
+                    console.log("the result is", result)
+                }
+            }
+
+            // Handle disposition selection
+            async function dispo_call(disposition) {
+                const result = await makeApiCall("{% url 'agent_action' "dispostion" %}", "POST", {disposition: disposition});
+                if (result && result.status === "success") {
+                    alert("Call disposition set successfully.");
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('dispositionModal'));
+                    modal.hide();
+                    document.querySelectorAll('.form-control').forEach((element) => {
+                        element.value = "";
+                    });
+                }
+            }
+
+            // Attach event listeners after DOM is loaded
+            document.getElementById("AgentCall").addEventListener("click",() => CallAgent());
+            document.getElementById("dispo1").addEventListener("click", () => dispo_call("ORDRCD"));
+            document.getElementById("disp2").addEventListener("click", () => dispo_call("CMPLTD"));
+            document.getElementById("dispo3").addEventListener("click", () => dispo_call("NTRCHB"));
+            document.getElementById("logoutButton").addEventListener("click", NormalLogout);
+            document.getElementById("HangupControl_agent").addEventListener("click", hangupComplete);
+
+            document.getElementById("DiaLControl_agent").addEventListener("click", async () => {
+                const button = document.getElementById("DiaLControl_agent");
+                const status = button.textContent === "Stop Call" ? "PAUSE" : "RESUME";
+                const toggleResult = await makeApiCall("{% url 'agent_action' 'toggle' %}", "POST", {
+                    status: status,
+                    agent_user: "{{ user.username }}"
+                });
+                if (toggleResult && toggleResult.message.includes("PAUSE")) {
+                    button.textContent = "start Call";
+                } else if (toggleResult && toggleResult.message.includes("RESUME")) {
+                    button.textContent = "Stop Call";
+                }
+            });
+
+            // Open WebSocket connection on login
+            document.getElementById("loginForm_vicidial").addEventListener("click", async function (event) {
+                event.preventDefault();
+                isLoggedIn();
+            });
+
+            window.addEventListener('beforeunload', function (event) {
+                    console.log('beforeunload event triggered');
+                    event.preventDefault();
+                    event.returnValue = 'You have unsaved changes!';
+            });
+
+
+        }
+    })
+
+</script>
+</body>
+</html>
+
+{# const username = document.getElementById('username').value;#}
+{#            const userPass = document.getElementById('user-pass').value;#}
+{#            const phoneName = document.getElementById('phone-name').value;#}
+{#            const phonePass = document.getElementById('phone-pass').value;#}
+{##}
+{#            const result = await makeApiCall("{% url 'agent_action' 'login' %}", "POST", {#}
+{#                username: username,#}
+{#                user_pass: userPass,#}
+{#                phone_name: phoneName,#}
+{#                phone_pass: phonePass#}
+{#            });#}
+{#            console.log(`the result is ${result} and the status is ${JSON.parse(result).status , JSON.parse(result).message}`);#}
+{#            const parse_result = JSON.parse(result);#}
+{#            if (result && parse_result.status === "success") {#}
+{#const session_id = "{{ user.username }}".replace(".", "");#}
+{#                const session_id = "POD02";#}
+{#                console.log("enter the functions to sucess")#}
