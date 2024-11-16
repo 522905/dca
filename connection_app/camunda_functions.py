@@ -876,7 +876,6 @@ def update_returned_booked_order(sales_order_id, status):
 	variables = {}
 	if status == 'RETURNED':
 		so_obj.return_marked = True
-		so_obj.transition_sales_order_returned()
 		variables['next_order_return_date_time'] = {"value": get_next_midnight().isoformat()}
 		variables['order_canceled'] = {"value": False}
 	elif status == 'CANCELLED':
@@ -888,7 +887,7 @@ def update_returned_booked_order(sales_order_id, status):
 
 	so_obj.save()
 
-	if status in ['RETURNED', 'CANCELLED']:
+	if status in ['NOT_FOUND', 'CANCELLED']:
 		start_process_fetch_sales_order_details_from_sdms(so_obj.id, so_obj.full_filled_by_distributor.code)
 
 	return variables
