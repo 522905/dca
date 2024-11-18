@@ -85,9 +85,12 @@ def start_process_fetch_sales_order_details_from_sdms(so_id, distributor_code):
 		print(res)
 
 
-def start_processes_for_return_sales_order_list(qs):
-	for so in qs:
-		start_process_return_sales_order(so.id, so.full_filled_by_distributor.code)
+def start_processes_for_return_sales_order_list(so_id_list):
+	from connection_app.models import SalesOrder
+
+	for so_id in so_id_list:
+		so_obj = SalesOrder.objects.get(pk=so_id)
+		start_process_return_sales_order(so_obj.id, so_obj.full_filled_by_distributor.code)
 
 
 def start_process_return_sales_order(so_id, distributor_code):

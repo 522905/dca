@@ -1562,7 +1562,7 @@ class CancelSalesOrderListView(FormView):
 		django_rq.enqueue(
 			start_processes_for_return_sales_order_list,
 			args=(
-				self.qs()
+				self.qs().values_list('id', flat=True),
 			)
 		)
 
