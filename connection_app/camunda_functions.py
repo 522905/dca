@@ -1,5 +1,6 @@
 import datetime
 import logging
+from collections import defaultdict
 
 import django_rq
 import requests
@@ -90,7 +91,10 @@ def start_processes_for_return_sales_order_list(so_id_list):
 
 	for so_id in so_id_list:
 		so_obj = SalesOrder.objects.get(pk=so_id)
-		start_process_return_sales_order(so_obj.id, so_obj.full_filled_by_distributor.code)
+		if so_obj.full_filled_by_distributor:
+			start_process_return_sales_order(so_obj.id, so_obj.full_filled_by_distributor.code)
+		else:
+			start_process_return_sales_order(so_obj.id, so_obj.parent.distributor.code)
 
 
 def start_process_return_sales_order(so_id, distributor_code):
@@ -894,6 +898,82 @@ def update_returned_booked_order(sales_order_id, status):
 		start_process_fetch_sales_order_details_from_sdms(so_obj.id, so_obj.full_filled_by_distributor.code)
 
 	return variables
+
+
+def clean_sales_order_tasks(sales_order_id, process_instance_id):
+	from connection_app.models import SalesOrder
+
+	CAMUNDA_URL = "https://camunda.dca.arungas.com/engine-rest"
+
+	so_obj = SalesOrder.objects.get(id=sales_order_id)
+
+	if so_obj.order_status in (SalesOrderStatusEnum.COMPLETED, SalesOrderStatusEnum.CANCELLED):
+		existing = requests.post(
+			f'{CAMUNDA_BASE_URL}/process-instance',
+			json={
+				"variables": [
+					{
+						"name": "sales_order_id",
+						"operator": "eq",
+						"value": str(sales_order_id)
+					}
+				],
+				"processDefinitionKey": "Process_book_sales_order"
+			}).json()
+		for r in existing:
+			res = requests.delete(f"{CAMUNDA_URL}/process-instance/" + r['id'])
+	return True
+
+	# PROCESS_DEFINITION_KEY = "Process_book_sales_order"
+	# ACTIVITY_ID = "Activity_return_booked_order"  # Activity instance to filter on
+
+	# Get unfinished activity instances for the specific activity
+	# activity_instance_url = f"{CAMUNDA_URL}/history/activity-instance"
+	# response = requests.post(
+	# 	activity_instance_url,
+	# 	json={
+	# 		"activityId": ACTIVITY_ID,
+	# 		"processDefinitionKey": PROCESS_DEFINITION_KEY,
+	# 		"unfinished": True  # Only get unfinished (running) activity instances
+	# 	}
+	# )
+	# response.raise_for_status()  # Check for request errors
+	#
+	# activity_instances = response.json()
+	#
+	# # Extract process instance IDs from the unfinished activity instances
+	# pids = [instance['processInstanceId'] for instance in activity_instances]
+
+	# Fetch process variables for the filtered process instance IDs
+	# variable_instance_url = f"{CAMUNDA_URL}/variable-instance"
+	# response = requests.post(
+	# 	variable_instance_url, json={
+	# 		'processInstanceIdIn': [
+	# 			process_instance_id
+	# 		]
+	# 	}
+	# )
+	# response.raise_for_status()
+	#
+	# grouped_variables = defaultdict(list)
+	#
+	# for variable in response.json():
+	# 	instance_id = variable['processInstanceId']
+	# 	grouped_variables[instance_id].append({'name': variable['name'], 'value': variable['value']})
+	#
+	# result = []
+	# for instance_id, variables in grouped_variables.items():
+	# 	row = {'process_instance_id': instance_id}
+	# 	for var in variables:
+	# 		row[var['name']] = var['value']
+	# 	result.append(row)
+	# print(result)
+	#
+	# for r in result:
+	# 	so_obj = SalesOrder.objects.get(id=r['sales_order_id'])
+	# 	if so_obj.order_status in (SalesOrderStatusEnum.COMPLETED, SalesOrderStatusEnum.CANCELLED):
+	# 		requests.delete(f"{CAMUNDA_URL}/process-instance/" + r['process_instance_id'])
+	# return True
 
 
 def start_book_sales_order_camunda_process():

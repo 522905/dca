@@ -8,7 +8,8 @@ from django.core.management import BaseCommand
 
 from connection_app.camunda_functions import process_update_sales_order_in_dca, \
 	update_sales_order_details_in_dca, process_update_sales_order_completed_today, update_customer_profile_in_dca, \
-	update_booked_order_details_in_dca, update_service_area_in_customer_profile, update_returned_booked_order
+	update_booked_order_details_in_dca, update_service_area_in_customer_profile, update_returned_booked_order, \
+	clean_sales_order_tasks
 from domestic_app import settings
 from ujjwala.jobs import ensure_db_connection
 
@@ -20,6 +21,7 @@ EXTERNAL_TASK_TO_SUBSCRIBE = [
 	'process_domestic_app#update_booked_order_details_in_dca',
 	'service_area_update#verify_update_service_area_in_sdms',
 	'process_book_sales_order#update_returned_booked_order',
+	'process_fetch_sales_order_details_from_sdms#cleanup_sales_order_tasks',
 ]
 
 default_config = {
@@ -79,6 +81,10 @@ def handle_task(task: ExternalTask) -> TaskResult:
 			status = task.get_variable('status')
 			result_variables = update_returned_booked_order(sales_order_id, status)
 			return task.complete(global_variables=result_variables)
+		elif topic == 'process_fetch_sales_order_details_from_sdms#cleanup_sales_order_tasks':
+			sales_order_id = task.get_variable('sales_order_id')
+			clean_sales_order_tasks(sales_order_id, task.get_process_instance_id())
+			return task.complete()
 	except Exception as e:
 		return task.failure(
 			str(e), traceback.format_exc(),
