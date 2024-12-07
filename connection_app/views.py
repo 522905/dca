@@ -1953,8 +1953,8 @@ class UpdateDistributorLoginDetailsFormView(FormView):
 	template_name = 'connection_app/update_distributor_login_details.html'
 
 	def dispatch(self, request, *args, **kwargs):
-		user = get_current_user()
-		if not user.has_perm('can_update_distributor_password', 'vaultsecret'):
+		user: User = get_current_user()
+		if not user.has_perm('connection_app.can_update_distributor_password'):
 			return render(
 				self.request, "connection_app/response.html",
 				{"heading": "Update Distributor Login Details",
