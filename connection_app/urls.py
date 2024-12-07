@@ -4,6 +4,8 @@ from django.urls import path, include
 from django.views.generic import RedirectView
 from rest_framework import routers
 
+from .vicidial.views import delivery_boy_signup_view, vicidial_webhook, check_access, AgentActionView, \
+    CustomerProfileListView
 from connection_app.viewsets import ConnectionApplicationViewSet, ConnectionApplicationAPIViewSet, BookSalesOrderViewSet
 from . import views
 from .views import UpdateDistributorLoginDetailsFormView, UpdateSDMSUserLoginPasswordFormView
@@ -183,7 +185,7 @@ urlpatterns = [
     # ),
     path(
         'customer-profile-list/',
-        views.CustomerProfileListView.as_view(),
+        CustomerProfileListView.as_view(),
         name="customer_profile_list"
     ),
     path(
@@ -266,4 +268,28 @@ urlpatterns = [
         UpdateSDMSUserLoginPasswordFormView.as_view(),
         name='update_sdms_login_password'
     ),
+    # path('submit-delivery-boy-form/',
+    #        views.submit_delivery_boy_form,
+    #        name='submit_delivery_boy_form'
+    # ),
+    path('vicidial_webhook/',
+         vicidial_webhook,
+         name='vicidial_webhook'
+         ),
+    path('vicidial-signup/',
+         delivery_boy_signup_view,
+         name='vicidial-signup'
+         ),
+    path("check-access/",
+         check_access,
+         name="check_access"
+         ),
+    path('agent/action/<str:action>/',
+         AgentActionView.as_view(),
+         name='agent_action'
+         ),
+    path('load-data-list/',
+         AgentActionView.as_view(),
+         name='agent_action'
+         ),
 ] + router.urls

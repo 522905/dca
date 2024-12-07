@@ -698,6 +698,28 @@ class CustomerProfileView(TemplateView):
 		return context
 
 
+class CustomerProfilePublicView(TemplateView):
+	template_name = 'connection_app/customer_profile.html'
+
+	def get_object(self, queryset=None):
+		try:
+			obj = CustomerProfile.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No Customer Profile Exist For Given Id"
+			)
+		return obj
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+
+		obj: CustomerProfile = self.get_object()
+		context.update({
+			"obj": obj,
+		})
+		return context
+
+
 @method_decorator(login_required, 'dispatch')
 @method_decorator(csrf_exempt, 'dispatch')
 class GenerateLeadFormView(FormView):
@@ -1565,15 +1587,15 @@ class CancelSalesOrderListView(FormView):
 
 	def form_valid(self, form):
 		# Production Code
-		django_rq.enqueue(
-			start_processes_for_return_sales_order_list,
-			args=(
-				self.qs().values_list('id', flat=True),
-			)
-		)
+		# django_rq.enqueue(
+		# 	start_processes_for_return_sales_order_list,
+		# 	args=(
+		# 		self.qs().values_list('id', flat=True)
+		# 	)
+		# )
 
 		# Local Code
-		# start_processes_for_return_sales_order_list(self.qs)
+		start_processes_for_return_sales_order_list(self.qs().values_list('id', flat=True))
 
 		return HttpResponseRedirect(reverse('connection_app:cancel_sales_order_list'))
 
