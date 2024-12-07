@@ -36,134 +36,25 @@
             background-color: #2575fc;
             border-color: #2575fc;
         }
+
+        .alert {
+            margin-top: 1rem;
+        }
     </style>
 </head>
 <body>
-<section class="py-3 py-md-5 py-xl-8">
+<section class="py-3 py-md-5">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5 col-xxl-4">
                 <div class="card border-0 rounded-4">
                     <div class="card-body p-4 p-md-5">
                         <h2 class="text-center mb-4">Sign Up</h2>
-
-                        <!-- General form errors -->
-                        {% if form.errors %}
-                            <div class="alert alert-danger" role="alert">
-                                Please fix the errors below.
-                            </div>
-                        {% endif %}
-
-                        <form id="vicidial-signup-form" action="{% url 'vicidial-signup' %}" method="post">
-                            {% csrf_token %}
-                            <div class="row gy-3">
-                                <!-- Full Name Field -->
-                                <div class="col-12">
-                                    <div class="form-floating mb-3">
-                                        <input type="text" class="form-control" name="agent_fullname" id="fullname"
-                                               placeholder="Full Name" required>
-                                        <label for="fullname">Full Name</label>
-                                        {% if form.agent_fullname.errors %}
-                                            <div class="text-danger mt-1">
-                                                {% for error in form.agent_fullname.errors %}
-                                                    <small>{{ error }}</small>
-                                                {% endfor %}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-
-                                <!-- Username Field -->
-                                <div class="col-12">
-                                    <div class="form-floating mb-3">
-                                        <input type="text" class="form-control" name="agent_user" id="username"
-                                               placeholder="Username" value="{{ user.username }}" readonly required>
-                                        <label for="username">Username</label>
-                                        {% if form.agent_user.errors %}
-                                            <div class="text-danger mt-1">
-                                                {% for error in form.agent_user.errors %}
-                                                    <small>{{ error }}</small>
-                                                {% endfor %}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-
-                                <!-- Password Field -->
-                                <div class="col-12">
-                                    <div class="form-floating mb-3">
-                                        <input type="password" class="form-control" name="agent_pass" id="user-pass"
-                                               placeholder="Password" required>
-                                        <label for="user-pass">Password</label>
-                                        {% if form.agent_pass.errors %}
-                                            <div class="text-danger mt-1">
-                                                {% for error in form.agent_pass.errors %}
-                                                    <small>{{ error }}</small>
-                                                {% endfor %}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-
-                                <!-- Phone Number Field -->
-                                <div class="col-12">
-                                    <div class="form-floating mb-3">
-                                        <input type="text" class="form-control" name="phone_number" id="phone_number"
-                                               placeholder="Phone Number" required>
-                                        <label for="phone_number">Phone Number</label>
-                                        {% if form.phone_number.errors %}
-                                            <div class="text-danger mt-1">
-                                                {% for error in form.phone_number.errors %}
-                                                    <small>{{ error }}</small>
-                                                {% endfor %}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-
-                                <!-- Phone ID Field -->
-                                <div class="col-12">
-                                    <div class="form-floating mb-3">
-                                        <input type="text" class="form-control" name="phone_login" id="phone_login"
-                                               placeholder="Phone ID" required>
-                                        <label for="phone_login">Phone ID</label>
-                                        {% if form.phone_login.errors %}
-                                            <div class="text-danger mt-1">
-                                                {% for error in form.phone_login.errors %}
-                                                    <small>{{ error }}</small>
-                                                {% endfor %}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-
-                                <!-- Phone Password Field -->
-                                <div class="col-12">
-                                    <div class="form-floating mb-3">
-                                        <input type="password" class="form-control" name="phone_pass" id="phone_pass"
-                                               placeholder="Phone Password" required>
-                                        <label for="phone_pass">Phone Password</label>
-                                        {% if form.phone_pass.errors %}
-                                            <div class="text-danger mt-1">
-                                                {% for error in form.phone_pass.errors %}
-                                                    <small>{{ error }}</small>
-                                                {% endfor %}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-
-                                <!-- Submit Button -->
-                                <div class="col-12">
-                                    <div class="d-grid">
-                                        <button class="btn btn-primary btn-lg" type="submit">Sign Up</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
+                        <div id="error-alert" class="alert alert-danger d-none" role="alert"></div>
+                        <div class="d-grid">
+                            <button class="btn btn-primary btn-lg" id="vicidial-signup-form" type="button">Register for Calling</button>
+                        </div>
                     </div>
                 </div>
-            </div>
         </div>
     </div>
 </section>
@@ -173,52 +64,47 @@
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
         crossorigin="anonymous"></script>
 <script>
-    document.getElementById('vicidial-signup-form').addEventListener('submit', function (event) {
+    document.getElementById('vicidial-signup-form').addEventListener('click', function (event) {
         event.preventDefault();
-        const form = event.target;
-        const formData = new FormData(form);
+        const errorAlert = document.getElementById('error-alert');
 
-        fetch(form.action, {
+        fetch("{% url 'vicidial-signup' %}", {
             method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
-            }
+            headers: { 'Content-Type': 'application/json' },
         })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    location.reload();
-                } else if (data.status === 'error') {
-                    const errorContainer = document.createElement('div');
-                    errorContainer.className = 'alert alert-danger';
-                    errorContainer.role = 'alert';
-                    errorContainer.innerHTML = 'Please fix the errors below.';
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();
+            } else if (data.status === 'error') {
+                errorAlert.classList.remove('d-none');
+                errorAlert.textContent = 'Please fix the errors below and try again.';
 
-                    const errors = JSON.parse(data.errors);
-                    for (const [field, messages] of Object.entries(errors)) {
-                        const fieldElement = form.querySelector(`[name=${field}]`);
+                // Clear existing error messages
+                const formElements = document.querySelectorAll('.text-danger');
+                formElements.forEach(el => el.remove());
+
+                // Display field-specific errors
+                const errors = JSON.parse(data.errors);
+                for (const [field, messages] of Object.entries(errors)) {
+                    const fieldContainer = document.querySelector(`[name="${field}"]`);
+                    if (fieldContainer) {
                         const errorElement = document.createElement('div');
                         errorElement.className = 'text-danger mt-1';
                         messages.forEach(message => {
                             const small = document.createElement('small');
-                            small.textContent = message.message;
+                            small.textContent = message;
                             errorElement.appendChild(small);
                         });
-                        fieldElement.parentElement.appendChild(errorElement);
+                        fieldContainer.parentElement.appendChild(errorElement);
                     }
-
-                    form.insertBefore(errorContainer, form.querySelector('button[type=submit]'));
                 }
-            })
-            .catch(error => console.error('Error:', error));
-    });
-
-    window.addEventListener('beforeunload', function (event) {
-        window.addEventListener('beforeunload', function (event) {
-            console.log('beforeunload event fired'); // For debugging
-            event.preventDefault();
-            event.returnValue = 'You have unsaved changes.';
+            }
+        })
+        .catch(error => {
+            errorAlert.classList.remove('d-none');
+            errorAlert.textContent = 'An unexpected error occurred. Please try again.';
+            console.error('Error:', error);
         });
     });
 </script>

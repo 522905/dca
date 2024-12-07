@@ -66,8 +66,8 @@
         <!-- User Info and Logout -->
         <div class="delivery-agent-user-info d-flex justify-content-between mb-3 flex-wrap">
             <p>
-                Logged in as <strong>{{ user.username }}</strong> on Phone: <strong id="phone_data"></strong>
-                to campaign: <strong>{{ user.username }}</strong>
+                Logged in as <strong>{{ processed_username }}</strong> on Phone: <strong id="phone_data"></strong>
+                to campaign: <strong>{{ processed_username }}</strong>
             </p>
             <div id="auth_btn">
                 <button style="display: none" type="button" style="display: none" class="btn btn-primary"
@@ -81,26 +81,39 @@
             </div>
         </div>
 
-
         <!-- login vicidial Modal -->
         <div class="modal fade" id="staticBackdrop1" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false"
              aria-labelledby="staticBackdropLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" style="max-width:600px;">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel1">login in</h5>
+                        <h5 class="modal-title" id="exampleModalLabel1">Login in</h5>
                     </div>
-                    <div class="modal-body">
-                        <iframe src="http://192.168.168.3/agc/vicidial.php?relogin=YES" title="vicidial login website"
-                                height="400" width="500"></iframe>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" id="loginForm_vicidial" class="btn btn-primary">go to main panel</button>
+                    <form id="loginForm_vicidial">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="phone-name" class="form-label">Phone Number</label>
+                                <input type="text" class="form-control" name="phone_number" id="phone-name" required>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Go to Main Panel</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- ifram Modal -->
+        <div class="modal fade" id="iframeModal" tabindex="-1" aria-labelledby="iframeModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body" id="hidden_Iframe">
+
                     </div>
                 </div>
             </div>
         </div>
-
         <!-- dispo Modal -->
         <div class="modal fade" id="dispositionModal" tabindex="-1" aria-labelledby="dispositionModalLabel"
              aria-hidden="true">
@@ -130,14 +143,14 @@
         </div>
         <!-- Controls Section -->
         <div class="delivery-agent-controls-section">
-            <button disabled id="DiaLControl_agent" class="btn btn-outline-secondary delivery-agent-control">start
+            <button disabled id="DiaLControl_agent" class="btn btn-success delivery-agent-control">start
                 Call
             </button>
-            <button disabled id="HangupControl_agent" class="btn btn-danger delivery-agent-control">
+            <button disabled id="HangupControl_agent" class="btn btn-dark delivery-agent-control">
                 Hang Up
             </button>
             <button disabled id="AgentCall" class="btn btn-outline-success delivery-agent-control">
-                recall
+                recall delivery agent
             </button>
         </div>
 
@@ -147,7 +160,7 @@
             <div class="delivery-agent-customer-form p-3 bg-white rounded">
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <label for="title" class="form-label">Title</label>
+                        <label for="title" class="form-label">Phone number</label>
                         <input type="text" id="title" class="form-control" readonly maxlength="4">
                     </div>
                     <div class="col-md-4">
@@ -191,9 +204,12 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         let socket = null;
+        {#const session_id = 'OUTB1005'#}
+        console.log('"{{ processed_username }}" and "{{ META.pro_username }}" ')
         const session_id = "{{ user.username }}".replace(".", "").toUpperCase();
         console.log("the session id is", session_id);
         openSocket(session_id);
+
 
         // Helper function to make API calls
         async function makeApiCall(url, method, data = {}) {
@@ -221,15 +237,24 @@
 
         // WebSocket connection management
         function openSocket(session_id) {
-            socket = new WebSocket(`ws://${window.location.host}/ws/vicidial/${session_id}/`);
+            socket = new WebSocket(`wss://${window.location.host}/ws/vicidial/${session_id}/`);
 
             socket.onopen = () => console.log("WebSocket connection established.");
             socket.onmessage = (event) => {
                 console.log("WebSocket message received:", event.data);
-                updateUI(JSON.parse(event.data)
-                );
+                if (!JSON.parse(event.data)["message"])
+                    updateUI(JSON.parse(event.data)
+                    );
                 socket.onclose = () => console.log("WebSocket connection closed.");
                 socket.onerror = (error) => console.error("WebSocket error:", error);
+            }
+
+            if (window.localStorage.getItem("isLoggedIn") === "true") {
+                console.log("Tab closed or switched.")
+                required_logout();
+
+            } else {
+                console.log("Not logged in.")
             }
 
             function closeSocket() {
@@ -240,16 +265,22 @@
 
             // Function to handle UI update from WebSocket data
             function updateUI(data) {
-                document.getElementById("title").value = data.title || "";
-                document.getElementById("phone_data").value = data.customer_zap_channel || "";
+                document.getElementById("title").value = data.phone_number || "";
+                document.getElementById("phone_data").textContent = data.customer_zap_channel || "77156482";
                 document.getElementById("first_name").value = data.first_name || "";
                 document.getElementById("last_name").value = data.last_name || "";
                 document.getElementById("address1").value = data.address1 || "";
-                document.getElementById("address3").value = data.address2 || "";
+                document.getElementById("address3").value = data.address3 || "";
                 document.getElementById("city").value = data.city || "";
                 document.getElementById("state").value = data.state || "";
                 document.getElementById("postal_code").value = data.postal_code || "";
                 document.getElementById("comments").value = data.comments || "";
+                const hangup = document.getElementById("HangupControl_agent");
+                hangup.classList.add("btn-danger");
+                hangup.classList.remove("btn-dark")
+                console.log(data.customer_zap_channel, data.phone_number, data.first_name, data.last_name, data.address1, data.address3, data.city, data.state, data.postal_code, data.comments)
+                console.log("the data is", data)
+
             }
 
             // Function to handle normal logout
@@ -262,9 +293,11 @@
                     closeSocket();
                     window.localStorage.clear();
                     alert("Successfully logged out.");
-                    window.location.reload();
+                } else {
+                    console.log("the result is", result)
+                    alert(result.message)
                 }
-                console.log("the result is", result)
+
             }
 
             // Hangup and open disposition modal
@@ -273,6 +306,9 @@
                 if (result && result.status === "success") {
                     const modal = new bootstrap.Modal(document.getElementById('dispositionModal'));
                     modal.show();
+                    const hangup = document.getElementById("HangupControl_agent");
+                    hangup.classList.add("btn-dark");
+                    hangup.classList.remove("btn-danger");
                 }
             }
 
@@ -282,14 +318,14 @@
                 console.log(result, typeof result, result.status, result.message)
                 if (result && result.status === "success") {
                     const modalElement = document.getElementById('staticBackdrop1');
-
+                    window.localStorage.setItem("isLoggedIn", "true");
                     const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
                     modalInstance.hide();
                     document.getElementById("logoutButton").style.display = "block";
                     document.getElementById("loginbtn").hidden = true;
                     document.getElementById("HangupControl_agent").disabled = false;
                     document.getElementById("DiaLControl_agent").disabled = false;
-                    document.getElementById("AgentCall").style.display = "block";
+                    document.getElementById("AgentCall").disabled = false;
                 } else {
                     alert("Please login to start calling.");
                 }
@@ -297,20 +333,50 @@
 
             }
 
-            async function CallAgent(){
+            async function CallAgent() {
+                console.log("Call Agent function called")
                 const result = await makeApiCall("{% url "agent_action" "CallAgent" %} ", "POST", {agent_user: "{{ user.username }}"});
-                if(result && result.status === "success"){
+                if (result && result.status === "success") {
                     alert("Call Agent started successfully.");
-                }
-                else{
+                } else {
                     alert("Call Agent failed to start.");
                     console.log("the result is", result)
                 }
             }
 
+            // required logout function
+
+            async function required_logout() {
+                try {
+                    console.log("logging out...")
+                    const result = await makeApiCall("{% url 'agent_action' "Imp_logout" %}", "POST", {
+                        agent_user: "{{ user.username }}"
+                    });
+                    console.log("Logout result:", result);
+                    if (result && result.status === "success") {
+                        closeSocket();
+                        window.localStorage.clear();
+                        console.log("Logged out successfully.");
+                    } else {
+                        console.error("Logout failed:", result.message);
+                    }
+                } catch (error) {
+                    console.error("Error during logout:", error);
+                }
+            }
+
             // Handle disposition selection
             async function dispo_call(disposition) {
-                const result = await makeApiCall("{% url 'agent_action' "dispostion" %}", "POST", {disposition: disposition});
+                let datestring = "";
+                if (disposition === "CALLBK") {
+                    const date = new Date();
+                    date.setDate(date.getDate() + 3);
+                    datestring = date.toISOString().replace("T", "+").split(".")[0];
+                }
+                const result = await makeApiCall("{% url 'agent_action' "dispostion" %}", "POST", {
+                    disposition: disposition,
+                    datetime:datestring,
+                });
                 if (result && result.status === "success") {
                     alert("Call disposition set successfully.");
                     const modal = bootstrap.Modal.getInstance(document.getElementById('dispositionModal'));
@@ -318,15 +384,19 @@
                     document.querySelectorAll('.form-control').forEach((element) => {
                         element.value = "";
                     });
+
                 }
             }
 
             // Attach event listeners after DOM is loaded
-            document.getElementById("AgentCall").addEventListener("click",() => CallAgent());
-            document.getElementById("dispo1").addEventListener("click", () => dispo_call("ORDRCD"));
+            document.getElementById("AgentCall").addEventListener("click", () => CallAgent());
+            document.getElementById("dispo1").addEventListener("click", () => dispo_call("CALLBK"));
             document.getElementById("disp2").addEventListener("click", () => dispo_call("CMPLTD"));
             document.getElementById("dispo3").addEventListener("click", () => dispo_call("NTRCHB"));
-            document.getElementById("logoutButton").addEventListener("click", NormalLogout);
+            document.getElementById("logoutButton").addEventListener("click", function () {
+                NormalLogout
+                window.location.reload();
+            });
             document.getElementById("HangupControl_agent").addEventListener("click", hangupComplete);
 
             document.getElementById("DiaLControl_agent").addEventListener("click", async () => {
@@ -341,24 +411,62 @@
                 } else if (toggleResult && toggleResult.message.includes("RESUME")) {
                     button.textContent = "Stop Call";
                 }
+
+                if (button.textContent === "Stop Call") {
+                    button.classList.remove("btn-success");
+                    button.classList.add("btn-warning")
+                } else {
+                    button.classList.remove("btn-warning");
+                    button.classList.add("btn-success");
+                }
             });
 
             // Open WebSocket connection on login
-            document.getElementById("loginForm_vicidial").addEventListener("click", async function (event) {
+            document.getElementById("loginForm_vicidial").addEventListener("submit", async function (event) {
                 event.preventDefault();
-                isLoggedIn();
+                const vici_user = "{{ processed_username }}"
+                const form = document.getElementById("loginForm_vicidial");
+                const formdata = new FormData(form);
+                const frame_modal = document.getElementById('vici_Iframe');
+                if (frame_modal) {
+                    frame_modal.remove();
+                }
+                const loginResult = await makeApiCall("{% url 'agent_action' 'login' %}", "POST", {
+                    phone_number: formdata.get("phone_number"),
+                });
+                if (loginResult && loginResult.status === "success" && loginResult.pass) {
+                    console.log("Login successful.");
+                    const iframe = document.createElement('iframe');
+                    // Set attributes for the iframe
+                    iframe.src = `https://vici.arungas.com//agc/vicidial.php??relogin=YES&VD_login=${vici_user}&VD_campaign=${vici_user}&phone_login=${vici_user}&phone_pass=${loginResult.pass}&VD_pass=${loginResult.pass}&SUBMIT=SUBMIT`;
+                    // Replace with your desired URL
+                    console.log("the form data is", formdata, vici_user, iframe.src)
+
+                    iframe.title = 'vici_Iframe';
+                    iframe.width = '600';
+                    iframe.height = '600';
+                    iframe.id = 'vici_Iframe';
+                    {#document.body.appendChild(iframe);#}
+                    document.getElementById("hidden_Iframe").appendChild(iframe);
+                    isLoggedIn();
+                } else {
+                    console.error("Login failed:", result.message);
+                    alert("Login failed. Please try again.");
+                    return;
+                }
+
             });
 
-            window.addEventListener('beforeunload', function (event) {
-                    console.log('beforeunload event triggered');
-                    event.preventDefault();
-                    event.returnValue = 'You have unsaved changes!';
+
+            // Detect tab close or switch using the Visibility API
+            document.addEventListener('beforeunload', function () {
+                window.localStorage.setItem("isReload", "true");
+                console.log("Not logged in.", window.localStorage.getItem("isReload"))
             });
 
 
-        }
-    })
-
+        };
+    });
 </script>
 </body>
 </html>
