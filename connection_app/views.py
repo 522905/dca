@@ -1186,11 +1186,11 @@ class AdminToolsGridMenuView(TemplateView):
 					"icon": "fa-user-secret",
 					"url": reverse("connection_app:book_sales_order_list"),
 				},
-				{
-					"name": "Update Distributor Password",
-					"icon": "fa-user-secret",
-					"url": reverse("connection_app:update_distributor_login_details"),
-				},
+				# {
+				# 	"name": "Update Distributor Password",
+				# 	"icon": "fa-user-secret",
+				# 	"url": reverse("connection_app:update_distributor_login_details"),
+				# },
 			]
 		}
 

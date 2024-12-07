@@ -49,6 +49,9 @@
             </li>
             {% if user|allowed_admin_tools %}
                 <li class="submenu_level2">
+                    <a href="{% url 'connection_app:update_distributor_login_details' %}" data-turbolinks="false"><i class="fa fa-book" aria-hidden="true"></i>Distributor Password</a>
+                </li>
+                <li class="submenu_level2">
                     <a href="{% url 'connection_app:admin_tools_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-book" aria-hidden="true"></i>Admin Tools</a>
                 </li>
             {% endif %}
