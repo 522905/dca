@@ -4,14 +4,19 @@ from collections import defaultdict
 
 import django_rq
 import requests
+from camunda.external_task.external_task import ExternalTask
 
 from connection_app.enums import SalesOrderStatusEnum
 from connection_app.jobs import start_read_customer_profile
 
+
 from domestic_app.settings import CAMUNDA_BASE_URL
 from reference_data.models import Distributor
+from service_request.enums import ServiceRequestTypeStatusEnum, ServiceRequestTypeEnum
+from service_request.models import ServiceRequest
 from ujjwala.camunda_functions import start_process_in_camunda_v2, is_process_exist_in_camunda
 from ujjwala.jobs import ensure_db_connection
+from ujjwala.models import UjjwalaV2Application
 from ujjwala.ujjwala_functions import evaluate_change_cylinder_type_requests
 
 logger = logging.getLogger(__name__)
@@ -1003,3 +1008,44 @@ def start_book_sales_order_camunda_process():
 				bso_obj.error_log = str(e)
 				bso_obj.save()
 				continue
+
+
+def update_service_request_in_dca(task: ExternalTask):
+	from connection_app.models import CustomerProfile
+
+	request_type = task.get_variable('request_type')
+	service_request_id = task.get_variable('service_request_id')
+	application_id = task.get_variable('application_id')
+	action = task.get_variable('action')
+
+	sr_obj = ServiceRequest.objects.get(pk=service_request_id)
+
+	if action == 'ACCEPT':
+		if request_type == ServiceRequestTypeEnum.CHANGE_PHONE_NUMBER:
+			phone_number = task.get_variable('phone_number')
+			if task.get_variable('dca_app') == 'ujjwala':
+				application = UjjwalaV2Application.objects.get(pk=application_id)
+				application.contact_mobile = phone_number
+				application.save()
+		elif request_type == ServiceRequestTypeEnum.UPDATE_ADDRESS:
+			new_address = task.get_variable('new_address')
+			if task.get_variable('dca_app') == 'ujjwala':
+				application = UjjwalaV2Application.objects.get(pk=application_id)
+				application.address_json = new_address
+				# application.address_verified = True
+				# application.address_verified_by = sr_obj.reviewed_by
+				# application.address_verified_on = sr_obj.reviewed_on
+				application.address_updated = True
+				application.address_updated_on = datetime.datetime.now()
+				application.save()
+			elif task.get_variable('dca_app') == 'connection_app':
+				application = CustomerProfile.objects.get(pk=application_id)
+				application.address_json = new_address
+				application.save()
+		sr_obj.status = ServiceRequestTypeStatusEnum.COMPLETED
+		sr_obj.sdms_ticket_number = task.get_variable('sdms_ticket_number')
+		sr_obj.save()
+
+	else:
+		sr_obj.status = ServiceRequestTypeStatusEnum.REJECTED
+		sr_obj.save()
