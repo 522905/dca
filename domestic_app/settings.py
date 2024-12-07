@@ -43,6 +43,9 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "./dialogflow_api.json"
 # Application definition
 
 INSTALLED_APPS = [
+    'dal',
+    'dal_select2',
+    'daphne',
     'material',
     'material.frontend',
     'django.contrib.admin',
@@ -91,11 +94,10 @@ INSTALLED_APPS = [
     'taggit',
     'solo',
     'vicidial',
-<<<<<<< Updated upstream
-=======
-    'slick_reporting',
+    # 'slick_reporting',
     'crispy_forms',
->>>>>>> Stashed changes
+
+    'channels',
 ]
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
@@ -392,6 +394,7 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "./dialogflow_api.json"
 os.environ["PRIVATE_KEY"] = PRIVATE_KEY
 os.environ["PASSPHRASE"] = "jobnot"
 os.environ["APP_SECRET"] = "10bee2967962c7fb6010d8b99764df45"
+os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 
 
 # cache.get_or_set("dedup_portal", pickled_dedeup_portal, 1000)
@@ -402,9 +405,14 @@ os.environ["APP_SECRET"] = "10bee2967962c7fb6010d8b99764df45"
 
 # GEOS_LIBRARY_PATH = '/home/user/local/lib/libgeos_c.so'
 # GDAL_LIBRARY_PATH = '/home/user/local/lib/libgdal.so'
-=======
+ASGI_APPLICATION = "domestic_app.asgi.application"
 
 
-# cache.get_or_set("dedup_portal", pickled_dedeup_portal, 1000)
-# dedup_portal = IoclOmcDedup('305948', 'Inder@1234')
->>>>>>> Stashed changes
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('192.168.171.65', 56379)],  # Ensure Redis server is running at this address
+        },
+},
+}

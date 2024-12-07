@@ -242,6 +242,43 @@ class WhatsappPreInspectionTypeSelf(View):
 # 	return "Invalid intent provided."
 
 
+def check_ujjwala_status(contact_mobile):
+	if not contact_mobile:
+		return JsonResponse({"error": "Phone number is required."}, status=400)
+
+	# Retrieve the application based on the provided contact mobile number
+	application = UjjwalaV2Application.objects.filter(
+		Q(contact_mobile=contact_mobile) | Q(sdms_mobile_number=contact_mobile)
+	).first()
+	print(f"the object application is {application}")
+	if not application:
+		return 'No application found for the provided phone number'
+
+	# Fetch the rejection reason if applicable
+	if 'reject' in application.status.lower():
+		reject_reason = ujjwala_application_reject_reason_log(application.id)
+		if reject_reason is not None:
+			return f"Application rejected: {reject_reason}"
+
+	# Check for PreInspection object
+	pi_obj = PreInspection.objects.filter(parent_id=application.id).first()
+	from ujjwala.enums import PreInspectionRejectionReasonsEnum
+	# check for rejected status of pi
+	if pi_obj.status == "REJECTED":
+		inspection_app_content_type = ContentType.objects.get(model=PreInspection.__name__.lower(), app_label="ujjwala")
+
+		description = StateLog.objects.filter(
+			object_id=pi_obj.id, content_type=inspection_app_content_type,
+			state__icontains='reject'
+		).order_by('-id').first()
+		if description:
+			try:
+				json_text = json.loads(description.description).get("reason")[0]
+			except:
+				return description.description
+			print(json_text[0], json_text)
+
+
 def WhatsappPreInspection(Inspection_data, unique_id, intent):
 	conn = django_rq.get_connection("default")
 	if not unique_id and Inspection_data is None:

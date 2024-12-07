@@ -6,7 +6,7 @@ import logging
 import mimetypes
 import os
 from functools import partial
-
+import logging
 import django_filters
 import django_rq
 from dal import autocomplete

@@ -22,6 +22,7 @@ def dialogflow_chat_assignment(session_id):
 
 	logger.info(f'Assign the chat to gurpreet : for user  {session_id}')
 
+
 def start_sales_order_portability_process(sales_order_portability_id):
 	from connection_app.models import SalesOrderPortability
 	from teams.models import SDMSUser

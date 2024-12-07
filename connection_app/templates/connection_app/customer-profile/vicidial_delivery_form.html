@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <title>Sign Up</title>
+    <style>
+        body {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-floating label {
+            color: #6c757d;
+        }
+
+        .btn-primary {
+            background-color: #6a11cb;
+            border-color: #6a11cb;
+        }
+
+        .btn-primary:hover {
+            background-color: #2575fc;
+            border-color: #2575fc;
+        }
+
+        .alert {
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+<section class="py-3 py-md-5">
+    <div class="container">
+        <div class="row justify-content-center">
+                <div class="card border-0 rounded-4">
+                    <div class="card-body p-4 p-md-5">
+                        <h2 class="text-center mb-4">Sign Up</h2>
+                        <div id="error-alert" class="alert alert-danger d-none" role="alert"></div>
+                        <div class="d-grid">
+                            <button class="btn btn-primary btn-lg" id="vicidial-signup-form" type="button">Register for Calling</button>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    </div>
+</section>
+
+<!-- Bootstrap Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+<script>
+    document.getElementById('vicidial-signup-form').addEventListener('click', function (event) {
+        event.preventDefault();
+        const errorAlert = document.getElementById('error-alert');
+
+        fetch("{% url 'vicidial-signup' %}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();
+            } else if (data.status === 'error') {
+                errorAlert.classList.remove('d-none');
+                errorAlert.textContent = 'Please fix the errors below and try again.';
+
+                // Clear existing error messages
+                const formElements = document.querySelectorAll('.text-danger');
+                formElements.forEach(el => el.remove());
+
+                // Display field-specific errors
+                const errors = JSON.parse(data.errors);
+                for (const [field, messages] of Object.entries(errors)) {
+                    const fieldContainer = document.querySelector(`[name="${field}"]`);
+                    if (fieldContainer) {
+                        const errorElement = document.createElement('div');
+                        errorElement.className = 'text-danger mt-1';
+                        messages.forEach(message => {
+                            const small = document.createElement('small');
+                            small.textContent = message;
+                            errorElement.appendChild(small);
+                        });
+                        fieldContainer.parentElement.appendChild(errorElement);
+                    }
+                }
+            }
+        })
+        .catch(error => {
+            errorAlert.classList.remove('d-none');
+            errorAlert.textContent = 'An unexpected error occurred. Please try again.';
+            console.error('Error:', error);
+        });
+    });
+</script>
+</body>
+</html>
