@@ -33,6 +33,8 @@ from reference_data.models import ServiceType, Distributor
 from teams.models import SDMSServiceArea
 from ujjwala.camunda_functions import is_process_exist_in_camunda
 from utils.global_functions import generate_tiny_url
+from django.core.exceptions import ValidationError
+
 
 minio_client = Minio(
 	settings.MINIO_API_ENDPOINT,
@@ -1343,3 +1345,26 @@ class PrizeAllocation(models.Model):
 	prize_given_photo = models.URLField()
 	allocated_by = models.ForeignKey(User, on_delete=models.CASCADE)
 	allocated_on = models.DateTimeField(auto_now_add=True)
+
+
+class VaultSecret(models.Model):
+	name = models.CharField(max_length=256)
+	description = models.TextField(null=True, blank=True)
+	path = models.CharField(max_length=256)
+	static_values = models.JSONField()
+	last_updated_on = models.DateTimeField(blank=True, null=True)
+	last_updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True,
+	                                    related_name='vault_secrets')
+
+	class Meta:
+		permissions = (
+			("can_update_distributor_password", "Can Update Distributor Password"),
+		)
+
+	def __str__(self):
+		return "{} - {}".format(self.name, self.description)
+
+	def save(self, *args, **kwargs):
+		if not self.static_values.get('data', ''):
+			raise ValidationError("No data key specified")
+		super(VaultSecret, self).save(*args, **kwargs)

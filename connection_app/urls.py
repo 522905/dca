@@ -6,6 +6,7 @@ from rest_framework import routers
 
 from connection_app.viewsets import ConnectionApplicationViewSet, ConnectionApplicationAPIViewSet, BookSalesOrderViewSet
 from . import views
+from .views import UpdateDistributorLoginDetailsFormView, UpdateSDMSUserLoginPasswordFormView
 
 router = routers.DefaultRouter()
 router.register(r'connection-application', ConnectionApplicationViewSet)
@@ -86,6 +87,11 @@ urlpatterns = [
         '^customer-profile/(?P<pk>[^/.]+)/$',
         views.CustomerProfileView.as_view(),
         name="customer_profile"
+    ),
+    url(
+        '^customer-profile-public/(?P<pk>[^/.]+)/$',
+        views.CustomerProfilePublicView.as_view(),
+        name="customer_profile_public"
     ),
     path(
         'generate-lead-form/',
@@ -244,5 +250,20 @@ urlpatterns = [
         '^service-request/change-address/(?P<pk>[^/.]+)/$',
         views.ChangeAddressView.as_view(),
         name="change_address"
+    ),
+    path(
+        'vault-secret-autocomplete-view/',
+        views.VaultSecretAutocompleteView.as_view(),
+        name='vault_secret_autocomplete_view',
+    ),
+    path(
+        'update-distributor-login-details/',
+        UpdateDistributorLoginDetailsFormView.as_view(),
+        name='update_distributor_login_details'
+    ),
+    path(
+        'update-sdms-login-password/',
+        UpdateSDMSUserLoginPasswordFormView.as_view(),
+        name='update_sdms_login_password'
     ),
 ] + router.urls

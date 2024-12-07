@@ -16,6 +16,13 @@ from django.db import connection
 from django.urls import path, reverse
 from django.http import JsonResponse, HttpResponseRedirect
 from itertools import groupby
+from django.contrib import admin
+
+from django.contrib import admin
+from django_object_actions import DjangoObjectActions, action
+
+from hashicorp import hashicorp_client
+from .models import VaultSecret
 
 
 class StatusFilter(SimpleListFilter):
@@ -318,3 +325,30 @@ class ImportDataAdmin(admin.ModelAdmin):
         return "No file available"
 
     download_file_link.short_description = "Download File"
+
+
+@admin.register(VaultSecret)
+# class VaultSecretAdmin(DjangoObjectActions, admin.ModelAdmin):
+class VaultSecretAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'name',
+        'last_updated_on',
+        'last_updated_by',
+    )
+    list_filter = ('last_updated_on', 'last_updated_by')
+    search_fields = ('name',)
+    readonly_fields = ('last_updated_on', 'last_updated_by',)
+    change_actions = ['create_vault']
+
+    @action(
+        label="Create In Vault",  # optional
+        description="This will create vault"  # optional
+    )
+    def create_vault(self, request, obj: VaultSecret):
+        if obj:
+            res = hashicorp_client.client.secrets._kv.v1.create_or_update_secret(
+                path=obj.path.replace("secret/", "") if "secret/" in obj.path else obj.path,
+                secret=obj.static_values
+            )
+            print(res)

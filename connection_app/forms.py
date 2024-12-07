@@ -1,15 +1,19 @@
+import datetime
 import json
-
-from django import forms
+from dal import autocomplete
+from django import forms, apps
+from django.core.exceptions import ValidationError
 from django.forms import NumberInput
 from django_currentuser.middleware import get_current_user
 
 from connection_app.enums import ConnectionApplicationProcessType, ConnectionApplicationLeadStatus, \
 	ConnectionApplicationDocumentsEnum, HouseTypeEnum, PostInspectionActivityTypeEnum, PostInspectionStatusEnum, \
 	TemplateEnum, ProofTypeEnum
+
+from hashicorp import hashicorp_client
 from inactive_customers.models import InactiveCustomer
 from reference_data.models import ServiceType, Product, SDMSServiceRequest
-from teams.models import SDMSServiceArea, UserProfile
+from teams.models import SDMSServiceArea, UserProfile, SDMSUser
 
 
 class SubmitLead(forms.Form):
@@ -795,3 +799,72 @@ class ChangeAddressForm(forms.Form):
 		# post_inspection_activity_obj.completed_by = get_current_user()
 		# post_inspection_activity_obj.data = data
 		# post_inspection_activity_obj.save()
+
+
+class UpdateDistributorLoginDetailsForm(forms.Form):
+	secret_key = forms.ModelChoiceField(
+		queryset=None,  # Lazy initialization
+		required=True,
+		widget=autocomplete.ModelSelect2(
+			url='connection_app:vault_secret_autocomplete_view',
+			attrs={
+				'data-placeholder': 'Secret Name',
+			},
+		),
+		# empty_label=None
+	)
+	password = forms.CharField(
+		label='', required=True
+	)
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		from connection_app.models import VaultSecret  # Local import to avoid circular dependency
+		self.fields['secret_key'].queryset = VaultSecret.objects.all()
+
+	def clean_password(self):
+		if not self.cleaned_data['password']:
+			raise ValidationError("Password can't be blank")
+		return self.cleaned_data['password']
+
+	def clean_secret_key(self):
+		if not self.cleaned_data['secret_key']:
+			raise ValidationError("Please select secret key path")
+		return self.cleaned_data['secret_key']
+
+	def save(self):
+		from connection_app.models import VaultSecret  # Local import to avoid circular dependency
+
+		vault_secret: VaultSecret = self.cleaned_data['secret_key']
+		json_param = vault_secret.static_values
+		json_param['data'].update({
+			'password': self.cleaned_data['password']
+		})
+		response = hashicorp_client.client.write(vault_secret.path, **json_param)
+		response.raise_for_status()
+
+		vault_secret.last_updated_on = datetime.datetime.now()
+		vault_secret.last_updated_by = get_current_user()
+		vault_secret.save()
+
+
+class UpdateSDMSUserLoginPasswordForm(forms.Form):
+	sdms_user = forms.ModelChoiceField(
+		queryset=None,  # Lazy initialization
+		required=True,
+		empty_label="(Select SDMS User)"
+	)
+	password = forms.CharField(
+		label='Password', required=True
+	)
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		from teams.models import SDMSUser
+		current_user = get_current_user()
+		self.fields['sdms_user'].queryset = SDMSUser.objects.filter(parent__user=current_user)
+
+	def save(self):
+		sdms_user: SDMSUser = self.cleaned_data['sdms_user']
+		sdms_user.delivery_boy_password = self.cleaned_data['password']
+		sdms_user.save()

@@ -1,0 +1,55 @@
+{% extends "material/frontend/base_module.html" %}
+{% load material_form %}
+{% load static %}
+{% block page_title %}
+    <span style="font-size:16px;">Update Password</span>
+{% endblock %}
+{% block extrahead %}
+{{ block.super }}
+{{ form.media }}
+{% endblock %}
+{% block content %}
+    <link rel="stylesheet" href="{% static '/css/style.css' %}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+
+    <div class="p-2 pt-0 form_label" style="width: 100%;">
+        <div class="card">
+            <form method="post">
+                    <div class="card-body">
+                        {% csrf_token %}
+{#                        {% form form=form %}{% endform %}#}
+                        <div class="row">
+                            <div class="col-3">
+                                <p>Key</p>
+                            </div>
+                            <div class="col-9">
+                                <div class="form-group">
+                                    <div class="form-control">
+                                        {{ form.secret_key }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-3">
+                                <p>Secret</p>
+                            </div>
+                            <div class="col-9">
+                                <div class="form-group">
+                                    <div class="form-control">
+                                        {{ form.password }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <input class="btn btn-primary" type="submit" value="Update"/>
+                    </div>
+                </form>
+        </div>
+    </div>
+{#    <style>#}
+{#        #id_secret_key{ display: block !important;}#}
+{#    </style>#}
+{% endblock %}
