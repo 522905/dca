@@ -27,6 +27,10 @@ class SDMSUser(models.Model):
 	delivery_boy_login = models.CharField(max_length=32)
 	delivery_boy_password = models.CharField(max_length=128)
 	delivery_boy_full_name = models.CharField(max_length=256, null=True, blank=True)
+	password_error = models.BooleanField(default=False)
+
+	def __str__(self):
+		return "{} - {} - {}".format(self.distributor.code, self.distributor.name, self.delivery_boy_login)
 
 
 class UserProfileDocuments(models.Model):
