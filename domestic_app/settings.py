@@ -316,6 +316,9 @@ UJJWALA_PRE_INSPECTION_OTP = 'ujjwala_pre_inspection_otp'
 
 X_FRAME_OPTIONS = 'ALLOWALL'
 
+HASHICORP_VAULT_TOKEN = \
+    "hvs.CAESIAd0SL05Qw5NQ4YM7-OK4p4oWzD4d99BfkhnJ7bRtkP4Gh4KHGh2cy5hVjFONldrdWl3S2JZMDR5T2NjTWtqTG4"
+
 # import sentry_sdk
 #
 # sentry_sdk.init(
