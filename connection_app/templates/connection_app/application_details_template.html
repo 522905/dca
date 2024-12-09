@@ -23,7 +23,7 @@
             {% if obj.address %}
 			    <span>{{obj.address}}</span>
             {% else %}
-                <span>HNo: {{obj.address_json.house_no}} St No.: {{ obj.address_json.street_no }} <br>{{ obj.address_json.village }} {{ obj.address_json.city }} - {{ obj.address_json.pincode }}
+                <span>HNo: {{obj.address_json.house_no}} St No.: {{ obj.address_json.street_no }} <br>{{ obj.address_json.landmark }}<br>{{ obj.address_json.village }} {{ obj.address_json.city }} - {{ obj.address_json.pincode }}
                     {{obj.address_json.city}}</span>
             {% endif %}
 		</p>
