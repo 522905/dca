@@ -7,7 +7,7 @@ from rest_framework import routers
 from .vicidial.views import delivery_boy_signup_view, vicidial_webhook, check_access, AgentActionView, \
     CustomerProfileListView
 from connection_app.viewsets import ConnectionApplicationViewSet, ConnectionApplicationAPIViewSet, BookSalesOrderViewSet
-from . import views
+from . import views, report_views
 from .views import UpdateDistributorLoginDetailsFormView, UpdateSDMSUserLoginPasswordFormView
 
 router = routers.DefaultRouter()
@@ -19,7 +19,7 @@ router.register(
 
 
 urlpatterns = [
-    path('', views.DashboardView.as_view(), name='index'),
+    # path('', views.DashboardView.as_view(), name='index'),
     path('web-form/', views.web_form_view),
     path('connection-application/start/', views.index),
     url(
@@ -268,10 +268,6 @@ urlpatterns = [
         UpdateSDMSUserLoginPasswordFormView.as_view(),
         name='update_sdms_login_password'
     ),
-    # path('submit-delivery-boy-form/',
-    #        views.submit_delivery_boy_form,
-    #        name='submit_delivery_boy_form'
-    # ),
     path('vicidial_webhook/',
          vicidial_webhook,
          name='vicidial_webhook'
@@ -292,4 +288,6 @@ urlpatterns = [
          AgentActionView.as_view(),
          name='agent_action'
          ),
+    path("sales-order-summary/", report_views.SalesProcessedView.as_view(), name="sales_order_summary"),
+    path('', report_views.DashboardSalesView.as_view(), name='index'),
 ] + router.urls

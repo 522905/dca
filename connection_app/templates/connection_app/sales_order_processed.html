@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Processed</title>
+    <!-- Bootstrap 4 CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- DataTables CSS CDN -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
+    <style>
+        .stats-table th, .stats-table td {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-4">
+    <h1 class="text-center">Daily Sales Performance</h1>
+
+    <!-- Filters Section -->
+    <div class="card mb-4">
+        <div class="card-header">Filter Options</div>
+        <div class="card-body">
+            <form method="get" action="" class="row">
+                <div class="col-md-4 col-sm-6">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="date" id="start_date" name="start_date" class="form-control">
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <label for="end_date" class="form-label">End Date</label>
+                    <input type="date" id="end_date" name="end_date" class="form-control">
+                </div>
+                <div class="col-md-4 text-right mt-3">
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Stats Table -->
+    <div class="card">
+        <div class="card-header">Daily Sales Statistics</div>
+        <div class="card-body">
+            <div class="d-flex justify-content-around mb-3">
+                <button type="button" class="btn btn-info" readonly>Total OTP: {{ total_otp }}</button>
+                <button type="button" class="btn btn-warning" readonly>Total Override: {{ total_override }}</button>
+                <button type="button" class="btn btn-success" readonly>Total Orders: {{ total_orders }}</button>
+            </div>
+            {% if daily_stats %}
+                <div class="table-responsive">
+                    <table id="sales" class="table table-striped table-bordered stats-table">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Date</th>
+                                <th>Delivery Boy</th>
+                                <th>Without OTP</th>
+                                <th>With OTP</th>
+                                <th>Total Sales</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for stat in daily_stats %}
+                            <tr>
+                                <td>{{ stat.delivery_date }}</td>
+                                <td>{{ stat.delivery_boy_full_name }}</td>
+                                <td>{{ stat.Override }}</td>
+                                <td>{{ stat.OTP }}</td>
+                                <td>{{ stat.Total }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>No sales data available for the selected filters.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Bootstrap 4 JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#sales').DataTable({
+            paging: true,
+            searching: true,
+            ordering: true,
+            responsive: true,
+            lengthMenu: [5, 10, 25, 50],
+            language: {
+                search: "Search Table:",
+                lengthMenu: "Show _MENU_ entries"
+            }
+        });
+    });
+</script>
+</body>
+</html>
