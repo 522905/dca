@@ -32,22 +32,25 @@
                 </div>
             </div>
             <div class="card p-1">
-                <div class="card-header">
-                    Post-Inspection(s)
+                <div class="card-header ">
+                   <p>Sales orders Processed of last 10 days</p>
+                    {% if is_organization_admin %}
+                    <a href="{% url 'sales_order_summary' %}" class="text_link">View All</a>
+                    {% endif %}
                 </div>
                 <div class="card-body">
                     <table>
                         <tr>
                             <td>Total</td>
-                            <td>{{ postinspection_queryset.count }}</td>
+                            <td>{{  total_orders }}</td>
                         </tr>
                         <tr>
-                            <td>Accepted</td>
-                            <td>{{ postinspection_accepted.count }}</td>
+                            <td>With otp</td>
+                            <td>{{ total_otp }}</td>
                         </tr>
                         <tr>
-                            <td>Rejected</td>
-                            <td>{{ postinspection_rejected.count }}</td>
+                            <td>without otp</td>
+                            <td>{{ total_override }}</td>
                         </tr>
                     </table>
                 </div>
@@ -61,7 +64,7 @@
     </div>
 </div>
 <style>
-    .status_block .main-header{     
+    .status_block .main-header{
         border-top: 1px solid #ccc;
         border-bottom: 1px solid #ccc;
         border-radius: 0;
@@ -75,4 +78,8 @@
     .search_form input{ padding: 0 10px !important; width: 96% !important;  }
     .link_wh:hover{ text-decoration: underline !important;}
 </style>
+<script>
+    let context = JSON.parse('{{ context}}');
+    console.log('dashboard' , context );
+</script>
 {% endblock %}
