@@ -62,10 +62,10 @@
                         <tbody>
                         {% for stat in daily_stats %}
                             <tr>
-                                <td>{{ stat.delivery_date }}</td>
-                                <td>{{ stat.delivery_boy_full_name }}</td>
-                                <td>{{ stat.Override }}</td>
-                                <td>{{ stat.OTP }}</td>
+                                <td>{{ stat.delivery_date_only }}</td>
+                                <td>{{ stat.delivery_confirm_full_name }}</td>
+                                <td>{{ stat.override_count }}</td>
+                                <td>{{ stat.otp_count }}</td>
                                 <td>{{ stat.Total }}</td>
                             </tr>
                         {% endfor %}
@@ -91,13 +91,42 @@
         $('#sales').DataTable({
             paging: true,
             searching: true,
-            ordering: true,
             responsive: true,
             lengthMenu: [5, 10, 25, 50],
             language: {
                 search: "Search Table:",
                 lengthMenu: "Show _MENU_ entries"
-            }
+            },
+            columnDefs: [
+                {
+                    targets: 0, // First column (date)
+                    render: function (data, type, row) {
+                        const date = new Date(data);
+
+                        if (isNaN(date)) {
+                            console.warn("Invalid date:", data); // Handle invalid dates
+                            return data;
+                        }
+
+                        if (type === 'display' || type === 'filter') {
+                            // Display format: Dec. 3, 2024
+                            return date.toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short', // "Dec."
+                                day: 'numeric'
+                            });
+                        }
+
+                        if (type === 'sort') {
+                            // For sorting, use timestamp
+                            return date.getTime();
+                        }
+
+                        return data; // Raw data for other types
+                    }
+                }
+            ],
+            order: [[0, 'asc']] // Sort by the first column (date)
         });
     });
 </script>
