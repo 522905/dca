@@ -97,6 +97,7 @@
 		var initialData = {
 			"mobile": "",
 			"referral_code": "",
+			"mobile_number_2": "",
 		};
 
 		function fillInitialData() {
@@ -276,14 +277,15 @@
 						</div>
 					</div>
  
-					<div id="uid_linked_mobile_form_group" class="form-group whatsapp-form-group">
+					<div class="form-group whatsapp-form-group">
 						<label for="mobileNumber" style="margin-bottom: 0 !important;">Mobile Number(मोबाइल नंबर) <i class="fa fa-phone" aria-hidden="true"></i> <strong
 								style="color:red;">*</strong></label>
 						<span style="color:red; font-size:12px; display: block; width: 100%;">जो कि कनेक्शन मिलने तक
 							चलता रहे ताकि हम आपको संपर्क कर सके</span>
 						<div class="row m-0">
 							<div class="col-8 pl-0">
-								<input class="form-control" name="contact_mobile" type="tel" id="mobileNumber" placeholder="Enter your number" required>
+								<input type="tel" class="form-control" id="mobile_number_2" name="mobile_number_2"
+                                    placeholder="Enter your number" onblur="this.reportValidity();"  required />
 							</div>
 						</div>
 						<div class="row m-0">
@@ -302,7 +304,7 @@
 					</div>
 					
 					<script>
-						document.getElementById('mobileNumber').addEventListener('blur', function () {
+						document.getElementById('mobile_number_2').addEventListener('blur', function () {
 							const mobileNumber = this.value.trim();
 							const errorMessage = document.getElementById('errorMessage');
 					  
@@ -669,6 +671,8 @@
 			return cookieValue;
 		}
 		$('#punjab').on('submit', function (event) {
+			
+
 			event.preventDefault();
 			let documentArray = valid();
 			if(documentArray == null) return;
