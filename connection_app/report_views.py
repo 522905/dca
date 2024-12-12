@@ -117,7 +117,7 @@ class DashboardSalesView(BaseSalesView):
 
 class SalesProcessedView(BaseSalesView):
 	model = SalesOrder
-	template_name = "connection_app/SaleOder_processed.html"
+	template_name = "connection_app/sales_order_processed.html"
 	filterset_class = SalesOrderFilter
 
 	def get_context_data(self, **kwargs):
