@@ -147,9 +147,21 @@
         }
 	</script>
 </head>
-
+<style>
+    .error {
+      color: red;
+      font-size: 12px;
+	  margin: 3px 0;
+    }
+    .success {
+      color: green;
+      font-size: 12px;
+	  margin: 3px 0;
+    }
+	.form_block label{ padding-left: 12px;}
+	.form_block .form-group{ padding-left: 30px;}
+  </style>
 <body>	        
-
 	<div class="main">
 		<div class="col-md-12" style="padding: 0;">
 			<img src="https://arungas.com/ujjwala/Banner_2024.jpg">
@@ -163,20 +175,22 @@
 				<h3 class="text-center">Form to Apply New Domestic LPG Gas Connection</h3>
 				<h4 class="text-center" style="color: #004ea1;">नया घरेलू गैस कनेक्शन आवेदन करने के लिए फार्म</h4><br>
 				<form class="form-horizontal" action="" id="punjab" method="POST" enctype="multipart/form-data">
-					<label><b>Application Type (किस लिए आवेदन)</b><strong style="color:red">*</strong></label>
-					<div class="form-group">
-						<div class="input-block">
-							<input type="radio" class="form-check-input" name="application_type" value="NEW_CONNECTION"
-							required>
-							<span style="padding-left:10px;"> New Connection (नया कनेक्शन)</span>
-						</div>
-						<div class="input-block">
-							<input type="radio" class="form-check-input" name="application_type" value="BLUE_BOOK" required>
-							<span style="padding-left:10px;"> Gas Book (गैस कॉपी)</span>
-						</div>
-						<div class="input-block">
-							<input type="radio" class="form-check-input" name="application_type" value="ADD_ON_CYLINDER" required>
-							<span style="padding-left:10px;"> ADD On Cylinder (ADD On कनेक्शन)</span>
+					<div class="form_block">
+						<label><b>Application Type (किस लिए आवेदन)</b><strong style="color:red">*</strong></label>
+						<div class="form-group">
+							<div class="input-block">
+								<input type="radio" class="form-check-input" name="application_type" value="NEW_CONNECTION"
+								required>
+								<span style="padding-left:10px;"> New Connection (नया कनेक्शन)</span>
+							</div>
+							<div class="input-block">
+								<input type="radio" class="form-check-input" name="application_type" value="BLUE_BOOK" required>
+								<span style="padding-left:10px;"> Gas Book (गैस कॉपी)</span>
+							</div>
+							<div class="input-block">
+								<input type="radio" class="form-check-input" name="application_type" value="ADD_ON_CYLINDER" required>
+								<span style="padding-left:10px;"> ADD On Cylinder (ADD On कनेक्शन)</span>
+							</div>
 						</div>
 					</div>
 
@@ -234,35 +248,49 @@
 					</div>
 					 <!-- end Whatsapp OTP Verification Modal -->
 
-					<div class="row">
-						<div id="uid_linked_mobile_form_group" class="form-group whatsapp-form-group">
-							<label style="margin-bottom: 0;">Own or Family Mobile Number(अपना या परिवार के किसी सदस्य का
-								मोबाइल नंबर) <i class="fa fa-whatsapp" aria-hidden="true"></i> <strong
-									style="color:red">*</strong></label>
-								<span style="color:red; font-size:12px; display: block; width: 100%;">जो कि कनेक्शन मिलने तक
-								चलता रहे ताकि हम आपको संपर्क कर सके</span>
-							<div class="row m-0">
-								<div class="col-8 pl-0">
-									<input type="tel"  class="form-control" id="contact_mobile"
-									pattern="[6789][0-9]{9}" name="contact_mobile" maxlength="10" required />
-									
-								</div>
-								<div class="col-4 pr-0">
-									<button type="button" id="verifyWhatsappButton" class="btn btn-primary float-right" 
-									onclick="whatsapp_verifier.start_verification()">
-										Verify
-									</button>
-									<button type="button" id="changeWhatsappButton" class="btn btn-primary float-right" 
-									onclick="whatsapp_verifier.reset_verification()" style="display: none;">
-										Change
-									</button>
-								</div>
+					<div id="uid_linked_mobile_form_group" class="form-group whatsapp-form-group">
+						<label style="margin-bottom: 0;">Own or Family Mobile Number(अपना या परिवार के किसी सदस्य का
+							मोबाइल नंबर) <i class="fa fa-whatsapp" aria-hidden="true"></i> <strong
+								style="color:red">*</strong></label>
+							<span style="color:red; font-size:12px; display: block; width: 100%;">जो कि कनेक्शन मिलने तक
+							चलता रहे ताकि हम आपको संपर्क कर सके</span>
+						<div class="row m-0">
+							<div class="col-8 pl-0">
+								<input type="tel"  class="form-control" id="contact_mobile"
+								pattern="[6789][0-9]{9}" name="contact_mobile" maxlength="10" required />
+								
 							</div>
-							<div class="row m-0">
-								<span id="contact_mobile_detail_whatsapp"></span>
+							<div class="col-4 pr-0">
+								<button type="button" id="verifyWhatsappButton" class="btn btn-primary float-right" 
+								onclick="whatsapp_verifier.start_verification()">
+									Verify
+								</button>
+								<button type="button" id="changeWhatsappButton" class="btn btn-primary float-right" 
+								onclick="whatsapp_verifier.reset_verification()" style="display: none;">
+									Change
+								</button>
 							</div>
 						</div>
+						<div class="row m-0">
+							<span id="contact_mobile_detail_whatsapp"></span>
+						</div>
 					</div>
+ 
+					<div id="uid_linked_mobile_form_group" class="form-group whatsapp-form-group">
+						<label for="mobileNumber" style="margin-bottom: 0 !important;">Mobile Number(मोबाइल नंबर) <i class="fa fa-phone" aria-hidden="true"></i> <strong
+								style="color:red;">*</strong></label>
+						<span style="color:red; font-size:12px; display: block; width: 100%;">जो कि कनेक्शन मिलने तक
+							चलता रहे ताकि हम आपको संपर्क कर सके</span>
+						<div class="row m-0">
+							<div class="col-8 pl-0">
+								<input class="form-control" name="contact_mobile" type="tel" id="mobileNumber" placeholder="Enter your number" required>
+							</div>
+						</div>
+						<div class="row m-0">
+							<p id="errorMessage" class="error"></p>
+						</div>
+					</div>
+
 					<div class="row">
 						<div class="col-md-6">	
 							<div class="form-group">
@@ -274,6 +302,24 @@
 					</div>
 					
 					<script>
+						document.getElementById('mobileNumber').addEventListener('blur', function () {
+							const mobileNumber = this.value.trim();
+							const errorMessage = document.getElementById('errorMessage');
+					  
+							// Regex for Indian mobile numbers
+							const mobileRegex = /^[6-9]\d{9}$/;
+					  
+							if (mobileRegex.test(mobileNumber)) {
+							  errorMessage.textContent = "Valid mobile number!";
+							  errorMessage.classList.remove("error");
+							  errorMessage.classList.add("success");
+							} else {
+							  errorMessage.textContent = "Invalid mobile number. Please enter a 10-digit number starting with 6, 7, 8, or 9.";
+							  errorMessage.classList.remove("success");
+							  errorMessage.classList.add("error");
+							}
+						  });
+
 						function WhatsappMobileVerifiedController() {
 							var state = 'INITIAL';
 							var whatsappRefNo = undefined;
