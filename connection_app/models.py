@@ -58,6 +58,7 @@ class ConnectionApplication(models.Model):
 	updated_on = models.DateTimeField(auto_now=True)
 	name = models.CharField(max_length=255, null=True)
 	mobile = models.CharField(max_length=10)
+	mobile2 = models.CharField(max_length=10, null=True, blank=True)
 	address = models.TextField(null=True, blank=True)
 	address_json = models.JSONField(null=True, blank=True)
 	application_type = models.CharField(max_length=25, choices=ApplicationTypeEnum.choices)
