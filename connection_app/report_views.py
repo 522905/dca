@@ -1,12 +1,16 @@
 from datetime import timedelta
 
+import django_filters
+from django.db.models import Count, Q
+from django.db.models.functions import TruncDate
 from django.utils import timezone
 from django.views.generic import TemplateView
-from organizations.models import OrganizationOwner , OrganizationUser
-import django_filters
-from .models import SalesOrder
+from organizations.models import OrganizationOwner, OrganizationUser
+
+from teams.enums import UserProfileTypeEnum
 from teams.models import UserProfile
-import pandas as pd
+from .enums import SalesOrderStatusEnum
+from .models import SalesOrder
 
 
 class SalesOrderFilter(django_filters.FilterSet):
@@ -38,12 +42,14 @@ class BaseSalesView(TemplateView):
 			)
 		else:
 			# Add current user's delivery logins
-			delivery_boy_logins = UserProfile.objects.get(user_id=current_user).sdmsuser_set.values(
-				"delivery_boy_login")
+			delivery_boy_logins = UserProfile.objects.get(
+				user_id=current_user
+			).sdmsuser_set.values("delivery_boy_login")
 
 		# Filter sales orders
 		queryset = SalesOrder.objects.filter(
-			delivery_boy_login__in=delivery_boy_logins
+			delivery_confirmed_by__in=delivery_boy_logins,
+			order_status=SalesOrderStatusEnum.COMPLETED
 		)
 
 		# Apply date range filter
@@ -55,6 +61,8 @@ class BaseSalesView(TemplateView):
 			queryset = queryset.filter(delivery_date__gte=start_date)
 		if end_date:
 			queryset = queryset.filter(delivery_date__lte=end_date)
+		# Truncate delivery_date to date only
+		queryset = queryset.annotate(delivery_date_only=TruncDate('delivery_date'))
 
 		return queryset
 
@@ -66,29 +74,25 @@ class BaseSalesView(TemplateView):
 			return context
 
 		is_organization_admin = OrganizationOwner.objects.filter(organization_user__user=current_user).exists()
-		df = pd.DataFrame(list(queryset.values("delivery_date", "delivery_boy_login", "delivery_confirmation_type",
-											   "delivery_boy_full_name")))
-		# Convert the 'delivery_date' column to only date
-		df['delivery_date'] = pd.to_datetime(df['delivery_date']).dt.date
-		if not df.empty:
-			# Group by order_date and delivery_boy_login, then aggregate confirmation types
-			stats = (
-				df.groupby(["delivery_date", "delivery_boy_full_name", "delivery_confirmation_type"])
-				.size()
-				.unstack(fill_value=0)
-				.reset_index()
-			)
+		# Generate statistics using Django ORM
+		stats = queryset.values('delivery_date_only', 'delivery_confirm_full_name').annotate(
+			otp_count=Count('id', filter=Q(delivery_confirmation_type='OTP')),
+			override_count=Count('id', filter=Q(delivery_confirmation_type='Override'))
+		)
 
-			# Calculate totals and percentages
-			stats["Total"] = stats["OTP"] + stats["Override"]
-			stats["OTP_Percentage"] = (stats["OTP"] / stats["Total"]) * 100
-			context["total_otp"] = stats["OTP"].sum()
-			context["total_override"] = stats["Override"].sum()
-			context["total_orders"] = stats["Total"].sum()
-			# Format data for frontend as a list of dictionaries
-			stats["delivery_date"] = stats["delivery_date"]  # Format date as string
-			context["daily_stats"] = stats.to_dict(orient="records")
-			context["is_organization_admin"] = is_organization_admin
+		stats = sorted(stats, key=lambda x: x['delivery_date_only'])
+
+		# Calculate totals and percentages
+		for stat in stats:
+			stat['Total'] = stat['otp_count'] + stat['override_count']
+		# stat['OTP_Percentage'] = (stat['otp_count'] / stat['Total']) * 100 if stat['Total'] > 0 else 0
+
+		context["total_otp"] = sum(stat['otp_count'] for stat in stats)
+		context["total_override"] = sum(stat['override_count'] for stat in stats)
+		context["total_orders"] = sum(stat['Total'] for stat in stats)
+		context["daily_stats"] = list(stats)
+		context["is_organization_admin"] = is_organization_admin
+
 		# Add delivery boys for filtering
 		delivery_boy_logins = queryset.values_list("delivery_boy_login", flat=True).distinct()
 		context["delivery_boys"] = UserProfile.objects.filter(sdmsuser__delivery_boy_login__in=delivery_boy_logins)
@@ -100,6 +104,11 @@ class DashboardSalesView(BaseSalesView):
 	template_name = "connection_app/dashboard.html"
 
 	def get_context_data(self, **kwargs):
+		current_user = self.request.user.id
+		is_deliveryboy = UserProfile.objects.filter(user_id=current_user,
+													type=UserProfileTypeEnum.DELIVERY_BOY).exists()
+		if not is_deliveryboy:
+			return
 		context = super().get_context_data(**kwargs)
 
 		# Get the total number of sales orders
