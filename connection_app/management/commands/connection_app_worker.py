@@ -18,7 +18,7 @@ EXTERNAL_TASK_TO_SUBSCRIBE = [
 	'process_update_sales_order_in_dca#update',
 	'process_fetch_sales_order_details_from_sdms#update_in_dca',
 	'process_read_customer_profile_from_sdms#update_in_dca',
-	'process_domestic_app#update_booked_order_details_in_dca',
+	'process_book_sales_order#update_booked_order_details_in_dca',
 	'service_area_update#verify_update_service_area_in_sdms',
 	'process_book_sales_order#update_returned_booked_order',
 	'process_fetch_sales_order_details_from_sdms#cleanup_sales_order_tasks',
@@ -67,10 +67,10 @@ def handle_task(task: ExternalTask) -> TaskResult:
 			customer_profile_id = task.get_variable('customer_profile_id')
 			update_customer_profile_in_dca(relationship_details, customer_profile_id)
 			return task.complete()
-		elif topic == 'process_domestic_app#update_booked_order_details_in_dca':
-			consumer_id = task.get_variable('consumer_id')
-			sales_order_details = json.loads(task.get_variable('sales_order_details'))
-			update_booked_order_details_in_dca(sales_order_details, consumer_id, task.get_process_instance_id())
+		elif topic == 'update_booked_order_details_in_dca#update_booked_order_details_in_dca':
+			# consumer_id = task.get_variable('consumer_id')
+			# sales_order_details = json.loads(task.get_variable('sales_order_details'))
+			# update_booked_order_details_in_dca(sales_order_details, consumer_id, task.get_process_instance_id())
 			return task.complete()
 		elif topic == 'service_area_update#verify_update_service_area_in_sdms':
 			consumer_id = task.get_variable('consumer_id')
