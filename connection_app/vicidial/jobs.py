@@ -4,6 +4,8 @@ import logging, re, json, requests, csv
 from django.http import JsonResponse
 from io import StringIO  # If the CSV is provided as a string
 
+from domestic_app.settings import START_CALL_URL
+
 VICIDIAL_NON_AGENT_API = "http://192.168.168.3/vicidial/non_agent_api.php"
 VICIDIAL_AGENT_API = "http://192.168.168.3/agc/api.php"
 VICIDIAL_AGENT_API_PANEL = "http://192.168.168.3/agc/vicidial.php"
@@ -215,7 +217,21 @@ class VicidialService:
 			return result
 		return {"status": "success", "message": "Call placed successfully."}
 
-	def update_phone(self, agent_user,  phone_number,request=None):
+	def update_camp_url(self, agent_user):
+		campaign_payload = {
+			"user": self.user,
+			"pass": self.password,
+			"campaign_id": agent_user,
+			'call_url': START_CALL_URL,
+			'upcampaign': True,
+		}
+		result = make_api_request(VICIDIAL_CAMPAIGN_API, campaign_payload)
+		if result["status"] == "error":
+			print("Error in creating campaign", result)
+			return result
+		return {"status": "success", "message": "Campaign updated successfully."}
+
+	def update_phone(self, agent_user, phone_number, request=None):
 		if not phone_number and not agent_user:
 			return {"status": "error", "message": "Phone number and agent user are required."}
 
@@ -231,7 +247,13 @@ class VicidialService:
 		result = make_api_request(VICIDIAL_NON_AGENT_API, phone_load)
 		if result["status"] == "error":
 			return result
-		return {"status": "success", "message": "Phone updated successfully.", "pass": request.user.id}
+
+		result2 = self.update_camp_url(agent_user)
+
+		if result2["status"] == "error":
+			return result2
+
+		return {"status": "success", "message": "Phone and call url updated successfully.", "pass": request.user.id}
 
 	def list_info(self, list_id, agent_user):
 		list_payload = {
