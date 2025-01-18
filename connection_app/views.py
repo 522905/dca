@@ -132,6 +132,16 @@ def index(request):
 	return render(request, 'connection_app/index.html')
 
 
+def blue_book_form_view(request):
+	# return RedirectView.as_view(url='/connection_app/portal/user_dashboard/', permanent=False)
+	return render(request, 'connection_app/blue_book_form.html')
+
+
+def add_on_cylinder_form_view(request):
+	# return RedirectView.as_view(url='/connection_app/portal/user_dashboard/', permanent=False)
+	return render(request, 'connection_app/add_on_cylinder_form.html')
+
+
 def web_form_view(request):
 	return render(request, "connection_app/web_form.html")
 	# def get_context_data(self, **kwargs):

@@ -144,3 +144,53 @@ def send_ujjwala_application_status_sms_link(contact_mobile, application_id, hos
 	short_url = generate_tiny_url(f"{host}/{url}")
 
 	return send_template_link_sms(contact_mobile, "Ujjwala Application Status", short_url)
+
+
+def get_ujjwala_application_link(contact_mobile, host, user_id):
+	from ujjwala.models import UjjwalaV2Application
+
+	host = host if host else Site.objects.get_current().domain
+
+	application = UjjwalaV2Application.objects.filter(contact_mobile=contact_mobile).first()
+	if application:
+		url = reverse('ujjwala:ujjwala_customer_profile_public', kwargs={'pk': application.id})
+		url = url[1:]
+
+		ujjwala_url = generate_tiny_url(f"{host}/{url}")
+	else:
+		data = get_signed_share_data(contact_mobile, user_id)
+		url = reverse('ujjwala:ujjwala_application_link', kwargs={'data': data})
+		url = url[1:]
+
+		host = host if host else Site.objects.get_current().domain
+		req = requests.get(
+			"https://tinyurl.com/api-create.php", params={'url': f"{host}/{url}"},
+		)
+		req.raise_for_status()
+		ujjwala_url = req.text
+	return ujjwala_url
+
+
+def send_response_template_phone_code_1_sms_link(contact_mobile, user_id, host=""):
+	# data = get_signed_share_data(contact_mobile, user_id)
+	# # url = reverse('vicidial:response_view_for_phone_code_1', kwargs={'data': data})
+	# url = reverse('response_view_for_phone_code_1', kwargs={'data': data})
+	# url = url[1:]
+
+	host = host if host else Site.objects.get_current().domain
+	# req = requests.get(
+	# 	"https://tinyurl.com/api-create.php", params={'url': f"{host}/{url}"},
+	# )
+	# req.raise_for_status()
+
+	data = sign_data_base64({
+		'template': 'response_view_for_phone_code_1',
+		'variables': {
+			'contact_mobile': contact_mobile,
+			'user_id': user_id,
+			'ujjwala_url': get_ujjwala_application_link(contact_mobile, host, user_id)
+		}
+	})
+	url = create_tiny_html_template_url_for_sms(data, host)
+
+	return send_template_link_sms(contact_mobile, "Arun Gas Domestic Services", url)
