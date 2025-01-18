@@ -16,11 +16,8 @@ import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 from corsheaders.defaults import default_headers, default_methods
-<<<<<<< Updated upstream
 
 # from  logging_utils import ArrowFormatter
-=======
->>>>>>> Stashed changes
 from deathbycaptcha import deathbycaptcha
 from django.core.cache import cache
 
@@ -153,9 +150,9 @@ DATABASES = {
         'NAME': 'dca',
         'USER': 'dca_webapp',
         'PASSWORD': '3ty5JS8sJlqtk3bQ',
-        # 'HOST': 'localhost',
+        'HOST': 'localhost',
         # 'HOST': '10.1.1.132',
-        'HOST': '192.168.171.65',
+        # 'HOST': '192.168.171.66',
         'PORT': '',
     }
 }
@@ -227,7 +224,7 @@ MEDIA_URL = '/media/'
 
 RQ_QUEUES = {
     'default': {
-        'HOST': '192.168.171.65',
+        'HOST': 'localhost',
         'PORT': 56379,
         'DB': 0,
         # 'PASSWORD': 'some-password',
@@ -266,13 +263,13 @@ MINIO_CREDENTIAL = {
 
 
 # Camunda Development URL
-CAMUNDA_WEB_ROOT_URL = "http://192.168.171.65:38080"
+CAMUNDA_WEB_ROOT_URL = "http://localhost:38080"
 
 # Camunda Base URL
 CAMUNDA_BASE_URL = f"{CAMUNDA_WEB_ROOT_URL}/engine-rest"
 
 # Currently Pointing To Live Project of DCA Using Local Address
-HTML_TO_PDF_SERVER_URL = "http://192.168.171.32:58080"
+HTML_TO_PDF_SERVER_URL = "http://localhost:58080"
 
 # Old Thumbor URL
 # THUMBOR_URL = "http://dca.arungas.com:6988/unsafe/fit-in/1920x1080/filters:quality(75):format(jpeg)/"
@@ -284,7 +281,7 @@ HTML_TO_PDF_SERVER_URL = "http://192.168.171.32:58080"
 THUMBOR_WEB_URL = "http://thumbs.dca.arungas.com"
 THUMBOR_URL = f"{THUMBOR_WEB_URL}/unsafe/fit-in/1920x1080/filters:quality(75):format(jpeg)/"
 
-THUMBOR_LOCAL_URL = "http://192.168.171.32:6988"
+THUMBOR_LOCAL_URL = "http://localhost:6988"
 THUMBOR_LOCAL_COMPRESSION_URL = f"{THUMBOR_LOCAL_URL}/unsafe/fit-in/1920x1080/filters:quality(75):format(jpeg)/"
 
 THUMBOR_URL_INTERNAL = f"{THUMBOR_LOCAL_URL}/unsafe/fit-in/1520x2688/filters:format(webp)/"
@@ -334,7 +331,6 @@ HASHICORP_VAULT_TOKEN = \
 #     profiles_sample_rate=1.0,
 # )
 
-<<<<<<< Updated upstream
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -364,8 +360,6 @@ LOGGING = {
         },
     },
 }
-=======
->>>>>>> Stashed changes
 
 CACHES = {
     "default": {
@@ -375,7 +369,6 @@ CACHES = {
 }
 
 PRE_SURAKSHA_YOUTUBE_VIDEO_URL = 'https://youtu.be/d-XiWg4277E'
-<<<<<<< Updated upstream
 
 
 def read_private_key_file(filepath):
@@ -412,7 +405,9 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('192.168.171.65', 56379)],  # Ensure Redis server is running at this address
+            "hosts": [('localhost', 56379)],  # Ensure Redis server is running at this address
         },
 },
 }
+
+START_CALL_URL = "http://192.168.168.3/"
