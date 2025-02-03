@@ -28,32 +28,37 @@ def get_delivery_boy_login(customer_profile_id):
 
 def upload_customer_register_csv(csv_file_rows):
 	for idx, row in enumerate(csv_file_rows):
-		print(idx + 1)
-		relationship_id = row['Consumer ID'].replace(".", "")
-		distributor: Distributor = Distributor.objects.get(code__contains=row['Distributor Code'])
-		cp_obj = get_customer_profile(
-			relationship_id, row['Consumer Name'], row['Address'], distributor.code
-		)
-		if not cp_obj.verified or cp_obj.distributor != distributor:
-			cp_obj.relationship_status = row['Consumer Status']
-			cp_obj.relationship_sub_status = row['Consumer Sub Status']
-			cp_obj.distributor = distributor
-			cp_obj.distributor_code = row['Distributor Code']
-			cp_obj.distributor_name = distributor.name
-			cp_obj.service_area = row['Area Name']
-			cp_obj.sdms_service_area = get_sdms_service_area(row['Area Name'], distributor.code)
-			cp_obj.verified = True
-			cp_obj.verified_on = datetime.datetime.now()
-			cp_obj.verification_source = 'manual_csv'
-			if row['Phone Number'] and row['Phone Number'] != cp_obj.mobile_number:
-				cp_obj.mobile_number = row['Phone Number']
-			cp_obj.tube_change_date = datetime.datetime.strptime(row['Tube Change Date'], "%d-%m-%Y") if row['Tube Change Date'] else None
-			cp_obj.tube_change_due_date = datetime.datetime.strptime(row['Tube Change Due Date'], "%d-%m-%Y") if row['Tube Change Due Date'] else None
-			cp_obj.mandatory_inspection_due_date = datetime.datetime.strptime(row['Mandatory Inspection Date'], "%d-%m-%Y") if row['Mandatory Inspection Date'] else None
-			if cp_obj.address != row['Address']:
-				cp_obj.address = row['Address']
-			cp_obj.save()
-		print(row)
+		try:
+			print(idx + 1)
+			relationship_id = row['Consumer ID'].replace(".", "")
+			distributor: Distributor = Distributor.objects.get(code__contains=row['Distributor Code'])
+			cp_obj = get_customer_profile(
+				relationship_id, row['Consumer Name'], row['Address'], distributor.code
+			)
+			if not cp_obj.verified or cp_obj.distributor != distributor:
+				cp_obj.relationship_status = row['Consumer Status']
+				cp_obj.relationship_sub_status = row['Consumer Sub Status']
+				cp_obj.distributor = distributor
+				cp_obj.distributor_code = row['Distributor Code']
+				cp_obj.distributor_name = distributor.name
+				cp_obj.service_area = row['Area Name']
+				cp_obj.sdms_service_area = get_sdms_service_area(row['Area Name'], distributor.code)
+				cp_obj.verified = True
+				cp_obj.verified_on = datetime.datetime.now()
+				cp_obj.verification_source = 'manual_csv'
+				if row['Phone Number'] and row['Phone Number'] != cp_obj.mobile_number:
+					cp_obj.mobile_number = row['Phone Number']
+				cp_obj.tube_change_date = datetime.datetime.strptime(row['Tube Change Date'], "%d-%m-%Y") if row['Tube Change Date'] else None
+				cp_obj.tube_change_due_date = datetime.datetime.strptime(row['Tube Change Due Date'], "%d-%m-%Y") if row['Tube Change Due Date'] else None
+				cp_obj.mandatory_inspection_due_date = datetime.datetime.strptime(row['Mandatory Inspection Date'], "%d-%m-%Y") if row['Mandatory Inspection Date'] else None
+				if cp_obj.address != row['Address']:
+					cp_obj.address = row['Address']
+				cp_obj.last_refill_date = row['Last Refill Date']
+				cp_obj.save()
+			print(row)
+		except Exception as e:
+			print(e)
+			continue
 	return True
 
 
