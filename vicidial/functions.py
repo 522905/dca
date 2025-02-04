@@ -194,3 +194,69 @@ def send_response_template_phone_code_1_sms_link(contact_mobile, user_id, host="
 	url = create_tiny_html_template_url_for_sms(data, host)
 
 	return send_template_link_sms(contact_mobile, "Arun Gas Domestic Services", url)
+
+
+from connection_app.enums import SalesOrderInvoiceEnum, SalesOrderStatusEnum
+from connection_app.models import CustomerProfile, SalesOrder
+from teams.models import SDMSUser, UserProfile
+from typing import Optional
+from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import get_object_or_404
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def transfer_in_out1005_to_delivery_boy(mobile: str) -> Optional[str]:
+	"""
+	Get delivery boy phone number for a customer's latest invoiced order.
+
+	Args:
+		mobile (str): Customer mobile number
+
+	Returns:
+		Optional[str]: Delivery boy phone number if found, None otherwise
+
+	Raises:
+		ValueError: If mobile number format is invalid
+	"""
+	# Input validation
+	if not mobile or not isinstance(mobile, str):
+		logger.error(f"Invalid mobile number format: {mobile}")
+		return None
+
+	try:
+		# Get customer profile
+		customer_profile = get_object_or_404(
+			CustomerProfile,
+			mobile_number=mobile
+		)
+
+		# Get latest invoiced sale order
+		sale_order = SalesOrder.objects.filter(
+			relationship_id=customer_profile.consumer_id,
+			order_status=SalesOrderStatusEnum.INVOICED
+		).order_by('-order_date').first()
+
+		if not sale_order:
+			logger.info(f"No invoiced orders found for customer: {mobile}")
+			return None
+
+		if not sale_order.delivery_boy_login:
+			logger.warning(f"No delivery boy assigned to order: {sale_order.id}")
+			return None
+
+		# Get delivery boy details
+		delivery_boy = get_object_or_404(
+			UserProfile,
+			sdmsuser__delivery_boy_login__icontains=sale_order.delivery_boy_login
+		)
+
+		return delivery_boy.phone_number
+
+	except ObjectDoesNotExist as e:
+		logger.error(f"Object not found: {str(e)}")
+		return None
+	except Exception as e:
+		logger.exception(f"Unexpected error while processing mobile {mobile}: {str(e)}")
+		return None
