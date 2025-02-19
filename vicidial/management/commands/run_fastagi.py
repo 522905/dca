@@ -8,13 +8,27 @@ from pystrix.agi.core import SetExtension,StreamFile,Hangup, SetVariable, GetVar
 from connection_app.enums import SalesOrderInvoiceEnum, SalesOrderStatusEnum
 from connection_app.models import CustomerProfile, SalesOrder
 from teams.models import SDMSUser, UserProfile
-from vicidial.functions import transfer_in_out1005_to_delivery_boy
+from vicidial.functions import transfer_in_out1005_to_delivery_boy, fetch_numbers_delivery_boys
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger('FastAGI')
 
-TRANSFER_NUMBER = "7888708560"
+TRANSFER_NUMBER = " "
+# Define the sound file paths as constants
+NO_SALE_SOUND = "/usr/share/asterisk/custom_sounds/no_sale"
+DEFAULT_MESSAGE_SOUND = "/usr/share/asterisk/custom_sounds/custom_message"
+
 # Function to handle incoming AGI requests
+def _play_sound_and_end_call(agi, sound_file):
+    """Helper function to play a sound and end the call."""
+    try:
+        agi.execute(StreamFile(sound_file))
+    except Exception as e:
+        logger.error(f"Error playing sound file {sound_file}: {e}")
+    finally:
+        agi.execute(SetExtension("5"))
+        agi.execute(SetPriority(1))
+
 def handle_commercial_call(agi, args, kwargs, match, path):
     """Handles the incoming AGI request."""
     try:
@@ -23,24 +37,24 @@ def handle_commercial_call(agi, args, kwargs, match, path):
         caller_id = agi.get_environment().get('agi_callerid', 'Unknown')
         logger.info(f"Handling call from: {caller_id} and full details : {agi}")
 
-        set_call = transfer_in_out1005_to_delivery_boy(caller_id)
+        set_call = fetch_numbers_delivery_boys(caller_id)
 
         if set_call is None:
-            try:
-                agi.execute(StreamFile("/usr/share/asterisk/custom_sounds/custom_message"))
-            except Exception as e:
-                print("Exception occured :", e)
-            agi.execute(SetExtension("5"))
-            agi.execute(SetPriority(1))
-            return
+            logger.info("No call set up, playing default message.")
+            _play_sound_and_end_call(agi, DEFAULT_MESSAGE_SOUND)
 
-        agi.execute(SetVariable("AGI_RESULT",set_call))
+        elif set_call == "no_sale":
+            logger.info("No sale identified, playing 'no sale' message.")
+            _play_sound_and_end_call(agi, NO_SALE_SOUND)
 
-        # Verify variable was set
-        result = agi.execute(GetVariable('AGI_RESULT'))
-        logger.info(f"Set TRANSFER_NUMBER to: {result}")
+        elif set_call.isdigit() and len(set_call) == 10:
+            agi.execute(SetVariable("AGI_RESULT", set_call))
 
-        logger.info(f"Call from {caller_id} processed successfully.")
+            # Verify variable was set
+            result = agi.execute(GetVariable('AGI_RESULT'))
+            logger.info(f"Set TRANSFER_NUMBER to: {result}")
+
+            logger.info(f"Call from {caller_id} processed successfully.")
 
     except Exception as e:
         logger.error(f"Error handling commercial call: {e}")
