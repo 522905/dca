@@ -260,3 +260,56 @@ def transfer_in_out1005_to_delivery_boy(mobile: str) -> Optional[str]:
 	except Exception as e:
 		logger.exception(f"Unexpected error while processing mobile {mobile}: {str(e)}")
 		return None
+
+
+def fetch_numbers_delivery_boys(mobile: str) -> Optional[str]:
+	"""
+	Get delivery boy phone number for a customer's latest invoiced order.
+
+	Args:
+		mobile (str): Customer mobile number
+
+	Returns:
+		Optional[str]: Delivery boy phone number if found, None otherwise.
+
+	Raises:
+		ValueError: If mobile number format is invalid.
+	"""
+	# Input validation for mobile number
+	if not mobile or not isinstance(mobile, str):
+		logger.error(f"Invalid mobile number format (not a string): {mobile}")
+		return None
+
+	try:
+		# Get the customer profile (latest by updated_on)
+		customer_profile = CustomerProfile.objects.filter(mobile_number=mobile).order_by("-updated_on").first()
+
+		if not customer_profile:
+			logger.warning(f"No customer profile found for mobile number: {mobile}")
+			return None  # Assuming this is the fallback message if no customer profile is found
+
+		# Log found customer profile details
+		logger.info(f"Found customer profile for mobile {mobile}: {customer_profile.id}")
+
+		# Get delivery boy details based on sdms_service_area (related to customer profile)
+		delivery_boy_details = UserProfile.objects.filter(sdms_service_areas=customer_profile.sdms_service_area).first()
+
+		if not delivery_boy_details:
+			logger.warning(
+				f"No delivery boy found for customer profile with SDMSServiceArea: {customer_profile.sdms_service_area}")
+			return None  # Assuming fallback message if no delivery boy is found
+
+		# Log the found delivery boy details
+		logger.info(
+			f"Found delivery boy for customer {mobile}: {delivery_boy_details.id}, phone: {delivery_boy_details.phone_number}")
+
+		return delivery_boy_details.phone_number
+
+	except ObjectDoesNotExist as e:
+		# Handle case where an object doesn't exist in the database
+		logger.error(f"Object not found for mobile {mobile}: {str(e)}")
+		return None
+	except Exception as e:
+		# Catch any other unexpected errors and log them
+		logger.exception(f"Unexpected error while processing mobile {mobile}: {str(e)}")
+		return None
