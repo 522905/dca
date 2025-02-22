@@ -3,6 +3,8 @@ import datetime
 import json
 import textwrap
 from functools import partial
+from typing import Union
+from urllib import request
 
 import django_filters
 import django_rq
@@ -53,7 +55,7 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
 	NewRelationCreated, ChangePhoneNumberForm, UploadUIDForEKYCForm, UjjwalaApplicationServiceRequestForm, \
 	ReviewUpdatedAddressForm, UpdateBankDetailsNewForm, ChangeCylinderTypeForm, \
 	ChangeCylinderTypeForm, ChangeCylinderTypeRequestForm, ChangeCylinderTypeRequestOverrideForm, \
-	BankDetailsUpdateRequestForm
+	BankDetailsUpdateRequestForm, BarcodeForm
 from ujjwala.global_functions import login_required_if_mech_inspection
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
 	FamilyMembers, DisbursementDrive, UjjwalaSearchLog, ConnectionDisbursementInvitation, BankDetailsUpdateRequest, \
@@ -3096,48 +3098,69 @@ class BarCodeLabelPrintView(View):
 
 			return resp
 
+from connection_app.models import CustomerProfile,ConnectionApplication
 
-# @method_decorator(login_required, 'dispatch')
-# class NicErrorUpdateAddress(FormView):
-# 	# model = ConnectionDisbursementInvitation
-# 	form_class = NicUpdateAddressForm
-# 	template_name = "ujjwala/NicErrorUpdateAddress/update_address.html"
-#
-# 	def dispatch(self, request, *args, **kwargs):
-# 		application = self.get_object()
-# 		if application:
-# 			if application.status == \
-# 					UjjwalaV2ApplicationStatus.NIC_ERROR_UPDATE_ADDRESS:
-# 				return HttpResponse("Address already submitted by you and is under review.")
-# 		return super().dispatch(request, *args, **kwargs)
-#
-# 	def get_object(self, queryset=None):
-# 		try:
-# 			obj = UjjwalaV2Application.objects.get(pk=self.kwargs.get('pk'))
-# 		except:
-# 			raise Http404(
-# 				"No application with id: {} found.".format(self.kwargs.get('pk'))
-# 			)
-# 		return obj
-#
-# 	def get_context_data(self, **kwargs):
-# 		context = super().get_context_data(**kwargs)
-# 		obj = self.get_object()
-# 		context.update({
-# 			"obj": obj
-# 		})
-# 		return context
-#
-# 	def form_valid(self, form):
-# 		obj = self.get_object()
-# 		data = form.clean()
-# 		old_address_json = obj.address_json or obj.address
-# 		obj.transition_nic_address_updated(
-# 			description=old_address_json,
-# 			address_json=data['address_json']
-# 		)
-# 		obj.save()
-# 		return HttpResponse("<b>Address Updated Successfully</b>")
+
+class NewBarCodeLabelPrintView(FormView):
+	template_name = "ujjwala/barcode_print/label_print.html"
+	form_class = BarcodeForm
+
+	def format_consumer_id(self, consumer_id: str) -> str:
+		"""Formats the consumer ID to ensure it has the correct length and format."""
+		if len(consumer_id) < 11:
+			return consumer_id[:2] + "000000" + consumer_id[8:]
+		return consumer_id
+
+	def form_valid(self, form):
+		"""Handles form submission and processes barcode label generation."""
+		user_id = self.format_consumer_id(form.cleaned_data["user_id"])
+		print(f"the user_id we get is {user_id}")
+		try:
+			application = ConnectionApplication.objects.get(consumer_id=user_id)
+		except ConnectionApplication.DoesNotExist:
+			print("the application not exist")
+			return JsonResponse({"status": "error", "message": "Application not found."}, status=400)
+
+
+		obj = CustomerProfile.objects.get(consumer_id=application.consumer_id)
+
+		# Generate context data for the PRN file
+		context_obj = obj if obj else application
+		context = self.create_context_data(context_obj)
+
+		# Read and replace PRN template placeholders
+		try:
+			with open("ujjwala/templates/ujjwala/general_blue_book.prn", "rb") as _fileobj:
+				file_data = _fileobj.read()
+				for key, value in context.items():
+					file_data = file_data.replace(b'{{' + key.encode() + b'}}', str(value).encode())
+		except FileNotFoundError:
+			return JsonResponse({"status": "error", "message": "PRN template file not found."}, status=500)
+		except Exception as e:
+			return JsonResponse({"status": "error", "message": f"Error processing PRN file: {str(e)}"}, status=500)
+
+		return JsonResponse({"status": "success", "prn_data": file_data.decode()})
+
+	def create_context_data(self, obj: Union[CustomerProfile, ConnectionApplication]) -> dict:
+		"""Generates the context dictionary with consumer and address details."""
+		consumer_no = self.format_consumer_id(obj.consumer_id)
+		context_dict = {"consumer_no": consumer_no}
+
+		# Format address
+		address = getattr(obj, 'primary_account_address', " ") if not isinstance(obj, CustomerProfile) else  getattr(obj, 'address', " ")
+		address_lines = textwrap.wrap(address.replace(".", ""), 40)  # Wrapping address lines
+		address_lines = address_lines[:3] + ['', '', '']  # Ensure there are exactly 3 lines
+		context_dict.update({f'address{index + 1}': val for index, val in enumerate(address_lines)})
+
+		# Additional user details
+		context_dict.update({
+			"name": obj.name,
+			"id": obj.id if isinstance(obj, CustomerProfile) else " ",
+			"date": datetime.datetime.today().strftime("%d/%m/%Y"),
+			"operator_name": self.request.user.username,
+		})
+
+		return context_dict
 
 
 # @method_decorator(login_required, 'dispatch')

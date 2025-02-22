@@ -1,265 +1,40 @@
 {% extends "material/frontend/base_module.html" %}
 {% load static %}
-{% block page_title %}Customer Profile - {{ obj.name }}{% endblock %}
+{% block page_title %}<span style="font-size:16px;">blue book barcode</span>{% endblock %}
+{% load material_form %}
 {% block content %}
-{% load connection_app_utils %}
-<link rel="stylesheet" href="{% static '/css/style.css' %}" >
-<link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static '/css/style.css' %}">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
-{% if obj %}
-    <div class="p-2 pt-0 form_label application_form" style="width: 100%;">
-        <div class="card">
-            <div class="status_block">
-                <div class="main-header">
-                    <span class="text-black back_button">
-                        <input class="btn btn-secondary" type="button" value="Back" onclick="history.back()" /> Consumer Id: {{ obj.consumer_id }}
-                    </span>
-{#                    <span class="float-right"><b><a data-turbolinks="false" href="{% url 'admin:ujjwala_ujjwalav2application_change' object_id=obj.id %}">{{ obj.id }}</a></b></span>#}
-                    <span class="float-right"><b><a data-turbolinks="false" href="{% url 'admin:connection_app_customerprofile_change' object_id=obj.id %}">{{ obj.id }}</a></b></span>
-                </div>
-            </div>
-            <div class="card-body pb-0 p-0 list_block">
-                <div class="row m-0">
-                    <div class="col-8 p-0">
-                        <table>
-                            <tr>
-                                <td>
-                                    <p>Relationship Status: <b>{{ obj.relationship_status }}</b><br>
-                                    <p> Address: <b>{{ obj.primary_account_address }}</b></p>
-                                    <p>Phone: <b>{{ obj.mobile_number }}</b></p>
-                                    <p>Location: <b><a href="https://www.google.com/maps/@{{ obj.latitude }},{{ obj.longitude }},15z">
-                                        {{ obj.latitude }},{{ obj.longitude }} <i class="fa fa-globe" style="color:steelblue; position: relative; top: 2px;" aria-hidden="true"></i></a></b></p>
-                                    <p>Product: <b>{{ obj.products }}</b></p>
-                                    <p>Is Dirty: <b>{{ obj.is_dirty }}</b></p>
-                                    <p>Do Not Auto Generate Sales Order: <b>{{ obj.get_do_not_auto_generate_sales_order }}</b></p>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div class="col-4 p-0">
-                        <img class="p-1" src="{{ obj.document_self }}" style="height: 125px; object-fit:contain; width: 100%;">
-                    </div>
-                </div>
-            </div>
-            <div class="status_block">
-                <div class="main-header">
-                    <span class=""><b>Documents:</b></span>
-                </div>
-                <table class="table table-bordred" style="margin-bottom: 0;">
-                    <tr>
-                        <td colspan="2">
-                            <div style="overflow: scroll; display: flex;">
-                                {% for doc in obj.documents.all %}
-                                    <div>
-                                        <a href="{{ doc.link }}">
-                                            <img class="p-1" src="{{ doc.link }}" style="height: 100px; object-fit:contain; width: 100%;" alt="{{ doc.type }}">
-                                        </a>
-                                        <p style="text-align: center">{{ doc.get_type_display }}</p>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </td>
-                    </tr>
-                    {% for fm in obj.family_members.all %}
-                        <tr><td colspan="2">Family Members {{ fm.name }} {{ fm.dob }} {{ fm.relation }}: </td></tr>
-                        <tr>
-                            <td colspan="2">
-                                <div style="overflow: scroll; display: flex;">
-                                    <div>
-                                        <a href="{{ fm.uid_front_link }}">
-                                            <img class="p-1" src="{{ fm.uid_front_link }}" style="height: 100px; object-fit:contain; width: 100%;" alt="{{ doc.type }}">
-                                        </a>
-                                        <p style="text-align: center">Front UID</p>
-                                    </div>
-                                    <div>
-                                        <a href="{{ fm.uid_back_link }}">
-                                            <img class="p-1" src="{{ fm.uid_back_link }}" style="height: 100px; object-fit:contain; width: 100%;" alt="{{ doc.type }}">
-                                        </a>
-                                        <p style="text-align: center">Back UID</p>`
-                                    </div>
-                                </div>
-                            </td>
-                    </tr>
-                    {% endfor %}
-                </table>
-                <table class="post_inspection">
-                    <tr class="card-header">
-                        <th colspan="6" style="font-weight:bold; padding-left: 10px;"><b>Post-Inspection Status:</b> </th>
-                    </tr>
-                    <tr>
-                        <td>
-                            Kitchen
-                            <p>
-                            {% if obj.post_inspection.kitchen_photo_updated %}
-                                <i class="fa fa-check-square text-success" aria-hidden="true"></i>
-                            {% else %}
-                                <i class="fa fa-times text-danger"></i>
-                                <i class="fa fa-exchange"></i>
-                            {% endif %}
-                            </p>
-                        </td>
-                        <td>
-                            Main gate
-                            <p>
-                            {% if obj.post_inspection.main_gate_photo_updated %}
-                                <i class="fa fa-check-square text-success" aria-hidden="true"></i>
-                            {% else %}
-                                <i class="fa fa-times text-danger"></i>
-                            {% endif %}
-                            </p>
-                        </td>
-                        <td>
-                            Address
-                            <p>
-                            {% if obj.post_inspection.address_updated %}
-                                <i class="fa fa-check-square text-success" aria-hidden="true"></i>
-                            {% else %}
-                                <i class="fa fa-times text-danger"></i>
-                            {% endif %}
-                            </p>
-                        </td>
-                        <td>Suraksha Pipe
-                            <p>
-                            {% if obj.post_inspection.suraksha_pipe_updated %}
-                                <i class="fa fa-check-square text-success" aria-hidden="true"></i>
-                            {% else %}
-                                <i class="fa fa-times text-danger"></i>
-                            {% endif %}
-                            </p>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-                        </td>
-                        <td>Profile Photo
-                            <p>
-                            {% if obj.post_inspection.profile_photo_updated %}
-                                <i class="fa fa-check-square text-success" aria-hidden="true"></i>
-                            {% else %}
-                                <i class="fa fa-times text-danger"></i>
-                            {% endif %}
-                            </p>
-                        </td>
-                        <td>UID Photos
-                            <p>
-                            {% if obj.post_inspection.uid_photo_updated %}
-                                <i class="fa fa-check-square text-success" aria-hidden="true"></i>
-                            {% else %}
-                                <i class="fa fa-times text-danger"></i>
-                            {% endif %}
-                            </p>
-                        </td>
-                    </tr>
-                    <tr class="card-header">
-                        <th class="p-2" colspan="6" style="font-weight:bold; padding-left: 10px;"><b>Last Sales Order:</b> </th>
-                    </tr>
-                    <tr>
-                        <td colspan="6" class="p-0">
-                            <table class="last_sale_order ">
-                                <thead>
-                                <tr>
-                                    <td colspan="5"></td>
-                                    <td colspan="3">Delivery Information</td>
-                                </tr>
-                                <tr>
-                                    <td>Order Date</td>
-                                    <td>Order No</td>
-                                    <td>Status</td>
-                                    <td>Channel</td>
-                                    <td>Type</td>
-                                    <td>Allocated To</td>
-                                    <td>Delivered By</td>
-                                    <td>Date</td>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                    {% for so in obj.salesorder_set.all|dictsortreversed:"order_date"|slice:":6" %}
-                                        <tr>
-                                            <td>{{ so.order_date|date:'d-m-Y' }}</td>
-                                            <td>{{ so.sales_order }}</td>
-                                            <td>{{ so.order_status }}</td>
-                                            <td>{{ so.channel }}</td>
-                                            <td>{{ so.delivery_confirmation_type }}</td>
-                                            <td>{{ so.delivery_boy_full_name }}</td>
-                                            <td>{{ so.delivery_confirm_full_name }}</td>
-                                            <td>{{ so.delivery_date|date:'d-m-Y' }}</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2"><p>Bank Certificate Photo</p></td>
-                        <td colspan="2">
-                            <p style="float: right;">
-                                <a href="{% url 'customer_profile_document_upload'  pk=obj.pk %}" data-turbolinks="false" class="text_link text-primary">Update Bank Certificate Photo</a>
-                            </p>
-                        </td>
-                        <td colspan="2">
-                            <p style="float: right;">
-                                <a href="{% url 'connection_app:change_address'  pk=obj.pk %}" data-turbolinks="false" class="text_link text-primary">Change Address</a>
-                            </p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <a href="{% url 'connection_app:customer_profile_settings' pk=obj.id %}" class="btn btn-primary text-white float-right">Settings</a>
-                        </td>
-                        <td>
-                            <a href="{% url 'connection_app:customer_profile_contacts' pk=obj.id %}" class="btn btn-primary text-white float-right">Show More Contacts</a>
-                        </td>
-                        <td>
-                            <button id="print-btn" class="btn btn-primary text-white float-right">print label</button>
-                        </td>
-                        <td colspan="5">
-{#                            <a class="btn btn-primary text-white float-right" href="{% url 'generate_lead_form' %}?pk={{ obj.pk }}">Generate Lead</a>#}
-                        </td>
-                    </tr>
-                </table>
-            </div>
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4>Blue book label Print</h4>
+        </div>
+        <div class="card-body">
+            <form id="barcode-form" >
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="user_id">consumer id:</label>
+                    <input type="text" id="user_id" name="user_id" class="form-control" required minlength="10" maxlength="16">
+                    <small class="text-danger d-none" id="error-message">ID must be between 10 and 16 characters.</small>
+                </div>
+                <button type="submit" class="btn btn-success" id="submit-btn">Submit</button>
+            </form>
         </div>
     </div>
-{% endif %}
-<style>
-    .post_inspection tr td{ padding:5px 0;}
-    .post_inspection tr td{ text-align: center !important; margin: 0; padding:5px;}
-    .status_block .main-header{
-        border-top: 1px solid #ccc;
-        border-bottom: 1px solid #ccc;
-        border-radius: 0;
-        background-color: #efefef;
-        font-weight: bold;
-        font-size: 14px;
-    }
-    .text_link{ text-decoration: underline; font-weight: bold !important;}
-    .application_form .list_block th, .application_form .list_block td, .status_block th,.application_form .list_block td { font-size: 0.9rem;}
-    .table.table-bordred:last-child tr{ border-bottom: transparent;}
-    .search_form input{ padding: 0 10px !important; width: 96% !important;  }
-    .link_wh:hover{ text-decoration: underline !important;}
-    .back_button input{ border:1px solid transparent; padding: 0 10px !important; margin: 0 0 10px 0 !important; cursor: pointer; margin-right:10px; padding: 5px 10px; 
-        height: 30px !important;}
-    body .form_label .back_button .btn { height: 30px !important; text-transform:capitalize; margin: 0 10px 0 0 !important; }
-    /* Existing styles */
 
-        .last_sale_order {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.85rem; /* Adjust font size */
-    }
+    <div class="card mt-3 d-none" id="print-section">
+        <div class="card-body">
+            <h5 class="text-success">Success! Barcode is ready to print.</h5>
+            <button class="btn btn-primary" id="print-btn">Print Barcode</button>
+        </div>
+    </div>
+</div>
 
-    .last_sale_order th, .last_sale_order td {
-        border: 1px solid #ccc; /* Add border */
-        padding: 8px;
-        text-align: center;
-    }
 
-    .last_sale_order thead tr td {
-        font-weight: bold;
-        background-color: #f8f8f8;
-    }
-
-    .last_sale_order tbody tr:nth-child(even) {
-        background-color: #f2f2f2;
-    }
-</style>
+{#<script src="https://cdnjs.cloudflare.com/ajax/libs/qz-tray/2.1.0/qz-tray.js"></script>#}
 <script>
 'use strict';
 
@@ -3123,18 +2898,18 @@ var qz = (function() {
 
 </script>
 <script>
-    // Function to get the CSRF token from the cookie
-    function getCsrfToken() {
-        let csrfToken = null;
-        document.cookie.split(';').forEach(function(cookie) {
-            if (cookie.trim().startsWith('csrftoken=')) {
-                csrfToken = cookie.split('=')[1];
-            }
-        });
-        return csrfToken;
-    }
-    $("#print-btn").click(function() {
-        // Ensure `obj.id` is correctly placed in the URL
+$(document).ready(function() {
+    $("#barcode-form").submit(function(event) {
+        event.preventDefault();  // Prevent default form submission
+
+        var userId = $("#user_id").val();
+        if (userId.length< 10 || userId.length >17) {
+            console.log("is able to hit")
+            $("#error-message").removeClass("d-none");
+            return;
+        }
+        $("#error-message").addClass("d-none");
+
         fetch("{% url 'ujjwala:print_command_menu_view' %}", {
         method: "POST",
         headers: {
@@ -3142,35 +2917,37 @@ var qz = (function() {
             "X-CSRFToken": "{{ csrf_token }}",  // CSRF token
         },
         body: new URLSearchParams({
-            "user_id": "{{ obj.consumer_id }}"
+            "user_id": userId,
         }),
-        })
-        .then(response => response.json())  // Parse the JSON response
-        .then(data => {
-            if (data.status === "success") {
-                console.log("The byte PRN is generated.");
-                window.prnData = data.prn_data;  // Store PRN data for printing
-
-                // Now check and handle the PRN data printing
-                if (window.prnData) {
-                    qz.websocket.connect().then(function() {
-                        return qz.printers.find("Bar Code Printer TT065-52"); // Set printer name
-                    }).then(function(printer) {
-                        var config = qz.configs.create(printer);
-                        return qz.print(config, [window.prnData]);
-                    }).catch(function(err) {
-                        console.error("Error while printing:", err);
-                    });
-                }
-            } else {
-                alert("Failed to generate barcode.");
-            }
-        })
-        .catch((e) => {
-            console.log("Error processing the request:", e);
-            alert("Error processing request.");
-        });
+    })
+    .then(response => response.json())  // Parse the JSON response
+    .then(data => {
+        if (data.status === "success") {
+            console.log("the byte prn is generated")
+            window.prnData = data.prn_data;  // Store PRN data for printing
+            document.getElementById("print-section").classList.remove("d-none");
+        } else {
+            alert("Failed to generate barcode.");
+        }
+    })
+    .catch((e) => {
+        console.log("the error is " , e)
+        alert("Error processing request.");
     });
-</script>
+    });
 
+    $("#print-btn").click(function() {
+        if (window.prnData) {
+            qz.websocket.connect().then(function() {
+                return qz.printers.find("Bar Code Printer TT065-52"); // Set printer name
+            }).then(function(printer) {
+                var config = qz.configs.create(printer);
+                return qz.print(config, [window.prnData]);
+            }).catch(function(err) {
+                console.error(err);
+            });
+        }
+    });
+});
+</script>
 {% endblock %}

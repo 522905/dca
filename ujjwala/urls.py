@@ -497,4 +497,10 @@ urlpatterns = [
         views.ReviewGridMenuView.as_view(),
         name="review_grid_menu_view"
     ),
+    path(
+        'print-command-menu-view/',
+        views.NewBarCodeLabelPrintView.as_view(),
+        name="print_command_menu_view"
+    ),
+
 ]

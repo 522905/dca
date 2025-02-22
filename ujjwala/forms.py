@@ -1751,3 +1751,7 @@ class ChangeCylinderTypeRequestOverrideForm(forms.Form):
 
 class BankDetailsUpdateRequestForm(forms.Form):
 	pass
+
+
+class BarcodeForm(forms.Form):
+    user_id = forms.CharField(min_length=10, max_length=16, required=True)
