@@ -40,7 +40,7 @@ from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, C
 	PreInspectionTypeEnum, DisbursementDriveStatusEnum, UjjwalaApplicationDocumentsEnum, \
 	UjjwalaV2ApplicationAvailabilityChannel, ConnectionDisbursementInvitationEnum, FilledByFilterEnum, \
 	UjjwalaSearchLogEnum, BankDetailsUpdateRequestEnum, ChangeCylinderTypeRequestStatusEnum
-from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm, \
+from ujjwala.forms import UjjwalaDocumentsReuploadForm,  PreInspectionInitialForm, \
 	UpdateBankDetailsForm, CancelInvitationForm, NewRelationCreated, ChangePhoneNumberForm, UpdateAddressForm, \
 	PreInspectionGenerateOtpForm, PreInspectionValidateOtpForm, \
 	KitchenPreInspectionForm, AudioOnSafetyForm, PreviewPreInspectionForm, PreInspectionAllocatedGenerateOtpForm, \
@@ -59,7 +59,7 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm
 from ujjwala.global_functions import login_required_if_mech_inspection
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
 	FamilyMembers, DisbursementDrive, UjjwalaSearchLog, ConnectionDisbursementInvitation, BankDetailsUpdateRequest, \
-	ChangeCylinderTypeRequest
+	ChangeCylinderTypeRequest, VaultSecret
 from ujjwala.sv_functions import create_installation_document
 from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_pre_inspection_applicable, \
 	send_ujjwala_application_whatsapp_link_v2, download_audit_documents_for_ids, is_member_of_disbursement_drive, \
@@ -70,6 +70,29 @@ from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_
 	download_ujjwala_physical_legal_docs, upload_form_e_document_and_whatsapp, can_process_change_cylinder_request, \
 	can_review_disbursement_form_abc_permission
 from utils.global_functions import unsign_data_base64, sign_data_base64, upload_file_to_minio_bucket
+from dal import autocomplete
+
+
+class UpdateSdmsLoginDetailsView(FormView):
+	form_class = UpdateSdmsLoginDetailsForm
+
+	template_name = 'ujjwala/update_sdms_login_detail.html'
+
+	def form_valid(self, form):
+		form.save()
+		messages.info(self.request, "Updated Successfully")
+		return redirect('.')
+
+ 
+class VaultSecretAutocompleteView(autocomplete.Select2QuerySetView):
+	def get_queryset(self):
+		if not self.request.user.is_authenticated:
+			return VaultSecret.objects.none()
+
+		queryset = VaultSecret.objects.filter(
+			name__icontains=self.q
+		)
+		return queryset
 
 
 ### Form to avoid circular import ###
@@ -241,7 +264,44 @@ class WhatsappPreInspectionTypeSelf(View):
 # 		else:
 # 			return "लोकेशन या फोटो अपडेट करने में विफल।"
 #
-# 	return "Invalid intent provided."
+#     return "Invalid intent provided."
+
+
+def check_ujjwala_status(contact_mobile):
+	if not contact_mobile:
+		return JsonResponse({"error": "Phone number is required."}, status=400)
+
+	# Retrieve the application based on the provided contact mobile number
+	application = UjjwalaV2Application.objects.filter(
+		Q(contact_mobile=contact_mobile) | Q(sdms_mobile_number=contact_mobile)
+	).first()
+	print(f"the object application is {application}")
+	if not application:
+		return 'No application found for the provided phone number'
+
+	# Fetch the rejection reason if applicable
+	if 'reject' in application.status.lower():
+		reject_reason = ujjwala_application_reject_reason_log(application.id)
+		if reject_reason is not None:
+			return f"Application rejected: {reject_reason}"
+
+	# Check for PreInspection object
+	pi_obj = PreInspection.objects.filter(parent_id=application.id).first()
+	from ujjwala.enums import PreInspectionRejectionReasonsEnum
+	# check for rejected status of pi
+	if pi_obj.status == "REJECTED":
+		inspection_app_content_type = ContentType.objects.get(model=PreInspection.__name__.lower(), app_label="ujjwala")
+
+		description = StateLog.objects.filter(
+			object_id=pi_obj.id, content_type=inspection_app_content_type,
+			state__icontains='reject'
+		).order_by('-id').first()
+		if description:
+			try:
+				json_text = json.loads(description.description).get("reason")[0]
+			except:
+				return description.description
+			print(json_text[0], json_text)
 
 
 def check_ujjwala_status(contact_mobile):
@@ -349,6 +409,8 @@ def WhatsappPreInspection(Inspection_data, unique_id, intent):
 
 	return "Invalid intent provided."
 
+	# if application.status == "MATERIAL_DELIVERED":
+	# 	return "आपका सिलेंडर डिलीवर हो गया है, किसी भी प्रश्न के लिए हेल्प लाइन नंबर पर कॉल करें।"
 
 def check_ujjwala_status(contact_mobile):
 	if not contact_mobile:

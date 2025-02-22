@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 import string
+
 from datetime import timedelta
 
 import django
@@ -11,6 +12,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core import validators
+from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect
 from django_currentuser.middleware import get_current_user
 
@@ -25,6 +27,7 @@ from ujjwala.models import UjjwalaApplicationDocumentsEnum
 from ujjwala.ujjwala_functions import __get_ref_no__, id_generator, valid_file_uploaded, send_otp_using_channel, \
 	is_pre_inspection_applicable
 from django.utils.timezone import now
+from dal import autocomplete
 
 
 logger = logging.getLogger(__name__)
@@ -35,6 +38,58 @@ logger = logging.getLogger(__name__)
 #		logging.FileHandler("/tmp/debug.log"),
 #	]
 #)
+
+
+class UpdateSdmsLoginDetailsForm(forms.Form):
+	# Use lazy importing in __init__
+	def __init__(self, qs=None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		# Import VaultSecret here to avoid circular import
+		from ujjwala.models import VaultSecret
+
+		self.fields['secret_key'] = forms.ModelChoiceField(
+			queryset=VaultSecret.objects.all(),
+			required=True,
+			widget=autocomplete.ModelSelect2(
+				url='ujjwala:vault_secret_autocomplete_view',
+				attrs={
+					'data-placeholder': 'Secret Name',
+				},
+			)
+		)
+		if qs:
+			self.fields['secret_key'].queryset = VaultSecret.objects.all()
+
+	password = forms.CharField(
+		label='', required=True
+	)
+
+	def clean_password(self):
+		if not self.cleaned_data['password']:
+			raise ValidationError("Password can't be blank")
+		return self.cleaned_data['password']
+
+	def clean_secret_key(self):
+		if not self.cleaned_data['secret_key']:
+			raise ValidationError("Please select secret key path")
+		return self.cleaned_data['secret_key']
+
+	def save(self):
+		# Import VaultSecret here as well
+		from ujjwala.models import VaultSecret
+
+		vault_secret: VaultSecret = self.cleaned_data['secret_key']
+		json_param = vault_secret.static_values
+		json_param['data'].update({
+			'password': self.cleaned_data['password']
+		})
+		response = hashicorp_client.client.write(vault_secret.path, **json_param)
+		response.raise_for_status()
+
+		vault_secret.last_updated_on = now()
+		vault_secret.last_updated_by = get_current_user()
+		vault_secret.save()
+
 
 
 class ChangePhoneNumberForm(forms.Form):
@@ -1275,9 +1330,9 @@ class ConnectionDisbursementSocialMediaUpdatesForm(forms.Form):
 		# )
 		obj.save()
 		send_otp_using_channel('connection_disbursement_dac', self.connection_disbursement.parent.contact_mobile,
-		                       f'connectiondisbursement:{self.connection_disbursement.id}:Material-Delivery',
-		                       self.connection_disbursement.id
-	                       )
+							   f'connectiondisbursement:{self.connection_disbursement.id}:Material-Delivery',
+							   self.connection_disbursement.id
+						   )
 
 
 class ConnectionDisbursementMaterialDeliveryForm(forms.Form):
@@ -1520,7 +1575,7 @@ class UjjwalaApplicationValidateOtpForm(forms.Form):
 
 
 class InstallationKitchenUploadForm(forms.Form):
-	
+
 	kitchen_photo = forms.CharField(
 		widget=forms.HiddenInput, label='kitchen Photo', required=True
 	)
@@ -1532,7 +1587,7 @@ class InstallationKitchenUploadForm(forms.Form):
 	def __init__(self, installation=None, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.installation = installation
-	
+
 	def clean(self):
 		data = self.cleaned_data
 		return data
@@ -1565,7 +1620,7 @@ class InstallationMainGateUploadForm(forms.Form):
 	def __init__(self, installation=None, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.installation = installation
-	
+
 	def clean(self):
 		data = self.cleaned_data
 		return data
@@ -1754,4 +1809,4 @@ class BankDetailsUpdateRequestForm(forms.Form):
 
 
 class BarcodeForm(forms.Form):
-    user_id = forms.CharField(min_length=10, max_length=16, required=True)
+	user_id = forms.CharField(min_length=10, max_length=16, required=True)

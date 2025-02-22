@@ -12,11 +12,12 @@ from .robos.robo_sv_viewsets import UjjwalaApplicationSVViewSet
 from .robos.sdms_relationship_robo import UjjwalaApplicationSdmsRelationshipViewSet
 from .robos.sv_cancellation import SvCancellationViewSet
 from .robos.viewsets import UjjwalaApplicationNicViewSet
-from .views import UjjwalaApplicationWebFormView, WebFormOldView, UjjwalaApplicationIframeWebFormView, \
+from .views import UjjwalaApplicationWebFormView, UpdateSdmsLoginDetailsView, WebFormOldView, UjjwalaApplicationIframeWebFormView, \
     LegalDocumentsAcceptedToPendingView, ShareOnSocialMediaView, CancelInvitationView, UserDashboardView, \
     ChangeCylinderTypeRequestOverrideView
 from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet, UjjwalaApplicationOtpViewSet, \
     UjjwalaPreInspectionAPIViewSet
+from ujjwala.models import VaultSecret
 
 router = routers.DefaultRouter()
 router.register(r'ujjwala-application', UjjwalaApplicationViewSet)
@@ -51,7 +52,12 @@ urlpatterns = [
     path('portal/i-web-form/', UjjwalaApplicationIframeWebFormView.as_view(), name="i_web_form"),
     path('portal/pre-inspection/', views.UjjwalaPreInspectionListView.as_view(), name="pre_inspection_list"),
     path('portal/web-form-share/', views.ShareWebFormLink.as_view(), name="share_web_form_link"),
-
+    path(
+        'vault-secret-autocomplete-view/',
+        views.VaultSecretAutocompleteView.as_view(),
+        name='vault_secret_autocomplete_view',
+    ),
+    path('update-sdms-login-details/', UpdateSdmsLoginDetailsView.as_view(), name='update_sdms_login_details'),
     url(
         '^portal/self-pre-inspection-share/(?P<pk>[^/.]+)/$',
         views.ShareSelfPreInspectionLink.as_view(),
@@ -502,5 +508,4 @@ urlpatterns = [
         views.NewBarCodeLabelPrintView.as_view(),
         name="print_command_menu_view"
     ),
-
 ]
