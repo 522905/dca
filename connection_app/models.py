@@ -503,10 +503,11 @@ class ConnectionApplication(models.Model):
 		if kwargs.get("new_consumer_id"):
 			self.consumer_id = kwargs.get("new_consumer_id")
 
-		get_customer_profile(
-			self.consumer_id, self.name, "Yet To Update From SDMS", "0000110338"
+		cp_obj = get_customer_profile(
+			self.consumer_id, self.name, self.address, kwargs.get('distributor_code')
 		)
-
+		cp_obj.is_dirty = True
+		cp_obj.save()
 
 	def event_installation_upload_channel_whatsapp(self):
 		body_text = {

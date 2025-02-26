@@ -137,6 +137,12 @@ class FrontOfficeCompleted(forms.Form):
 	new_consumer_id = forms.CharField(
 		required=False, help_text="If New Consumer Id"
 	)
+	distributor_code = forms.ChoiceField(
+		required=True, help_text="Select Distributor", choices=(
+			("0000305948", "Arun Indane"),
+			("0000110338", "Arun Gas Service"),
+		)
+	)
 	description = forms.CharField(
 		widget=forms.Textarea, label='Remarks', required=False
 	)
