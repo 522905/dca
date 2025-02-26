@@ -18,7 +18,7 @@ from taggit.managers import TaggableManager
 from communication_log.functions import send_template_link_sms
 from communication_log.jobs import move_sv_doc_file_tus_to_minio, move_files_to_minio_processing
 from communication_log.models import CommunicationLog
-from connection_app.camunda_functions import start_process_fetch_sales_order_details_from_sdms
+from connection_app.camunda_functions import start_process_fetch_sales_order_details_from_sdms, get_customer_profile
 from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTypeEnum, \
 	ConnectionApplicationProcessType, ConnectionApplicationLeadStatus, ConnectionApplicationDocumentsEnum, \
 	ConnectionApplicationLeadCommunicationMode, ConnectionInstallationStatus, \
@@ -499,6 +499,14 @@ class ConnectionApplication(models.Model):
 	def front_office_completed(self, *args, **kwargs):
 		if kwargs.get("verified"):
 			self.remarks = kwargs.get("remarks")
+
+		if kwargs.get("new_consumer_id"):
+			self.consumer_id = kwargs.get("new_consumer_id")
+
+		get_customer_profile(
+			self.consumer_id, self.name, "Yet To Update From SDMS", "0000110338"
+		)
+
 
 	def event_installation_upload_channel_whatsapp(self):
 		body_text = {
