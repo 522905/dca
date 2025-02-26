@@ -134,6 +134,9 @@ class FrontOfficeCompleted(forms.Form):
 	phone_updated = forms.BooleanField(
 		required=False, help_text="Check If Phone Number Updated"
 	)
+	new_consumer_id = forms.CharField(
+		required=False, help_text="If New Consumer Id"
+	)
 	description = forms.CharField(
 		widget=forms.Textarea, label='Remarks', required=False
 	)
