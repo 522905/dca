@@ -4,7 +4,7 @@ from django.urls import path, include
 from django.views import generic
 from rest_framework import routers
 
-from . import views
+from . import views, barcode_view
 from .extra_viewsets import UjjwalaApplicationExtraViewSet
 from .robos.nic_error_robo import UjjwalaApplicationNicErrorRobotAPIViewSet
 from .robos.robo_error_viewsets import UjjwalaApplicationRoboExecutionErrorAPIViewSet
@@ -505,7 +505,7 @@ urlpatterns = [
     ),
     path(
         'print-command-menu-view/',
-        views.NewBarCodeLabelPrintView.as_view(),
+        barcode_view.NewBarCodeLabelPrintView.as_view(),
         name="print_command_menu_view"
     ),
 ]
