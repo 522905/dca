@@ -53,7 +53,7 @@ class NewBarCodeLabelPrintView(FormView):
 
 	def create_context_data(self, obj: CustomerProfile) -> dict:
 		"""Generates the context dictionary with consumer and address details."""
-		consumer_no = format_consumer_id(obj.consumer_id)
+		consumer_no = obj.consumer_id
 		context_dict = {"consumer_no": consumer_no}
 
 		# Format address
@@ -62,14 +62,16 @@ class NewBarCodeLabelPrintView(FormView):
 		address_lines = address_lines[:3] + ['', '', '']  # Ensure there are exactly 3 lines
 		context_dict.update({f'address{index + 1}': val for index, val in enumerate(address_lines)})
 
-		# profile = CustomerProfile.objects.filter(consumer_id=obj.consumer_id).first()
-		dca_id = obj.id if obj else " "
+		profile = ConnectionApplication.objects.filter(consumer_id=obj.consumer_id).first()
+		dca_id = profile.id if profile else " "
+		print(f"the refreal code is {profile.referral_code}")
 		# Additional user details
 		context_dict.update({
 			"name": obj.name,
 			"id": dca_id,
-			"date": datetime.datetime.today().strftime("%d/%m/%Y"),
+			"date": datetime.datetime.today().strftime("%d/%m/%Y, %H:%M"),
 			"operator_name": self.request.user.username,
+			"referral_code": profile.referral_code,
 		})
 
 		return context_dict
