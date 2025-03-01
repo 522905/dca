@@ -764,6 +764,8 @@ def update_customer_profile_in_dca(relationship_details, customer_profile_id):
 
 		relationship_details['sdms_service_area'] = get_sdms_service_area(relationship_details['service_area'],
 																		  distributor.code)
+		relationship_details['address'] = relationship_details.pop('primary_account_address')
+		relationship_details['is_dirty'] = False
 		CustomerProfile.objects.filter(pk=customer_profile_id).update(**relationship_details)
 
 
