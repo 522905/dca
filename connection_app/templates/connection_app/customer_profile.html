@@ -31,6 +31,7 @@
                                         {{ obj.latitude }},{{ obj.longitude }} <i class="fa fa-globe" style="color:steelblue; position: relative; top: 2px;" aria-hidden="true"></i></a></b></p>
                                     <p>Product: <b>{{ obj.products }}</b></p>
                                     <p>Is Dirty: <b>{{ obj.is_dirty }}</b></p>
+                                    <p>Distributor: <b>{{ obj.distributor_name }}</b></p>
                                     <p>Do Not Auto Generate Sales Order: <b>{{ obj.get_do_not_auto_generate_sales_order }}</b></p>
                                 </td>
                             </tr>
@@ -214,9 +215,22 @@
                         </td>
                     </tr>
                 </table>
+            <div class="status_block">
+                        <div class="main-header">
+                            <span class=""><b>Select Distributor:</b></span>
+                        </div>
+                        <form class="form-inline" action="{% url 'customer_profile' obj.id %}"  method="post">
+                            {% csrf_token %}
+                            <div class="form-group mx-sm-3 mb-2">
+                                <label for="select_distributor" class="sr-only">distributor</label>
+                                {{ form.distributor }}
+                            </div>
+                            <button type="submit" class="btn btn-primary m-2">Select</button>
+                        </form>
+                    </div>
+            </div>
             </div>
         </div>
-    </div>
 {% endif %}
 <style>
     .post_inspection tr td{ padding:5px 0;}
