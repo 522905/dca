@@ -1,17 +1,22 @@
 from datetime import timedelta
 
 import django_filters
+from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
 from django.db.models.functions import TruncDate
+from django.http import Http404
 from django.utils import timezone
-from django.views.generic import TemplateView
+from django.utils.decorators import method_decorator
+from django.views.generic import TemplateView, FormView
 from organizations.models import OrganizationOwner, OrganizationUser
 
+from reference_data.models import Distributor
 from teams.enums import UserProfileTypeEnum
 from teams.models import UserProfile
 from .enums import SalesOrderStatusEnum
-from .models import SalesOrder
-
+from .models import SalesOrder, CustomerProfile
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 
 class SalesOrderFilter(django_filters.FilterSet):
 	delivery_boy = django_filters.ModelChoiceFilter(
@@ -125,3 +130,56 @@ class SalesProcessedView(BaseSalesView):
 
 		# Get the total number of sales orders
 		return context
+
+from django import forms
+
+class DistributorChoiceForm(forms.Form):
+	distributor = forms.ModelChoiceField(
+        queryset=Distributor.objects.filter(Q(code="0000305948") | Q(code="0000110338")),  # Get all distributors
+        to_field_name="id",  # This will use 'id' as the value
+        empty_label="Select Distributor",  # Optional empty label
+        widget=forms.Select(attrs={'class': 'form-control'})  # Optional styling
+    )
+
+@method_decorator(login_required, 'dispatch')
+class CustomerProfileFormView(TemplateView):
+	template_name = 'connection_app/customer_profile.html'
+	form = DistributorChoiceForm
+
+	def get_object(self, queryset=None):
+		try:
+			obj = CustomerProfile.objects.get(pk=self.kwargs.get('pk'))
+		except:
+			raise Http404(
+				"No Customer Profile Exist For Given Id"
+			)
+		return obj
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+
+		obj: CustomerProfile = self.get_object()
+		context.update({
+			"obj": obj,
+		 	"form": self.form,
+		})
+		return context
+
+	def post(self,request,*args,**kwargs):
+		form = DistributorChoiceForm(request.POST)
+		obj = self.get_object()
+
+		if form.is_valid():
+			dist = form.cleaned_data['distributor']
+			obj.distributor_id = dist.id
+			obj.distributor_code = dist.code
+			obj.distributor_name = dist.name
+			obj.is_dirty = True
+			obj.save()
+
+			# Redirect after successful form submission
+			return HttpResponseRedirect(reverse('customer_profile', kwargs={'pk': obj.pk}))
+
+
+
+

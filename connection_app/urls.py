@@ -89,7 +89,7 @@ urlpatterns = [
     ),
     url(
         '^customer-profile/(?P<pk>[^/.]+)/$',
-        views.CustomerProfileView.as_view(),
+        report_views.CustomerProfileFormView.as_view(),
         name="customer_profile"
     ),
     url(
