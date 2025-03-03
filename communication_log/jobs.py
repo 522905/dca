@@ -291,7 +291,7 @@ def redis_image(url):
     return result
 
 
-def dialogflow_whatapp_message(reply, session_id, user_id):
+def dialogflow_whatapp_message(reply, session_id, user_id =""):
     body_text = {
         "userId": user_id or " ",
         "fullPhoneNumber": f'+91{session_id}',
