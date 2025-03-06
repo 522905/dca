@@ -49,7 +49,7 @@ class NewBarCodeLabelPrintView(FormView):
 		except Exception as e:
 			return JsonResponse({"status": "error", "message": f"Error processing PRN file: {str(e)}"}, status=500)
 
-		return JsonResponse({"status": "success", "prn_data": file_data.decode()})
+		return JsonResponse({"status": "success", "prn_data": file_data.decode(), "customer_profile": application})
 
 	def create_context_data(self, obj: CustomerProfile) -> dict:
 		"""Generates the context dictionary with consumer and address details."""

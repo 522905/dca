@@ -33,7 +33,28 @@
     </div>
 </div>
 
+{% if application %}
+    <div class="card mt-3" id="profile-section">
+        <div class="card-header bg-success text-white">
+            <h5>Customer Profile Details</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>Name:</strong> {{ application.name }}</p>
+            <p><strong>Consumer ID:</strong> {{ application.consumer_id }}</p>
+            <p><strong>Address:</strong> {{ application.address|default:application.primary_account_address }}</p>
+            <p><strong>Referral Code:</strong> {{ application.referral_code }}</p>
+            <p><strong>Date:</strong> {{ context.date }}</p>
+            <p><strong>Operator:</strong> {{ context.operator_name }}</p>
+        </div>
+    </div>
 
+    <div class="card mt-3" id="print-section">
+        <div class="card-body">
+            <h5 class="text-success">Success! Barcode is ready to print.</h5>
+            <button class="btn btn-primary" id="print-btn" onclick="window.print()">Print Barcode</button>
+        </div>
+    </div>
+{% endif %}
 {#<script src="https://cdnjs.cloudflare.com/ajax/libs/qz-tray/2.1.0/qz-tray.js"></script>#}
 <script>
 'use strict';
