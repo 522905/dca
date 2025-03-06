@@ -54,7 +54,6 @@ class NewBarCodeLabelPrintView(FormView):
 			"name": application.name,
 			"consumer_id": application.consumer_id,
 			"address": application.address,
-			"referral_code": application.referral_code,
 		}
 		return JsonResponse({"status": "success", "prn_data": file_data.decode(), "customer_profile": customer_data})
 
