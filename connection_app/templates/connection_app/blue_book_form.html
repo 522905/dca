@@ -63,7 +63,6 @@
 				validateUppy(aadharcardbackuppy, 'UID_BACK', 'Aadhar Card Backside Picture (आधार कार्ड की फोटो)*', true),
 				validateUppy(identificationuppy, 'OTHER_ID_PROOF', 'Any Other Identification Card', false),
 				validateUppy(bankdetailuppy, 'BANK_DETAIL', 'Bank Detail (पास बुक का विवरण)', false)
-				validateUppy(bankdetailuppy, 'CUSTOMER_SIGNATURE', 'Customer Signature (कस्टमर सिग्नेचर का विवरण)', false)
 			]
 
 			if (!files.reduce((aggr, current) => { return current.valid && aggr }, true)) {
@@ -151,19 +150,6 @@
         // Set the image source
         imageContainer.src = imagePath;
         }
-
-		function init_sign_document() {
-			$('#signature-pad').addClass("show-sign-block");
-		}
-		
-		function close_sign_document() {
-			$('#signature-pad').removeClass("show-sign-block");
-		}
-
-		formdata.documents.push({
-			type: 'CUSTOMER_SIGNATURE',
-			link: signature_url
-		});
 	</script>
 </head>
 <style>
@@ -368,7 +354,7 @@
 									$('#verifyWhatsappButton').attr('disabled', true);
 
 									return jQuery.ajax({
-										url: '/connection_app/connection-application/check_phone/',
+										url: '/ujjwala/ujjwala-application/check_phone/',
 										type: "GET",
 										data: {'contact_mobile': mobile}
 									}).
