@@ -24,7 +24,11 @@
             </form>
         </div>
     </div>
-
+    <div id="customer-details" class="card mt-4 d-none">
+        <div class="card-body">
+            <!-- Customer details will be dynamically populated here -->
+        </div>
+    </div>
     <div class="card mt-3 d-none" id="print-section">
         <div class="card-body">
             <h5 class="text-success">Success! Barcode is ready to print.</h5>
@@ -32,29 +36,6 @@
         </div>
     </div>
 </div>
-
-{% if application %}
-    <div class="card mt-3" id="profile-section">
-        <div class="card-header bg-success text-white">
-            <h5>Customer Profile Details</h5>
-        </div>
-        <div class="card-body">
-            <p><strong>Name:</strong> {{ application.name }}</p>
-            <p><strong>Consumer ID:</strong> {{ application.consumer_id }}</p>
-            <p><strong>Address:</strong> {{ application.address|default:application.primary_account_address }}</p>
-            <p><strong>Referral Code:</strong> {{ application.referral_code }}</p>
-            <p><strong>Date:</strong> {{ context.date }}</p>
-            <p><strong>Operator:</strong> {{ context.operator_name }}</p>
-        </div>
-    </div>
-
-    <div class="card mt-3" id="print-section">
-        <div class="card-body">
-            <h5 class="text-success">Success! Barcode is ready to print.</h5>
-            <button class="btn btn-primary" id="print-btn" onclick="window.print()">Print Barcode</button>
-        </div>
-    </div>
-{% endif %}
 {#<script src="https://cdnjs.cloudflare.com/ajax/libs/qz-tray/2.1.0/qz-tray.js"></script>#}
 <script>
 'use strict';
@@ -2947,6 +2928,11 @@ $(document).ready(function() {
             console.log("the byte prn is generated")
             window.prnData = data.prn_data;  // Store PRN data for printing
             document.getElementById("print-section").classList.remove("d-none");
+
+            // Update customer profile details
+            if (data.customer_profile) {
+                updateCustomerDetails(data.customer_profile);
+            }
         } else {
             alert("Failed to generate barcode.");
         }
@@ -2956,6 +2942,21 @@ $(document).ready(function() {
         alert("Error processing request.");
     });
     });
+
+    // Function to update the customer profile section
+    function updateCustomerDetails(profile) {
+        const detailsSection = document.getElementById("customer-details");
+        detailsSection.innerHTML = `
+            <h5>Customer Details</h5>
+            <p><strong>Name:</strong> ${profile.name}</p>
+            <p><strong>Consumer ID:</strong> ${profile.consumer_id}</p>
+            <p><strong>Address:</strong> ${profile.address}</p>
+            <p><strong>Referral Code:</strong> ${profile.referral_code || "N/A"}</p>
+            <p><strong>Operator:</strong> {{ request.user.username }}</p>
+            <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
+        `;
+        detailsSection.classList.remove("d-none");
+    }
 
     $("#print-btn").click(function() {
         if (window.prnData) {
