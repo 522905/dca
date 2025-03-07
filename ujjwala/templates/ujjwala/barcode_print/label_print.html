@@ -24,9 +24,28 @@
             </form>
         </div>
     </div>
-    <div id="customer-details" class="card mt-4 d-none">
+
+    <div class="card mt-4 d-none" id="prn-preview">
+        <div class="card-header bg-info text-white">
+            <h5>Bluebook Label Details</h5>
+        </div>
         <div class="card-body">
-            <!-- Customer details will be dynamically populated here -->
+            <table class="table table-bordered">
+                <tbody id="prn-preview-body">
+                    <tr><td>DGDC SR. NO / DCA</td><td id="dgdc"></td></tr>
+                    <tr><td>GAS BOOKING NO.</td><td>8454955555</td></tr>
+                    <tr><td>CONSUMER NO.</td><td id="consumer_no"></td></tr>
+                    <tr><td>NO. OF CYLINDER</td><td id="no_of_cylinder"></td></tr>
+                    <tr><td>NO. OF REGULATOR</td><td id="no_of_regulator"></td></tr>
+                    <tr><td>NAME</td><td id="name"></td></tr>
+                    <tr><td>ADDRESS 1</td><td id="address1"></td></tr>
+                    <tr><td>ADDRESS 2</td><td id="address2"></td></tr>
+                    <tr><td>ADDRESS 3</td><td id="address3"></td></tr>
+                    <tr><td>NAME OF OPERATOR</td><td id="operator_name"></td></tr>
+                    <tr><td>DATE</td><td id="date"></td></tr>
+                    <tr><td>CUSTOMER CARE NO.</td><td>0161-5201005</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
     <div class="card mt-3 d-none" id="print-section">
@@ -2927,35 +2946,30 @@ $(document).ready(function() {
         if (data.status === "success") {
             console.log("the byte prn is generated")
             window.prnData = data.prn_data;  // Store PRN data for printing
+            updatePRNPreview(data.customer_profile);
+            document.getElementById("prn-preview").classList.remove("d-none");
             document.getElementById("print-section").classList.remove("d-none");
-
-            // Update customer profile details
-            if (data.customer_profile) {
-                updateCustomerDetails(data.customer_profile);
-            }
         } else {
             alert("Failed to generate barcode.");
         }
     })
     .catch((e) => {
-        console.log("the error is " , e)
-        alert("Error processing request.");
-    });
+            console.log("the error is " , e)
+            alert("Error processing request.");
+        });
     });
 
-    // Function to update the customer profile section
-    function updateCustomerDetails(profile) {
-        const detailsSection = document.getElementById("customer-details");
-        detailsSection.innerHTML = `
-            <h5>Customer Details</h5>
-            <p><strong>Name:</strong> ${profile.name}</p>
-            <p><strong>Consumer ID:</strong> ${profile.consumer_id}</p>
-            <p><strong>Address:</strong> ${profile.address}</p>
-            <p><strong>Referral Code:</strong> ${profile.referral_code || "N/A"}</p>
-            <p><strong>Operator:</strong> {{ request.user.username }}</p>
-            <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
-        `;
-        detailsSection.classList.remove("d-none");
+    function updatePRNPreview(profile) {
+        document.getElementById("dgdc").textContent = profile.id || "";
+        document.getElementById("consumer_no").textContent = profile.consumer_no || "";
+        document.getElementById("no_of_cylinder").textContent = profile.no_of_cylinder || "";
+        document.getElementById("no_of_regulator").textContent = profile.no_of_regulator || "";
+        document.getElementById("name").textContent = profile.name || "";
+        document.getElementById("address1").textContent = profile.address1 || "";
+        document.getElementById("address2").textContent = profile.address2 || "";
+        document.getElementById("address3").textContent = profile.address3 || "";
+        document.getElementById("operator_name").textContent = profile.operator_name || "";
+        document.getElementById("date").textContent = new Date().toLocaleString();
     }
 
     $("#print-btn").click(function() {
