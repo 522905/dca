@@ -176,7 +176,7 @@
 				<h3 class="text-center">Form to Apply New Domestic LPG Gas Connection</h3>
 				<h4 class="text-center" style="color: #004ea1;">नया घरेलू गैस कनेक्शन आवेदन करने के लिए फार्म</h4><br>
 				<form class="form-horizontal" action="" id="punjab" method="POST" enctype="multipart/form-data">
-					<div class="form_block">
+					<!-- <div class="form_block">
 						<label><b>Application Type (किस लिए आवेदन)</b><strong style="color:red">*</strong></label>
 						<div class="form-group">
 							<div class="input-block">
@@ -193,7 +193,7 @@
 								<span style="padding-left:10px;"> ADD On Cylinder (ADD On कनेक्शन)</span>
 							</div>
 						</div>
-					</div>
+					</div> -->
 
 					<div id="additional-fields" class="hidden">
 						<div class="form-group">
@@ -276,7 +276,10 @@
 							<span id="contact_mobile_detail_whatsapp"></span>
 						</div>
 					</div>
- 
+
+					<!-- Hidden input for application_type -->
+					<input type="hidden" name="application_type" value="NEW_CONNECTION">
+
 					<div class="form-group whatsapp-form-group">
 						<label for="mobileNumber" style="margin-bottom: 0 !important;">Mobile Number(मोबाइल नंबर) <i class="fa fa-phone" aria-hidden="true"></i> <strong
 								style="color:red;">*</strong></label>
@@ -368,7 +371,7 @@
 									$('#verifyWhatsappButton').attr('disabled', true);
 
 									return jQuery.ajax({
-										url: '/ujjwala/ujjwala-application/check_phone/',
+										url: '/connection_app/connection-application/check_phone/',
 										type: "GET",
 										data: {'contact_mobile': mobile}
 									}).
@@ -737,7 +740,7 @@
 						icon: "success",
 					})
 
-					$("#message").html('<div class="alert alert-success" style="color:red; text-align:center; margin-top:250px;"><strong>SUCCESS!</strong> 	your application has been submitted</div>');
+					$("#message").html('<div class="alert alert-success" style="color:red; text-align:center; margin-top:250px;"><strong>SUCCESS!</strong> 	Your New Connection application has been submitted</div>');
 					$("#cus_id").append(result);
 					$("#message").append(result.id).css({ "text-align": "center" }).append(" <b>is you application Id</b>.");
 

@@ -21,9 +21,7 @@
     <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
     <script src="https://arungas.com/public/ujwalla/js/signature_pad.umd.js"></script>
     <script src="{% static '/js/moment.min.js' %}"></script>
-
 	<script>
-
 		function keys(event) {
 			var keyCode = event.which;
 			if (keyCode >= 65 && keyCode <= 90 || keyCode >= 97 && keyCode <= 122 || keyCode >= 32 && keyCode <= 33) {
@@ -170,36 +168,16 @@
 <body>	        
 	<div class="main">
 		<div class="col-md-12" style="padding: 0;">
-			<img src="https://arungas.com/ujjwala/Banner_2025.jpg">
+			<img src="https://arungas.com/ujjwala/inv.png">
 		</div>
 	</div>
 	<div class="container register">	
 		<div class="form-contain">
 			<div id="form_hide">
                 <!-- <img style="width:100%; height:250px;" src="">  -->
-				
 				<h3 class="text-center">Form For <b style="color: red;">Inverter</b>/Emergency Cylinder</h3>
 				<h4 class="text-center" style="color: #004ea1;">Add On सिलिंडर के लिए फार्म</h4><br>
 				<form class="form-horizontal" action="" id="punjab" method="POST" enctype="multipart/form-data">
-					<!-- <div class="form_block">
-						<label><b>Application Type (किस लिए आवेदन)</b><strong style="color:red">*</strong></label>
-						<div class="form-group">
-							<div class="input-block">
-								<input type="radio" class="form-check-input" name="application_type" value="NEW_CONNECTION"
-								required>
-								<span style="padding-left:10px;"> New Connection (नया कनेक्शन)</span>
-							</div>
-							<div class="input-block">
-								<input type="radio" class="form-check-input" name="application_type" value="BLUE_BOOK" required>
-								<span style="padding-left:10px;"> Gas Book (गैस कॉपी)</span>
-							</div>
-							<div class="input-block">
-								<input type="radio" class="form-check-input" name="application_type" value="ADD_ON_CYLINDER" required>
-								<span style="padding-left:10px;"> ADD On Cylinder (ADD On कनेक्शन)</span>
-							</div>
-						</div>
-					</div> -->
-
 					<div class="form-group">
 						<div class="form-group">
 							<label for="consumer-id">Enter Consumer ID (उपभोक्ता आईडी दर्ज करें)</label>
@@ -281,6 +259,9 @@
 							<span id="contact_mobile_detail_whatsapp"></span>
 						</div>
 					</div>
+
+					<!-- Hidden input for application_type -->
+					<input type="hidden" name="application_type" value="ADD_ON_CYLINDER">
  
 					<div class="form-group whatsapp-form-group">
 						<label for="mobileNumber" style="margin-bottom: 0 !important;">Mobile Number(मोबाइल नंबर) <i class="fa fa-phone" aria-hidden="true"></i> <strong
@@ -373,7 +354,7 @@
 									$('#verifyWhatsappButton').attr('disabled', true);
 
 									return jQuery.ajax({
-										url: '/ujjwala/ujjwala-application/check_phone/',
+										url: '/connection_app/connection-application/check_phone/',
 										type: "GET",
 										data: {'contact_mobile': mobile}
 									}).
@@ -738,7 +719,7 @@
 						text: "Thank You",
 						icon: "success",
 					})
-					$("#message").html('<div class="alert alert-success" style="color:red; text-align:center; margin-top:250px;"><strong>SUCCESS!</strong> Your ' + application_type + ' has been submitted</div>');
+					$("#message").html('<div class="alert alert-success" style="color:red; text-align:center; margin-top:250px;"><strong>SUCCESS!</strong> Your Add-On Cylinder application has been submitted</div>');
 					// $("#message").html('<div class="alert alert-success" style="color:red; text-align:center; margin-top:250px;"><strong>SUCCESS!</strong> 	your application has been submitted</div>');
 					$("#cus_id").append(result);
 					$("#message").append(result.id).css({ "text-align": "center" }).append(" <b>is you application Id</b>.");
