@@ -72,12 +72,16 @@ class NewBarCodeLabelPrintView(FormView):
 		dca_id = profile.id if profile else " "
 		print(f"the refreal code is {profile.referral_code}")
 		# Additional user details
+		if profile.connection_type:
+			no_of_cylinder =  1 if profile.connection_type == 'Single Bottle Connection' else 2
+
 		context_dict.update({
 			"name": obj.name,
 			"id": dca_id,
 			"date": datetime.datetime.today().strftime("%d/%m/%Y, %H:%M"),
 			"operator_name": self.request.user.username,
 			"referral_code": profile.referral_code,
+			"no_of_cylinder": no_of_cylinder,
 		})
 
 		return context_dict
