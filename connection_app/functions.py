@@ -3,6 +3,7 @@ import datetime
 import requests
 
 from connection_app.camunda_functions import get_customer_profile, get_sdms_service_area
+from connection_app.jobs import start_read_customer_profile
 from domestic_app.settings import CAMUNDA_BASE_URL
 from reference_data.models import Distributor
 from ujjwala.camunda_functions import start_process_in_camunda_v2, is_process_exist_in_camunda
@@ -100,6 +101,44 @@ def schedule_booking_cancellation_csv(csv_file_rows):
 				}
 				res, pid = start_process_in_camunda_v2('Process_book_sales_order', variables=variables)
 				print(pid)
+		except Exception as e:
+			continue
+	return True
+
+
+def bulk_is_dirty_update(csv_file_rows):
+	from connection_app.models import CustomerProfile
+
+	for idx, row in enumerate(csv_file_rows):
+		try:
+			consumer_id = row['consumer_id'].replace(";", "")
+			cp_obj = CustomerProfile.objects.get(consumer_id=consumer_id)
+			cp_obj.is_dirty = True
+			cp_obj.save()
+			start_read_customer_profile(cp_obj.pk)
+		except Exception as e:
+			continue
+	return True
+
+
+def update_distributor(csv_file_rows):
+	from connection_app.models import CustomerProfile
+
+	for idx, row in enumerate(csv_file_rows):
+		try:
+			consumer_id = row['consumer_id'].replace(";", "")
+			cp_obj = CustomerProfile.objects.get(consumer_id=consumer_id)
+			distributor_code = row['distributor_code']
+			distributor_obj = Distributor.objects.get(code=distributor_code)
+
+			if cp_obj.distributor_id != distributor_obj.id:
+				cp_obj.distributor = distributor_obj
+				cp_obj.distributor_code = distributor_obj.code
+				cp_obj.distributor_name = distributor_obj.name
+				cp_obj.save()
+
+			cp_obj.is_dirty = True
+			start_read_customer_profile(cp_obj.pk)
 		except Exception as e:
 			continue
 	return True

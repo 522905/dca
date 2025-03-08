@@ -72,7 +72,7 @@ def start_read_customer_profile(customer_profile_id):
 
 def schedule_upload_data(template, id_obj):
 	from connection_app.functions import upload_customer_register_csv, upload_service_area_csv, \
-		schedule_booking_cancellation_csv
+		schedule_booking_cancellation_csv, bulk_is_dirty_update, update_distributor
 
 	id_obj.status = ImportDataStatusEnum.PROCESSING
 	id_obj.save()
@@ -94,6 +94,10 @@ def schedule_upload_data(template, id_obj):
 			upload_customer_register_csv(data_rows)
 		elif template == TemplateEnum.DELIVERY_REGISTER:
 			pass
+		elif template == TemplateEnum.BULK_IS_DIRTY:
+			bulk_is_dirty_update(data_rows)
+		elif template == TemplateEnum.UPDATE_DISTRIBUTOR:
+			update_distributor(data_rows)
 		elif template == TemplateEnum.CANCEL_BOOKINGS:
 			schedule_booking_cancellation_csv(data_rows)
 
