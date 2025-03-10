@@ -40,6 +40,11 @@ class ConnectionApplicationLeadStatus(models.TextChoices):
 	KITCHEN_PHOTO_UPLOAD = 'KITCHEN_PHOTO_UPLOAD', 'Kitchen Photo Upload'
 
 
+class ConnectionApplicationGenderEnum(models.TextChoices):
+	MALE = 'MALE', 'Male',
+	FEMALE = 'FEMALE', 'Female',
+
+
 class ConnectionInstallationStatus(models.TextChoices):
 	PENDING = 'PENDING', 'Pending',
 	SUBMITTED = 'SUBMITTED', 'Submitted',
