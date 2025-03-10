@@ -49,7 +49,7 @@ class ConnectionApplicationViewSet(viewsets.ModelViewSet):
 
     @action(methods=['get'], detail=False, url_path='check_phone')
     def check_phone(self, request, *args, **kwargs):
-        mobile = request.GET.get('mobile')
+        mobile = request.GET.get('contact_mobile')
 
         application = ConnectionApplication.objects.exclude(
             status=ConnectionApplicationLeadStatus.NOT_INTERESTED
