@@ -57,9 +57,14 @@ class ConnectionApplicationViewSet(viewsets.ModelViewSet):
 
         if application.exists():
             status_url = reverse('application_status', kwargs={'pk': application.first().pk})
+
+            # Serialize the queryset using DRF serializer
+            applications_list = ConnectionApplicationSerializer(application, many=True).data
+
             return JsonResponse({
                 "status": False,
-                "application_url": request.build_absolute_uri(status_url)
+                "application_url": request.build_absolute_uri(status_url),
+                "applications": applications_list
             })
 
         return JsonResponse({
