@@ -913,6 +913,15 @@ class PostInspection(models.Model):
 	def suraksha_pipe_updated(self):
 		return self.activities.get(activity_type=PostInspectionActivityTypeEnum.SURAKSHA_PIPE_UPDATE).completed
 
+	def get_adddress(self):
+		if self.address:
+			return self.address
+		if self.address_json:
+			return "{}, {}, {}, {}, {}, {}".format(
+				self.address_json.get('house_no'), self.address_json.get('street_no'), self.address_json.get('village'),
+				self.address_json.get('landmark'), self.address_json.get('city'), self.address_json.get('pincode')
+			)
+
 	# @fsm_log_description
 	# @fsm_log_by
 	# @transition(
