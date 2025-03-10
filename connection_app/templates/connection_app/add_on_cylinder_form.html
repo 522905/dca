@@ -361,10 +361,8 @@
 									then(response => {
 										if (response.status != true) {
 											console.log(response);
-											var data = response.data;
 											var msg = response.msg;
-											var status = response.status;
-											var applications = data.applications;
+											var applications = response.applications;
 
 											$('[name="contact_mobile"]')[0].setCustomValidity(
 												`ID: ${applications[0].id} Name: ${applications[0].name}`

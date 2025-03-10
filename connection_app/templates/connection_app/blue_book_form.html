@@ -359,12 +359,10 @@
 										data: {'contact_mobile': mobile}
 									}).
 									then(response => {
+                                        console.log("response received" + response);
 										if (response.status != true) {
-											console.log(response);
-											var data = response.data;
 											var msg = response.msg;
-											var status = response.status;
-											var applications = data.applications;
+											var applications = response.applications;
 
 											$('[name="contact_mobile"]')[0].setCustomValidity(
 												`ID: ${applications[0].id} Name: ${applications[0].name}`
@@ -625,6 +623,7 @@
 			</div>
 		</div>
 	</div>
+	<script src="https://arungas.com/public/ujwalla/js/app.js"></script>
 	<script>
 		function getCookie(name) {
 		let cookieValue = null;
@@ -641,6 +640,7 @@
 			}
 			return cookieValue;
 		}
+		
 		$('#punjab').on('submit', function (event) {
 			event.preventDefault();
 
@@ -697,8 +697,6 @@
 
 			jQuery('#submit').val('Please wait...');
 			jQuery('#submit').attr('disabled', true);
-
-			
 
 			jQuery.ajax({
 				url: '/connection_app/connection-application/wf/',
@@ -1017,6 +1015,31 @@
 
 </html>
 
+<script>
+    var signaturePad;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var canvas = document.querySelector("canvas");
+        signaturePad = new SignaturePad(canvas);
+
+        document.querySelector("[data-action=clear]").addEventListener("click", function() {
+            signaturePad.clear();
+        });
+		
+		// Adjust canvas coordinate space taking into account pixel ratio
+		function resizeCanvas() {
+			var ratio = Math.max(window.devicePixelRatio || 1, 1);
+			canvas.width = canvas.offsetWidth * ratio;
+			canvas.height = canvas.offsetHeight * ratio;
+			canvas.getContext("2d").scale(ratio, ratio);
+			signaturePad.clear(); // Clear the canvas after resizing
+		}
+
+		window.onresize = resizeCanvas;
+		resizeCanvas();
+	});
+</script>
+
 <style type="text/css">
 	.body{ 
 		background-color: #F1F9E7;
@@ -1267,4 +1290,3 @@
 	}
 	
 </style>
-<script src="https://arungas.com/public/ujwalla/js/app.js"></script>
