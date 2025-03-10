@@ -354,7 +354,7 @@
 									$('#verifyWhatsappButton').attr('disabled', true);
 
 									return jQuery.ajax({
-										url: '/ujjwala/ujjwala-application/check_phone/',
+										url: '/connection_app/connection-application/check_phone/',
 										type: "GET",
 										data: {'contact_mobile': mobile}
 									}).
@@ -643,6 +643,19 @@
 		}
 		$('#punjab').on('submit', function (event) {
 			event.preventDefault();
+
+			// Check if terms and conditions are agreed
+			if (!document.getElementById('term_condition_agree').checked) {
+				alert("Please agree to the terms and conditions.");
+				return;
+			}
+	
+			// Check if the signature pad is not empty
+			if (signaturePad.isEmpty()) {
+				alert("Please provide a signature.");
+				return;
+			}
+
 			let documentArray = valid();
 			if(documentArray == null) return;
 
@@ -676,6 +689,9 @@
 				post_office: formdata.post_office,
 				city: formdata.city
 			}
+
+			// Capture the signature data
+			formdata.signature = signaturePad.toDataURL();
 
 			console.log(JSON.stringify(formdata));
 
