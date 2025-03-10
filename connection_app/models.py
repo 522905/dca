@@ -25,7 +25,7 @@ from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTy
 	ConnectionApplicationLeadCommunicationMode, ConnectionInstallationStatus, \
 	PaymentProfileApprovalStatusEnum, CustomerTypeEnum, SalesOrderStatusEnum, InspectionTypeEnum, \
 	PostInspectionStatusEnum, PostInspectionActivityTypeEnum, LeadStatusEnum, SalesOrderPortabilityStatusEnum, \
-	TemplateEnum, ImportDataStatusEnum, ProofTypeEnum
+	TemplateEnum, ImportDataStatusEnum, ProofTypeEnum, ConnectionApplicationGenderEnum
 from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, FrontOfficeCompleted, \
 	BackOfficeReactivation, BackOfficeRegularisation, \
 	BackOfficeNewConnection, DocumentsReupload, InstallationReviewForm
@@ -63,6 +63,9 @@ class ConnectionApplication(models.Model):
 	address = models.TextField(null=True, blank=True)
 	address_json = models.JSONField(null=True, blank=True)
 	application_type = models.CharField(max_length=25, choices=ApplicationTypeEnum.choices)
+	gender = models.CharField(max_length=25, choices=ConnectionApplicationGenderEnum.choices, null=True)
+	date_of_birth = models.DateTimeField(null=True)
+	distributor = models.ForeignKey(Distributor, on_delete=models.PROTECT, null=True)
 	item_code = models.CharField(max_length=25, choices=ItemCodeEnum.choices)
 	connection_type = models.CharField(max_length=25, choices=ConnectionTypeEnum.choices, null=True)
 	referral_code = models.CharField(max_length=16, null=True, blank=True)
