@@ -190,6 +190,7 @@ class TemplateEnum(models.TextChoices):
 	CANCEL_BOOKINGS = 'CANCEL_BOOKINGS', 'Cancel Bookings'
 	BULK_IS_DIRTY = 'BULK_IS_DIRTY', 'Bulk Is Dirty'
 	UPDATE_DISTRIBUTOR = 'UPDATE_DISTRIBUTOR', 'Update Distributor'
+	UPDATE_BULK_OUT = 'UPDATE_BULK_OUT', 'Update Bulk Out'
 
 
 class ImportDataStatusEnum(models.TextChoices):
