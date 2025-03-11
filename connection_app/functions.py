@@ -128,7 +128,7 @@ def update_distributor(csv_file_rows):
 		try:
 			consumer_id = row['consumer_id'].replace(";", "")
 			cp_obj = CustomerProfile.objects.get(consumer_id=consumer_id)
-			distributor_code = row['distributor_code']
+			distributor_code = row['distributor_code'].replace(";", "")
 			distributor_obj = Distributor.objects.get(code=distributor_code)
 
 			if cp_obj.distributor_id != distributor_obj.id:
@@ -141,4 +141,16 @@ def update_distributor(csv_file_rows):
 			start_read_customer_profile(cp_obj.pk)
 		except Exception as e:
 			continue
+	return True
+
+
+def update_bulk_out(csv_file_rows):
+	from connection_app.models import CustomerProfile
+
+	for idx, row in enumerate(csv_file_rows):
+		consumer_id = row['consumer_id'].replace(";", "")
+		cp_obj: CustomerProfile = CustomerProfile.objects.get(consumer_id=consumer_id)
+		cp_obj.relationship_type = 'BULK_OUT'
+		cp_obj.distributor_code = None
+		cp_obj.distributor_name = 'OTHER'
 	return True

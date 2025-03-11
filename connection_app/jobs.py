@@ -1,6 +1,7 @@
 import csv
 
 from connection_app.enums import TemplateEnum, ImportDataStatusEnum
+from connection_app.functions import update_bulk_out
 from connection_app.vicidial.jobs import make_api_request, VICIDIAL_NON_AGENT_API, VICIDIAL_CAMPAIGN_API
 from ujjwala.camunda_functions import start_process_in_camunda_v2
 import logging
@@ -98,6 +99,8 @@ def schedule_upload_data(template, id_obj):
 			bulk_is_dirty_update(data_rows)
 		elif template == TemplateEnum.UPDATE_DISTRIBUTOR:
 			update_distributor(data_rows)
+		elif template == TemplateEnum.UPDATE_BULK_OUT:
+			update_bulk_out(data_rows)
 		elif template == TemplateEnum.CANCEL_BOOKINGS:
 			schedule_booking_cancellation_csv(data_rows)
 
