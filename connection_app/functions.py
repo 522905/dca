@@ -155,4 +155,5 @@ def update_bulk_out(csv_file_rows):
 		cp_obj.relationship_type = 'BULK_OUT'
 		cp_obj.distributor_code = None
 		cp_obj.distributor_name = 'OTHER'
+		cp_obj.save()
 	return True
