@@ -152,8 +152,9 @@ def update_bulk_out(csv_file_rows):
 	for idx, row in enumerate(csv_file_rows):
 		consumer_id = row['consumer_id'].replace(";", "")
 		cp_obj: CustomerProfile = CustomerProfile.objects.get(consumer_id=consumer_id)
-		cp_obj.relationship_type = 'BULK_OUT'
+		cp_obj.relationship_status = 'BULK_OUT'
+		cp_obj.relationship_sub_status = 'BULK_OUT'
 		cp_obj.distributor_code = None
-		cp_obj.distributor_name = 'OTHER'
+		cp_obj.distributor_name = row['distributor_name']
 		cp_obj.save()
 	return True
