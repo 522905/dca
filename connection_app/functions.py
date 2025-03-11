@@ -3,7 +3,7 @@ import datetime
 import requests
 
 from connection_app.camunda_functions import get_customer_profile, get_sdms_service_area
-from connection_app.jobs import start_read_customer_profile
+
 from domestic_app.settings import CAMUNDA_BASE_URL
 from reference_data.models import Distributor
 from ujjwala.camunda_functions import start_process_in_camunda_v2, is_process_exist_in_camunda
@@ -108,6 +108,7 @@ def schedule_booking_cancellation_csv(csv_file_rows):
 
 def bulk_is_dirty_update(csv_file_rows):
 	from connection_app.models import CustomerProfile
+	from connection_app.jobs import start_read_customer_profile
 
 	for idx, row in enumerate(csv_file_rows):
 		try:
@@ -123,6 +124,7 @@ def bulk_is_dirty_update(csv_file_rows):
 
 def update_distributor(csv_file_rows):
 	from connection_app.models import CustomerProfile
+	from connection_app.jobs import start_read_customer_profile
 
 	for idx, row in enumerate(csv_file_rows):
 		try:

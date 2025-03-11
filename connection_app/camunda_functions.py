@@ -7,7 +7,7 @@ import requests
 from camunda.external_task.external_task import ExternalTask
 
 from connection_app.enums import SalesOrderStatusEnum
-from connection_app.jobs import start_read_customer_profile
+
 
 
 from domestic_app.settings import CAMUNDA_BASE_URL
@@ -37,13 +37,14 @@ def get_customer_profile(consumer_id, name, address, distributor_code):
 			distributor=distributor,
 			distributor_code=distributor_code,
 		)
-		django_rq.enqueue(start_read_customer_profile, args=(cp_obj.id,))
+		# django_rq.enqueue(start_read_customer_profile, args=(cp_obj.id,))
 	else:
 		if cp_obj.distributor != distributor:
 			cp_obj.distributor = distributor
 			cp_obj.distributor_code = distributor.code
 			cp_obj.distributor_name = distributor.name
 			cp_obj.save()
+	django_rq.enqueue(start_read_customer_profile, args=(cp_obj.id,))
 	return cp_obj
 
 
@@ -774,6 +775,7 @@ def update_booked_order_details_in_dca(sales_order_details, consumer_id, process
 	order_status, sales_order_id, sales_order_number
 	"""
 	from connection_app.models import BookSalesOrder, SalesOrder
+	from connection_app.jobs import start_read_customer_profile
 
 	bso_obj: BookSalesOrder = BookSalesOrder.objects.filter(camunda_process_id=process_instance_id).first()
 
