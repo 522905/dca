@@ -915,7 +915,7 @@ def update_returned_booked_order(sales_order_id, status):
 
 	so_obj.save()
 
-	if status in ['NOT_FOUND', 'CANCELLED']:
+	if status in ['CANCELLED']:
 		start_process_fetch_sales_order_details_from_sdms(so_obj.id, so_obj.full_filled_by_distributor.code)
 
 	return variables
