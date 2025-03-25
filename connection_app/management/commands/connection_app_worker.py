@@ -9,7 +9,7 @@ from django.core.management import BaseCommand
 from connection_app.camunda_functions import process_update_sales_order_in_dca, \
 	update_sales_order_details_in_dca, process_update_sales_order_completed_today, update_customer_profile_in_dca, \
 	update_booked_order_details_in_dca, update_service_area_in_customer_profile, update_returned_booked_order, \
-	clean_sales_order_tasks, update_service_request_in_dca
+	clean_sales_order_tasks, update_service_request_in_dca, update_distributor_status
 from domestic_app import settings
 from ujjwala.jobs import ensure_db_connection
 
@@ -65,12 +65,15 @@ def handle_task(task: ExternalTask) -> TaskResult:
 		elif topic == 'process_read_customer_profile_from_sdms#update_in_dca':
 			relationship_details = json.loads(task.get_variable('relationship_details'))
 			customer_profile_id = task.get_variable('customer_profile_id')
-			update_customer_profile_in_dca(relationship_details, customer_profile_id)
+			if relationship_details.get('distributor_status'):
+				update_distributor_status(relationship_details.get('distributor_status'), customer_profile_id)
+			else:
+				update_customer_profile_in_dca(relationship_details, customer_profile_id)
 			return task.complete()
-		elif topic == 'update_booked_order_details_in_dca#update_booked_order_details_in_dca':
-			# consumer_id = task.get_variable('consumer_id')
-			# sales_order_details = json.loads(task.get_variable('sales_order_details'))
-			# update_booked_order_details_in_dca(sales_order_details, consumer_id, task.get_process_instance_id())
+		elif topic == 'process_book_sales_order#update_booked_order_details_in_dca':
+			consumer_id = task.get_variable('consumer_id')
+			sales_order_details = json.loads(task.get_variable('sales_order_details'))
+			update_booked_order_details_in_dca(sales_order_details, consumer_id, task.get_process_instance_id())
 			return task.complete()
 		elif topic == 'service_area_update#verify_update_service_area_in_sdms':
 			consumer_id = task.get_variable('consumer_id')
