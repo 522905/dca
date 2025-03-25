@@ -7,7 +7,7 @@ import requests
 from camunda.external_task.external_task import ExternalTask
 from django.db import IntegrityError
 
-from connection_app.enums import SalesOrderStatusEnum
+from connection_app.enums import SalesOrderStatusEnum, DistributorStatusEnum
 
 from domestic_app.settings import CAMUNDA_BASE_URL
 from reference_data.models import Distributor
@@ -766,6 +766,7 @@ def update_customer_profile_in_dca(relationship_details, customer_profile_id):
 																		  distributor.code)
 		relationship_details['address'] = relationship_details.pop('primary_account_address')
 		relationship_details['is_dirty'] = False
+		relationship_details['distributor_status'] = DistributorStatusEnum.VALID
 		CustomerProfile.objects.filter(pk=customer_profile_id).update(**relationship_details)
 
 
