@@ -43,6 +43,7 @@ class ConnectionApplicationLeadStatus(models.TextChoices):
 class ConnectionApplicationGenderEnum(models.TextChoices):
 	MALE = 'MALE', 'Male',
 	FEMALE = 'FEMALE', 'Female',
+	
 
 
 class ConnectionInstallationStatus(models.TextChoices):
@@ -137,6 +138,12 @@ class PaymentProfileApprovalStatusEnum(models.TextChoices):
 class CustomerTypeEnum(models.TextChoices):
 	GENERAL = 'GENERAL', 'General'
 	UJJWALA = 'UJJWALA', 'Ujjwala'
+
+
+class DistributorStatusEnum(models.TextChoices):
+	VALID = 'VALID', 'Valid'
+	SUSPECTED = 'SUSPECTED', 'Suspected'
+	INVALID = 'INVALID', 'Invalid'
 
 
 class SalesOrderInvoiceEnum(models.TextChoices):

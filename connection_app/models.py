@@ -25,7 +25,7 @@ from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTy
 	ConnectionApplicationLeadCommunicationMode, ConnectionInstallationStatus, \
 	PaymentProfileApprovalStatusEnum, CustomerTypeEnum, SalesOrderStatusEnum, InspectionTypeEnum, \
 	PostInspectionStatusEnum, PostInspectionActivityTypeEnum, LeadStatusEnum, SalesOrderPortabilityStatusEnum, \
-	TemplateEnum, ImportDataStatusEnum, ProofTypeEnum, ConnectionApplicationGenderEnum
+	TemplateEnum, ImportDataStatusEnum, ProofTypeEnum, ConnectionApplicationGenderEnum,	DistributorStatusEnum
 from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, FrontOfficeCompleted, \
 	BackOfficeReactivation, BackOfficeRegularisation, \
 	BackOfficeNewConnection, DocumentsReupload, InstallationReviewForm
@@ -64,7 +64,7 @@ class ConnectionApplication(models.Model):
 	address_json = models.JSONField(null=True, blank=True)
 	application_type = models.CharField(max_length=25, choices=ApplicationTypeEnum.choices)
 	gender = models.CharField(max_length=25, choices=ConnectionApplicationGenderEnum.choices, null=True)
-	date_of_birth = models.DateTimeField(null=True)
+	date_of_birth = models.DateField(null=True, blank=True)
 	distributor = models.ForeignKey(Distributor, on_delete=models.PROTECT, null=True)
 	item_code = models.CharField(max_length=25, choices=ItemCodeEnum.choices)
 	connection_type = models.CharField(max_length=25, choices=ConnectionTypeEnum.choices, null=True)
@@ -776,6 +776,8 @@ class CustomerProfile(models.Model):
 	bsc_due_flag = models.BooleanField(null=True, blank=True)
 	x_bsc_date = models.DateField(null=True, blank=True)
 	status = models.CharField(max_length=128, null=True, blank=True)
+	distributor_status = models.CharField(
+		max_length=128, choices=DistributorStatusEnum.choices, default=DistributorStatusEnum.VALID, null=True)
 
 	def get_do_not_auto_generate_sales_order(self):
 		if self.customer_profile_settings:

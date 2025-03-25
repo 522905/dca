@@ -5,10 +5,9 @@ from collections import defaultdict
 import django_rq
 import requests
 from camunda.external_task.external_task import ExternalTask
+from django.db import IntegrityError
 
 from connection_app.enums import SalesOrderStatusEnum
-
-
 
 from domestic_app.settings import CAMUNDA_BASE_URL
 from reference_data.models import Distributor
@@ -770,6 +769,15 @@ def update_customer_profile_in_dca(relationship_details, customer_profile_id):
 		CustomerProfile.objects.filter(pk=customer_profile_id).update(**relationship_details)
 
 
+def update_distributor_status(distributor_status, customer_profile_id):
+	from connection_app.enums import DistributorStatusEnum
+	from connection_app.models import CustomerProfile
+
+	cp_obj = CustomerProfile.objects.get(id=customer_profile_id)
+	cp_obj.distributor_status = DistributorStatusEnum.SUSPECTED
+	cp_obj.save()
+
+
 def update_booked_order_details_in_dca(sales_order_details, consumer_id, process_instance_id):
 	"""
 	order_status, sales_order_id, sales_order_number
@@ -797,13 +805,17 @@ def update_booked_order_details_in_dca(sales_order_details, consumer_id, process
 		sales_order_details['order_date'], '%d-%b-%Y %H:%M:%S %p') if sales_order_details[
 		'order_date'] else None
 
-	so_obj = SalesOrder.objects.create(
-		parent=bso_obj.customer_profile,
-		sales_order=sales_order_details['sales_order'],
-		relationship_id=sales_order_details['relationship_id'],
-		order_status=sales_order_details['order_status'],
-		order_date=order_date
-	)
+	try:
+		so_obj = SalesOrder.objects.create(
+			parent=bso_obj.customer_profile,
+			sales_order=sales_order_details['sales_order'],
+			relationship_id=sales_order_details['relationship_id'],
+			order_status=sales_order_details['order_status'],
+			order_date=order_date
+		)
+	except IntegrityError as e:
+		print("Already Exists")
+		return True
 
 	so = sales_order_details.pop('sales_order')
 
