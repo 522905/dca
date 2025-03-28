@@ -43,8 +43,6 @@ class ConnectionApplicationLeadStatus(models.TextChoices):
 class ConnectionApplicationGenderEnum(models.TextChoices):
 	MALE = 'MALE', 'Male',
 	FEMALE = 'FEMALE', 'Female',
-	
-
 
 class ConnectionInstallationStatus(models.TextChoices):
 	PENDING = 'PENDING', 'Pending',

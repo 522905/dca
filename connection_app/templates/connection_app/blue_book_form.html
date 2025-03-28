@@ -1,10 +1,9 @@
 {% load static %}
 <!DOCTYPE html> 
-
 <head>
 	<title>ARUN GAS SERVICE</title>
 	<link rel="icon" type="image/png" href="img/New-Banner.png">
-	<meta charset="utf-8"></meta>
+    <meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css">
 	<link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css" >
@@ -20,9 +19,9 @@
 	<script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
 	<script src="https://arungas.com/public/ujwalla/js/signature_pad.umd.js"></script>
     <script src="{% static '/js/moment.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 	<script>
-
 		function keys(event) {
 			var keyCode = event.which;
 			if (keyCode >= 65 && keyCode <= 90 || keyCode >= 97 && keyCode <= 122 || keyCode >= 32 && keyCode <= 33) {
@@ -57,7 +56,6 @@
 
 		function valid() {
 			let files = [
-				validateUppy(gas_copy_photouppy, 'GAS_COPY_PHOTO', 'Gas Copy Photo *', false),
 				validateUppy(customerpictureuppy, 'CUSTOMER_PHOTO', 'Customer Picture or Selfie (ग्राहक की फोटो)*', true),
 				validateUppy(aadharcarduppy, 'UID_FRONT', 'Aadhar Card Frontside Picture (आधार कार्ड की फोटो)*', true),
 				validateUppy(aadharcardbackuppy, 'UID_BACK', 'Aadhar Card Backside Picture (आधार कार्ड की फोटो)*', true),
@@ -109,48 +107,8 @@
 				$(`[name=${keyValue[0]}]`).val(keyValue[1]);
 			})
 		}
-
-        function showImage() {
-        // Get the selected value from the dropdown
-        var selectedValue = document.getElementById("connectionType").value;
-
-        // Get the image container element
-        var imageContainer = document.getElementById("imageContainer");
-
-        // Set the default image source
-        var imagePath = "images";
-
-        // Update the image source based on the selected value
-        switch (selectedValue) {
-            case "FC14#SINGLE":
-            imagePath = "images/cylinder_14.png";
-            break;
-            case "FC14#DOUBLE":
-            imagePath = "images/cylinder_double14kg.png";
-            break;
-            case "FC5#SINGLE":
-            imagePath = "images/cylinder_5kg.png";
-            break;
-            case "FC5#DOUBLE":
-            imagePath = "images/cylinder_double5kg.png";
-            break;
-            case "INVERTOR_BACKUP":
-            imagePath = "images/INVERTOR_CYLINDER.png";
-            break;
-            case "DOUBLE_INVERTOR_BACKUP":
-            imagePath = "images/INVERTOR_DOUBLE.png";
-            break;
-            // Add more cases for other options if needed
-
-            default:
-            // Use the default image for unknown options
-            break;
-        }
-
-        // Set the image source
-        imageContainer.src = imagePath;
-        }
 	</script>
+
 </head>
 <style>
     .error {
@@ -159,68 +117,102 @@
 	  margin: 3px 0;
     }
     .success {
-      color: green;
+      color: green; 
       font-size: 12px;
 	  margin: 3px 0;
     }
 	.form_block label{ padding-left: 12px;}
 	.form_block .form-group{ padding-left: 30px;}
+	.position-relative {
+		position: relative;
+	}
+	
+	.full-width-input {
+		width: 100%;
+		padding-right: 90px; /* Space for button */
+	}
+	
+	.inner-button {
+		position: absolute;
+		right: 0px;
+		top: 50%;
+		border: 1px solid #007bff;
+		transform: translateY(-50%);
+		background-color: #007bff;
+		border-radius: 0;
+	}
+	.uppy_img_upload .form-group {
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+    .uppy_img_upload .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .uppy_img_upload .form-column {
+        flex: 1;
+        min-width: 180px;
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+        color: #fff;
+        font-weight: bold;
+    }
+    .uppy_img_upload .form_col:nth-child(1) { background: #f6c8c8; }
+    .uppy_img_upload .form_col:nth-child(2) { background: #ace1ec; }
+    .uppy_img_upload .form_col:nth-child(3) { background: #b9f6e6; }
+    .uppy_img_upload .form_col:nth-child(4) { background: #ddca9e; }
+    .uppy_img_upload .form_col:nth-child(5) { background: #bb9ff3; }
+    .uppy_img_upload .custom-file-input {
+        display: inline-block;
+        padding: 10px;
+        background: #fff;
+        border: 1px dashed #ccc;
+        border-radius: 5px;
+        color: #333;
+        width: 100%;
+        text-align: center;
+        cursor: pointer;
+        height: auto;
+    }
+    .uppy_img_upload .text-danger {
+        font-size: 12px;
+        font-weight: bold;
+    }
+    .uppy_img_upload .form_col p{ color: #000}
+    .uppy_img_upload .uppy-Dashboard{ width: 100%;}
+    .uppy_img_upload .uppy-Dashboard-innerWrap{ width: 100% !important;}
   </style>
-<body>	        
+<body>
+    <div id="swal-template" style="display: none;">
+        <div style="text-align: center;">
+            <p><strong>Thank You! Dear <b id="swal-app-name"></b> </strong></p>
+            <p>Your  <b id="swal-app-type">{{ application_type }} </b> Application ID: <b id="swal-app-id"></b>
+                Submitted Successfully</p>
+            <p>आपका <b id="swal-app-type">{{ application_type }} </b> आवेदन आईडी: <b id="swal-app-id"></b> सफलतापूर्वक जमा किया गया है</p>
+        </div>
+    </div>
 	<div class="main">
-		<div class="col-md-12" style="padding: 0;">
-			<img src="https://arungas.com/ujjwala/blue-book.jpeg">
-		</div>
-	</div>
-	<div class="container register">	
+	<div class="container register">
+        <div class="image_block">
+            <img src="https://arungas.com/ujjwala/blue-book-1.jpg" />
+        </div>
 		<div class="form-contain">
 			<div id="form_hide">
-                <!-- <img style="width:100%; height:250px;" src="">  -->
-				
 				<h3 class="text-center">Form For <b style="color: red;">Re-activation</b> of <b style="color: blue;">Blue Book</b></h3>
 				<h4 class="text-center" style="color: #004ea1;">गैस कॉपी पुनर चालू करवाने के लिए फार्म</h4><br>
-				<form class="form-horizontal" action="" id="punjab" method="POST" enctype="multipart/form-data">
-
-					<div id="additional-fields" class="hidden">
-						<div class="form-group">
-							<label for="consumer-id">Enter Consumer ID (उपभोक्ता आईडी दर्ज करें)</label>
-							<input type="text" class="form-control field" id="consumer-id" name="consumer_id" placeholder="7894560000000000">
-						</div>
-						<div class="col-sm-2 col">
-							<p>Add Gas Copy Photo<strong style="color:red">*</strong>
-							</p><br>
-							<span class="custom-file-input" name="gascopyphoto"
-								id="gas_copy_photo"></span><br> 
-							<span id="gas_copy_photo" class="text-danger"></span>
-						</div>
-					</div>
-
-					<script>
-						document.addEventListener('DOMContentLoaded', function() {
-							var applicationTypeInputs = document.getElementsByName('application_type');
-							var additionalFields = document.getElementById('additional-fields');
-				
-							applicationTypeInputs.forEach(function(input) {
-								input.addEventListener('change', function() {
-									if (this.value === 'ADD_ON_CYLINDER') {
-										additionalFields.classList.remove('hidden');
-									} else {
-										additionalFields.classList.add('hidden');
-									}
-								});
-							});
-						});
-					</script>
-
+				<form class="form-horizontal" action="" id="bluebook" method="POST" enctype="multipart/form-data">
 					<!-- start Whatsapp OTP Verification Modal -->
 					<div class="modal fade" id="verifyMobileOtp" tabindex="-1" role="dialog" aria-labelledby="verifyMobileOtp" aria-hidden="true">
 						<div class="modal-dialog" role="document">
 							<div class="modal-content">
 								<div class="modal-header">
-								<h6 class="modal-title text-center" id="verifyMobileOtp">OTP Sent on <span id="verifyMobileNumber"></span></h6>
-								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-									<span aria-hidden="true">&times;</span>
-								</button>
+									<h6 class="modal-title text-center" id="verifyMobileOtp">OTP Sent on <span id="verifyMobileNumber"></span></h6>
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+										<span aria-hidden="true">&times;</span>
+									</button>
 								</div>
 								<div class="modal-body">
 									<input name="whatsapp_otp" style="margin: 0 auto; max-width: 150px;" type="tel" class="form-control" id="whatsapp_otp"
@@ -233,51 +225,45 @@
 							</div>
 						</div>
 					</div>
-					 <!-- end Whatsapp OTP Verification Modal -->
+					<div class="row">
+						<div class="col-md-6">	
+							<!-- end Whatsapp OTP Verification Modal -->
+							<div id="uid_linked_mobile_form_group" class="form-group whatsapp-form-group">
+								<label style="margin-bottom: 0;">Own or Family Mobile Number
+									<span style="font-size: 12px;">(अपना या परिवार के किसी सदस्य का मोबाइल नंबर) </span><i class="fa fa-whatsapp" aria-hidden="true"></i> <strong
+										style="color:red">*</strong>
+								</label>
+								<span style="color:red; font-size:12px; display: block; width: 100%;">जो कि कनेक्शन मिलने तक
+								चलता रहे ताकि हम आपको संपर्क कर सके</span>
+								<div class="position-relative w-100">
+									<input type="tel" class="form-control full-width-input" id="contact_mobile"
+										pattern="[6789][0-9]{9}" name="contact_mobile" maxlength="10" required />
+									<button type="button" id="verifyWhatsappButton" class="btn btn-primary inner-button" 
+									onclick="whatsapp_verifier.start_verification()">Verify</button>
+								</div>
 
-					<div id="uid_linked_mobile_form_group" class="form-group whatsapp-form-group">
-						<label style="margin-bottom: 0;">Own or Family Mobile Number(अपना या परिवार के किसी सदस्य का
-							मोबाइल नंबर) <i class="fa fa-whatsapp" aria-hidden="true"></i> <strong
-								style="color:red">*</strong></label>
-							<span style="color:red; font-size:12px; display: block; width: 100%;">जो कि कनेक्शन मिलने तक
-							चलता रहे ताकि हम आपको संपर्क कर सके</span>
-						<div class="row m-0">
-							<div class="col-8 pl-0">
-								<input type="tel"  class="form-control" id="contact_mobile"
-								pattern="[6789][0-9]{9}" name="contact_mobile" maxlength="10" required />
-								
-							</div>
-							<div class="col-4 pr-0">
-								<button type="button" id="verifyWhatsappButton" class="btn btn-primary float-right" 
-								onclick="whatsapp_verifier.start_verification()">
-									Verify
-								</button>
-								<button type="button" id="changeWhatsappButton" class="btn btn-primary float-right" 
-								onclick="whatsapp_verifier.reset_verification()" style="display: none;">
-									Change
-								</button>
+								<div class="row m-0">
+									<span id="contact_mobile_detail_whatsapp"></span>
+								</div>
 							</div>
 						</div>
-						<div class="row m-0">
-							<span id="contact_mobile_detail_whatsapp"></span>
+						<div class="col-md-6">
+							<div class="form-group whatsapp-form-group">
+								<label for="mobileNumber" style="margin-bottom: 0 !important;">
+									Mobile Number(मोबाइल नंबर) <i class="fa fa-phone" aria-hidden="true"></i> 
+									<strong style="color:red;">*</strong>
+								</label>
+								<span style="color:red; font-size:12px; display: block; width: 100%;">जो कि कनेक्शन मिलने तक
+									चलता रहे ताकि हम आपको संपर्क कर सके</span>
+									<input type="tel" class="form-control" id="mobile_number_2" name="mobile2"
+									placeholder="Enter your number" onblur="this.reportValidity();"  required />
+								<div class="row m-0">
+									<p id="errorMessage" class="error"></p>
+								</div>
+							</div>
 						</div>
 					</div>
- 
-					<div class="form-group whatsapp-form-group">
-						<label for="mobileNumber" style="margin-bottom: 0 !important;">Mobile Number(मोबाइल नंबर) <i class="fa fa-phone" aria-hidden="true"></i> <strong
-								style="color:red;">*</strong></label>
-						<span style="color:red; font-size:12px; display: block; width: 100%;">जो कि कनेक्शन मिलने तक
-							चलता रहे ताकि हम आपको संपर्क कर सके</span>
-						<div class="row m-0">
-							<div class="col-8 pl-0">
-								<input type="tel" class="form-control" id="mobile_number_2" name="mobile_number_2"
-                                    placeholder="Enter your number" onblur="this.reportValidity();"  required />
-							</div>
-						</div>
-						<div class="row m-0">
-							<p id="errorMessage" class="error"></p>
-						</div>
-					</div>
+
 
 					<div class="row">
 						<div class="col-md-6">	
@@ -288,7 +274,26 @@
 							</div>
 						</div>
 					</div>
-					
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label>Gender (लिंग)<strong style="color:red">*</strong></label>
+								<select class="form-control" id="gender" name="gender" required>
+									<option value="">Select Gender</option>
+									<option value="MALE">Male (पुरुष)</option>
+									<option value="FEMALE">Female (महिला)</option>
+								</select>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+                                <label>Date of Birth (जन्म तिथि)<strong style="color:red">*</strong></label>
+								<input type="date" class="form-control" id="dob" name="date_of_birth" required />
+								<small id="dob-error" class="text-danger"></small>
+							</div>
+						</div>
+					</div>
+
 					<script>
 						document.getElementById('mobile_number_2').addEventListener('blur', function () {
 							const mobileNumber = this.value.trim();
@@ -511,42 +516,34 @@
 						</div>
 					</div>
 					
-					<div class="form-group">
-						<div class="row">
-							<div class="col-sm-2">
-								<p>Your Picture or Selfie(ग्राहक की फोटो)<strong style="color:red">*</strong>
-								</p><br>
-								<span class="custom-file-input" name="customerpicture"
-									id="customerpicture"></span><br> 
-								<span id="customerpicture_detail" class="text-danger"></span>
-							</div>
-							<div class="col-sm-2">
-								<p>Aadhar Card Front Photo (आधार कार्ड की फोटो)<strong
-									style="color:red">*</strong></p>
-								<span class="custom-file-input" name="aadharcard" id="aadharcard">
-								</span><br>
-							</div>
-							<div class="col-sm-2">
-								<p>Aadhar Card Back Photo (आधार कार्ड की फोटो)<strong style="color:red">*</strong>
-								</p>
-								<span class="custom-file-input" name="aadharcardback" id="aadharcardback">
-								</span><br>
-							</div>
-							<div class="col-sm-2">
-								<p>Bank Detail (पास बुक का विवरण)</p><br>
-								<span class="custom-file-input" id="bankdetail" name="bankdetail"></span><br>
-							</div>
-							<div class="col-sm-2">
-								<p>Any Other Identification Proof <br>(कोई अन्य पहचान पत्र)</p><br>
-								<span class="custom-file-input" name="OTHER_ID_PROOF"
-									id="identification"></span><br>
-							</div>
-						</div>
-					</div>
+					<div class="form-group uppy_img_upload">
+                        <div class="row">
+                            <div class="form_col form-column">
+                                <p>Your Picture or Selfie (ग्राहक की फोटो)<strong style="color:red">*</strong></p>
+                                <span class="custom-file-input" id="customerpicture"></span>
+                                <span id="customerpicture_detail" class="text-danger"></span>
+                            </div>
+                            <div class="form_col form-column">
+                                <p>Aadhar Card Front Photo (आधार कार्ड की फोटो)<strong style="color:red">*</strong></p>
+                                <span class="custom-file-input" id="aadharcard"></span>
+                            </div>
+                            <div class="form_col form-column">
+                                <p>Aadhar Card Back Photo (आधार कार्ड की फोटो)<strong style="color:red">*</strong></p>
+                                <span class="custom-file-input" id="aadharcardback"></span>
+                            </div>
+                            <div class="form_col form-column">
+                                <p>Bank Detail (पास बुक का विवरण)</p>
+                                <span class="custom-file-input" id="bankdetail"></span>
+                            </div>
+                            <div class="form_col form-column">
+                                <p>Any Other Identification Proof (कोई अन्य पहचान पत्र)</p>
+                                <span class="custom-file-input" id="identification"></span>
+                            </div>
+                        </div>
+                    </div>
 
 					<!-- Hidden input for application_type -->
 					<input type="hidden" name="application_type" value="BLUE_BOOK">
-
 					<div class="form-group">
 						<p>Connection Type (गैस कनेक्शन का प्रकार)<strong style="color:red">*</strong></p>
 						<input type="hidden" name="connection_type" value="FC14#SINGLE">
@@ -566,8 +563,7 @@
 								style="margin-right: 10px; font-size: 13px;">
 							<a class="term_link" target="_blank" href="https://www.arungas.com/public/ujwalla/blue_book_declaration.pdf"
 								style="color: #000; text-decoration: underline;">
-								मैं सब कुछ जानकर ये घोषणा करती हूं कि उपर दी गई सभी जानकारी सत्य एवं सही हैं इसमें कुछ भी छिपा नहीं
-								है</a>
+								मैं सब कुछ जानकर ये घोषणा करती हूं कि उपर दी गई सभी जानकारी सत्य एवं सही हैं इसमें कुछ भी छिपा नहीं है</a>
 						</p>
 						<div id="signature-pad" class="signature-pad">
 							<div class="signature-pad--body">
@@ -623,6 +619,26 @@
 			</div>
 		</div>
 	</div>
+	</div>
+	<!-- Error Modal -->
+<div id="errorModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Error</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Error message will be inserted dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 	<script src="https://arungas.com/public/ujwalla/js/app.js"></script>
 	<script>
 		function getCookie(name) {
@@ -641,7 +657,7 @@
 			return cookieValue;
 		}
 		
-		$('#punjab').on('submit', function (event) {
+		$('#bluebook').on('submit', function (event) {
 			event.preventDefault();
 
 			// Check if terms and conditions are agreed
@@ -687,7 +703,8 @@
 				pincode: formdata.pincode,
 				village: formdata.village,
 				post_office: formdata.post_office,
-				city: formdata.city
+				city: formdata.city,
+                state: formdata.state,
 			}
 
 			// Capture the signature data
@@ -708,27 +725,83 @@
 
 				processData: false,
 				success: function (result) {
+                    $('#form_hide').hide();
+                    console.log(result);
+                    jQuery('#bluebook')[0].reset();
+                    jQuery('#submit').val('Submit');
+                    jQuery('#submit').attr('disabled', false);
 
-					$('#form_hide').hide();
-					console.log(result);
-					jQuery('#punjab')['0'].reset();
-					jQuery('#submit').val('Submit');
-					jQuery('#submit').attr('disabled', false);
-					swal({
-						title: "successful",
-						text: "Thank You",
-						icon: "success",
-					})
-					$("#message").html('<div class="alert alert-success" style="color:red; text-align:center; margin-top:250px;"><strong>SUCCESS!</strong> Your Blue Book application has been submitted</div>');
-					// $("#message").html('<div class="alert alert-success" style="color:red; text-align:center; margin-top:250px;"><strong>SUCCESS!</strong> 	your application has been submitted</div>');
-					$("#cus_id").append(result);
-					$("#message").append(result.id).css({ "text-align": "center" }).append(" <b>is you application Id</b>.");
+                    // Set dynamic values inside the hidden template
+                    $("#swal-app-id").text(result.id);
+                    $("#swal-app-name").text(result.name);
+                     $("#swal-app-type").text(result.application_type);
 
-					$('#application_receipt').show();
-					$('#cus_id').attr('id');
-				}
+                    // Get the HTML content after updating values
+                    let swalContent = $("#swal-template").html();
+
+                    // Show Swal popup with the updated template
+                    Swal.fire({
+                        title: "Successful",
+                        html: swalContent,  // Use updated HTML
+                        icon: "success",
+                    });
+
+                    $("#message").html('<div class="alert alert-success text-center"><strong>SUCCESS!</strong> Your Blue Book application has been submitted.</div>');
+                    $("#cus_id").html(`<b>${result.id}</b> is your application ID.`).css({ "text-align": "center" });
+                    $('#application_receipt').show();
+
+
+                },
+                error: function (xhr, status, error) {
+                    jQuery('#submit').val('Submit');
+                    jQuery('#submit').attr('disabled', false);
+
+                    let errorMessage = "Something went wrong. Please try again.";
+
+                    if (xhr.responseJSON) {
+                        if (xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        } else {
+                            // Extract errors dynamically from JSON response
+                            errorMessage = Object.entries(xhr.responseJSON)
+                                .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(", ") : value}`)
+                                .join("<br>");
+                        }
+                    } else if (xhr.status) {
+                        errorMessage = `Error ${xhr.status}: ${xhr.statusText}`;
+                    }
+
+                    // Set error message in the modal and show it
+                    $("#errorModal .modal-body").html(`<div class="text-danger"><strong>ERROR!</strong> ${errorMessage}</div>`);
+                    $("#errorModal").modal("show");
+                }
 			});
 		});
+
+         document.addEventListener("DOMContentLoaded", function () {
+            let dobInput = document.getElementById("dob");
+            let errorMsg = document.getElementById("dob-error");
+
+            // Calculate max date for 18+ years
+            let today = new Date();
+            today.setFullYear(today.getFullYear() - 18);
+            let maxDate = today.toISOString().split("T")[0];
+
+            // Set max attribute
+            dobInput.setAttribute("max", maxDate);
+
+            // Validate on focus out
+            dobInput.addEventListener("focusout", function () {
+                let selectedDate = new Date(dobInput.value);
+                if (selectedDate > today) {
+                    errorMsg.innerText = "कृपया 18 वर्ष से अधिक उम्र का चयन करें।"; // Hindi message
+                    errorMsg.style.color = "red";
+                    dobInput.value = ""; // Clear invalid input
+                } else {
+                    errorMsg.innerText = ""; // Clear error message
+                }
+            });
+        });
 		
 		$(document).ready(function () {
 			fillInitialData();
@@ -776,45 +849,7 @@
 				});	
 			});
 
-			//For Add DBC Copy Photo
-			window.gas_copy_photouppy = new Uppy.Core({
-				debug: true,
-				autoProceed: true,
-				restrictions: {
-					maxFileSize: 50000000,
-					maxNumberOfFiles: 1,
-					minNumberOfFiles: 1,
-					allowedFileTypes: ['image/*'],
-					//requiredMetaFields: ['caption'],
-				}
-			})
-			.use(Uppy.Dashboard, {
-				trigger: '#gas_copy_photo',
-				inline: true,
-				target: '#gas_copy_photo',
-				showProgressDetails: true,
-				note: 'Images and video only, 2–3 files, up to 10 MB',
-				height: 250,
-				metaFields: [],
-				id: 'gas_copy_photo',
-				browserBackButtonClose: false
-			})
-			.use(Uppy.Tus, {
-				endpoint: 'https://tus.dca.arungas.com/files/',
-			})
-			.use(Uppy.Compressor, {
-				quality: 0.9,
-				maxWidth: 2048,
-				resize: 'contain',
-				limit: 10,
-				convertTypes: ['image/png', 'image/jpg', 'image/jpeg'],
-				convertSize: 1000000,
-			});
-			gas_copy_photouppy.on('complete', result => {
-				console.log('successful files:', result.successful)
-				console.log('failed files:', result.failed)
-			})
-
+			
 			window.customerpictureuppy = new Uppy.Core({
 				debug: true,
 				autoProceed: true,
@@ -1038,75 +1073,26 @@
 		window.onresize = resizeCanvas;
 		resizeCanvas();
 	});
+
+
+
 </script>
 
-<style type="text/css">
+<style>
 	.body{ 
 		background-color: #F1F9E7;
 	}
 	.main{ display: block; width: 100%; background: #efefef;}
 	.main img{
 		width: 100%;
-		height: 400px;
-		margin: 0 auto;
+        margin: 0 auto;
 		display: block;
 	 }
 	 .footer{ border-top: 1px solid #ccc ; padding:20px 0 10px 0; float: left; width: 100%; margin-top:10px; background-color: #fff;}
 	 .footer_left ul{  padding: 0; margin:0;}
 	 .footer_left ul li{ display: inline-block; text-align: left; margin-right: 10px;}
-    * {box-sizing: border-box;}
-    body {font-family: Verdana, sans-serif;}
-    .mySlides {display: none;}
-    img {vertical-align: middle;}
-    
-    /* Slideshow container */
-    .slideshow-container {
-      max-width: 1000px;
-      position: relative;
-      margin: auto;
-    }
 
-    /* Caption text */
-    .text {
-      color: #f2f2f2;
-      font-size: 15px;
-      padding: 8px 12px;
-      position: absolute;
-      bottom: 8px;
-      width: 100%;
-      text-align: center;
-    }
-    
-    /* Number text (1/3 etc) */
-    .numbertext {
-      color: #f2f2f2;
-      font-size: 12px;
-      padding: 8px 12px;
-      position: absolute;
-      top: 0;
-    }
-    
-    /* The dots/bullets/indicators */
-    .dot {
-      height: 15px;
-      width: 15px;
-      margin: 0 2px;
-      background-color: #bbb;
-      border-radius: 50%;
-      display: inline-block;
-      transition: background-color 0.6s ease;
-    }
-    
-    .active {
-      background-color: #717171;
-    }
-    
-    /* Fading animation */
-    .fade {
-      animation-name: fade;
-      opacity: 1;
-      animation-duration: 1.5s;
-    }
+
     .align-right{ text-align: right;}
     @media only screen and (max-width: 600px) {
 		.main img{
@@ -1131,11 +1117,6 @@
         /* background-image: linear-gradient(140deg, #dae53b 0%, #feffbd 50%, #ff8f00 75%); */
 	}
 
-	/* .register {
-		background: -webkit-linear-gradient(left, #DA1500, #FEA400);
-		margin-top:1%;
-		padding: 1%;
-	} */
 
 	.register-left {
 		text-align: center;
@@ -1154,11 +1135,6 @@
 		margin-top: 30%;
 		margin-bottom: 3%;
 		cursor: pointer;
-	}
-
-	.register-right {
-		background: #f8f9fa;
-
 	}
 
 	.register-left img {
@@ -1200,18 +1176,7 @@
 		margin-top: 10%;
 	}
 
-	.btnRegister {
-		float: right;
-		margin-top: 10%;
-		border: none;
-		border-radius: 1.5rem;
-		padding: 2%;
-		background: #0062cc;
-		color: #fff;
-		font-weight: 600;
-		width: 50%;
-		cursor: pointer;
-	}
+
 
 	.register .nav-tabs {
 		margin-top: 3%;
