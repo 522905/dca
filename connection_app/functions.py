@@ -75,7 +75,7 @@ def import_service_area(csv_file_rows):
 				{
 					"consumer_id": {"value": r['consumer_id'].replace(";", ""), "type": "String"},
 					"service_area": {"value": r['service_area'], "type": "String"},
-					"distributor_id": {"value": r['distributor_id'], "type": "String"}
+					"distributor_id": {"value": r['distributor_id'].replace(";", ""), "type": "String"}
 				}
 		}
 
