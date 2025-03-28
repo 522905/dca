@@ -7,7 +7,7 @@ from import_export.admin import ExportActionMixin
 from fsm_admin2_custom.admin import FSMTransitionCustomMixin
 from .enums import ConnectionApplicationLeadStatus
 from .models import ConnectionApplication, ConnectionApplicationDocuments, PaymentProfile, SalesOrderInvoice, \
-    SalesOrder, CustomerProfile, PostInspection, ImportData
+    SalesOrder, CustomerProfile, PostInspection, ImportData, ImportDataTemplate
 from django_fsm_log.admin import StateLogInline
 from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 from django_admin_listfilter_dropdown.filters import DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter

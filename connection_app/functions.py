@@ -27,7 +27,7 @@ def get_delivery_boy_login(customer_profile_id):
 	return userprofile_obj.sdmsuser_set.filter(distributor=cp_obj.distributor).first().delivery_boy_login
 
 
-def upload_customer_register_csv(csv_file_rows):
+def import_customer_register(csv_file_rows):
 	for idx, row in enumerate(csv_file_rows):
 		try:
 			print(idx + 1)
@@ -63,7 +63,7 @@ def upload_customer_register_csv(csv_file_rows):
 	return True
 
 
-def upload_service_area_csv(csv_file_rows):
+def import_service_area(csv_file_rows):
 	PROCESS_DEFINITION_KEY = "Process_service_area_update_in_sdms"
 
 	for idx, r in enumerate(csv_file_rows):
@@ -83,7 +83,7 @@ def upload_service_area_csv(csv_file_rows):
 		requests.post(url, json=variables)
 
 
-def upload_delivery_register_csv(csv_file_rows):
+def import_delivery_register(csv_file_rows):
 	pass
 
 
@@ -106,7 +106,7 @@ def schedule_booking_cancellation_csv(csv_file_rows):
 	return True
 
 
-def bulk_is_dirty_update(csv_file_rows):
+def import_bulk_is_dirty(csv_file_rows):
 	from connection_app.models import CustomerProfile
 	from connection_app.jobs import start_read_customer_profile
 
@@ -122,7 +122,7 @@ def bulk_is_dirty_update(csv_file_rows):
 	return True
 
 
-def update_distributor(csv_file_rows):
+def import_update_distributor(csv_file_rows):
 	from connection_app.models import CustomerProfile
 	from connection_app.jobs import start_read_customer_profile
 
