@@ -1312,10 +1312,23 @@ class SalesOrderPortability(models.Model):
 	camunda_process_id = models.CharField(max_length=128)
 
 
+class ImportDataTemplate(models.Model):
+	enabled = models.BooleanField(default=True)
+	created_on = models.DateTimeField(auto_now_add=True)
+	updated_on = models.DateTimeField(auto_now=True)
+	template = models.CharField(max_length=128)
+	field_list = models.TextField()
+	description = models.TextField()
+
+	def __str__(self):
+		return self.template
+
+
 class ImportData(models.Model):
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
-	template = models.CharField(max_length=128, choices=TemplateEnum.choices)
+	template = models.CharField(max_length=128, null=True, blank=True)
+	import_data_template = models.ForeignKey(ImportDataTemplate, on_delete=models.CASCADE, null=True)
 	file_path = models.TextField()
 	status = models.CharField(max_length=128, choices=ImportDataStatusEnum.choices,
 	                          default=ImportDataStatusEnum.SUBMITTED)

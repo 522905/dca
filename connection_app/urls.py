@@ -8,7 +8,7 @@ from .vicidial.views import delivery_boy_signup_view, vicidial_webhook, check_ac
     CustomerProfileListView
 from connection_app.viewsets import ConnectionApplicationViewSet, ConnectionApplicationAPIViewSet, BookSalesOrderViewSet
 from . import views, report_views
-from .views import UpdateDistributorLoginDetailsFormView, UpdateSDMSUserLoginPasswordFormView
+from .views import UpdateDistributorLoginDetailsFormView, UpdateSDMSUserLoginPasswordFormView, get_template_details
 
 router = routers.DefaultRouter()
 router.register(r'connection-application', ConnectionApplicationViewSet)
@@ -292,4 +292,5 @@ urlpatterns = [
          ),
     path("sales-order-summary/", report_views.SalesProcessedView.as_view(), name="sales_order_summary"),
     path('', report_views.DashboardSalesView.as_view(), name='index'),
+    path('get-template-details/', get_template_details, name='get_template_details'),
 ] + router.urls

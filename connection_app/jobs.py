@@ -1,7 +1,6 @@
 import csv
 
 from connection_app.enums import TemplateEnum, ImportDataStatusEnum
-from connection_app.functions import update_bulk_out
 from connection_app.vicidial.jobs import make_api_request, VICIDIAL_NON_AGENT_API, VICIDIAL_CAMPAIGN_API
 from ujjwala.camunda_functions import start_process_in_camunda_v2
 import logging
@@ -71,9 +70,61 @@ def start_read_customer_profile(customer_profile_id):
 	print(res)
 
 
+
+def import_bulk_is_dirty(csv_file_rows):
+	from connection_app.models import CustomerProfile
+
+	for idx, row in enumerate(csv_file_rows):
+		try:
+			consumer_id = row['consumer_id'].replace(";", "")
+			cp_obj = CustomerProfile.objects.get(consumer_id=consumer_id)
+			cp_obj.is_dirty = True
+			cp_obj.save()
+			start_read_customer_profile(cp_obj.pk)
+		except Exception as e:
+			continue
+	return True
+
+
+def import_update_distributor(csv_file_rows):
+	from connection_app.models import CustomerProfile, Distributor
+
+	for idx, row in enumerate(csv_file_rows):
+		try:
+			consumer_id = row['consumer_id'].replace(";", "")
+			cp_obj = CustomerProfile.objects.get(consumer_id=consumer_id)
+			distributor_code = row['distributor_code'].replace(";", "")
+			distributor_obj = Distributor.objects.get(code=distributor_code)
+
+			if cp_obj.distributor_id != distributor_obj.id:
+				cp_obj.distributor = distributor_obj
+				cp_obj.distributor_code = distributor_obj.code
+				cp_obj.distributor_name = distributor_obj.name
+				cp_obj.save()
+
+			cp_obj.is_dirty = True
+			start_read_customer_profile(cp_obj.pk)
+		except Exception as e:
+			continue
+	return True
+
+
+def import_update_bulk_out(csv_file_rows):
+	from connection_app.models import CustomerProfile
+
+	for idx, row in enumerate(csv_file_rows):
+		consumer_id = row['consumer_id'].replace(";", "")
+		cp_obj: CustomerProfile = CustomerProfile.objects.get(consumer_id=consumer_id)
+		cp_obj.relationship_status = 'BULK_OUT'
+		cp_obj.relationship_sub_status = 'BULK_OUT'
+		cp_obj.distributor_code = None
+		cp_obj.distributor_name = row['distributor_name']
+		cp_obj.save()
+	return True
+
+
 def schedule_upload_data(template, id_obj):
-	from connection_app.functions import upload_customer_register_csv, upload_service_area_csv, \
-		schedule_booking_cancellation_csv, bulk_is_dirty_update, update_distributor
+	from connection_app.functions import schedule_booking_cancellation_csv
 
 	id_obj.status = ImportDataStatusEnum.PROCESSING
 	id_obj.save()
@@ -89,62 +140,68 @@ def schedule_upload_data(template, id_obj):
 					print(e)
 					continue
 
-		if template == TemplateEnum.SERVICE_AREA:
-			upload_service_area_csv(data_rows)
-		elif template == TemplateEnum.CUSTOMER_REGISTER:
-			upload_customer_register_csv(data_rows)
-		elif template == TemplateEnum.DELIVERY_REGISTER:
-			pass
-		elif template == TemplateEnum.BULK_IS_DIRTY:
-			bulk_is_dirty_update(data_rows)
-		elif template == TemplateEnum.UPDATE_DISTRIBUTOR:
-			update_distributor(data_rows)
-		elif template == TemplateEnum.UPDATE_BULK_OUT:
-			update_bulk_out(data_rows)
-		elif template == TemplateEnum.CANCEL_BOOKINGS:
-			schedule_booking_cancellation_csv(data_rows)
+		function = globals().get("import_{}".format(id_obj.import_data_template.template.lower().replace(" ", "_")))
 
-		id_obj.status = ImportDataStatusEnum.COMPLETED
-		id_obj.save()
+		if function and callable(function):
+			function(data_rows)  # Pass arguments dynamically
+			id_obj.status = ImportDataStatusEnum.COMPLETED
+			id_obj.save()
+
+
+		# if template == TemplateEnum.SERVICE_AREA:
+		# 	upload_service_area_csv(data_rows)
+		# elif template == TemplateEnum.CUSTOMER_REGISTER:
+		# 	upload_customer_register_csv(data_rows)
+		# elif template == TemplateEnum.DELIVERY_REGISTER:
+		# 	pass
+		# elif template == TemplateEnum.BULK_IS_DIRTY:
+		# 	bulk_is_dirty_update(data_rows)
+		# elif template == TemplateEnum.UPDATE_DISTRIBUTOR:
+		# 	update_distributor(data_rows)
+		# elif template == TemplateEnum.UPDATE_BULK_OUT:
+		# 	update_bulk_out(data_rows)
+		# elif template == TemplateEnum.CANCEL_BOOKINGS:
+		# 	schedule_booking_cancellation_csv(data_rows)
+
 	except Exception as e:
 		id_obj.error_log = str(e)
 		id_obj.status = ImportDataStatusEnum.FAILED
 		id_obj.save()
 
-	def update_camp_url(self, agent_user):
-		campaign_payload = {
-			"user": self.user,
-			"pass": self.password,
-			"campaign_id": agent_user,
-			'call_url': START_CALL_URL,
-			'upcampaign': True,
-		}
-		result = make_api_request(VICIDIAL_CAMPAIGN_API, campaign_payload)
-		if result["status"] == "error":
-			print("Error in creating campaign", result)
-			return result
-		return {"status": "success", "message": "Campaign updated successfully."}
+def update_camp_url(self, agent_user):
+	campaign_payload = {
+		"user": self.user,
+		"pass": self.password,
+		"campaign_id": agent_user,
+		'call_url': START_CALL_URL,
+		'upcampaign': True,
+	}
+	result = make_api_request(VICIDIAL_CAMPAIGN_API, campaign_payload)
+	if result["status"] == "error":
+		print("Error in creating campaign", result)
+		return result
+	return {"status": "success", "message": "Campaign updated successfully."}
 
-	def update_phone(self, agent_user, phone_number, request=None):
-		if not phone_number and not agent_user:
-			return {"status": "error", "message": "Phone number and agent user are required."}
+def update_phone(self, agent_user, phone_number, request=None):
+	if not phone_number and not agent_user:
+		return {"status": "error", "message": "Phone number and agent user are required."}
 
-		phone_load = {
-			"user": self.user,
-			"pass": self.password,
-			"function": "update_phone",
-			"source": "external_update_phone",
-			"extension": agent_user,
-			"dialplan_number": phone_number,
-			"server_ip": "192.168.168.3",
-		}
-		result = make_api_request(VICIDIAL_NON_AGENT_API, phone_load)
-		if result["status"] == "error":
-			return result
+	phone_load = {
+		"user": self.user,
+		"pass": self.password,
+		"function": "update_phone",
+		"source": "external_update_phone",
+		"extension": agent_user,
+		"dialplan_number": phone_number,
+		"server_ip": "192.168.168.3",
+	}
+	result = make_api_request(VICIDIAL_NON_AGENT_API, phone_load)
+	if result["status"] == "error":
+		return result
 
-		result2 = self.update_camp_url(agent_user)
+	result2 = self.update_camp_url(agent_user)
 
-		if result2["status"] == "error":
-			return result2
+	if result2["status"] == "error":
+		return result2
 
-		return {"status": "success", "message": "Phone and call url updated successfully.", "pass": request.user.id}
+	return {"status": "success", "message": "Phone and call url updated successfully.", "pass": request.user.id}

@@ -198,6 +198,9 @@ class TemplateEnum(models.TextChoices):
 	UPDATE_BULK_OUT = 'UPDATE_BULK_OUT', 'Update Bulk Out'
 
 
+
+
+
 class ImportDataStatusEnum(models.TextChoices):
 	SUBMITTED = 'SUBMITTED', 'Submitted'
 	PROCESSING = 'PROCESSING', 'Processing'

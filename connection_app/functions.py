@@ -27,7 +27,7 @@ def get_delivery_boy_login(customer_profile_id):
 	return userprofile_obj.sdmsuser_set.filter(distributor=cp_obj.distributor).first().delivery_boy_login
 
 
-def upload_customer_register_csv(csv_file_rows):
+def import_customer_register(csv_file_rows):
 	for idx, row in enumerate(csv_file_rows):
 		try:
 			print(idx + 1)
@@ -63,7 +63,7 @@ def upload_customer_register_csv(csv_file_rows):
 	return True
 
 
-def upload_service_area_csv(csv_file_rows):
+def import_service_area(csv_file_rows):
 	PROCESS_DEFINITION_KEY = "Process_service_area_update_in_sdms"
 
 	for idx, r in enumerate(csv_file_rows):
@@ -75,7 +75,7 @@ def upload_service_area_csv(csv_file_rows):
 				{
 					"consumer_id": {"value": r['consumer_id'].replace(";", ""), "type": "String"},
 					"service_area": {"value": r['service_area'], "type": "String"},
-					"distributor_id": {"value": r['distributor_id'], "type": "String"}
+					"distributor_id": {"value": r['distributor_id'].replace(";", ""), "type": "String"}
 				}
 		}
 
@@ -83,7 +83,7 @@ def upload_service_area_csv(csv_file_rows):
 		requests.post(url, json=variables)
 
 
-def upload_delivery_register_csv(csv_file_rows):
+def import_delivery_register(csv_file_rows):
 	pass
 
 
@@ -105,56 +105,3 @@ def schedule_booking_cancellation_csv(csv_file_rows):
 			continue
 	return True
 
-
-def bulk_is_dirty_update(csv_file_rows):
-	from connection_app.models import CustomerProfile
-	from connection_app.jobs import start_read_customer_profile
-
-	for idx, row in enumerate(csv_file_rows):
-		try:
-			consumer_id = row['consumer_id'].replace(";", "")
-			cp_obj = CustomerProfile.objects.get(consumer_id=consumer_id)
-			cp_obj.is_dirty = True
-			cp_obj.save()
-			start_read_customer_profile(cp_obj.pk)
-		except Exception as e:
-			continue
-	return True
-
-
-def update_distributor(csv_file_rows):
-	from connection_app.models import CustomerProfile
-	from connection_app.jobs import start_read_customer_profile
-
-	for idx, row in enumerate(csv_file_rows):
-		try:
-			consumer_id = row['consumer_id'].replace(";", "")
-			cp_obj = CustomerProfile.objects.get(consumer_id=consumer_id)
-			distributor_code = row['distributor_code'].replace(";", "")
-			distributor_obj = Distributor.objects.get(code=distributor_code)
-
-			if cp_obj.distributor_id != distributor_obj.id:
-				cp_obj.distributor = distributor_obj
-				cp_obj.distributor_code = distributor_obj.code
-				cp_obj.distributor_name = distributor_obj.name
-				cp_obj.save()
-
-			cp_obj.is_dirty = True
-			start_read_customer_profile(cp_obj.pk)
-		except Exception as e:
-			continue
-	return True
-
-
-def update_bulk_out(csv_file_rows):
-	from connection_app.models import CustomerProfile
-
-	for idx, row in enumerate(csv_file_rows):
-		consumer_id = row['consumer_id'].replace(";", "")
-		cp_obj: CustomerProfile = CustomerProfile.objects.get(consumer_id=consumer_id)
-		cp_obj.relationship_status = 'BULK_OUT'
-		cp_obj.relationship_sub_status = 'BULK_OUT'
-		cp_obj.distributor_code = None
-		cp_obj.distributor_name = row['distributor_name']
-		cp_obj.save()
-	return True

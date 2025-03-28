@@ -10,6 +10,7 @@ from connection_app.enums import ConnectionApplicationProcessType, ConnectionApp
 	ConnectionApplicationDocumentsEnum, HouseTypeEnum, PostInspectionActivityTypeEnum, PostInspectionStatusEnum, \
 	TemplateEnum, ProofTypeEnum
 
+
 from hashicorp import hashicorp_client
 from inactive_customers.models import InactiveCustomer
 from reference_data.models import ServiceType, Product, SDMSServiceRequest
@@ -601,12 +602,18 @@ class UploadDataForm(forms.Form):
 
 
 class ImportDataForm(forms.Form):
-	template = forms.ChoiceField(
+	template = forms.ModelChoiceField(
+		queryset=None,  # Set it dynamically in __init__
 		widget=forms.Select,
-		choices=TemplateEnum.choices,
-		required=True
+		required=True,
+		label="Template"
 	)
-	file = forms.FileField(label='Select a CSV file')
+	file = forms.FileField(label="Select a CSV file", required=True)
+
+	def __init__(self, *args, **kwargs):
+		from connection_app.models import ImportDataTemplate  # Import here to avoid circular import
+		super().__init__(*args, **kwargs)
+		self.fields['template'].queryset = ImportDataTemplate.objects.filter(enabled=True)
 
 	def clean(self):
 		form_data = self.cleaned_data

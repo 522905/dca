@@ -6,21 +6,64 @@
     <link rel="stylesheet" href="{% static '/css/style.css' %}" >
     <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+{#    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>#}
+
     <body>
-    <form method="post" enctype="multipart/form-data">
-        <div class="p-2 pt-0 form_label application_form" style="width: 100%;">
-            <div class="card p-0">
-                <div class="card-header">
-                    Import Data
-                </div>
-                <div class="card-body">
-                    {% csrf_token %}
-                    {% form form=form %}{% endform %}
-                </div>
-                <div class="card-footer float-right">
-                    <button type="submit">Upload</button>
+        <form method="post" enctype="multipart/form-data">
+            <div class="p-2 pt-0 form_label application_form" style="width: 100%;">
+                <div class="card p-0">
+                    <div class="card-header">
+                        Import Data
+                    </div>
+                    <div class="alert alert-info" id="template-description" style="display: none;">
+                        Loading template details...
+                    </div>
+                    <div class="card-body">
+                        {% csrf_token %}
+                        {% form form=form %}{% endform %}
+                    </div>
+                    <div class="card-footer float-right">
+                        <button type="submit">Upload</button>
+                    </div>
                 </div>
             </div>
-        </div>
-    </form>
+        </form>
+    </body>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const templateSelect = document.getElementById("id_template");
+            const templateDescription = document.getElementById("template-description");
+
+            if (!templateSelect) {
+                console.error("Dropdown element not found!");
+                return;
+            }
+
+            templateSelect.addEventListener("change", function () {
+                const templateId = this.value;
+
+                if (templateId) {
+                    // Show loading message
+                    templateDescription.style.display = "block";
+                    templateDescription.innerHTML = "Fetching template details...";
+
+                    // Make AJAX request using fetch()
+                    fetch(`/connection_app/get-template-details/?template_id=${templateId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            templateDescription.innerHTML = `
+                                <strong>Field List:</strong> ${data.field_list} <br>
+                                <strong>Description:</strong> ${data.description}
+                            `;
+                        })
+                        .catch(error => {
+                            console.error("Error fetching template details:", error);
+                            templateDescription.innerHTML = "Failed to fetch template details.";
+                        });
+                } else {
+                    templateDescription.style.display = "none";
+                }
+            });
+        });
+    </script>
 {% endblock %}
