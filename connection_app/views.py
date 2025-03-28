@@ -43,7 +43,7 @@ from connection_app.jobs import dialogflow_chat_assignment
 from connection_app.jobs import start_sales_order_portability_process, schedule_upload_data
 from connection_app.models import ConnectionApplication, PostInspection, CustomerProfile, Lead, SalesOrder, \
 	SalesOrderPortability, ImportData, BookSalesOrder, CustomerProfileSettings, OverrideSale, PromotionalSale, \
-	PromotionalSaleCustomer, PrizeAllocation, VaultSecret
+	PromotionalSaleCustomer, PrizeAllocation, VaultSecret, ImportDataTemplate
 from domestic_app import settings
 from reference_data.models import ServiceType, Distributor, Product, SDMSServiceRequest
 from service_request.enums import ServiceRequestTypeEnum, ServiceRequestTypeStatusEnum
@@ -2015,3 +2015,14 @@ class UpdateSDMSUserLoginPasswordFormView(FormView):
 			)
 		)
 		return redirect('.')
+
+
+def get_template_details(request):
+	template_id = request.GET.get("template_id")
+	template = get_object_or_404(ImportDataTemplate, id=template_id)
+
+	return JsonResponse({
+		"id": template.id,
+		"field_list": template.field_list,
+		"description": template.description
+	})
