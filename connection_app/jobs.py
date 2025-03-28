@@ -116,40 +116,40 @@ def schedule_upload_data(template, id_obj):
 		id_obj.status = ImportDataStatusEnum.FAILED
 		id_obj.save()
 
-	def update_camp_url(self, agent_user):
-		campaign_payload = {
-			"user": self.user,
-			"pass": self.password,
-			"campaign_id": agent_user,
-			'call_url': START_CALL_URL,
-			'upcampaign': True,
-		}
-		result = make_api_request(VICIDIAL_CAMPAIGN_API, campaign_payload)
-		if result["status"] == "error":
-			print("Error in creating campaign", result)
-			return result
-		return {"status": "success", "message": "Campaign updated successfully."}
+def update_camp_url(self, agent_user):
+	campaign_payload = {
+		"user": self.user,
+		"pass": self.password,
+		"campaign_id": agent_user,
+		'call_url': START_CALL_URL,
+		'upcampaign': True,
+	}
+	result = make_api_request(VICIDIAL_CAMPAIGN_API, campaign_payload)
+	if result["status"] == "error":
+		print("Error in creating campaign", result)
+		return result
+	return {"status": "success", "message": "Campaign updated successfully."}
 
-	def update_phone(self, agent_user, phone_number, request=None):
-		if not phone_number and not agent_user:
-			return {"status": "error", "message": "Phone number and agent user are required."}
+def update_phone(self, agent_user, phone_number, request=None):
+	if not phone_number and not agent_user:
+		return {"status": "error", "message": "Phone number and agent user are required."}
 
-		phone_load = {
-			"user": self.user,
-			"pass": self.password,
-			"function": "update_phone",
-			"source": "external_update_phone",
-			"extension": agent_user,
-			"dialplan_number": phone_number,
-			"server_ip": "192.168.168.3",
-		}
-		result = make_api_request(VICIDIAL_NON_AGENT_API, phone_load)
-		if result["status"] == "error":
-			return result
+	phone_load = {
+		"user": self.user,
+		"pass": self.password,
+		"function": "update_phone",
+		"source": "external_update_phone",
+		"extension": agent_user,
+		"dialplan_number": phone_number,
+		"server_ip": "192.168.168.3",
+	}
+	result = make_api_request(VICIDIAL_NON_AGENT_API, phone_load)
+	if result["status"] == "error":
+		return result
 
-		result2 = self.update_camp_url(agent_user)
+	result2 = self.update_camp_url(agent_user)
 
-		if result2["status"] == "error":
-			return result2
+	if result2["status"] == "error":
+		return result2
 
-		return {"status": "success", "message": "Phone and call url updated successfully.", "pass": request.user.id}
+	return {"status": "success", "message": "Phone and call url updated successfully.", "pass": request.user.id}

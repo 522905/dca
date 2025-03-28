@@ -1326,7 +1326,7 @@ class ImportDataTemplate(models.Model):
 class ImportData(models.Model):
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
-	template = models.CharField(max_length=128, choices=TemplateEnum.choices, null=True)
+	template = models.CharField(max_length=128, null=True, blank=True)
 	import_data_template = models.ForeignKey(ImportDataTemplate, on_delete=models.CASCADE, null=True)
 	file_path = models.TextField()
 	status = models.CharField(max_length=128, choices=ImportDataStatusEnum.choices,
