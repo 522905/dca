@@ -1,7 +1,6 @@
 import csv
 
 from connection_app.enums import TemplateEnum, ImportDataStatusEnum
-from connection_app.functions import update_bulk_out
 from connection_app.vicidial.jobs import make_api_request, VICIDIAL_NON_AGENT_API, VICIDIAL_CAMPAIGN_API
 from ujjwala.camunda_functions import start_process_in_camunda_v2
 import logging
@@ -69,6 +68,59 @@ def start_read_customer_profile(customer_profile_id):
 		cp_obj.camunda_process_instance_id = pid
 		cp_obj.save()
 	print(res)
+
+
+
+def import_bulk_is_dirty(csv_file_rows):
+	from connection_app.models import CustomerProfile
+
+	for idx, row in enumerate(csv_file_rows):
+		try:
+			consumer_id = row['consumer_id'].replace(";", "")
+			cp_obj = CustomerProfile.objects.get(consumer_id=consumer_id)
+			cp_obj.is_dirty = True
+			cp_obj.save()
+			start_read_customer_profile(cp_obj.pk)
+		except Exception as e:
+			continue
+	return True
+
+
+def import_update_distributor(csv_file_rows):
+	from connection_app.models import CustomerProfile, Distributor
+
+	for idx, row in enumerate(csv_file_rows):
+		try:
+			consumer_id = row['consumer_id'].replace(";", "")
+			cp_obj = CustomerProfile.objects.get(consumer_id=consumer_id)
+			distributor_code = row['distributor_code'].replace(";", "")
+			distributor_obj = Distributor.objects.get(code=distributor_code)
+
+			if cp_obj.distributor_id != distributor_obj.id:
+				cp_obj.distributor = distributor_obj
+				cp_obj.distributor_code = distributor_obj.code
+				cp_obj.distributor_name = distributor_obj.name
+				cp_obj.save()
+
+			cp_obj.is_dirty = True
+			start_read_customer_profile(cp_obj.pk)
+		except Exception as e:
+			continue
+	return True
+
+
+def import_update_bulk_out(csv_file_rows):
+	from connection_app.models import CustomerProfile
+
+	for idx, row in enumerate(csv_file_rows):
+		consumer_id = row['consumer_id'].replace(";", "")
+		cp_obj: CustomerProfile = CustomerProfile.objects.get(consumer_id=consumer_id)
+		cp_obj.relationship_status = 'BULK_OUT'
+		cp_obj.relationship_sub_status = 'BULK_OUT'
+		cp_obj.distributor_code = None
+		cp_obj.distributor_name = row['distributor_name']
+		cp_obj.save()
+	return True
 
 
 def schedule_upload_data(template, id_obj):
