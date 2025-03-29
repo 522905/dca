@@ -1,6 +1,6 @@
 import csv
 
-from connection_app.enums import TemplateEnum, ImportDataStatusEnum
+from connection_app.enums import TemplateEnum, ImportDataStatusEnum, DistributorStatusEnum
 from connection_app.vicidial.jobs import make_api_request, VICIDIAL_NON_AGENT_API, VICIDIAL_CAMPAIGN_API
 from ujjwala.camunda_functions import start_process_in_camunda_v2
 import logging
@@ -100,6 +100,7 @@ def import_update_distributor(csv_file_rows):
 				cp_obj.distributor = distributor_obj
 				cp_obj.distributor_code = distributor_obj.code
 				cp_obj.distributor_name = distributor_obj.name
+				cp_obj.distributor_status = DistributorStatusEnum.MANUALLY_UPDATED
 				cp_obj.save()
 
 			cp_obj.is_dirty = True

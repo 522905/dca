@@ -144,6 +144,7 @@ class DistributorStatusEnum(models.TextChoices):
 	VALID = 'VALID', 'Valid'
 	SUSPECTED = 'SUSPECTED', 'Suspected'
 	INVALID = 'INVALID', 'Invalid'
+	MANUALLY_UPDATED = 'MANUALLY_UPDATED', 'Manually Updated'
 
 
 class SalesOrderInvoiceEnum(models.TextChoices):
