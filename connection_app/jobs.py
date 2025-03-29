@@ -76,10 +76,11 @@ def import_bulk_is_dirty(csv_file_rows):
 
 	for idx, row in enumerate(csv_file_rows):
 		consumer_id = row['consumer_id'].replace(";", "")
-		cp_obj = CustomerProfile.objects.get(consumer_id=consumer_id)
-		cp_obj.is_dirty = True
-		cp_obj.save()
-		start_read_customer_profile(cp_obj.pk)
+		cp_obj = CustomerProfile.objects.filter(consumer_id=consumer_id).first()
+		if cp_obj:
+			cp_obj.is_dirty = True
+			cp_obj.save()
+			start_read_customer_profile(cp_obj.pk)
 	return True
 
 
@@ -146,22 +147,6 @@ def schedule_upload_data(template, id_obj):
 			id_obj.save()
 		else:
 			raise Exception("{} Function not found".format("import_{}".format(id_obj.import_data_template.template.lower().replace(" ", "_"))))
-
-
-		# if template == TemplateEnum.SERVICE_AREA:
-		# 	upload_service_area_csv(data_rows)
-		# elif template == TemplateEnum.CUSTOMER_REGISTER:
-		# 	upload_customer_register_csv(data_rows)
-		# elif template == TemplateEnum.DELIVERY_REGISTER:
-		# 	pass
-		# elif template == TemplateEnum.BULK_IS_DIRTY:
-		# 	bulk_is_dirty_update(data_rows)
-		# elif template == TemplateEnum.UPDATE_DISTRIBUTOR:
-		# 	update_distributor(data_rows)
-		# elif template == TemplateEnum.UPDATE_BULK_OUT:
-		# 	update_bulk_out(data_rows)
-		# elif template == TemplateEnum.CANCEL_BOOKINGS:
-		# 	schedule_booking_cancellation_csv(data_rows)
 
 	except Exception as e:
 		id_obj.error_log = str(e)
