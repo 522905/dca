@@ -21,7 +21,7 @@ from ujjwala.ujjwala_functions import evaluate_change_cylinder_type_requests
 logger = logging.getLogger(__name__)
 
 
-def get_customer_profile(consumer_id, name, address, distributor_code):
+def get_customer_profile(consumer_id, name, address, distributor_code, portability_flag=False):
 	from connection_app.models import CustomerProfile
 	from connection_app.jobs import start_read_customer_profile
 
@@ -29,13 +29,21 @@ def get_customer_profile(consumer_id, name, address, distributor_code):
 	cp_obj: CustomerProfile = CustomerProfile.objects.filter(consumer_id=consumer_id).first()
 
 	if not cp_obj:
-		cp_obj = CustomerProfile.objects.create(
-			consumer_id=consumer_id,
-			name=name,
-			address=address,
-			distributor=distributor,
-			distributor_code=distributor_code,
-		)
+		if portability_flag:
+			cp_obj = CustomerProfile.objects.create(
+				consumer_id=consumer_id,
+				name=name,
+				address=address,
+				distributor_status=DistributorStatusEnum.PORTABILITY
+			)
+		else:
+			cp_obj = CustomerProfile.objects.create(
+				consumer_id=consumer_id,
+				name=name,
+				address=address,
+				distributor=distributor,
+				distributor_code=distributor_code,
+			)
 		# django_rq.enqueue(start_read_customer_profile, args=(cp_obj.id,))
 	else:
 		if cp_obj.distributor != distributor:
@@ -176,7 +184,9 @@ def create_sales_order(so, distributor_code):
 	"""
 	from connection_app.models import SalesOrder, Distributor
 
-	cp_obj = get_customer_profile(so["Relationship Id"], so["Consumer Name"], so["Consumer Address"], distributor_code)
+	portability_flag = True if so['Portability Flag'] else False
+
+	cp_obj = get_customer_profile(so["Relationship Id"], so["Consumer Name"], so["Consumer Address"], distributor_code, portability_flag)
 	distributor: Distributor = Distributor.objects.filter(code=distributor_code).first()
 
 	so_obj = SalesOrder.objects.create(
@@ -205,7 +215,7 @@ def create_sales_order(so, distributor_code):
 		delivery_confirm_full_name=so['Delivery Confirm Full Name'],
 		mobile_number=so['Mobile Number'],
 		tatkal_order=so['Tatkal Order'],
-		portability_flag=True if so['Portability Flag'] else False,
+		portability_flag=portability_flag,
 		full_filled_by_distributor=distributor
 	)
 	print(so_obj)
