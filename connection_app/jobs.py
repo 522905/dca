@@ -75,14 +75,11 @@ def import_bulk_is_dirty(csv_file_rows):
 	from connection_app.models import CustomerProfile
 
 	for idx, row in enumerate(csv_file_rows):
-		try:
-			consumer_id = row['consumer_id'].replace(";", "")
-			cp_obj = CustomerProfile.objects.get(consumer_id=consumer_id)
-			cp_obj.is_dirty = True
-			cp_obj.save()
-			start_read_customer_profile(cp_obj.pk)
-		except Exception as e:
-			continue
+		consumer_id = row['consumer_id'].replace(";", "")
+		cp_obj = CustomerProfile.objects.get(consumer_id=consumer_id)
+		cp_obj.is_dirty = True
+		cp_obj.save()
+		start_read_customer_profile(cp_obj.pk)
 	return True
 
 
@@ -147,6 +144,8 @@ def schedule_upload_data(template, id_obj):
 			function(data_rows)  # Pass arguments dynamically
 			id_obj.status = ImportDataStatusEnum.COMPLETED
 			id_obj.save()
+		else:
+			raise Exception("{} Function not found".format("import_{}".format(id_obj.import_data_template.template.lower().replace(" ", "_"))))
 
 
 		# if template == TemplateEnum.SERVICE_AREA:
