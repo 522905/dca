@@ -26,6 +26,7 @@ from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTy
 	PaymentProfileApprovalStatusEnum, CustomerTypeEnum, SalesOrderStatusEnum, InspectionTypeEnum, \
 	PostInspectionStatusEnum, PostInspectionActivityTypeEnum, LeadStatusEnum, SalesOrderPortabilityStatusEnum, \
 	TemplateEnum, ImportDataStatusEnum, ProofTypeEnum, ConnectionApplicationGenderEnum,	DistributorStatusEnum
+
 from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, FrontOfficeCompleted, \
 	BackOfficeReactivation, BackOfficeRegularisation, \
 	BackOfficeNewConnection, DocumentsReupload, InstallationReviewForm
