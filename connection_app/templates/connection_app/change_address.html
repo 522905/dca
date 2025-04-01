@@ -3,281 +3,298 @@
 {% block page_title %}Change Address - {{ obj.name }}{% endblock %}
 {% load material_form %}
 {% block content %}
+    <link rel="stylesheet" href="{% static '/css/style.css' %}" >
+    <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css" >
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
 
-<link rel="stylesheet" href="{% static '/css/style.css' %}" >
-<link href="https://fonts.googleapis.com/css?family=Roboto:400,500,600,700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    {% if obj %}
+    <div class="customer-profile-container">
+        <!-- ID Bar -->
+        <div class="id-bar">
+            <div class="id-info">
+                <span>{{ obj.name }} - {{ obj.consumer_id }}</span>
+                <span>Profile ID: {{ obj.id }}</span>
+            </div>
+        </div>
 
-<style>
-:root {
-    --orange-header: #e7582e;
-    --primary-blue: #4355b9;
-    --light-blue-bg: #f1f3ff;
-    --border-color: #e0e0e0;
-}
-
-body {
-    font-family: 'Roboto', sans-serif;
-    background-color: #f5f5f5;
-}
-
-/* Customer Header (from Image 1) */
-.customer-header {
-    background-color: white;
-    border-radius: 3px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-    padding: 15px;
-}
-
-.customer-info {
-    display: flex;
-    align-items: center;
-}
-
-.customer-image {
-    width: 100px;
-    height: 100px;
-    object-fit: cover;
-    margin-right: 20px;
-}
-
-.customer-details {
-    flex: 1;
-}
-
-.customer-name {
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 5px;
-}
-
-.customer-phone {
-    color: var(--primary-blue);
-    display: flex;
-    align-items: center;
-    margin-bottom: 5px;
-    font-size: 15px;
-}
-
-.customer-address {
-    font-size: 14px;
-    color: #555;
-}
-
-/* Form section styling */
-.content-section {
-    background-color: white;
-    border: 1px solid var(--border-color);
-    border-radius: 3px;
-    margin-bottom: 20px;
-    overflow: hidden;
-}
-
-.section-header {
-    background-color: var(--light-blue-bg);
-    padding: 10px 15px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-}
-
-.section-icon {
-    color: var(--primary-blue);
-    margin-right: 10px;
-    font-size: 16px;
-}
-
-.section-title {
-    color: var(--primary-blue);
-    font-size: 15px;
-    font-weight: 500;
-    margin: 0;
-}
-
-/* Form grid styling */
-.form-content {
-    padding: 15px;
-}
-
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-label {
-    color: #666;
-    font-size: 14px;
-    margin-bottom: 5px;
-    display: block;
-}
-
-.form-value {
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.form-control {
-    display: block;
-    width: 100%;
-    padding: 6px 0;
-    font-size: 14px;
-    line-height: 1.5;
-    color: #333;
-    background-color: transparent;
-    border: none;
-    border-bottom: 1px solid #ddd;
-    transition: border-color 0.15s ease-in-out;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--primary-blue);
-}
-
-select.form-control {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 2px center;
-    background-size: 16px;
-    padding-right: 20px;
-}
-
-/* Action bar styling */
-.action-bar {
-    padding: 10px 15px;
-    background-color: #f8f9fa;
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    justify-content: flex-end;
-}
-
-.submit-btn {
-    background-color: #5f6982;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    padding: 8px 15px;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-.submit-btn:hover {
-    background-color: #4a526a;
-}
-
-/* Mobile responsive */
-@media (max-width: 768px) {
-    .form-grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-
-    .customer-info {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .customer-image {
-        margin-right: 0;
-        margin-bottom: 15px;
-    }
-}
-</style>
-
-<div class="container">
-    <div class="row">
-        <div class="col-md-12">
-            <!-- Customer Header (from Image 1) -->
-            <div class="customer-header">
-                <div class="customer-info">
-                    <img src="{{ obj.document_self }}" alt="{{ obj.name }}" class="customer-image">
-                    <div class="customer-details">
-                        <div class="customer-name">{{ obj.name }} ({{ obj.id }})</div>
-                        <div class="customer-phone">
-                            <i class="fas fa-phone-alt mr-2"></i>{{ obj.mobile_number }}
+        <!-- Customer Information Section -->
+        <div class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Customer Information</h2>
+            </div>
+            <div class="section-content">
+                <div class="profile-grid">
+                    <div class="profile-details">
+                        <div class="detail-row">
+                            <label>Name:</label>
+                            <span>{{ obj.name }}</span>
                         </div>
-                        <div class="customer-address">{{ obj.primary_account_address }}</div>
+                        <div class="detail-row">
+                            <label>Phone:</label>
+                            <span>{{ obj.mobile_number }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <label>Current Address:</label>
+                            <span>{{ obj.primary_account_address }}</span>
+                        </div>
+                    </div>
+                    <div class="profile-image">
+                        <img src="{{ obj.document_self }}" alt="Profile Picture" class="profile-avatar">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Address Change Form -->
+        <form method="post" id="address-form">
+            {% csrf_token %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h2 class="section-title">New Address Information</h2>
+                </div>
+                <div class="section-content">
+                    <div class="profile-grid">
+                        <div class="form-group">
+                            <label class="form-label">House No.</label>
+                            <input type="text" class="form-control" name="house_no" id="id_house_no">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Street No</label>
+                            <input type="text" class="form-control" name="street_no" id="id_street_no">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Area/Locality</label>
+                            <input type="text" class="form-control" name="area" id="id_area">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Landmark</label>
+                            <input type="text" class="form-control" name="landmark" id="id_landmark">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Pin Code</label>
+                            <input type="text" class="form-control" name="pincode" id="id_pincode">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <input type="text" class="form-control" name="phone_number" id="id_phonenumber">
+                        </div>
+                        <div class="form-group input_form" style="margin-bottom: 0 !important;">
+                            <span class="hidden_field">{{ form.photo_id }}</span>
+                            <label class="text-left m-0 p-0">Photo Id</label>
+                            <p id="photo_id" class="p-2"></p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Photo Id Number</label>
+                            <input type="text" class="form-control" name="photo_id_number" id="id_photo_id_number">
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Form content in a grid layout -->
-            <form method="post" id="address-form">
-                {% csrf_token %}
-                <div class="content-section">
-                    <div class="section-header">
-                        <i class="fas fa-home section-icon"></i>
-                        <h3 class="section-title">Address Information</h3>
-                    </div>
-                    <div class="form-content">
-                        <div class="form-grid">
-                            <!-- House No. -->
-                            <div class="form-group">
-                                <label class="form-label">House No.</label>
-                                <input type="text" class="form-control" name="house_no" id="id_house_no">
-                            </div>
-
-                            <!-- Street No -->
-                            <div class="form-group">
-                                <label class="form-label">Street No</label>
-                                <input type="text" class="form-control" name="street_no" id="id_street_no">
-                            </div>
-
-                            <!-- Village -->
-                            <div class="form-group">
-                                <label class="form-label">Area/Locality/Urban</label>
-                                <input type="text" class="form-control" name="area" id="id_area">
-                            </div>
-
-                            <!-- Landmark -->
-                            <div class="form-group">
-                                <label class="form-label">Landmark</label>
-                                <input type="text" class="form-control" name="landmark" id="id_landmark">
-                            </div>
-
-                            <!-- Pin Code -->
-                            <div class="form-group">
-                                <label class="form-label">Pin Code</label>
-                                <input type="text" class="form-control" name="pincode" id="id_pincode">
-                            </div>
-
-                            <!-- Phone Number -->
-                            <div class="form-group">
-                                <label class="form-label">Phone Number</label>
-                                <input type="text" class="form-control" name="phone_number" id="id_phonenumber">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="action-bar">
-                        <button type="button" class="submit-btn" onclick="validateAndSubmit()">
-                            SUBMIT
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="button" class="action-button secondary" onclick="history.back()">Back</button>
+                <button type="button" class="action-button primary" onclick="validateAndSubmit()">Submit</button>
+            </div>
+        </form>
     </div>
-</div>
+    {% endif %}
 
-<script>
-    function validateAndSubmit() {
-        if (validate_pincode()) {
-            document.getElementById('address-form').submit();
-        }
+    <style>
+    :root {
+        --orange-header: #e7582e;
+        --primary-blue: #4355b9;
+        --light-blue-bg: #f1f3ff;
+        --border-color: #e0e0e0;
+        --error-red: #e94a6f;
+        --success-green: #28a745;
+        --background-gray: #f5f5f5;
+        --dark-gray-text: #555;
     }
 
-    function validate_pincode() {
+    body {
+        font-family: 'Roboto', sans-serif;
+        background-color: var(--background-gray);
+        color: var(--dark-gray-text);
+    }
+
+    .customer-profile-container {
+        width: 100%;
+        max-width: 800px;
+        margin: 6px auto;
+        padding: 0;
+    }
+
+    .profile-header {
+        background-color: var(--orange-header);
+        color: white;
+        padding: 12px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .customer-title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .id-bar {
+        background-color: var(--primary-blue);
+        color: white;
+        padding: 12px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+    }
+
+    .id-info {
+        display: flex;
+        gap: 20px;
+    }
+
+    .content-section {
+        border: 1px solid var(--border-color);
+        border-radius: 2px;
+        margin-bottom: 15px;
+        background: white;
+        overflow: hidden;
+    }
+
+    .section-header {
+        background-color: var(--light-blue-bg);
+        padding: 10px 15px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .section-title {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .section-content {
+        padding: 15px;
+    }
+
+    .profile-grid {
+        display: grid;
+        grid-template-columns: 3fr 1fr;
+        gap: 15px;
+    }
+
+    .detail-row {
+        display: flex;
+        margin-bottom: 10px;
+    }
+
+    .detail-row label {
+        width: 150px;
+        font-weight: 500;
+        font-size: 14px;
+    }
+
+    .detail-row span {
+        font-size: 14px;
+    }
+
+    .profile-image {
+        text-align: center;
+    }
+
+    .profile-avatar {
+        max-height: 125px;
+        width: 100%;
+        object-fit: contain;
+        border: 1px solid var(--border-color);
+    }
+
+    .form-group {
+        margin-bottom: 10px;
+    }
+
+    .form-label {
+        color: var(--dark-gray-text);
+        font-size: 14px;
+        margin-bottom: 5px;
+        display: block;
+        font-weight: 500;
+    }
+
+    .form-control {
+        display: block;
+        width: 100%;
+        padding: 6px 0;
+        font-size: 14px;
+        line-height: 1.5;
+        color: var(--dark-gray-text);
+        background-color: transparent;
+        border: none;
+        border-bottom: 1px solid var(--border-color);
+        transition: border-color 0.15s ease-in-out;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+    }
+
+    .form-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .action-button {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .action-button.primary {
+        background-color: var(--primary-blue);
+        color: white;
+    }
+
+    .action-button.secondary {
+        background-color: #f5f5f5;
+        color: var(--dark-gray-text);
+        border: 1px solid var(--border-color);
+    }
+
+    @media (max-width: 768px) {
+        .profile-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .id-info {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .form-actions {
+            grid-template-columns: 1fr;
+        }
+    }
+    </style>
+
+    <script>
+    function validateAndSubmit() {
         var pincodeInput = document.getElementById('id_pincode');
 
         if (!pincodeInput.reportValidity()) {
@@ -286,12 +303,61 @@ select.form-control {
 
         var pincode = parseInt(pincodeInput.value);
         if (pincode && pincode >= 141001 && pincode <= 141014) {
+            document.getElementById('address-form').submit();
             return true;
         }
 
         alert("We don't provide service in this Pin code area. हम इस पिन कोड क्षेत्र में सेवा प्रदान नहीं करते हैं");
         return false;
     }
-</script>
 
+    window.photoIdUppy = new Uppy.Core({
+		debug: true,
+		autoProceed: true,
+		restrictions: {
+			maxFileSize: 50000000,
+			maxNumberOfFiles: 1,
+			minNumberOfFiles: 1,
+			allowedFileTypes: ['image/*'],
+		}
+	})
+    .use(Uppy.Dashboard, {
+        trigger: '#photo_id',
+        inline: true,
+        target: '#photo_id',
+        showProgressDetails: true,
+        note: 'Images and video only, 2–3 files, up to 10 MB',
+        height: 200,
+        metaFields: [],
+        id: 'photo_id',
+        waitForThumbnailsBeforeUpload: true,
+        doneButtonHandler: () => {
+            // this.uppy.reset()
+            // this.requestCloseModal()
+        },
+        showRemoveButtonAfterComplete: true,
+        theme: 'light',
+        locale: {
+            strings: {
+                dropPasteFiles: 'फोटो अपलोड करने के लिए यहाँ पर क्लिक करे %{browseFiles}',
+                done: '-',
+                uploadComplete: 'अपलोड पूरा हो गया है',
+                complete: 'पूरा हुआ',
+            }
+        },
+    })
+    .use(Uppy.Compressor, {
+        quality: 0.92,
+        maxWidth: 2048,
+        resize: 'contain',
+        limit: 10,
+    })
+
+    .use(Uppy.Tus, {
+        endpoint: 'https://tus.dca.arungas.com/files/',
+    })
+    photoIdUppy.on('complete', result => {
+		$('#id_photo_id').val(result.successful[0].uploadURL);
+	})
+    </script>
 {% endblock %}

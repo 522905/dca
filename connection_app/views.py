@@ -1892,6 +1892,28 @@ class ChangeAddressView(FormView):
 	form_class = ChangeAddressForm
 	template_name = "connection_app/change_address.html"
 
+	def dispatch(self, request, *args, **kwargs):
+		obj = self.get_object()
+
+		connection_app_content_type = ContentType.objects.get(
+			app_label='connection_app', model='customerprofile'
+		)
+
+		sr_obj = ServiceRequest.objects.filter(
+			content_type=connection_app_content_type,
+			object_id=obj.id,
+			service_request_type=ServiceRequestTypeEnum.UPDATE_ADDRESS,
+			status=ServiceRequestTypeStatusEnum.PENDING
+		).first()
+
+		if sr_obj:
+			message = f"Service Request For Change Address Already Submitted. Service Request Id: {sr_obj.id} Status: {sr_obj.status}"
+			return render(
+				self.request, "connection_app/response.html",
+				{"heading": "Update Address Request Form", "message": message}
+			)
+		return super().dispatch(request, *args, **kwargs)
+
 	def get_object(self, queryset=None):
 		try:
 			obj = CustomerProfile.objects.get(pk=self.kwargs.get('pk'))
@@ -1914,7 +1936,9 @@ class ChangeAddressView(FormView):
 		return super().form_invalid(form)
 
 	def form_valid(self, form):
-		obj = self.get_object()
+		obj: ConnectionApplication = self.get_object()
+		cleaned_data = form.cleaned_data
+		obj.documents.create(type=ConnectionApplicationDocumentsEnum.UPDATE_ADDRESS_PROOF, link=cleaned_data.get('photo_id'))
 		address_json = form.clean()
 		user = get_current_user()
 
@@ -1922,63 +1946,56 @@ class ChangeAddressView(FormView):
 			app_label='connection_app', model='customerprofile'
 		)
 
-		sr_obj = ServiceRequest.objects.filter(
+		new_address_json = {
+			"address_line_1": f"HNo {address_json.get('house_no')}",
+			"address_line_2": f"St No {address_json.get('street_no')}",
+			"address_line_3": f"{address_json.get('area')} {address_json.get('phone_number')}",
+			"landmark": address_json.get('landmark'),
+			"urban_rural": "Urban",
+			"local_body": "Ludhiana",
+			"sub_district": "Ludhiana (East)",
+			"pincode": address_json.get('pincode'),
+		}
+
+		service_request = ServiceRequest.objects.create(
+			service_request_type=ServiceRequestTypeEnum.UPDATE_ADDRESS,
 			content_type=connection_app_content_type,
 			object_id=obj.id,
-			service_request_type=ServiceRequestTypeEnum.UPDATE_ADDRESS,
-			status=ServiceRequestTypeStatusEnum.PENDING
-		).first()
-
-		if sr_obj:
-			message = f"Service Request For Change Address Already Submitted. Service Request Id: {sr_obj.id} Status: {sr_obj.status}"
-		else:
-			new_address_json = {
-				"address_line_1": f"HNo {address_json.get('house_no')}",
-				"address_line_2": f"St No {address_json.get('street_no')}",
-				"address_line_3": f"{address_json.get('area')} {address_json.get('phone_number')}",
-				"landmark": address_json.get('landmark'),
-				"urban_rural": "Urban",
-				"local_body": "Ludhiana",
-				"sub_district": "Ludhiana (East)",
-				"pincode": address_json.get('pincode')
-
+			request_by=user,
+			form_data={
+				"application_id": obj.id,
+				"new_address": new_address_json,
+				"dca_app": "connection_app",
+				"photo_id": cleaned_data.photo_id,
+				"photo_id_number": cleaned_data.photo_id_number
 			}
+		)
+		from service_request.functions import start_service_request_process_in_camunda
 
-			service_request = ServiceRequest.objects.create(
-				service_request_type=ServiceRequestTypeEnum.UPDATE_ADDRESS,
-				content_type=connection_app_content_type,
-				object_id=obj.id,
-				request_by=user,
-				form_data={
-					"application_id": obj.id,
-					"new_address": new_address_json,
-					"dca_app": "connection_app",
-				}
-			)
-			from service_request.functions import start_service_request_process_in_camunda
+		variables = {
+			"new_address": {"value": json.dumps(new_address_json), "type": "string"},
+			"application_id": {"value": obj.id, "type": "long"},
+			"name": {"value": obj.name, "type": "string"},
+			# "status": {"value": obj.status, "type": "string"},
+			"request_by": {"value": f"{user.first_name} {user.last_name}"},
+			"service_request_id": {"value": service_request.id, "type": "long"},
+			"dca_app": {"value": "connection_app", "type": "String"},
+			"request_type": {"value": ServiceRequestTypeEnum.UPDATE_ADDRESS, "type": "String"},
+			"consumer_id": {"value": obj.consumer_id, "type": "String"},
+			"distributor_code": {"value": obj.distributor.code, "type": "String"},
+			"photo_id": {"value": cleaned_data.photo_id, "type": "String"},
+			"photo_id_number": {"value": cleaned_data.photo_id_number, "type": "String"},
+		}
 
-			variables = {
-				"new_address": {"value": json.dumps(new_address_json), "type": "string"},
-				"application_id": {"value": obj.id, "type": "long"},
-				"name": {"value": obj.name, "type": "string"},
-				# "status": {"value": obj.status, "type": "string"},
-				"request_by": {"value": f"{user.first_name} {user.last_name}"},
-				"service_request_id": {"value": service_request.id, "type": "long"},
-				"dca_app": {"value": "connection_app", "type": "String"},
-				"request_type": {"value": ServiceRequestTypeEnum.UPDATE_ADDRESS, "type": "String"},
-				"consumer_id": {"value": obj.consumer_id, "type": "String"},
-				"distributor_code": {"value": obj.distributor.code, "type": "String"},
-			}
-
-			create_job_function = partial(
-				django_rq.enqueue,
-				start_service_request_process_in_camunda,
-				service_request_id=service_request.id,
-				variables=variables
-			)
-			transaction.on_commit(create_job_function)
-			# start_service_request_process_in_camunda(service_request.id, variables)
-			message = "Service Request For Update Address Initiated. Please Wait For Some Time."
+		create_job_function = partial(
+			django_rq.enqueue,
+			start_service_request_process_in_camunda,
+			service_request_id=service_request.id,
+			variables=variables
+		)
+		transaction.on_commit(create_job_function)
+		# start_service_request_process_in_camunda(service_request.id, variables)
+		message = "Service Request For Update Address Initiated. Please Wait For Some Time."
 
 		return render(
 			self.request, "connection_app/response.html", {"heading": "Update Address Request Form", "message": message}

@@ -782,6 +782,12 @@ class ChangeAddressForm(forms.Form):
 	phone_number = forms.CharField(
 		widget=forms.TextInput, label='Phone Number', required=True
 	)
+	photo_id = forms.CharField(
+		widget=forms.TextInput, label='Photo Id', required=True
+	)
+	photo_id_number = forms.CharField(
+		widget=forms.TextInput, label='Photo Id Number', required=True
+	)
 
 
 class UpdateDistributorLoginDetailsForm(forms.Form):
