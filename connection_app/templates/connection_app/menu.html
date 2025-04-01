@@ -1,73 +1,54 @@
 {% load connection_app_utils %}
 
 {% if user.is_authenticated %}
-     <div class="sidebar">
+    <div class="sidebar">
         <ul class="nav-links">
             <li class="submenu_level2">
-                <a href="{% url 'connection_app:customer_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-user" aria-hidden="true"></i>Customer</a>
+                <a href="{% url 'connection_app:customer_grid_menu_view' %}" data-turbolinks="false">
+                    <i class="fas fa-users"></i> Customer
+                </a>
             </li>
-{#            <li class="submenu_level2">#}
-{#              <div class="submenu_L2wrap">#}
-{#                <a href="{% url 'connection_app:customer_profile_search' %}" data-turbolinks="false">#}
-{#                <span class="link_name">Customer Profile</span>#}
-{#                </a>#}
-{#              </div>#}
-{#            </li>#}
-{#            <li class="submenu_level2">#}
-{#              <div class="submenu_L2wrap">#}
-{#                <span class="link_name">Generate Lead</span>#}
-{#                <i class='bx bxs-chevron-down arrow' ></i>#}
-{#              </div>#}
-{#              <ul class="sub-menu submenu_Level3">#}
-{#                <li><a href="{% url 'connection_app:customer_profile_search' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i> For Customer</a></li>#}
-{#                <li><a href="{% url 'connection_app:generate_non_customer_lead_form' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i> For Non-Customer</a></li>#}
-{#              </ul>#}
-{#            </li>#}
+
             {% if user|has_post_inspection_permission %}
             <li class="submenu_level2">
-                <a href="{% url 'connection_app:inspection_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-user-secret" aria-hidden="true"></i>Inspection</a>
+                <a href="{% url 'connection_app:inspection_grid_menu_view' %}" data-turbolinks="false">
+                    <i class="fas fa-search"></i> Inspection
+                </a>
             </li>
-{#            <li class="submenu_level2">#}
-{#                <div class="submenu_L2wrap">  #}
-{#                    <span class="link_name">Post Inspection</span>#}
-{#                    <i class='bx bxs-chevron-down arrow' ></i>#}
-{#                </div>#}
-{#                <ul class="sub-menu submenu_Level3">#}
-{#                    <li><a href="{% url 'connection_app:post_inspection_list' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i> View Post Inspection</a></li>#}
-{#                    <li><a href="{% url 'connection_app:post_inspection_start' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i> Start New Post Inspection</a></li>#}
-{#                </ul>#}
-{#            </li>#}
             {% endif %}
+
             <li class="submenu_level2">
-                <a href="{% url 'connection_app:sales_order_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-book" aria-hidden="true"></i>Sales Order</a>
+                <a href="{% url 'connection_app:sales_order_grid_menu_view' %}" data-turbolinks="false">
+                    <i class="fas fa-shopping-cart"></i> Sales Order
+                </a>
             </li>
             <li class="submenu_level2">
-                <a href="{% url 'connection_app:sales_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-book" aria-hidden="true"></i>Sales</a>
+                <a href="{% url 'connection_app:sales_grid_menu_view' %}" data-turbolinks="false">
+                    <i class="fas fa-chart-line"></i> Sales
+                </a>
             </li>
             <li class="submenu_level2">
-                <a href="{% url 'connection_app:update_sdms_login_password' %}" data-turbolinks="false"><i class="fa fa-book" aria-hidden="true"></i>Delivery App Password</a>
+                <a href="{% url 'connection_app:update_sdms_login_password' %}" data-turbolinks="false">
+                    <i class="fas fa-key"></i> Delivery App Password
+                </a>
             </li>
+
             {% if user|allowed_admin_tools %}
                 <li class="submenu_level2">
-                    <a href="{% url 'connection_app:update_distributor_login_details' %}" data-turbolinks="false"><i class="fa fa-book" aria-hidden="true"></i>Distributor Password</a>
+                    <a href="{% url 'connection_app:update_distributor_login_details' %}" data-turbolinks="false">
+                        <i class="fas fa-user-shield"></i> Distributor Password
+                    </a>
                 </li>
                 <li class="submenu_level2">
-                    <a href="{% url 'connection_app:admin_tools_grid_menu_view' %}" data-turbolinks="false"><i class="fa fa-book" aria-hidden="true"></i>Admin Tools</a>
+                    <a href="{% url 'connection_app:admin_tools_grid_menu_view' %}" data-turbolinks="false">
+                        <i class="fas fa-tools"></i> Admin Tools
+                    </a>
                 </li>
             {% endif %}
-{#              <div class="submenu_L2wrap">#}
-{#                <span class="link_name">Sales Order</span>#}
-{#              </div>#}
-{#              <ul class="sub-menu submenu_Level3">#}
-{#                <li><a href="{% url 'connection_app:sales_order_list' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Sales Order List</a></li>#}
-{#                <li><a href="{% url 'connection_app:sales_order_portability' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Portability</a></li>#}
-{#                <li><a href="{% url 'connection_app:sales_order_portability_list' %}" data-turbolinks="false"><i class="fa fa-caret-right" aria-hidden="true"></i>Portability List</a></li>#}
-{#              </ul>#}
-{#            </li>#}
         </ul>
-     </div>
-    <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
-    
+    </div>
+
+    <!-- Ensure Font Awesome is loaded -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
 {% endif %}
-
-
