@@ -1935,7 +1935,7 @@ class ChangeAddressView(FormView):
 			new_address_json = {
 				"address_line_1": f"HNo {address_json.get('house_no')}",
 				"address_line_2": f"St No {address_json.get('street_no')}",
-				"address_line_3": f"{address_json.get('area')} {address_json.get('phone_no')}",
+				"address_line_3": f"{address_json.get('area')} {address_json.get('phone_number')}",
 				"landmark": address_json.get('landmark'),
 				"urban_rural": "Urban",
 				"local_body": "Ludhiana",
