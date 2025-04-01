@@ -1965,7 +1965,9 @@ class ChangeAddressView(FormView):
 				"request_by": {"value": f"{user.first_name} {user.last_name}"},
 				"service_request_id": {"value": service_request.id, "type": "long"},
 				"dca_app": {"value": "connection_app", "type": "String"},
-				"request_type": {"value": ServiceRequestTypeEnum.UPDATE_ADDRESS, "type": "String"}
+				"request_type": {"value": ServiceRequestTypeEnum.UPDATE_ADDRESS, "type": "String"},
+				"consumer_id": {"value": obj.consumer_id, "type": "String"},
+				"distributor_code": {"value": obj.distributor.code, "type": "String"},
 			}
 
 			create_job_function = partial(
