@@ -1966,8 +1966,8 @@ class ChangeAddressView(FormView):
 				"application_id": obj.id,
 				"new_address": new_address_json,
 				"dca_app": "connection_app",
-				"photo_id": cleaned_data.photo_id,
-				"photo_id_number": cleaned_data.photo_id_number
+				"photo_id": cleaned_data.get('photo_id'),
+				"photo_id_number": cleaned_data.get('photo_id_number')
 			}
 		)
 		from service_request.functions import start_service_request_process_in_camunda
