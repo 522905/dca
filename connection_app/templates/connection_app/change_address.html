@@ -3,57 +3,295 @@
 {% block page_title %}Change Address - {{ obj.name }}{% endblock %}
 {% load material_form %}
 {% block content %}
-    <link rel="stylesheet" href="{% static '/css/style.css' %}" >
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
-    <div id="address_form" class="row m-0 form_label p-2">
-        <div class="card card-profile pt-0 mt-0 " style="width: 100%;" >
-            <div class="row justify-content-center m-0" style="width: 100%; margin: 0 auto !important; padding: 10px;">
-                <div style="width: 30%; float:left">
-                    <div class="card-profile-image">
-                        <a href="#">
-                            <img style="width:100%; max-height: 150px;" src="{{obj.document_self}}">
-                        </a>
-                    </div>
-                </div>
-                <div style="width: 70%; float:right">
-                    <div class="card-body pt-0">
-                        <div class="text-center">
-                            <h5 class="h3">{{ obj.name }}({{ obj.id }})<span class="font-weight-light"></span></h5>
-                            <div class="h5 font-weight-300">
-                                <i class="ni location_pin mr-2"></i>{{ obj.mobile_number }}
-                            </div>
-                            <div class="h5 mt-1" style=" word-wrap: break-word; font-size: 13px;">
-                                {{ obj.address }}
-                            </div>
+
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link href="https://fonts.googleapis.com/css?family=Roboto:400,500,600,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+<style>
+:root {
+    --orange-header: #e7582e;
+    --primary-blue: #4355b9;
+    --light-blue-bg: #f1f3ff;
+    --border-color: #e0e0e0;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f5f5f5;
+}
+
+/* Customer Header (from Image 1) */
+.customer-header {
+    background-color: white;
+    border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    padding: 15px;
+}
+
+.customer-info {
+    display: flex;
+    align-items: center;
+}
+
+.customer-image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    margin-right: 20px;
+}
+
+.customer-details {
+    flex: 1;
+}
+
+.customer-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.customer-phone {
+    color: var(--primary-blue);
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+    font-size: 15px;
+}
+
+.customer-address {
+    font-size: 14px;
+    color: #555;
+}
+
+/* Form section styling */
+.content-section {
+    background-color: white;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.section-header {
+    background-color: var(--light-blue-bg);
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+}
+
+.section-icon {
+    color: var(--primary-blue);
+    margin-right: 10px;
+    font-size: 16px;
+}
+
+.section-title {
+    color: var(--primary-blue);
+    font-size: 15px;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* Form grid styling */
+.form-content {
+    padding: 15px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-label {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.form-value {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.form-control {
+    display: block;
+    width: 100%;
+    padding: 6px 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #333;
+    background-color: transparent;
+    border: none;
+    border-bottom: 1px solid #ddd;
+    transition: border-color 0.15s ease-in-out;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+}
+
+select.form-control {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 2px center;
+    background-size: 16px;
+    padding-right: 20px;
+}
+
+/* Action bar styling */
+.action-bar {
+    padding: 10px 15px;
+    background-color: #f8f9fa;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.submit-btn {
+    background-color: #5f6982;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 8px 15px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.submit-btn:hover {
+    background-color: #4a526a;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .customer-info {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .customer-image {
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
+}
+</style>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Customer Header (from Image 1) -->
+            <div class="customer-header">
+                <div class="customer-info">
+                    <img src="{{ obj.document_self }}" alt="{{ obj.name }}" class="customer-image">
+                    <div class="customer-details">
+                        <div class="customer-name">{{ obj.name }} ({{ obj.id }})</div>
+                        <div class="customer-phone">
+                            <i class="fas fa-phone-alt mr-2"></i>{{ obj.mobile_number }}
                         </div>
+                        <div class="customer-address">{{ obj.primary_account_address }}</div>
                     </div>
-                </div>
-            </div>
-        </div>
-        <form method="post" id="form" style="width: 100%;">
-            {% csrf_token %}
-            <div class="card address_form">
-                <div class="p-4 form_block">
-                    {% form form=form %}{% endform %}
-                </div>
-                <div class="card-footer">
-                    <input class="btn btn-secondary rounded-0 float-right" type="button" id="form" onclick="submit()"  value="Submit"/>
                 </div>
             </div>
 
-        </form>
+            <!-- Form content in a grid layout -->
+            <form method="post" id="address-form">
+                {% csrf_token %}
+                <div class="content-section">
+                    <div class="section-header">
+                        <i class="fas fa-home section-icon"></i>
+                        <h3 class="section-title">Address Information</h3>
+                    </div>
+                    <div class="form-content">
+                        <div class="form-grid">
+                            <!-- House No. -->
+                            <div class="form-group">
+                                <label class="form-label">House No.</label>
+                                <input type="text" class="form-control" name="house_no" id="id_house_no">
+                            </div>
+
+                            <!-- Street No -->
+                            <div class="form-group">
+                                <label class="form-label">Street No</label>
+                                <input type="text" class="form-control" name="street_no" id="id_street_no">
+                            </div>
+
+                            <!-- Village -->
+                            <div class="form-group">
+                                <label class="form-label">Area/Locality/Urban</label>
+                                <input type="text" class="form-control" name="area" id="id_area">
+                            </div>
+
+                            <!-- Landmark -->
+                            <div class="form-group">
+                                <label class="form-label">Landmark</label>
+                                <input type="text" class="form-control" name="landmark" id="id_landmark">
+                            </div>
+
+                            <!-- Pin Code -->
+                            <div class="form-group">
+                                <label class="form-label">Pin Code</label>
+                                <input type="text" class="form-control" name="pincode" id="id_pincode">
+                            </div>
+
+                            <!-- Phone Number -->
+                            <div class="form-group">
+                                <label class="form-label">Phone Number</label>
+                                <input type="text" class="form-control" name="phone_number" id="id_phonenumber">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-bar">
+                        <button type="button" class="submit-btn" onclick="validateAndSubmit()">
+                            SUBMIT
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
-    <script>
-        function validate_pincode() {
-            if(!$('#id_pincode')[0].reportValidity()) {
-                return;
-            }
-            pincode = parseInt($('#id_pincode').val());
-            if(pincode && pincode >= 141001 && pincode <= 141014) {
-                return true;
-            }
-            alert("We don't provide service this Pin code area. हम इस पिन कोड क्षेत्र में सेवा प्रदान नहीं करते हैं");
+</div>
+
+<script>
+    function validateAndSubmit() {
+        if (validate_pincode()) {
+            document.getElementById('address-form').submit();
+        }
+    }
+
+    function validate_pincode() {
+        var pincodeInput = document.getElementById('id_pincode');
+
+        if (!pincodeInput.reportValidity()) {
             return false;
         }
-    </script>
+
+        var pincode = parseInt(pincodeInput.value);
+        if (pincode && pincode >= 141001 && pincode <= 141014) {
+            return true;
+        }
+
+        alert("We don't provide service in this Pin code area. हम इस पिन कोड क्षेत्र में सेवा प्रदान नहीं करते हैं");
+        return false;
+    }
+</script>
+
 {% endblock %}

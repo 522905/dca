@@ -1526,7 +1526,7 @@ class ImportDataView(FormView):
 		with open(save_path, 'wb+') as destination:
 			for chunk in csv_file.chunks():
 				destination.write(chunk)
-		id_obj = ImportData.objects.create(template=form_data.get('template'), file_path=save_path)
+		id_obj = ImportData.objects.create(import_data_template=form_data.get('template'), file_path=save_path)
 		# res = django_rq.enqueue(schedule_upload_data, args=(form_data.get('template'), id_obj))
 		# messages.add_message(self.request, messages.INFO, "Job Scheduled: {}".format(res.id))
 		schedule_upload_data(form_data.get('template'), id_obj)
@@ -1909,6 +1909,10 @@ class ChangeAddressView(FormView):
 		})
 		return context
 
+	def form_invalid(self, form):
+		print(form.errors)
+		return super().form_invalid(form)
+
 	def form_valid(self, form):
 		obj = self.get_object()
 		address_json = form.clean()
@@ -1928,6 +1932,18 @@ class ChangeAddressView(FormView):
 		if sr_obj:
 			message = f"Service Request For Change Address Already Submitted. Service Request Id: {sr_obj.id} Status: {sr_obj.status}"
 		else:
+			new_address_json = {
+				"address_line_1": f"HNo {address_json.get('house_no')}",
+				"address_line_2": f"St No {address_json.get('street_no')}",
+				"address_line_3": f"{address_json.get('area')} {address_json.get('phone_no')}",
+				"landmark": address_json.get('landmark'),
+				"urban_rural": "Urban",
+				"local_body": "Ludhiana",
+				"sub_district": "Ludhiana (East)",
+				"pincode": address_json.get('pincode')
+
+			}
+
 			service_request = ServiceRequest.objects.create(
 				service_request_type=ServiceRequestTypeEnum.UPDATE_ADDRESS,
 				content_type=connection_app_content_type,
@@ -1935,14 +1951,14 @@ class ChangeAddressView(FormView):
 				request_by=user,
 				form_data={
 					"application_id": obj.id,
-					"new_address": address_json,
-					"dca_app": "ujjwala",
+					"new_address": new_address_json,
+					"dca_app": "connection_app",
 				}
 			)
 			from service_request.functions import start_service_request_process_in_camunda
 
 			variables = {
-				"new_address": {"value": json.dumps(address_json), "type": "string"},
+				"new_address": {"value": json.dumps(new_address_json), "type": "string"},
 				"application_id": {"value": obj.id, "type": "long"},
 				"name": {"value": obj.name, "type": "string"},
 				# "status": {"value": obj.status, "type": "string"},
