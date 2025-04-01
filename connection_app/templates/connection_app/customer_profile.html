@@ -653,16 +653,16 @@ body {
                 <!-- FIXED Action Buttons Container for better mobile view -->
                 <div class="action-buttons-container">
                     <div class="action-buttons-row">
-                        <a href="{% url 'customer_profile_document_upload' pk=obj.pk %}" class="action-button">
+                        <a href="{% url 'customer_profile_document_upload' pk=obj.pk %}" class="action-button" data-turbolinks="false">
                             <i class="fas fa-upload"></i> Update Bank Certificate
                         </a>
-                        <a href="{% url 'connection_app:change_address' pk=obj.pk %}" class="action-button">
+                        <a href="{% url 'connection_app:change_address' pk=obj.pk %}" class="action-button" data-turbolinks="false">
                             <i class="fas fa-map-marker-alt"></i> Change Address
                         </a>
-                        <a href="{% url 'connection_app:customer_profile_settings' pk=obj.id %}" class="action-button">
+                        <a href="{% url 'connection_app:customer_profile_settings' pk=obj.id %}" class="action-button" data-turbolinks="false">
                             <i class="fas fa-cog"></i> Settings
                         </a>
-                        <a href="{% url 'connection_app:customer_profile_contacts' pk=obj.id %}" class="action-button">
+                        <a href="{% url 'connection_app:customer_profile_contacts' pk=obj.id %}" class="action-button" data-turbolinks="false">
                             <i class="fas fa-address-book"></i> Contacts
                         </a>
                         <button id="print-btn" class="action-button">
