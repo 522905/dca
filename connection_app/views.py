@@ -1975,6 +1975,7 @@ class ChangeAddressView(FormView):
 
 		variables = {
 			"new_address": {"value": json.dumps(new_address_json), "type": "string"},
+			"address_json": {"value": json.dumps(address_json), "type": "string"},
 			"application_id": {"value": obj.id, "type": "long"},
 			"name": {"value": obj.name, "type": "string"},
 			# "status": {"value": obj.status, "type": "string"},
