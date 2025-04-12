@@ -395,6 +395,9 @@ def update_sales_order_details_in_dca(sales_order_id, sales_order_details, exist
 
 	so = sales_order_details.pop('sales_order')
 
+	if so == '':
+		return False
+
 	so_new_details: dict = sales_order_details
 
 	new_order_status = so_new_details.pop('order_status')
@@ -452,7 +455,7 @@ def update_sales_order_details_in_dca(sales_order_id, sales_order_details, exist
 		so_obj.is_dirty = False
 		so_obj.last_synced_on = datetime.datetime.now()
 		so_obj.save()
-	return so_obj
+	return True
 
 
 def update_customer_profile_in_dca(relationship_details, customer_profile_id):
