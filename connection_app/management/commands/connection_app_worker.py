@@ -22,7 +22,8 @@ EXTERNAL_TASK_TO_SUBSCRIBE = [
 	'service_area_update#verify_update_service_area_in_sdms',
 	'process_book_sales_order#update_returned_booked_order',
 	'process_fetch_sales_order_details_from_sdms#cleanup_sales_order_tasks',
-	'process_dca_service_request#update_service_request_in_dca'
+	'process_dca_service_request#update_service_request_in_dca',
+	'process_dca_service_request#update_service_request_status_in_dca'
 ]
 
 default_config = {
@@ -89,7 +90,7 @@ def handle_task(task: ExternalTask) -> TaskResult:
 			sales_order_id = task.get_variable('sales_order_id')
 			clean_sales_order_tasks(sales_order_id, task.get_process_instance_id())
 			return task.complete()
-		elif topic == 'process_dca_service_request#update_service_request_in_dca':
+		elif topic == 'process_dca_service_request#update_service_request_status_in_dca':
 			update_service_request_in_dca(task)
 			return task.complete()
 	except Exception as e:
