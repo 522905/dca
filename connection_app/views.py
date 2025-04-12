@@ -1967,7 +1967,8 @@ class ChangeAddressView(FormView):
 				"new_address": new_address_json,
 				"dca_app": "connection_app",
 				"photo_id": cleaned_data.get('photo_id'),
-				"photo_id_number": cleaned_data.get('photo_id_number')
+				"photo_id_number": cleaned_data.get('photo_id_number'),
+				"address_json": address_json
 			}
 		)
 		from service_request.functions import start_service_request_process_in_camunda
@@ -1983,8 +1984,8 @@ class ChangeAddressView(FormView):
 			"request_type": {"value": ServiceRequestTypeEnum.UPDATE_ADDRESS, "type": "String"},
 			"consumer_id": {"value": obj.consumer_id, "type": "String"},
 			"distributor_code": {"value": obj.distributor.code, "type": "String"},
-			"photo_id": {"value": cleaned_data.photo_id, "type": "String"},
-			"photo_id_number": {"value": cleaned_data.photo_id_number, "type": "String"},
+			"photo_id": {"value": cleaned_data.get('photo_id'), "type": "String"},
+			"photo_id_number": {"value": cleaned_data.get('photo_id_number'), "type": "String"},
 		}
 
 		create_job_function = partial(
