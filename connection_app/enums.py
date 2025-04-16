@@ -106,6 +106,7 @@ class ConnectionApplicationDocumentsEnum(models.TextChoices):
 	SURAKSHA_PIPE_PHOTO = 'SURAKSHA_PIPE_PHOTO', 'Suraksha Pipe Photo'
 	BANK_SUBSIDY_CERTIFICATE_PHOTO = 'BANK_SUBSIDY_CERTIFICATE_PHOTO', 'Bank Subsidy Certificate Photo'
 	GAS_COPY_PHOTO = 'GAS_COPY_PHOTO', 'Gas Copy Photo'
+	UPDATE_ADDRESS_PROOF = 'UPDATE_ADDRESS_PROOF', 'Update Address Proof'
 
 	@classmethod
 	def get_skipped_additional_choices(cls):
@@ -142,6 +143,8 @@ class DistributorStatusEnum(models.TextChoices):
 	VALID = 'VALID', 'Valid'
 	SUSPECTED = 'SUSPECTED', 'Suspected'
 	INVALID = 'INVALID', 'Invalid'
+	MANUALLY_UPDATED = 'MANUALLY_UPDATED', 'Manually Updated'
+	PORTABILITY = 'PORTABILITY', 'Portability'
 
 
 class SalesOrderInvoiceEnum(models.TextChoices):

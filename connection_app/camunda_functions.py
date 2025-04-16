@@ -8,6 +8,7 @@ from camunda.external_task.external_task import ExternalTask
 from django.db import IntegrityError
 
 from connection_app.enums import SalesOrderStatusEnum, DistributorStatusEnum
+from connection_app.jobs import start_read_customer_profile
 
 from domestic_app.settings import CAMUNDA_BASE_URL
 from reference_data.models import Distributor
@@ -21,7 +22,7 @@ from ujjwala.ujjwala_functions import evaluate_change_cylinder_type_requests
 logger = logging.getLogger(__name__)
 
 
-def get_customer_profile(consumer_id, name, address, distributor_code):
+def get_customer_profile(consumer_id, name, address, distributor_code, portability_flag=False):
 	from connection_app.models import CustomerProfile
 	from connection_app.jobs import start_read_customer_profile
 
@@ -29,13 +30,21 @@ def get_customer_profile(consumer_id, name, address, distributor_code):
 	cp_obj: CustomerProfile = CustomerProfile.objects.filter(consumer_id=consumer_id).first()
 
 	if not cp_obj:
-		cp_obj = CustomerProfile.objects.create(
-			consumer_id=consumer_id,
-			name=name,
-			address=address,
-			distributor=distributor,
-			distributor_code=distributor_code,
-		)
+		if portability_flag:
+			cp_obj = CustomerProfile.objects.create(
+				consumer_id=consumer_id,
+				name=name,
+				address=address,
+				distributor_status=DistributorStatusEnum.PORTABILITY
+			)
+		else:
+			cp_obj = CustomerProfile.objects.create(
+				consumer_id=consumer_id,
+				name=name,
+				address=address,
+				distributor=distributor,
+				distributor_code=distributor_code,
+			)
 		# django_rq.enqueue(start_read_customer_profile, args=(cp_obj.id,))
 	else:
 		if cp_obj.distributor != distributor:
@@ -176,7 +185,9 @@ def create_sales_order(so, distributor_code):
 	"""
 	from connection_app.models import SalesOrder, Distributor
 
-	cp_obj = get_customer_profile(so["Relationship Id"], so["Consumer Name"], so["Consumer Address"], distributor_code)
+	portability_flag = True if so['Portability Flag'] else False
+
+	cp_obj = get_customer_profile(so["Relationship Id"], so["Consumer Name"], so["Consumer Address"], distributor_code, portability_flag)
 	distributor: Distributor = Distributor.objects.filter(code=distributor_code).first()
 
 	so_obj = SalesOrder.objects.create(
@@ -205,7 +216,7 @@ def create_sales_order(so, distributor_code):
 		delivery_confirm_full_name=so['Delivery Confirm Full Name'],
 		mobile_number=so['Mobile Number'],
 		tatkal_order=so['Tatkal Order'],
-		portability_flag=True if so['Portability Flag'] else False,
+		portability_flag=portability_flag,
 		full_filled_by_distributor=distributor
 	)
 	print(so_obj)
@@ -384,6 +395,9 @@ def update_sales_order_details_in_dca(sales_order_id, sales_order_details, exist
 
 	so = sales_order_details.pop('sales_order')
 
+	if so == '':
+		return False
+
 	so_new_details: dict = sales_order_details
 
 	new_order_status = so_new_details.pop('order_status')
@@ -441,7 +455,7 @@ def update_sales_order_details_in_dca(sales_order_id, sales_order_details, exist
 		so_obj.is_dirty = False
 		so_obj.last_synced_on = datetime.datetime.now()
 		so_obj.save()
-	return so_obj
+	return True
 
 
 def update_customer_profile_in_dca(relationship_details, customer_profile_id):
@@ -1034,36 +1048,35 @@ def update_service_request_in_dca(task: ExternalTask):
 	request_type = task.get_variable('request_type')
 	service_request_id = task.get_variable('service_request_id')
 	application_id = task.get_variable('application_id')
-	action = task.get_variable('action')
 
 	sr_obj = ServiceRequest.objects.get(pk=service_request_id)
 
-	if action == 'ACCEPT':
-		if request_type == ServiceRequestTypeEnum.CHANGE_PHONE_NUMBER:
-			phone_number = task.get_variable('phone_number')
-			if task.get_variable('dca_app') == 'ujjwala':
-				application = UjjwalaV2Application.objects.get(pk=application_id)
-				application.contact_mobile = phone_number
-				application.save()
-		elif request_type == ServiceRequestTypeEnum.UPDATE_ADDRESS:
-			new_address = task.get_variable('new_address')
-			if task.get_variable('dca_app') == 'ujjwala':
-				application = UjjwalaV2Application.objects.get(pk=application_id)
+	if request_type == ServiceRequestTypeEnum.CHANGE_PHONE_NUMBER:
+		phone_number = task.get_variable('phone_number')
+		if task.get_variable('dca_app') == 'ujjwala':
+			application = UjjwalaV2Application.objects.get(pk=application_id)
+			application.contact_mobile = phone_number
+			application.save()
+	elif request_type == ServiceRequestTypeEnum.UPDATE_ADDRESS:
+		new_address = task.get_variable('address_json')
+		if task.get_variable('dca_app') == 'ujjwala':
+			application = UjjwalaV2Application.objects.get(pk=application_id)
+			if new_address:
 				application.address_json = new_address
-				# application.address_verified = True
-				# application.address_verified_by = sr_obj.reviewed_by
-				# application.address_verified_on = sr_obj.reviewed_on
-				application.address_updated = True
-				application.address_updated_on = datetime.datetime.now()
-				application.save()
-			elif task.get_variable('dca_app') == 'connection_app':
-				application = CustomerProfile.objects.get(pk=application_id)
+			# application.address_verified = True
+			# application.address_verified_by = sr_obj.reviewed_by
+			# application.address_verified_on = sr_obj.reviewed_on
+			application.address_updated = True
+			application.address_updated_on = datetime.datetime.now()
+			application.save()
+		elif task.get_variable('dca_app') == 'connection_app':
+			application = CustomerProfile.objects.get(pk=application_id)
+			if new_address:
 				application.address_json = new_address
-				application.save()
-		sr_obj.status = ServiceRequestTypeStatusEnum.COMPLETED
-		sr_obj.sdms_ticket_number = task.get_variable('sdms_ticket_number')
-		sr_obj.save()
 
-	else:
-		sr_obj.status = ServiceRequestTypeStatusEnum.REJECTED
-		sr_obj.save()
+			application.save()
+			start_read_customer_profile(application.id)
+
+	sr_obj.status = ServiceRequestTypeStatusEnum.COMPLETED
+	sr_obj.sdms_ticket_number = task.get_variable('sr_number')
+	sr_obj.save()

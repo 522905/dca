@@ -1,76 +1,269 @@
 {% extends "material/frontend/base_module.html" %}
 {% load static %}
-{% block page_title %}Customer Profile - {{ obj.name }}{% endblock %}
+{% block page_title %}Customer Profile{% endblock %}
+
 {% block content %}
 {% load connection_app_utils %}
 {% load material_form %}
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="{% static '/css/style.css' %}" >
-    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
     {% if obj %}
-        <div class="p-2 pt-0 form_label application_form" style="width: 100%;">
-            <div class="card">
-                <div class="status_block">
-                    <div class="main-header">
-                        <span class="text-black back_button">
-                            <input class="btn btn-secondary" type="button" value="Back" onclick="history.back()" /> Consumer Id: {{ obj.consumer_id }}
-                        </span>
-                        <span class="float-right"><b><a data-turbolinks="false" href="{% url 'admin:connection_app_customerprofile_change' object_id=obj.id %}">{{ obj.id }}</a></b></span>
-                    </div>
-                </div>
-                <div class="card-body pb-0 p-0 list_block">
-                    <div class="row m-0">
-                        <div class="col-8 p-0">
-                            <table>
-                                <tr>
-                                    <td>
-                                        <p>Relationship Status: <b>{{ obj.relationship_status }}</b><br>
-                                        <p> Address: <b>{{ obj.primary_account_address }}</b></p>
-                                        <p>Phone: <b>{{ obj.mobile_number }}</b></p>
-                                        <p>Location: <b><a href="https://www.google.com/maps/@{{ obj.latitude }},{{ obj.longitude }},15z">
-                                            {{ obj.latitude }},{{ obj.longitude }} <i class="fa fa-globe" style="color:steelblue; position: relative; top: 2px;" aria-hidden="true"></i></a></b></p>
-                                        <p>Product: <b>{{ obj.products }}</b></p>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                        <div class="col-4 p-0">
-                            <img class="p-1" src="{{ obj.document_self }}" style="height: 125px; object-fit:contain; width: 100%;" alt="Profile Picture">
-                        </div>
-                    </div>
-                </div>
-                <form method="post">
-                    <div class="card-body">
-                        {% csrf_token %}
-                        {% form form=form %}{% endform %}
-                    </div>
-                    <div class="status_block">
-                        <div class="main-header">
-                            <span class="text-black back_button">
-                                <input class="btn btn-secondary" type="button" value="Back" onclick="history.back()" />
-                            </span>
-                            <span class="text-black-50 back_button">
-                                <input class="btn btn-primary rounded-3 float-right" type="submit"  value="Submit"/>
-                            </span>
-                        </div>
-                    </div>
-                </form>
+    <div class="customer-profile-container">
+{#        <!-- Profile Header -->#}
+{#        <div class="profile-header">#}
+{#            <h1 class="customer-title">Customer Profile</h1>#}
+{#            <a href="{% url 'admin:connection_app_customerprofile_change' object_id=obj.id %}" class="action-btn">Edit Profile</a>#}
+{#        </div>#}
+
+        <!-- ID Bar -->
+        <div class="id-bar">
+            <div class="id-info">
+                <span>{{ obj.name }} - {{ obj.consumer_id }}</span>
+                <span>Profile ID: {{ obj.id }}</span>
             </div>
-         </div>
+            <div>
+                <span><a href="{% url 'admin:connection_app_customerprofile_change' object_id=obj.id %}" class="action-btn">Edit Profile</a></span>
+            </div>
+        </div>
+
+        <!-- Main Profile Content -->
+        <div class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Personal Information</h2>
+            </div>
+            <div class="section-content">
+                <div class="profile-grid">
+                    <div class="profile-details">
+                        <div class="detail-row">
+                            <label>Relationship Status:</label>
+                            <span>{{ obj.relationship_status }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <label>Address:</label>
+                            <span>{{ obj.primary_account_address }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <label>Phone:</label>
+                            <span>{{ obj.mobile_number }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <label>Location:</label>
+                            <span>
+                                <a href="https://www.google.com/maps/@{{ obj.latitude }},{{ obj.longitude }},15z" target="_blank" class="location-link">
+                                    {{ obj.latitude }}, {{ obj.longitude }}
+                                    <i class="fas fa-globe" aria-hidden="true"></i>
+                                </a>
+                            </span>
+                        </div>
+                        <div class="detail-row">
+                            <label>Product:</label>
+                            <span>{{ obj.products }}</span>
+                        </div>
+                    </div>
+                    <div class="profile-image">
+                        <img src="{{ obj.document_self }}" alt="Profile Picture" class="profile-avatar">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Form -->
+        <form method="post" class="profile-form">
+            {% csrf_token %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h2 class="section-title">Update Profile</h2>
+                </div>
+                <div class="section-content">
+                    {% form form=form %}{% endform %}
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="button" class="action-button secondary" onclick="history.back()">Back</button>
+                <button type="submit" class="action-button primary">Submit</button>
+            </div>
+        </form>
+    </div>
     {% endif %}
+
     <style>
-        .status_block .main-header{
-            border-top: 1px solid #ccc;
-            border-bottom: 1px solid #ccc;
-            border-radius: 0;
-            background-color: #efefef;
-            font-weight: bold;
-            font-size: 14px;
+    :root {
+        --orange-header: #e7582e;
+        --primary-blue: #4355b9;
+        --light-blue-bg: #f1f3ff;
+        --border-color: #e0e0e0;
+        --error-red: #e94a6f;
+        --success-green: #28a745;
+        --background-gray: #f5f5f5;
+        --dark-gray-text: #555;
+    }
+
+    body {
+        font-family: 'Roboto', sans-serif;
+        background-color: var(--background-gray);
+        color: var(--dark-gray-text);
+    }
+
+    .customer-profile-container {
+        width: 100%;
+        max-width: 800px;
+        {#margin: 0 auto;#}
+        margin: 6px auto;
+        padding: 0;
+    }
+
+    .profile-header {
+        background-color: var(--orange-header);
+        color: white;
+        padding: 12px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .customer-title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .id-bar {
+        background-color: var(--primary-blue);
+        color: white;
+        padding: 12px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+    }
+
+    .id-info {
+        display: flex;
+        gap: 20px;
+    }
+
+    .content-section {
+        border: 1px solid var(--border-color);
+        border-radius: 2px;
+        margin-bottom: 15px;
+        background: white;
+        overflow: hidden;
+    }
+
+    .section-header {
+        background-color: var(--light-blue-bg);
+        padding: 10px 15px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .section-title {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .section-content {
+        padding: 15px;
+    }
+
+    .profile-grid {
+        display: grid;
+        grid-template-columns: 3fr 1fr;
+        gap: 15px;
+    }
+
+    .detail-row {
+        display: flex;
+        margin-bottom: 10px;
+    }
+
+    .detail-row label {
+        width: 150px;
+        font-weight: 500;
+        font-size: 14px;
+    }
+
+    .detail-row span {
+        font-size: 14px;
+    }
+
+    .profile-image {
+        text-align: center;
+    }
+
+    .profile-avatar {
+        max-height: 125px;
+        width: 100%;
+        object-fit: contain;
+        border: 1px solid var(--border-color);
+    }
+
+    .location-link {
+        color: var(--primary-blue);
+        text-decoration: none;
+    }
+
+    .location-link:hover {
+        text-decoration: underline;
+    }
+
+    .form-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .action-button {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .action-button.primary {
+        background-color: var(--primary-blue);
+        color: white;
+    }
+
+    .action-button.secondary {
+        background-color: #f5f5f5;
+        color: var(--dark-gray-text);
+        border: 1px solid var(--border-color);
+    }
+
+    .action-btn {
+        background-color: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        text-decoration: none;
+    }
+
+    .action-btn:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+
+    @media (max-width: 768px) {
+        .profile-grid {
+            grid-template-columns: 1fr;
         }
-        .application_form .list_block th, .application_form .list_block td, .status_block th,.application_form .list_block td { font-size: 0.9rem;}
-        .table.table-bordred:last-child tr{ border-bottom: transparent;}
-        .back_button input{ border:1px solid transparent; padding: 0 10px !important; margin: 0 0 10px 0 !important; cursor: pointer; margin-right:10px; padding: 5px 10px;
-            height: 35px !important;}
-        body .form_label .back_button .btn { height: 30px !important; text-transform:capitalize; margin: 0 10px 0 0 !important; }
+
+        .id-info {
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
     </style>
 {% endblock %}

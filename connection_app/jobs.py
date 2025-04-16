@@ -1,6 +1,6 @@
 import csv
 
-from connection_app.enums import TemplateEnum, ImportDataStatusEnum
+from connection_app.enums import TemplateEnum, ImportDataStatusEnum, DistributorStatusEnum
 from connection_app.vicidial.jobs import make_api_request, VICIDIAL_NON_AGENT_API, VICIDIAL_CAMPAIGN_API
 from ujjwala.camunda_functions import start_process_in_camunda_v2
 import logging
@@ -75,14 +75,12 @@ def import_bulk_is_dirty(csv_file_rows):
 	from connection_app.models import CustomerProfile
 
 	for idx, row in enumerate(csv_file_rows):
-		try:
-			consumer_id = row['consumer_id'].replace(";", "")
-			cp_obj = CustomerProfile.objects.get(consumer_id=consumer_id)
+		consumer_id = row['consumer_id'].replace(";", "")
+		cp_obj = CustomerProfile.objects.filter(consumer_id=consumer_id).first()
+		if cp_obj:
 			cp_obj.is_dirty = True
 			cp_obj.save()
 			start_read_customer_profile(cp_obj.pk)
-		except Exception as e:
-			continue
 	return True
 
 
@@ -100,6 +98,7 @@ def import_update_distributor(csv_file_rows):
 				cp_obj.distributor = distributor_obj
 				cp_obj.distributor_code = distributor_obj.code
 				cp_obj.distributor_name = distributor_obj.name
+				cp_obj.distributor_status = DistributorStatusEnum.MANUALLY_UPDATED
 				cp_obj.save()
 
 			cp_obj.is_dirty = True
@@ -146,22 +145,8 @@ def schedule_upload_data(template, id_obj):
 			function(data_rows)  # Pass arguments dynamically
 			id_obj.status = ImportDataStatusEnum.COMPLETED
 			id_obj.save()
-
-
-		# if template == TemplateEnum.SERVICE_AREA:
-		# 	upload_service_area_csv(data_rows)
-		# elif template == TemplateEnum.CUSTOMER_REGISTER:
-		# 	upload_customer_register_csv(data_rows)
-		# elif template == TemplateEnum.DELIVERY_REGISTER:
-		# 	pass
-		# elif template == TemplateEnum.BULK_IS_DIRTY:
-		# 	bulk_is_dirty_update(data_rows)
-		# elif template == TemplateEnum.UPDATE_DISTRIBUTOR:
-		# 	update_distributor(data_rows)
-		# elif template == TemplateEnum.UPDATE_BULK_OUT:
-		# 	update_bulk_out(data_rows)
-		# elif template == TemplateEnum.CANCEL_BOOKINGS:
-		# 	schedule_booking_cancellation_csv(data_rows)
+		else:
+			raise Exception("{} Function not found".format("import_{}".format(id_obj.import_data_template.template.lower().replace(" ", "_"))))
 
 	except Exception as e:
 		id_obj.error_log = str(e)
