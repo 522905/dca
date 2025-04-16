@@ -1327,7 +1327,6 @@ class ImportDataTemplate(models.Model):
 class ImportData(models.Model):
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
-	template = models.CharField(max_length=128, null=True, blank=True)
 	import_data_template = models.ForeignKey(ImportDataTemplate, on_delete=models.CASCADE, null=True)
 	file_path = models.TextField()
 	status = models.CharField(max_length=128, choices=ImportDataStatusEnum.choices,
@@ -1395,6 +1394,18 @@ class VaultSecret(models.Model):
 	last_updated_on = models.DateTimeField(blank=True, null=True)
 	last_updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True,
 	                                    related_name='vault_secrets')
+	
+
+class OmdCylinderConversion(models.Model):
+	contact_mobile = models.CharField(max_length=10)
+	mobile_number_2 = models.CharField(max_length=10, null=True, blank=True)
+	user_name = models.CharField(max_length=256)
+	address = models.CharField(max_length=128, choices=ProofTypeEnum.choices, default=ProofTypeEnum.AADHAR)
+	omccylinderphoto= models.URLField()
+	omcphotowithperson = models.URLField()
+	connection_type = models.CharField(max_length=25, choices=ConnectionTypeEnum.choices, null=True)
+	referral_code = models.CharField(max_length=32, null=True, blank=True)
+	
 
 	class Meta:
 		permissions = (

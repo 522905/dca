@@ -24,6 +24,7 @@ urlpatterns = [
     path('connection-application/start/', views.index),
     path('connection-application/blue-book/', views.blue_book_form_view),
     path('connection-application/add-on/', views.add_on_cylinder_form_view),
+    path('connection-application/omc_conversion_request/', views.omc_cylinder_change_request_form_view),
     url(
         '^connection-application/(?P<pk>[^/.]+)/status/$',
         views.ApplicationStatusView.as_view(),
