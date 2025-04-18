@@ -1280,7 +1280,6 @@ class SalesOrderInvoice(models.Model):
 		                      name='unique sales_order_invoice_date_invoice_number')
 		]
 
-
 class Lead(models.Model):
 	parent = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, null=True)
 	created_on = models.DateTimeField(auto_now_add=True)
@@ -1410,12 +1409,35 @@ class VaultSecret(models.Model):
 		super(VaultSecret, self).save(*args, **kwargs)
 
 
-class OmcCylinderConversion(models.Model):
-	contact_mobile = models.CharField(max_length=10)
-	mobile_number_2 = models.CharField(max_length=10, null=True, blank=True)
-	user_name = models.CharField(max_length=256)
-	address = models.CharField(max_length=128, choices=ProofTypeEnum.choices, default=ProofTypeEnum.AADHAR)
-	omccylinderphoto = models.URLField()
-	omcphotowithperson = models.URLField()
-	connection_type = models.CharField(max_length=25, choices=ConnectionTypeEnum.choices, null=True)
-	referral_code = models.CharField(max_length=32, null=True, blank=True)
+class OmcConversionRequest(models.Model):
+    contact_mobile = models.CharField(max_length=10)
+    customer_name = models.CharField(max_length=256)
+    area = models.CharField(max_length=128, choices=ProofTypeEnum.choices, default=ProofTypeEnum.AADHAR)
+    omccylinderphoto = models.URLField()
+    omcphotowithperson = models.URLField()
+    cylinder_type = models.CharField(max_length=25, choices=ConnectionTypeEnum.choices, null=True)
+    referral_code = models.CharField(max_length=32, null=True, blank=True)
+    onboard_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.customer_name} ({self.contact_mobile})"
+
+
+class ConversionRequest(models.Model):
+    omc_request = models.ForeignKey(OmcConversionRequest, related_name="conversion_request", on_delete=models.CASCADE)
+    contact_mobile = models.CharField(max_length=10)
+    customer_name = models.CharField(max_length=256)
+    area = models.TextField(null=True, blank=True)
+    omc_cylinder_photo_Before = models.URLField()
+    omc_cylinder_photo_after = models.URLField()
+    referral_code = models.CharField(max_length=32, null=True, blank=True)
+    cylinder_type = models.CharField(max_length=25)
+
+    def __str__(self):
+        return f"{self.customer_name} - {self.cylinder_type}"
+
+
+
+ 

@@ -1,865 +1,155 @@
+{% extends "material/frontend/base_module.html" %}
 {% load static %}
-<!DOCTYPE html> 
-<head>
-	<title>ARUN GAS SERVICE</title>
-	<link rel="icon" type="image/png" >
-    <meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css">
-	<link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css" >
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,600,800&amp;display=swap">
-	<link rel="stylesheet" href="https://arungas.com/public/ujwalla/css/signature-pad.css">
-    <link rel="stylesheet" href="https://arungas.com/public/ujwalla/css/style.css">
-	<link rel="stylesheet" href="{% static '/css/style.css' %}">
-	<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
-	<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-	<script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
-	<script src="https://arungas.com/public/ujwalla/js/signature_pad.umd.js"></script>
-    <script src="{% static '/js/moment.min.js' %}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% block page_title %}Promotional Sale{% endblock %}
+{% load material_form %}
+{% block content %}
+    <link rel="stylesheet" href="{% static '/css/style.css' %}">
+    <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap" rel="stylesheet">
+    <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
 
-</head>
-<body>
-    <div id="swal-template" style="display: none;">
-        <div style="text-align: center;">
-            <p><strong>Thank You! Dear <b id="swal-app-name"></b> </strong></p>
-            <p>Your  <b id="swal-app-type">{{ application_type }} </b> Application ID: <b id="swal-app-id"></b>
-                Submitted Successfully</p>
-            <p>आपका <b id="swal-app-type">{{ application_type }} </b> आवेदन आईडी: <b id="swal-app-id"></b> सफलतापूर्वक जमा किया गया है</p>
-        </div>
-    </div>
-	<div class="container">
-		<div class="main">
-			<div class="text-center" style="padding: 20px 0 0 0;">
-				<h3 class="text-uppercase font-weight-bold">OMC Change Cylinder Application Form</h3>
-				<h6 class="text-primary font-weight-bold">OMC Change सिलिंडर के लिए आवेदन फार्म</h6>
-			</div>
-			<div class="form-contain">
-				<div id="form_hide">
-					<form class="form-horizontal" action="" id="bluebook" method="POST" enctype="multipart/form-data">
-						<!-- start Whatsapp OTP Verification Modal -->
-						<div class="modal fade" id="verifyMobileOtp" tabindex="-1" role="dialog" aria-labelledby="verifyMobileOtp" aria-hidden="true">
-							<div class="modal-dialog" role="document">
-								<div class="modal-content">
-									<div class="modal-header">
-										<h6 class="modal-title text-center" id="verifyMobileOtp">OTP Sent on <span id="verifyMobileNumber"></span></h6>
-										<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-											<span aria-hidden="true">&times;</span>
-										</button>
-									</div>
-									<div class="modal-body">
-										<input name="whatsapp_otp" style="margin: 0 auto; max-width: 150px;" type="tel" class="form-control" id="whatsapp_otp"
-										required />
-									</div>
-									<div class="modal-footer">
-										<button type="button" class="btn btn-secondary" data-dismiss="modal">Change Number</button>
-										<button type="button" class="btn btn-primary" onclick="whatsapp_verifier.verify_otp()">Verify & Submit</button>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="card" style="background-color: #f8f9fa;">
-							<div class="card-header">
-								<h5 class=" text-dark"> Personal Information</h5>
-							</div>
-							<div class="card-body" style="padding: 20px 0 0 0; margin-bottom: 10px;">
-								<div class="row">
-									<div class="col-md-6">	
-										<!-- end Whatsapp OTP Verification Modal -->
-										<div id="uid_linked_mobile_form_group" class="form-group whatsapp-form-group">
-											<label style="margin-bottom: 0;">Own or Family Mobile Number
-												<span style="font-size: 12px;"></span>
-												<i class="fa fa-whatsapp" aria-hidden="true"></i> 
-												<strong style="color:red">*</strong>
-											</label>
-
-											<div class="position-relative w-100">
-												<input type="tel" class="form-control full-width-input" id="contact_mobile"
-													pattern="[6789][0-9]{9}" name="contact_mobile" maxlength="10" required />
-												<button type="button" id="verifyWhatsappButton" class="btn btn-primary inner-button" 
-												onclick="whatsapp_verifier.start_verification()">Verify</button>
-											</div>
-			
-											<div class="row m-0">
-												<span id="contact_mobile_detail_whatsapp"></span>
-											</div>
-										</div>
-									</div>
-									<div class="col-md-6">
-										<div class="form-group whatsapp-form-group">
-											<label for="mobileNumber" style="margin-bottom: 0 !important;">
-												Mobile Number(मोबाइल नंबर) <i class="fa fa-phone" aria-hidden="true"></i> 
-												<strong style="color:red;">*</strong>
-											</label>
-												<input type="tel" class="form-control" id="mobile_number_2" name="mobile2"
-												placeholder="Enter your number" onblur="this.reportValidity();"  required />
-											<div class="row m-0">
-												<p id="errorMessage" class="error"></p>
-											</div>
-										</div>
-									</div>
-								</div>
-								<div class="row">
-									<div class="col-md-6">
-										<div class="form-group">
-											<label>Customer Name<strong class="text-danger">*</strong></label>
-											<input type="text" class="form-control" id="customername" name="user_name" required>
-										</div>
-									</div>
-									<div class="col-md-6">
-										<div class="form-group">
-											<label>Enter - Area/Locality/Village (क्षेत्र/इलाका) <strong class="text-danger">*</strong></label>
-											<input type="text" class="form-control" id="address" name="area" required>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="card" style="margin-top:20px">
-							<div class="card-body" style="padding: 0px 0 0 0; ">
-								<div class="row form-group uppy_img_upload" style="margin: 0px; padding: 0;">
-									<div class="col-md-6" style="padding: 0px 0 0 0; ">
-										<div class="form-group column">
-											<p style="margin-bottom:10px">OMC Cylinder Photo</p>
-												<span class="custom-file-input" id="omccylinderphoto"></span>
-										</div>
-									</div>
-									<div class="col-md-6" style="margin: 0px;">
-										<div class="form-group column">
-											<p style="padding-bottom:10px">OMC Cylinder Photo With Person</p>
-												<span class="custom-file-input" id="omcphotowithperson"></span>
-										</div>
-									</div>
-									
-								</div>
-							</div>
-						</div>
-						<div class="card" style=" margin-top: 10px; background-color: #f8f9fa;" >
-							<div class="card-body" style="padding: 20px 0 0 0;">
-								<div class="row">
-									<div class="col-md-6">
-										<div class="form-group">
-											<label>Connection Type (गैस कनेक्शन का प्रकार) <strong class="text-danger">*</strong></label>
-											<select class="form-control" name="connection_type" id="connectionType" required>
-												<option value="">Select Connection Type (गैस कनेक्शन प्रकार चुनें)</option>
-												<option value="FC14#SINGLE">14.2 KG Single Connection (14.2 किलो सिंगल कनेक्शन)</option>
-												<option value="FC5#SINGLE">5 KG Single Connection (5 किलो सिंगल कनेक्शन)</option>
-											</select>
-										</div>
-									</div>
-									<div class="col-md-6">
-										<div class="form-group">
-											<label>Referral Code</label>
-											<input type="text" class="form-control" id="reference" name="referral_code">
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div style="margin-top:10px; display: block; text-align: center;">
-							<button type="submit" class="btn btn-success btn-lg px-5">Submit</button>
-						</div>
-						
-					</form>
-				</div>
-				<div id="cus_id"></div>
-				<div id="application_receipt">
-					<span id="app_id"></span>
-					<span id="app_id_creation"></span>
-				</div>
-				<div id="message"></div>
-			</div>
-		</div>	
+	<div class="container mt-4 main p-2 pt-0 form_label">
+		<form method="post" id="promotional-sale-form">
+			{% csrf_token %}
+			<div class="card">
+				<div class="card-header bg-primary text-white">OMC Cylinder Conversion Form</div>
+				<div class="card-body">
+					{% form form=form %}{% endform %}
+					<input type="hidden" id="id_omccylinderphotoBefore" name="omccylinderphotoBefore">
+					<input type="hidden" id="id_omccylinderphotoAfter" name="omccylinderphotoAfter">
 		
-	</div>
-	<div class="footer">
-		<div class="container">
-			<div class="row">
-				<div class="col-md-6  footer_left">
-					<ul>
-						<li>
-							<div class="social-media">
-								<a href="https://www.instagram.com/arungas_ldh/" target="_blank">
-									<h3><i class="fa fa-instagram" style="font-size:18px; color:red;"></i> @arungas_ldh</h3>
-								</a>
-							</div>
-						</li>
-						<li>
-							<div class="social-media">
-								<a href="https://www.facebook.com/arungasindane" target="_blank">
-									<h3><i class="fa fa-facebook" style="font-size:18px; color:rgb(0, 76, 255)"></i> @arungasindane</h3>   
-								</a>  
-							</div>
-						</li>
-					</ul>
+					<div class="row">
+						<div class="col-md-6">
+							<label><strong>OMC Cylinder Photo Before</strong></label>
+							<div id="omccylinderphotoBefore" class="border p-2"></div>
+						</div>
+						<div class="col-md-6">
+							<label><strong>OMC Cylinder Photo With Person</strong></label>
+							<div id="omccylinderphotoAfter" class="border p-2"></div>
+						</div>
+					</div>
 				</div>
-				<div class="col-md-6">
-					<p class="align-right">© Copyright 2024 | Arun Gas by OceanClouds</p>
+				<div class="card-footer text-end">
+					<button type="submit" class="btn btn-success float-end rounded-0">Submit</button>
 				</div>
 			</div>
+		</form>
+		<div id="submissionAlert" class="alert alert-success text-center" role="alert" style="display: none;">
+			✅ Form Submitted Successfully!
 		</div>
 	</div>
-	<!-- Error Modal -->
-<div id="errorModal" class="modal fade" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-danger">Error</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <!-- Error message will be inserted dynamically -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
+	
 	<script>
-		function valid() {
-			let files = [
-				validateUppy(omcphotowithperson, 'CUSTOMER_PHOTO', 'Customer photo with OMC Cylinder*', true),
-				validateUppy(omccylinderuppy, 'OMC_CYLINDER_PHOTO', 'Cylinder Photo', true),
-			]
-
-			if (!files.reduce((aggr, current) => { return current.valid && aggr }, true)) {
-				let error = files.reduce((aggr, current) => {
-					if (current.msg) {
-						return aggr + '\n' + current.msg
-					} else {
-						return aggr
-					}
-				}, '');
-				window.alert(error);
-				return null;
-			}
-			let documentArray = files.filter(e => e.url).map(e => { return { type: e.key, link: e.url } });
-			console.log(documentArray);
-			return documentArray;
-		}
-
-		function validateUppy(uppyObj, key, label, fileMandatory) {
-
-			if (!uppyObj.state || uppyObj.state.totalProgress == 0) {
-				if (fileMandatory) {
-					return {
-						valid: false, key: key,
-						msg: `${label} is required`
-					};
+		document.getElementById("promotional-sale-form").addEventListener("submit", function(e) {
+			e.preventDefault();
+	
+			const form = e.target;
+			const formData = new FormData(form);
+	
+			fetch("", {
+				method: "POST",
+				body: formData,
+				headers: {
+					'X-Requested-With': 'XMLHttpRequest',
 				}
-				return { valid: true };
-			} else if (uppyObj.state.totalProgress < 100) {
-				return { valid: false, key: key, msg: `${label} upload in Progress(अपलोड प्रगति पर है)` };
-			} else {
-				return { valid: true, key: key, url: Object.values(uppyObj.state.files)[0].uploadURL };
-			}
-		}
-
-		var initialData = {
-			"mobile": "",
-			"referral_code": "",
-			"mobile_number_2": "",
-		};
-
-		function fillInitialData() {
-			Object.entries(initialData).forEach((keyValue) => {
-				$(`[name=${keyValue[0]}]`).val(keyValue[1]);
 			})
-		}
-		function getCookie(name) {
-		let cookieValue = null;
-			if (document.cookie && document.cookie !== '') {
-				const cookies = document.cookie.split(';');
-				for (let i = 0; i < cookies.length; i++) {
-					const cookie = cookies[i].trim();
-					// Does this cookie string begin with the name we want?
-					if (cookie.substring(0, name.length + 1) === (name + '=')) {
-						cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-						break;
-					}
+			.then(response => {
+				if (response.ok) {
+					return response.text();
+				} else {
+					throw new Error("Network response was not ok");
 				}
-			}
-			return cookieValue;
-		}
-
-		document.getElementById('mobile_number_2').addEventListener('blur', function () {
-			const mobileNumber = this.value.trim();
-			const errorMessage = document.getElementById('errorMessage');
-	  
-			// Regex for Indian mobile numbers
-			const mobileRegex = /^[6-9]\d{9}$/;
-	  
-			if (mobileRegex.test(mobileNumber)) {
-			  errorMessage.textContent = "Valid mobile number!";
-			  errorMessage.classList.remove("error");
-			  errorMessage.classList.add("success");
-			} else {
-			  errorMessage.textContent = "Invalid mobile number. Please enter a 10-digit number starting with 6, 7, 8, or 9.";
-			  errorMessage.classList.remove("success");
-			  errorMessage.classList.add("error");
-			}
-		  });
-	
-		function WhatsappMobileVerifiedController() {
-			var state = 'INITIAL';
-			var whatsappRefNo = undefined;
-	
-			function setAsVerified() {
-				state = 'VERIFIED';
-				$("#contact_mobile_detail_whatsapp").show();
-				$("#contact_mobile_detail_whatsapp").html('✔ Contact Verified').css({'color': 'green', 'font-size' : '14px'});
-	
-				$('#changeWhatsappButton').show();
-				$('#verifyWhatsappButton').hide();
-	
-				$('[name="contact_mobile"]').attr('readonly', true);
-			}
-	
-			function resetVerification() {
-				state = 'INITIAL';
-				$("#contact_mobile_detail_whatsapp").hide();
-				$("#contact_mobile_detail_whatsapp").html('');
-	
-				$('#changeWhatsappButton').hide();
-				$('#verifyWhatsappButton').show();
-	
-				$('#whatsapp_otp').val('');
-				$('[name="contact_mobile"]').val('');
-	
-				$('[name="contact_mobile"]').attr('readonly', false);
-			}
-	
-			{% if source == 'link_share' %}
-			$('[name="contact_mobile"]').val("{{ signed_contact_mobile }}");
-			setAsVerified();
-			$('.whatsapp-form-group button').attr('disabled', true);
-			{% endif %}
-			
-			return {
-				start_verification: () => {
-					// reset custom validity
-					$('[name="contact_mobile"]')[0].setCustomValidity('');
-	
-					if (!$('[name="contact_mobile"]')[0].reportValidity()) return;
-					
-					var mobile = $('[name="contact_mobile"]').val();
-					$('#verifyWhatsappButton').attr('disabled', true);
-	
-					return jQuery.ajax({
-						url: '/connection_app/connection-application/check_phone/',
-						type: "GET",
-						data: {'contact_mobile': mobile}
-					}).
-					then(response => {
-						console.log("response received" + response);
-						if (response.status != true) {
-							var msg = response.msg;
-							var applications = response.applications;
-	
-							$('[name="contact_mobile"]')[0].setCustomValidity(
-								`ID: ${applications[0].id} Name: ${applications[0].name}`
-							);
-							$('[name="contact_mobile"]')[0].reportValidity();
-	
-							msg = applications.map(e=>`<p>आपका आवेदन पहले से मौजूद है ${e.id} Name: ${e.name}</p>`).join('');
-	
-							$("#contact_mobile_detail_whatsapp").html(msg).css({'color': 'red', 'font-size' : '17px'});
-							throw new Error(`आपका आवेदन पहले से मौजूद है आइ डी: ${applications[0].id} और नाम ${applications[0].name} स्टेटस ` + msg);
-						}
-						return true;
-					}).
-					then(() => {
-						return jQuery.ajax({
-							url: '/ujjwala/ujjwala-otp/send_sms_otp/',
-							type: "GET",
-							data: {
-								contact_mobile: mobile
-							},
-							headers: {'X-CSRFToken': getCookie('csrftoken')}
-						});
-					}).
-					then(data=> {
-						$('#verifyMobileNumber')[0].innerHTML = mobile;
-						$('#verifyMobileOtp').modal('show');
-						whatsappRefNo = data.reference_number;
-						return whatsappRefNo;
-					}).
-					fail(e => {
-						alert(e);
-					}).
-					always(() => {
-						$('#verifyWhatsappButton').attr('disabled', false);
-					});
-				},
-	
-				verify_otp: () => {
-					var whatsapp_otp = $('#whatsapp_otp').val();
-					return new Promise((resolve, reject) => {
-						$('.modal-footer button').attr('disabled', true);
-						
-						jQuery.ajax({
-							url: '/ujjwala/ujjwala-otp/verify_sms_otp/',
-							type: "POST",
-							data: {
-								"otp": whatsapp_otp,
-								"reference_number": whatsappRefNo
-							},
-							headers: {'X-CSRFToken': getCookie('csrftoken')},
-							success: function (data) {
-								$('#verifyMobileOtp').modal('show');
-								if (data.verified) {
-									return resolve(data.signed_value);
-								}
-								return reject("Invalid Code, enter again");
-							},
-						});
-					}).
-					then(signed_number=> {
-						$('[name="contact_mobile"]').val(signed_number);
-						$('.modal.show').modal('hide');
-						setAsVerified();
-					}).
-					catch((e) => {
-						alert(e);
-					}).
-					finally(() => {
-						$('.modal-footer button').attr('disabled', false);
-					});
-				},
-	
-				reset_verification: () => {
-					resetVerification();
-				},
-	
-				is_valid: () => {
-					if (state !== 'VERIFIED') {
-						alert(`व्हाट्सएप नंबर मान्य नहीं है`);
-						setTimeout(() => {
-							$("#verifyWhatsappButton").focus();
-						}, 0);
-						return false;
-					}
-					return true;
-				},
-	
-				get_validated_data: () => {
-					return {
-						'contact_mobile': $('[name="contact_mobile"]').val()
-					}
-				}
-			}
-		}
-	
-		whatsapp_verifier = WhatsappMobileVerifiedController();
-	
-			function getCookie(name) {
-			let cookieValue = null;
-				if (document.cookie && document.cookie !== '') {
-					const cookies = document.cookie.split(';');
-					for (let i = 0; i < cookies.length; i++) {
-						const cookie = cookies[i].trim();
-						// Does this cookie string begin with the name we want?
-						if (cookie.substring(0, name.length + 1) === (name + '=')) {
-							cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-							break;
-						}
-					}
-				}
-				return cookieValue;
-			}
-		
-		$('#bluebook').on('submit', function (event) {
-			event.preventDefault();
-
-			// Check if terms and conditions are agreed
-			if (!document.getElementById('term_condition_agree').checked) {
-				alert("Please agree to the terms and conditions.");
-				return;
-			}
-	
-			// Check if the signature pad is not empty
-			if (signaturePad.isEmpty()) {
-				alert("Please provide a signature.");
-				return;
-			}
-
-			let documentArray = valid();
-			if(documentArray == null) return;
-
-			let formdata = $('form').serializeArray()
-				.reduce(function (accum, item) {
-
-					if (-1 === ['ignoreThis', 'andThat'].indexOf(item.name)) {
-
-						if (item.value !== null) {
-							accum[item.name] = item.value;
-						}
-					}
-					return accum;
-				},
-					{}
-				);
-
-			formdata.documents = documentArray;
-			formdata.item_code = formdata.connection_type.split('#')[0];
-			formdata.connection_type = formdata.connection_type.split('#')[1];
-			formdata.mobile = formdata.contact_mobile.split(':')[0];
-			
-
-			// Capture the signature data
-			formdata.signature = signaturePad.toDataURL();
-
-			console.log(JSON.stringify(formdata));
-
-			jQuery('#submit').val('Please wait...');
-			jQuery('#submit').attr('disabled', true);
-
-			jQuery.ajax({
-				url: '/connection_app/connection-application/wf/',
-				type: 'POST',
-				data: JSON.stringify(formdata),
-				contentType: "application/json; charset=utf-8",
-				dataType: 'JSON',
-				headers: {'X-CSRFToken': getCookie('csrftoken')},
-
-				processData: false,
-				success: function (result) {
-                    $('#form_hide').hide();
-                    console.log(result);
-                    jQuery('#bluebook')[0].reset();
-                    jQuery('#submit').val('Submit');
-                    jQuery('#submit').attr('disabled', false);
-
-                    // Set dynamic values inside the hidden template
-                    $("#swal-app-id").text(result.id);
-                    $("#swal-app-name").text(result.name);
-                    $("#swal-app-type").text(result.application_type);
-
-                    // Get the HTML content after updating values
-                    let swalContent = $("#swal-template").html();
-
-                    // Show Swal popup with the updated template
-                    Swal.fire({
-                        title: "Successful",
-                        html: swalContent,  // Use updated HTML
-                        icon: "success",
-                    });
-
-                    $("#message").html('<div class="alert alert-success text-center"><strong>SUCCESS!</strong> Your Blue Book application has been submitted.</div>');
-                    $("#cus_id").html(`<b>${result.id}</b> is your application ID.`).css({ "text-align": "center" });
-                    $('#application_receipt').show();
-
-
-                },
-                error: function (xhr, status, error) {
-                    jQuery('#submit').val('Submit');
-                    jQuery('#submit').attr('disabled', false);
-
-                    let errorMessage = "Something went wrong. Please try again.";
-
-                    if (xhr.responseJSON) {
-                        if (xhr.responseJSON.message) {
-                            errorMessage = xhr.responseJSON.message;
-                        } else {
-                            // Extract errors dynamically from JSON response
-                            errorMessage = Object.entries(xhr.responseJSON)
-                                .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(", ") : value}`)
-                                .join("<br>");
-                        }
-                    } else if (xhr.status) {
-                        errorMessage = `Error ${xhr.status}: ${xhr.statusText}`;
-                    }
-
-                    // Set error message in the modal and show it
-                    $("#errorModal .modal-body").html(`<div class="text-danger"><strong>ERROR!</strong> ${errorMessage}</div>`);
-                    $("#errorModal").modal("show");
-                }
+			})
+			.then(data => {
+				console.log("Server response:", data);
+				document.getElementById("submissionAlert").style.display = "block";
+				setTimeout(() => {
+					document.getElementById("submissionAlert").style.display = "none";
+				}, 3000);
+			})
+			.catch(error => {
+				alert("Error submitting form: " + error);
 			});
 		});
-
-        
-		
-		$(document).ready(function () {
-			fillInitialData();
-			$("#mobile").blur(function(){
-			var mobile = $("#mobile").val();
-			if (!mobile) return;
-			$("#mobile_detail").show();
-			$("#mobile_detail").html('<img style="width:18px; margin-left:10px;" src="{% static "img/pre.gif"  %}" align="left">&nbsp;Checking application...');
-			
-			jQuery.ajax({
-				url: '/connection-app/connection-application/check_phone/',
-				type: "GET",
-				data: {'mobile': mobile},
-					success: function (data) {
-						
-						response = data;
-						if (response.status === true) {
-							$("#mobile_detail").show();
-							$("#mobile_detail").html('✔ Available for New Application').css({'color': 'green', 'margin-left':'22px', 'font-size' : '17px'});
-							return true;	
-						} 
-						else {
-							var proceed = confirm(
-								`You already Fill the Application.
-								If you want to change your mobile number click on cancel otherwise click on OK! to check the application status.
-
-								आप पहले ही आवेदन भर चुके हैं। अगर आप अपना मोबाइल नंबर बदलना चाहते हैं तो कैंसिल पर क्लिक करें अन्यथा ओके पर क्लिक करें!
-								आवेदन भरे हुए स्थिति की जांच करने के लिए।)`
-
-							);
-							
-							if (proceed) {
-								window.location.href = response.application_url;
-								return false;
-							}
-							else {
-								$('#mobile').val('');
-								$('#mobile').focus();
-								$("#mobile_detail").show();
-								$("#mobile_detail").html('Please Provide New Mobile Number').css({'color': 'green', 'margin-left':'20px', 'font-size' : '17px'});
-							}
-						}
-					},	
-				});	
-			});
-
-
-
-			window.omcphotowithperson = new Uppy.Core({
-				debug: true,
-				autoProceed: true,
-				restrictions: {
-					maxFileSize: 50000000,
-					maxNumberOfFiles: 1,
-					minNumberOfFiles: 1,
-					allowedFileTypes: ['image/*'],
-					//requiredMetaFields: ['caption'],
-				}
-			})
-			.use(Uppy.Dashboard, {
-				trigger: '#omcphotowithperson',
-				inline: true,
-				target: '#omcphotowithperson',
-				showProgressDetails: true,
-				note: 'Images and video only, 2–3 files, up to 10 MB',
-				height: 250,
-				metaFields: [],
-				id: 'omcphotowithperson',
-				browserBackButtonClose: false
-			})
-			.use(Uppy.Tus, {
-				endpoint: 'https://tus.dca.arungas.com/files/',
-			})
-			.use(Uppy.Compressor, {
-				quality: 0.9,
-				maxWidth: 2048,
-				resize: 'contain',
-				limit: 10,
-				convertTypes: ['image/png', 'image/jpg', 'image/jpeg'],
-				convertSize: 1000000,
-			});
-
-			omcphotowithperson.on('complete', result => {
-				console.log('successful files:', result.successful)
-				console.log('failed files:', result.failed)
-			})
-
-
-			window.omccylinderuppy = new Uppy.Core({
-				debug: true,
-				autoProceed: true,
-				restrictions: {
-					maxFileSize: 50000000,
-					maxNumberOfFiles: 1,
-					minNumberOfFiles: 1,
-					allowedFileTypes: ['image/*'],
-					//requiredMetaFields: ['caption'],
-				}
-			})
-			.use(Uppy.Dashboard, {
-				trigger: '#omccylinderphoto',
-				inline: true,
-				target: '#omccylinderphoto',
-				showProgressDetails: true,
-				note: 'Images and video only, 2–3 files, up to 10 MB',
-				height: 250,
-				metaFields: [],
-				id: 'omccylinderphoto',
-				browserBackButtonClose: false
-			})
-			.use(Uppy.Tus, {
-				endpoint: 'https://tus.dca.arungas.com/files/',
-			})
-			.use(Uppy.Compressor, {
-				quality: 0.9,
-				maxWidth: 2048,
-				resize: 'contain',
-				limit: 10,
-				convertTypes: ['image/png', 'image/jpg', 'image/jpeg'],
-				convertSize: 1000000,
-			});
-			omccylinderuppy.on('complete', result => {
-				console.log('successful files:', result.successful)
-				console.log('failed files:', result.failed)
-			})
-		});
-
 	</script>
-</body>
-
-</html>
-
-
-<style>
-	.error {
-		color: red;
-		font-size: 12px;
-		margin: 3px 0;
-	  }
-	  .success {
-		color: green; 
-		font-size: 12px;
-		margin: 3px 0;
-	  }
-	  .form_block label{ padding-left: 12px;}
-	  .form_block .form-group{ padding-left: 30px;}
-	  .position-relative {
-		  position: relative;
-	  }
-	  
-	  .full-width-input {
-		  width: 100%;
-		  padding-right: 90px; /* Space for button */
-	  }
-	  
-	  .inner-button {
-		  position: absolute;
-		  right: 0px;
-		  top: 50%;
-		  border: 1px solid #007bff;
-		  transform: translateY(-50%);
-		  background-color: #007bff;
-		  border-radius: 0;
-	  }
-	  .uppy_img_upload .form-group {
-		  padding: 20px;
-		  background: #f8f9fa;
-		  border-radius: 8px;
-	  }
-	  .uppy_img_upload .row {
-		  display: flex;
-		  flex-wrap: wrap;
-		  gap: 10px;
-	  }
-	  .uppy_img_upload .form-column {
-		  flex: 1;
-		  min-width: 180px;
-		  padding: 10px;
-		  border-radius: 8px;
-		  text-align: center;
-		  color: #fff;
-		  font-weight: bold;
-	  }
-	  .uppy_img_upload .form_col:nth-child(1) { background: #f6c8c8; }
-	  .uppy_img_upload .form_col:nth-child(2) { background: #ace1ec; }
-	  .uppy_img_upload .custom-file-input {
-		  display: inline-block;
-		  padding: 10px;
-		  background: #fff;
-		  border: 1px dashed #ccc;
-		  border-radius: 5px;
-		  color: #333;
-		  width: 100%;
-		  text-align: center;
-		  cursor: pointer;
-		  height: auto;
-	  }
-	  .uppy_img_upload .text-danger {
-		  font-size: 12px;
-		  font-weight: bold;
-	  }
-	  .uppy_img_upload .form_col p{ color: #000}
-	  .uppy_img_upload .uppy-Dashboard{ width: 100%;}
-	  .uppy_img_upload .uppy-Dashboard-innerWrap{ width: 100% !important;}
-
-	.main{ display: block; width: 100%; }
-	 .footer{ border-top: 1px solid #ccc ; padding:20px 0 10px 0; float: left; width: 100%; margin-top:10px; background-color: #fff;}
-	 .footer_left ul{  padding: 0; margin:0;}
-	 .footer_left ul li{ display: inline-block; text-align: left; margin-right: 10px;}
-
-	  .main{ background-color: #f8f9fa; border: 1px solid #ccc; display: inline-block; margin-top:10px;}
-    .align-right{ text-align: right;}
-    @media only screen and (max-width: 600px) {
-		.footer .col-md-6 p{ text-align: center !important;}
-		.footer .col-md-6{ text-align: center !important;}
-		
-	}
-
-	.form-contain {
-		background-color: #fff;
-		padding:20px;
-		width: 100%;
-		float: left;
-        /* background-image: linear-gradient(140deg, #dae53b 0%, #feffbd 50%, #ff8f00 75%); */
-	}
-
-	@-webkit-keyframes mover {
-		0% {
-			transform: translateY(0);
-		}
-
-		100% {
-			transform: translateY(-20px);
-		}
-	}
-
-	@keyframes mover {
-		0% {
-			transform: translateY(0);
-		}
-
-		100% {
-			transform: translateY(-20px);
-		}
-	}
-
-	.input-block span{ font-size: 14px;}
-
-    
-    .social-media h3{
-        font-size: 14px;
-
-    }
-    .custome-image{
-        vertical-align: middle;
-        height: 219px;
-        margin-left: 86px
-    }
-
-
-    textarea.form-control{
-        height: auto;
-    }
+	<script>
+		// Uppy instance for omccylinderphotoAfter
+		const uppyAfter = new Uppy.Core({
+			debug: true,
+			autoProceed: true,
+			restrictions: {
+				maxFileSize: 50000000,
+				maxNumberOfFiles: 1,
+				allowedFileTypes: ['image/*'],
+			}
+		})
+		.use(Uppy.Dashboard, {
+			trigger: '#omccylinderphotoAfter',
+			inline: true,
+			target: '#omccylinderphotoAfter',
+			showProgressDetails: true,
+			note: 'Upload one image (max 50MB)',
+			height: 250,
+			browserBackButtonClose: false
+		})
+		.use(Uppy.Tus, {
+			endpoint: 'https://tus.dca.arungas.com/files/',
+		})
+		.use(Uppy.Compressor, {
+			quality: 0.9,
+			maxWidth: 2048,
+			resize: 'contain',
+			limit: 10,
+			convertTypes: ['image/png', 'image/jpg', 'image/jpeg'],
+			convertSize: 1000000,
+		});
 	
-
-	.form-group-row {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-start;
-		gap: 20px; /* Adjust the gap as needed */
-	}
-	.form-group-row .form-group {
-		flex: 1;
-	}
-	.hidden {
-		display: none;
-	}
+		uppyAfter.on('complete', result => {
+			const uploadedURL = result.successful[0]?.uploadURL;
+			console.log('After photo uploaded:', uploadedURL);
+			if (uploadedURL) {
+				document.getElementById("id_omccylinderphotoAfter").value = uploadedURL;
+			}
+		});
 	
-</style>
+		// Uppy instance for omccylinderphotoBefore
+		const uppyBefore = new Uppy.Core({
+			debug: true,
+			autoProceed: true,
+			restrictions: {
+				maxFileSize: 50000000,
+				maxNumberOfFiles: 1,
+				allowedFileTypes: ['image/*'],
+			}
+		})
+		.use(Uppy.Dashboard, {
+			trigger: '#omccylinderphotoBefore',
+			inline: true,
+			target: '#omccylinderphotoBefore',
+			showProgressDetails: true,
+			note: 'Upload one image (max 50MB)',
+			height: 250,
+			browserBackButtonClose: false
+		})
+		.use(Uppy.Tus, {
+			endpoint: 'https://tus.dca.arungas.com/files/',
+		})
+		.use(Uppy.Compressor, {
+			quality: 0.9,
+			maxWidth: 2048,
+			resize: 'contain',
+			limit: 10,
+			convertTypes: ['image/png', 'image/jpg', 'image/jpeg'],
+			convertSize: 1000000,
+		});
+	
+		uppyBefore.on('complete', result => {
+			const uploadedURL = result.successful[0]?.uploadURL;
+			console.log('Before photo uploaded:', uploadedURL);
+			if (uploadedURL) {
+				document.getElementById("id_omccylinderphotoBefore").value = uploadedURL;
+			}
+		});
+	</script>
+{% endblock %}

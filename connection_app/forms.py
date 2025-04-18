@@ -727,7 +727,54 @@ class PromotionalSaleForm(forms.Form):
 			raise forms.ValidationError("Sales Order No already exists.")
 
 		return data
+	
+class OmcCylinderConversionForm(forms.Form):
+	# CYLINDER_TYPE_CHOICES = [
+	# 	('14.2Kg', '14.2Kg'),
+	# 	('5Kg', '5Kg'),
+	# ]
+	# contact_mobile = forms.CharField(widget=forms.TextInput, label='Phone No', required=True)
+	# cylinder_type = forms.ChoiceField(choices=CYLINDER_TYPE_CHOICES, label='Cylinder Type', required=True)
+	# customer_name = forms.CharField(widget=forms.TextInput, label='Customer Name', required=True)
+	# area = forms.CharField(widget=forms.Textarea, label='Area', required=False)
+	# omccylinderphotoBefore = forms.CharField(widget=forms.HiddenInput, label='Photo with Person or Cylinder', required=True)
+	# omccylinderphotoAfter = forms.CharField(widget=forms.HiddenInput, label='Photo with Person, Cylinder, Copy', required=True)
+	# referral_code = forms.CharField(widget=forms.TextInput, label='Customer Name', required=True)
 
+	CYLINDER_TYPE_CHOICES = [
+			('14.2Kg', '14.2Kg'),
+			('5Kg', '5Kg'),
+		]
+
+	contact_mobile = forms.CharField(
+		widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Phone Number'}),
+		label='Phone No', required=True
+	)
+	customer_name = forms.CharField(
+		widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Customer Name'}),
+		label='Customer Name', required=True
+	)
+	area = forms.CharField(
+		widget=forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter Area', 'rows': 3}),
+		label='Area', required=False
+	)
+	cylinder_type = forms.ChoiceField(
+		choices=CYLINDER_TYPE_CHOICES,
+		widget=forms.Select(attrs={'class': 'form-control'}),
+		label='Cylinder Type', required=True
+	)
+	referral_code = forms.CharField(
+		widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Referral Code'}),
+		label='Referral Code', required=True
+	)
+	omccylinderphotoBefore = forms.CharField(
+		widget=forms.HiddenInput(), label='OMC Cylinder Photo', required=True
+	)
+	omccylinderphotoAfter = forms.CharField(
+		widget=forms.HiddenInput(), label='OMC Cylinder Photo With Person', required=True
+	)
+
+	
 
 class PromotionalSalePrizeAllocationForm(forms.Form):
 	proof_type = forms.ChoiceField(

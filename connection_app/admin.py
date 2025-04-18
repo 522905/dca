@@ -22,8 +22,21 @@ from django.contrib import admin
 from django_object_actions import DjangoObjectActions, action
 
 from hashicorp import hashicorp_client
-from .models import VaultSecret
+from .models import VaultSecret, OmcConversionRequest, ConversionRequest
 
+
+@admin.register(OmcConversionRequest)
+class OmcConversionRequestAdmin(admin.ModelAdmin):
+    list_display = ('customer_name', 'contact_mobile', 'area', 'cylinder_type', 'onboard_by', 'created_on')
+    search_fields = ('customer_name', 'contact_mobile')
+    list_filter = ('area', 'cylinder_type', 'onboard_by')
+
+
+@admin.register(ConversionRequest)
+class ConversionRequestAdmin(admin.ModelAdmin):
+    list_display = ('customer_name', 'contact_mobile', 'area', 'cylinder_type', 'referral_code')
+    search_fields = ('customer_name', 'contact_mobile')
+    list_filter = ('cylinder_type',)
 
 class StatusFilter(SimpleListFilter):
     title = 'Application Status'  # or use _('country') for translated title
@@ -154,7 +167,6 @@ class ConnectionApplicationAdmin(ExportActionMixin, FSMTransitionCustomMixin, ad
             min_max['data'] = rows
             return min_max
             
-    
     def my_custom_sql_completed(self):
         with connection.cursor() as cursor:
                         
@@ -306,7 +318,7 @@ class PostInspectionAdmin(admin.ModelAdmin):
 @admin.register(ImportData)
 class ImportDataAdmin(admin.ModelAdmin):
     list_display = [
-        'id', 'created_on', 'updated_on', 'template', 'status', 'download_file_link'
+        'id', 'created_on', 'updated_on', 'import_data_template', 'status', 'download_file_link'
     ]
 
     list_filter = [
@@ -352,3 +364,13 @@ class VaultSecretAdmin(admin.ModelAdmin):
                 secret=obj.static_values
             )
             print(res)
+
+
+@admin.register(ImportDataTemplate)
+# class VaultSecretAdmin(DjangoObjectActions, admin.ModelAdmin):
+class ImportDataTemplateAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'enabled',
+        'template'
+    )
