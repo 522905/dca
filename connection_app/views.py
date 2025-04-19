@@ -43,13 +43,13 @@ from connection_app.jobs import dialogflow_chat_assignment
 from connection_app.jobs import start_sales_order_portability_process, schedule_upload_data
 from connection_app.models import ConnectionApplication, PostInspection, CustomerProfile, Lead, SalesOrder, \
 	SalesOrderPortability, ImportData, BookSalesOrder, CustomerProfileSettings, OverrideSale, PromotionalSale, \
-	PromotionalSaleCustomer, PrizeAllocation, VaultSecret, ImportDataTemplate, OmcConversionRequest
+	PromotionalSaleCustomer, PrizeAllocation, VaultSecret, ImportDataTemplate, OmcConversionRequest, OmcConversionRequestDetail
 from domestic_app import settings
 from reference_data.models import ServiceType, Distributor, Product, SDMSServiceRequest
 from service_request.enums import ServiceRequestTypeEnum, ServiceRequestTypeStatusEnum
 from service_request.models import ServiceRequest
 from teams.models import SDMSUser, UserProfile
-from options.models import Banner
+
 
 logger = logging.getLogger(__name__)
 
@@ -2070,7 +2070,7 @@ def get_template_details(request):
 		"description": template.description
 	})
 
-@method_decorator(login_required, 'dispatch')
+@method_decorator(login_required, name='dispatch')
 class OmcConversionRequestView(FormView):
 	form_class = OmcCylinderConversionForm
 	template_name = "connection_app/omc_cylinder_change_request_form.html"
@@ -2080,28 +2080,6 @@ class OmcConversionRequestView(FormView):
 		return context
 
 	def form_valid(self, form):
-		cleaned_data = form.cleaned_data
-		customer: OmcConversionRequest = OmcConversionRequest.objects.filter(
-			consumer_id=cleaned_data.get('consumer_id')).first()
-
-		if not customer:
-			customer = OmcConversionRequest.objects.create(
-				consumer_id=cleaned_data.get('consumer_id'),
-				contact_mobile=cleaned_data.get('contact_mobile'),
-				customer_name=cleaned_data.get('customer_name'),
-				area=cleaned_data.get('area'),
-				onboard_by=get_current_user()
-			)
-		customer.conversion_request.create(
-			contact_mobile=cleaned_data.get('contact_mobile'),
-			customer_name=cleaned_data.get('customer_name'),
-			area=cleaned_data.get('area'),
-			consumer_id=cleaned_data.get('consumer_id'),
-			phone_no=cleaned_data.get('phone_no'),
-			omc_cylinder_photo_Before=cleaned_data.get('omc_cylinder_photo_Before'),
-			omc_cylinder_photo_after=cleaned_data.get('omc_cylinder_photo_after'),
-			referral_code=cleaned_data.get('referral_code'),
-		)
-		messages.add_message(self.request, messages.INFO, "Conversion Request Successfully")
+		form.save()
+		messages.success(self.request, "Conversion Request Successfully Submitted.")
 		return HttpResponseRedirect(reverse("connection_app:omc_conversion_request_view"))
-		

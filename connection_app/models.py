@@ -36,7 +36,9 @@ from teams.models import SDMSServiceArea
 from ujjwala.camunda_functions import is_process_exist_in_camunda
 from utils.global_functions import generate_tiny_url
 from django.core.exceptions import ValidationError
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
 minio_client = Minio(
 	settings.MINIO_API_ENDPOINT,
@@ -1410,34 +1412,15 @@ class VaultSecret(models.Model):
 
 
 class OmcConversionRequest(models.Model):
-    contact_mobile = models.CharField(max_length=10)
-    customer_name = models.CharField(max_length=256)
-    area = models.CharField(max_length=128, choices=ProofTypeEnum.choices, default=ProofTypeEnum.AADHAR)
-    omccylinderphoto = models.URLField()
-    omcphotowithperson = models.URLField()
-    cylinder_type = models.CharField(max_length=25, choices=ConnectionTypeEnum.choices, null=True)
-    referral_code = models.CharField(max_length=32, null=True, blank=True)
-    onboard_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    created_on = models.DateTimeField(auto_now_add=True)
-    updated_on = models.DateTimeField(auto_now=True)
+	created_on = models.DateTimeField(auto_now_add=True)
+	updated_on = models.DateTimeField(auto_now=True)
+	contact_mobile = models.CharField(max_length=15)
+	customer_name = models.CharField(max_length=200)
+	area = models.CharField(max_length=200)
+	onboard_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+	omc_cylinder_photo_before = models.URLField()
+	omc_cylinder_photo_after = models.URLField()
 
-    def __str__(self):
-        return f"{self.customer_name} ({self.contact_mobile})"
-
-
-class ConversionRequest(models.Model):
-    omc_request = models.ForeignKey(OmcConversionRequest, related_name="conversion_request", on_delete=models.CASCADE)
-    contact_mobile = models.CharField(max_length=10)
-    customer_name = models.CharField(max_length=256)
-    area = models.TextField(null=True, blank=True)
-    omc_cylinder_photo_Before = models.URLField()
-    omc_cylinder_photo_after = models.URLField()
-    referral_code = models.CharField(max_length=32, null=True, blank=True)
-    cylinder_type = models.CharField(max_length=25)
-
-    def __str__(self):
-        return f"{self.customer_name} - {self.cylinder_type}"
-
-
-
+	def __str__(self):
+		return f"{self.customer_name} ({self.contact_mobile})"
  

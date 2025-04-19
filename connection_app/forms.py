@@ -10,11 +10,19 @@ from connection_app.enums import ConnectionApplicationProcessType, ConnectionApp
 	ConnectionApplicationDocumentsEnum, HouseTypeEnum, PostInspectionActivityTypeEnum, PostInspectionStatusEnum, \
 	TemplateEnum, ProofTypeEnum
 
+from .models import OmcConversionRequest
+
 
 from hashicorp import hashicorp_client
 from inactive_customers.models import InactiveCustomer
 from reference_data.models import ServiceType, Product, SDMSServiceRequest
 from teams.models import SDMSServiceArea, UserProfile, SDMSUser
+
+
+class OmcCylinderConversionForm(forms.ModelForm):
+	class Meta:
+		model = OmcConversionRequest
+		fields = ['contact_mobile', 'contact_name', 'area', 'omc_cylinder_photo_before', 'omc_cylinder_photo_after']
 
 
 class SubmitLead(forms.Form):
@@ -727,53 +735,6 @@ class PromotionalSaleForm(forms.Form):
 			raise forms.ValidationError("Sales Order No already exists.")
 
 		return data
-	
-class OmcCylinderConversionForm(forms.Form):
-	# CYLINDER_TYPE_CHOICES = [
-	# 	('14.2Kg', '14.2Kg'),
-	# 	('5Kg', '5Kg'),
-	# ]
-	# contact_mobile = forms.CharField(widget=forms.TextInput, label='Phone No', required=True)
-	# cylinder_type = forms.ChoiceField(choices=CYLINDER_TYPE_CHOICES, label='Cylinder Type', required=True)
-	# customer_name = forms.CharField(widget=forms.TextInput, label='Customer Name', required=True)
-	# area = forms.CharField(widget=forms.Textarea, label='Area', required=False)
-	# omccylinderphotoBefore = forms.CharField(widget=forms.HiddenInput, label='Photo with Person or Cylinder', required=True)
-	# omccylinderphotoAfter = forms.CharField(widget=forms.HiddenInput, label='Photo with Person, Cylinder, Copy', required=True)
-	# referral_code = forms.CharField(widget=forms.TextInput, label='Customer Name', required=True)
-
-	CYLINDER_TYPE_CHOICES = [
-			('14.2Kg', '14.2Kg'),
-			('5Kg', '5Kg'),
-		]
-
-	contact_mobile = forms.CharField(
-		widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Phone Number'}),
-		label='Phone No', required=True
-	)
-	customer_name = forms.CharField(
-		widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Customer Name'}),
-		label='Customer Name', required=True
-	)
-	area = forms.CharField(
-		widget=forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter Area', 'rows': 3}),
-		label='Area', required=False
-	)
-	cylinder_type = forms.ChoiceField(
-		choices=CYLINDER_TYPE_CHOICES,
-		widget=forms.Select(attrs={'class': 'form-control'}),
-		label='Cylinder Type', required=True
-	)
-	referral_code = forms.CharField(
-		widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Referral Code'}),
-		label='Referral Code', required=True
-	)
-	omccylinderphotoBefore = forms.CharField(
-		widget=forms.HiddenInput(), label='OMC Cylinder Photo', required=True
-	)
-	omccylinderphotoAfter = forms.CharField(
-		widget=forms.HiddenInput(), label='OMC Cylinder Photo With Person', required=True
-	)
-
 	
 
 class PromotionalSalePrizeAllocationForm(forms.Form):

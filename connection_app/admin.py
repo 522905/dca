@@ -22,21 +22,19 @@ from django.contrib import admin
 from django_object_actions import DjangoObjectActions, action
 
 from hashicorp import hashicorp_client
-from .models import VaultSecret, OmcConversionRequest, ConversionRequest
+from .models import VaultSecret, OmcConversionRequest
+
 
 
 @admin.register(OmcConversionRequest)
 class OmcConversionRequestAdmin(admin.ModelAdmin):
-    list_display = ('customer_name', 'contact_mobile', 'area', 'cylinder_type', 'onboard_by', 'created_on')
-    search_fields = ('customer_name', 'contact_mobile')
-    list_filter = ('area', 'cylinder_type', 'onboard_by')
+    list_display = ['id', 'customer_name', 'contact_mobile', 'area', 'onboard_by', 'created_at']
+    search_fields = ['customer_name', 'contact_mobile', 'area']
+    list_filter = [
+        ('created_at', DateRangeFilter),
+        'onboard_by'
+    ]
 
-
-@admin.register(ConversionRequest)
-class ConversionRequestAdmin(admin.ModelAdmin):
-    list_display = ('customer_name', 'contact_mobile', 'area', 'cylinder_type', 'referral_code')
-    search_fields = ('customer_name', 'contact_mobile')
-    list_filter = ('cylinder_type',)
 
 class StatusFilter(SimpleListFilter):
     title = 'Application Status'  # or use _('country') for translated title
