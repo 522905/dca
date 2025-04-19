@@ -6,7 +6,7 @@ from ujjwala.camunda_functions import start_process_in_camunda_v2
 import logging
 import track
 from django.conf import settings
-from domestic_app.settings import START_CALL_URL
+from domestic_app.settings import START_CALL_URL, CAMUNDA_BASE_URL
 
 logger = logging.getLogger(__name__)
 
@@ -120,6 +120,28 @@ def import_update_bulk_out(csv_file_rows):
 		cp_obj.distributor_name = row['distributor_name']
 		cp_obj.save()
 	return True
+
+
+def import_service_area(csv_file_rows):
+	import requests
+
+	PROCESS_DEFINITION_KEY = "Process_service_area_update_in_sdms"
+
+	for idx, r in enumerate(csv_file_rows):
+		print(r)
+		if not r['consumer_id']:
+			continue
+		variables = {
+			"variables":
+				{
+					"consumer_id": {"value": r['consumer_id'].replace(";", ""), "type": "String"},
+					"service_area": {"value": r['service_area'], "type": "String"},
+					"distributor_id": {"value": r['distributor_id'].replace(";", ""), "type": "String"}
+				}
+		}
+
+		url = "{}/process-definition/key/{}/start".format(CAMUNDA_BASE_URL, PROCESS_DEFINITION_KEY)
+		requests.post(url, json=variables)
 
 
 def schedule_upload_data(template, id_obj):
