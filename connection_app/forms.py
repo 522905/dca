@@ -10,19 +10,11 @@ from connection_app.enums import ConnectionApplicationProcessType, ConnectionApp
 	ConnectionApplicationDocumentsEnum, HouseTypeEnum, PostInspectionActivityTypeEnum, PostInspectionStatusEnum, \
 	TemplateEnum, ProofTypeEnum
 
-from .models import OmcConversionRequest
-
 
 from hashicorp import hashicorp_client
 from inactive_customers.models import InactiveCustomer
 from reference_data.models import ServiceType, Product, SDMSServiceRequest
 from teams.models import SDMSServiceArea, UserProfile, SDMSUser
-
-
-class OmcCylinderConversionForm(forms.ModelForm):
-	class Meta:
-		model = OmcConversionRequest
-		fields = ['contact_mobile', 'contact_name', 'area', 'omc_cylinder_photo_before', 'omc_cylinder_photo_after']
 
 
 class SubmitLead(forms.Form):

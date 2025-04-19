@@ -28,10 +28,10 @@ from .models import VaultSecret, OmcConversionRequest
 
 @admin.register(OmcConversionRequest)
 class OmcConversionRequestAdmin(admin.ModelAdmin):
-    list_display = ['id', 'customer_name', 'contact_mobile', 'area', 'onboard_by', 'created_at']
+    list_display = ['id', 'customer_name', 'contact_mobile', 'area', 'onboard_by', 'created_on']
     search_fields = ['customer_name', 'contact_mobile', 'area']
     list_filter = [
-        ('created_at', DateRangeFilter),
+        ('created_on', DateRangeFilter),
         'onboard_by'
     ]
 
