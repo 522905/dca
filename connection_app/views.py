@@ -45,6 +45,7 @@ from connection_app.models import ConnectionApplication, PostInspection, Custome
 	SalesOrderPortability, ImportData, BookSalesOrder, CustomerProfileSettings, OverrideSale, PromotionalSale, \
 	PromotionalSaleCustomer, PrizeAllocation, VaultSecret, ImportDataTemplate, OmcConversionRequest
 from domestic_app import settings
+from options.models import Banner
 from reference_data.models import ServiceType, Distributor, Product, SDMSServiceRequest
 from service_request.enums import ServiceRequestTypeEnum, ServiceRequestTypeStatusEnum
 from service_request.models import ServiceRequest
