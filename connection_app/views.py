@@ -2079,11 +2079,14 @@ class OmcConversionRequestView(FormView):
 	form_class = OmcCylinderConversionForm
 	template_name = "connection_app/omc_cylinder_change_request_form.html"
 
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-		return context
+	# def get_context_data(self, **kwargs):
+	# 	context = super().get_context_data(**kwargs)
+	# 	return context
 
 	def form_valid(self, form):
 		form.save()
 		messages.success(self.request, "Conversion Request Successfully Submitted.")
-		return HttpResponseRedirect(reverse("connection_app:omc_conversion_request_view"))
+		return render(
+			self.request, self.template_name,
+			{"heading": "Conversion Request Form", "message": "Conversion Request Successfully Submitted."}
+		)

@@ -20,6 +20,11 @@ from teams.models import SDMSServiceArea, UserProfile, SDMSUser
 
 
 class OmcCylinderConversionForm(forms.ModelForm):
-        class Meta:
-                model = OmcConversionRequest
-                fields = ['contact_mobile', 'customer_name', 'area', 'omc_cylinder_photo_before', 'omc_cylinder_photo_after']
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		# Overriding choices for the cylinder_type field
+		self.fields['cylinder_type'].choices = [('14.2Kg', '14.2Kg'), ('5Kg', '5Kg')]
+
+	class Meta:
+		model = OmcConversionRequest
+		fields = ['contact_mobile', 'customer_name', 'area', 'cylinder_type', 'omc_cylinder_photo_before', 'omc_cylinder_photo_after']

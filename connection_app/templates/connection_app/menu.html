@@ -32,6 +32,7 @@
                     <i class="fas fa-key"></i> Delivery App Password
                 </a>
             </li>
+       
 
             {% if user|allowed_admin_tools %}
                 <li class="submenu_level2">
@@ -45,6 +46,11 @@
                     </a>
                 </li>
             {% endif %}
+            <li class="submenu_level2">
+                <a href="{% url 'connection_app:omc_conversion_request' %}" data-turbolinks="false">
+                    <i class="fas fa-key"></i> LPG OMC Change Request
+                </a>
+            </li>
         </ul>
     </div>
 
@@ -52,3 +58,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
 {% endif %}
+<style>
+    .sidenav-fixed .collapsible-body li a{ padding-left: 30px !important; }
+    html body .submenu_level2 i{ margin-right: 0 !important;}
+    .sidenav li{
+		min-height: 30px !important;
+	 }
+	 .sidenav-fixed li {
+		min-height: 48px !important;
+	 }
+    .submenu_level2 a {
+       color: #666  !important;
+    }
+</style>

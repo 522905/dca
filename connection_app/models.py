@@ -1420,6 +1420,7 @@ class OmcConversionRequest(models.Model):
 	onboard_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 	omc_cylinder_photo_before = models.URLField()
 	omc_cylinder_photo_after = models.URLField()
+	cylinder_type = models.CharField(max_length=128, null=True, blank=True)
 
 	def __str__(self):
 		return f"{self.customer_name} ({self.contact_mobile})"
