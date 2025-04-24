@@ -46,6 +46,10 @@
 						{% csrf_token %}
 						<div class="card-body">
 							<div class="form-group">
+								<p>Click Photo with Cylinder or Person</p>
+								<div id="omc_cylinder_photo_before" class="p-2"></div>
+							</div>
+							<div class="form-group">
 								<label for="contact_mobile">Contact Mobile</label>
 								<div class="input-row">
 									<input type="tel" pattern="[6789][0-9]{9}" class="form-control" name="contact_mobile" id="contact_mobile"
@@ -80,10 +84,7 @@
 								<input type="text" class="form-control" name="omc_cylinder_photo_before" id="omc_cylinder_photo_before_input" value="{{ form.omc_cylinder_photo_before.value|default_if_none:'' }}">
 							</div>
 
-							<div class="form-group">
-								<p>Click Photo with Cylinder or Person</p>
-								<div id="omc_cylinder_photo_before" class="p-2"></div>
-							</div>
+							
 
 							<div class="form-group">
 								<label for="omc_cylinder_photo_after">OMC Cylinder Photo (After) URL</label>
