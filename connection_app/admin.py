@@ -24,16 +24,24 @@ from django_object_actions import DjangoObjectActions, action
 from hashicorp import hashicorp_client
 from .models import VaultSecret, OmcConversionRequest
 
-
-
 @admin.register(OmcConversionRequest)
 class OmcConversionRequestAdmin(admin.ModelAdmin):
-    list_display = ['id', 'customer_name', 'contact_mobile', 'area', 'onboard_by', 'created_on']
+    list_display = ['id', 'customer_name', 'contact_mobile', 'area', 'onboard_by', 'created_on', 'omc_type' ]
     search_fields = ['customer_name', 'contact_mobile', 'area']
     list_filter = [
-        ('created_on', DateRangeFilter),
+        ('created_on', DateRangeFilter),  # 👈 Date filter with nice UI
         'onboard_by'
     ]
+
+    def save_model(self, request, obj, form, change):
+        if not obj.onboard_by:
+            obj.onboard_by = request.user  # Auto-assign the logged-in user
+        super().save_model(request, obj, form, change)
+
+    def save_model(self, request, obj, form, change):
+        if not obj.onboard_by:
+            obj.onboard_by = request.user  # 👈 Auto-assign logged-in user
+        super().save_model(request, obj, form, change)
 
 
 class StatusFilter(SimpleListFilter):

@@ -71,11 +71,11 @@
 							</div>
 
 							<div class="form-group">
-								<label for="id_cylinder_type">Cylinder Type <strong style="color:red">*</strong></label>
-								<select name="cylinder_type" id="id_cylinder_type" class="form-control" required>
-									<option value="">-- Select Cylinder Type --</option>
-									<option value="14.2Kg">14.2Kg</option>
-									<option value="5Kg">5Kg</option>
+								<label for="id_omc_type">OMC Type <strong style="color:red">*</strong></label>
+								<select name="omc_type" id="id_omc_type" class="form-control" required>
+									<option value="">-- Select OMC Type --</option>
+									<option value="HPCL">HPCL</option>
+									<option value="BPCL">BPCL</option>
 								</select>
 							</div>
 
@@ -103,17 +103,22 @@
 					</form>
 			</div>
 		</form>
-		<div id="submissionAlert" class="alert alert-success text-center" role="alert" style="display: none;">
-			✅ Form Submitted Successfully!
+
+		<div id="submissionAlert" style="display: none; color: green; margin-top: 10px;">
+			Form submitted successfully!
 		</div>
 	</div>
 	
 	<script>
-		document.getElementById("omc-cylinder-change-form").addEventListener("submit", function(e) {
+		document.getElementById("omc-cylinder-change-form").addEventListener("submit", function (e) {
 			e.preventDefault();
 			const form = e.target;
 			const formData = new FormData(form);
-	
+			const submitButton = form.querySelector('button[type="submit"]'); // or use specific ID if needed
+		
+			// Disable submit button
+			submitButton.disabled = true;
+		
 			fetch("", {
 				method: "POST",
 				body: formData,
@@ -130,13 +135,29 @@
 			})
 			.then(data => {
 				console.log("Server response:", data);
-				document.getElementById("submissionAlert").style.display = "block";
+		
+				// Show success popup
+				const alertBox = document.getElementById("submissionAlert");
+				alertBox.style.display = "block";
+				alertBox.innerText = "Form submitted successfully!";
+		
+				// Reset form fields
+				form.reset();
+		
+				// Clear file inputs and uploaded URLs if needed
+				$('input[name="omc_cylinder_photo_before"]').val('');
+				$('input[name="omc_cylinder_photo_after"]').val('');
+		
 				setTimeout(() => {
-					document.getElementById("submissionAlert").style.display = "none";
+					alertBox.style.display = "none";
+					// Re-enable the button after alert hides, if you want
+					submitButton.disabled = false;
 				}, 3000);
 			})
 			.catch(error => {
 				alert("Error submitting form: " + error);
+				// Re-enable the button if submission fails
+				submitButton.disabled = false;
 			});
 		});
 
