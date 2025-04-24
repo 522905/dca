@@ -1,40 +1,105 @@
 {% extends "material/frontend/base_module.html" %}
 {% load static %}
-{% block page_title %}Promotional Sale{% endblock %}
+{% block page_title %}LPG OMC BPCL/HPCL Cylinder to Indane Cylinder Change Form{% endblock %}
 {% load material_form %}
 {% block content %}
+
     <link rel="stylesheet" href="{% static '/css/style.css' %}">
     <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap" rel="stylesheet">
+	<!-- jQuery (required first) -->
+	<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+	<!-- Bootstrap JS (after jQuery) -->
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
     <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
 
-	<div class="container mt-4 main p-2 pt-0 form_label">
-		<form method="post" id="promotional-sale-form">
+	<div class="main p-2 pt-0 form_label">
+		<div class="modal fade" id="verifyMobileOtp" tabindex="-1" role="dialog" aria-labelledby="verifyMobileOtpLabel" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered" role="document">
+			  <div class="modal-content shadow rounded-3">
+				<div class="modal-header border-0 pb-0">
+				  <h6 class="modal-title w-100 text-center fw-bold" id="verifyMobileOtpLabel">
+					OTP Sent to <span id="verifyMobileNumber" class="text-primary"></span>
+				  </h6>
+				  <button type="button" class="close position-absolute end-0 top-0 m-3" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true" style="font-size: 1.5rem;">&times;</span>
+				  </button>
+				</div>
+				<div class="modal-body text-center">
+				  <p class="mb-2 text-muted">Please enter the OTP sent to your mobile number</p>
+				  <input name="whatsapp_otp" type="tel" class="form-control text-center otp-input" id="whatsapp_otp" maxlength="6" required />
+				</div>
+				<div class="modal-footer justify-content-between border-0 pt-0">
+				  <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Change Number</button>
+				  <button type="button" class="btn btn-primary" onclick="whatsapp_verifier.verify_otp()">Verify & Submit</button>
+				</div>
+			  </div>
+			</div>
+		  </div>
+		<form method="post" id="omc-cylinder-change-form">
 			{% csrf_token %}
 			<div class="card">
-				<div class="card-header bg-primary text-white">OMC Cylinder Conversion Form</div>
-				<div class="card-body">
-					{% form form=form %}{% endform %}
-					<input type="hidden" id="id_omccylinderphotoBefore" name="omccylinderphotoBefore">
-					<input type="hidden" id="id_omccylinderphotoAfter" name="omccylinderphotoAfter">
-		
-					<div class="row">
-						<div class="col-md-6">
-							<label><strong>OMC Cylinder Photo Before</strong></label>
-							<div id="omccylinderphotoBefore" class="border p-2"></div>
+				<div class="card-header bg-primary text-white">LPG OMC BPCL/HPCL Cylinder to Indane Cylinder Change Form</div>
+					<form method="post" enctype="multipart/form-data">
+						{% csrf_token %}
+						<div class="card-body">
+							<div class="form-group">
+								<label for="contact_mobile">Contact Mobile</label>
+								<div class="input-row">
+									<input type="tel" pattern="[6789][0-9]{9}" class="form-control" name="contact_mobile" id="contact_mobile"
+									value="{{ form.contact_mobile.value|default_if_none:'' }}" required>
+									<button type="button" id="verifyWhatsappButton" class="btn-primary"
+									onclick="whatsapp_verifier.start_verification()">Verify</button>
+									<button type="button" id="changeWhatsappButton" class="btn-secondary"
+									onclick="whatsapp_verifier.reset_verification()" style="display: none;">Change</button>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="customer_name">Customer Name</label>
+								<input type="text" class="form-control" name="customer_name" id="customer_name" value="{{ form.customer_name.value|default_if_none:'' }}">
+							</div>
+
+							<div class="form-group">
+								<label for="area">Area</label>
+								<input type="text" class="form-control" name="area" id="area" value="{{ form.area.value|default_if_none:'' }}">
+							</div>
+
+							<div class="form-group">
+								<label for="id_cylinder_type">Cylinder Type <strong style="color:red">*</strong></label>
+								<select name="cylinder_type" id="id_cylinder_type" class="form-control" required>
+									<option value="">-- Select Cylinder Type --</option>
+									<option value="14.2Kg">14.2Kg</option>
+									<option value="5Kg">5Kg</option>
+								</select>
+							</div>
+
+							<div class="form-group">
+								<label for="omc_cylinder_photo_before">OMC Cylinder Photo (Before) URL</label>
+								<input type="text" class="form-control" name="omc_cylinder_photo_before" id="omc_cylinder_photo_before_input" value="{{ form.omc_cylinder_photo_before.value|default_if_none:'' }}">
+							</div>
+
+							<div class="form-group">
+								<p>Click Photo with Cylinder or Person</p>
+								<div id="omc_cylinder_photo_before" class="p-2"></div>
+							</div>
+
+							<div class="form-group">
+								<label for="omc_cylinder_photo_after">OMC Cylinder Photo (After) URL</label>
+								<input type="text" class="form-control" name="omc_cylinder_photo_after" id="omc_cylinder_photo_after_input" value="{{ form.omc_cylinder_photo_after.value|default_if_none:'' }}">
+							</div>
+
+							<div class="form-group">
+								<p>Click Photo with Cylinder, Person or Blue-Book</p>
+								<div id="omc_cylinder_photo_after" class="p-2"></div>
+							</div>
+							
 						</div>
-						<div class="col-md-6">
-							<label><strong>OMC Cylinder Photo With Person</strong></label>
-							<div id="omccylinderphotoAfter" class="border p-2"></div>
-						</div>
-						<input type="hidden" id="id_omccylinderphotoBefore" name="omccylinderphotoBefore">
-						<input type="hidden" id="id_omccylinderphotoAfter" name="omccylinderphotoAfter">
-					</div>
-				</div>
-				<div class="card-footer text-end">
-					<button type="submit" class="btn btn-success float-end rounded-0">Submit</button>
-				</div>
+						<div class="card-footer text-end">
+							<button type="submit" class="btn btn-success float-end rounded-0">Submit</button>
+						</div>		
+					</form>
 			</div>
 		</form>
 		<div id="submissionAlert" class="alert alert-success text-center" role="alert" style="display: none;">
@@ -43,9 +108,8 @@
 	</div>
 	
 	<script>
-		document.getElementById("promotional-sale-form").addEventListener("submit", function(e) {
+		document.getElementById("omc-cylinder-change-form").addEventListener("submit", function(e) {
 			e.preventDefault();
-	
 			const form = e.target;
 			const formData = new FormData(form);
 	
@@ -74,8 +138,7 @@
 				alert("Error submitting form: " + error);
 			});
 		});
-	</script>
-	<script>
+
 		// Uppy instance for omccylinderphotoAfter
 		const uppyAfter = new Uppy.Core({
 			debug: true,
@@ -87,9 +150,9 @@
 			}
 		})
 		.use(Uppy.Dashboard, {
-			trigger: '#omccylinderphotoAfter',
+			trigger: '#omc_cylinder_photo_after',
 			inline: true,
-			target: '#omccylinderphotoAfter',
+			target: '#omc_cylinder_photo_after',
 			showProgressDetails: true,
 			note: 'Upload one image (max 50MB)',
 			height: 250,
@@ -111,7 +174,7 @@
 			const uploadedURL = result.successful[0]?.uploadURL;
 			console.log('After photo uploaded:', uploadedURL);
 			if (uploadedURL) {
-				document.getElementById("id_omccylinderphotoAfter").value = uploadedURL;
+				$('input[name="omc_cylinder_photo_after"]').val(uploadedURL);
 			}
 		});
 	
@@ -126,9 +189,9 @@
 			}
 		})
 		.use(Uppy.Dashboard, {
-			trigger: '#omccylinderphotoBefore',
+			trigger: '#omc_cylinder_photo_before',
 			inline: true,
-			target: '#omccylinderphotoBefore',
+			target: '#omc_cylinder_photo_before',
 			showProgressDetails: true,
 			note: 'Upload one image (max 50MB)',
 			height: 250,
@@ -150,8 +213,270 @@
 			const uploadedURL = result.successful[0]?.uploadURL;
 			console.log('Before photo uploaded:', uploadedURL);
 			if (uploadedURL) {
-				document.getElementById("id_omccylinderphotoBefore").value = uploadedURL;
+				$('input[name="omc_cylinder_photo_before"]').val(uploadedURL);
 			}
 		});
+
+		function getCookie(name) {
+			let cookieValue = null;
+			if (document.cookie && document.cookie !== '') {
+				const cookies = document.cookie.split(';');
+				for (let i = 0; i < cookies.length; i++) {
+					const cookie = cookies[i].trim();
+					// Check if this cookie string begins with the name we want
+					if (cookie.substring(0, name.length + 1) === (name + '=')) {
+						cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+						break;
+					}
+				}
+			}
+			return cookieValue;
+		}
+
+		//whatsapp verify
+		function WhatsappMobileVerifiedController() {
+			var state = 'INITIAL';
+			var whatsappRefNo = undefined;
+
+			function setAsVerified() {
+				state = 'VERIFIED';
+				$("#contact_mobile_detail_whatsapp").show();
+				$("#contact_mobile_detail_whatsapp").html('✔ Contact Verified').css({'color': 'green', 'font-size' : '14px'});
+
+				$('#changeWhatsappButton').show();
+				$('#verifyWhatsappButton').hide();
+
+				$('[name="contact_mobile"]').attr('readonly', true);
+			}
+
+			function resetVerification() {
+				state = 'INITIAL';
+				$("#contact_mobile_detail_whatsapp").hide();
+				$("#contact_mobile_detail_whatsapp").html('');
+
+				$('#changeWhatsappButton').hide();
+				$('#verifyWhatsappButton').show();
+
+				$('#whatsapp_otp').val('');
+				$('[name="contact_mobile"]').val('');
+
+				$('[name="contact_mobile"]').attr('readonly', false);
+			}
+			
+			return {
+				start_verification: () => {
+					// reset custom validity
+					$('[name="contact_mobile"]')[0].setCustomValidity('');
+
+					if (!$('[name="contact_mobile"]')[0].reportValidity()) return;
+					
+					var mobile = $('[name="contact_mobile"]').val();
+					$('#verifyWhatsappButton').attr('disabled', true);
+
+					return jQuery.ajax({
+						url: '/connection_app/connection-application/check_phone/',
+						type: "GET",
+						data: {'contact_mobile': mobile}
+					}).
+					then(response => {
+
+						return true;
+					}).
+					then(() => {
+						return jQuery.ajax({
+							url: '/ujjwala/ujjwala-otp/send_sms_otp/',
+							type: "GET",
+							data: {
+								contact_mobile: mobile
+							},
+							headers: {'X-CSRFToken': getCookie('csrftoken')}
+						});
+					}).
+					then(data=> {
+						$('#verifyMobileNumber')[0].innerHTML = mobile;
+						$('#verifyMobileOtp').modal('show');
+						whatsappRefNo = data.reference_number;
+						return whatsappRefNo;
+					}).
+					fail(e => {
+						alert(e);
+					}).
+					always(() => {
+						$('#verifyWhatsappButton').attr('disabled', false);
+					});
+				},
+
+				verify_otp: () => {
+					var whatsapp_otp = $('#whatsapp_otp').val();
+					return new Promise((resolve, reject) => {
+						$('.modal-footer button').attr('disabled', true);
+						
+						jQuery.ajax({
+							url: '/ujjwala/ujjwala-otp/verify_sms_otp/',
+							type: "POST",
+							data: {
+								"otp": whatsapp_otp,
+								"reference_number": whatsappRefNo
+							},
+							headers: {'X-CSRFToken': getCookie('csrftoken')},
+							success: function (data) {
+								$('#verifyMobileOtp').modal('show');
+								if (data.verified) {
+									return resolve(data.signed_value);
+								}
+								return reject("Invalid Code, enter again");
+							},
+						});
+					}).
+					then(signed_number=> {
+						$('[name="contact_mobile"]').val($('#verifyMobileNumber').text());
+						$('.modal.show').modal('hide');
+						setAsVerified();
+					}).
+					catch((e) => {
+						alert(e);
+					}).
+					finally(() => {
+						$('.modal-footer button').attr('disabled', false);
+					});
+				},
+
+				reset_verification: () => {
+					resetVerification();
+				},
+
+				is_valid: () => {
+					if (state !== 'VERIFIED') {
+						alert(`व्हाट्सएप नंबर मान्य नहीं है`);
+						setTimeout(() => {
+							$("#verifyWhatsappButton").focus();
+						}, 0);
+						return false;
+					}
+					return true;
+				},
+
+				get_validated_data: () => {
+					return {
+						'contact_mobile': $('[name="contact_mobile"]').val()
+					}
+				}
+			}
+		}
+
+		whatsapp_verifier = WhatsappMobileVerifiedController(); 
+
 	</script>
+
+<style>
+	.input-row {
+		display: flex;
+		gap: 10px;
+		align-items: center;
+	  }
+	
+	  .form-control {
+		flex: 1;
+		padding: 10px;
+		font-size: 1rem;
+		border: 1px solid #ccc;
+		border-radius: 5px;
+	  }
+	
+	  .btn-primary,
+	  .btn-secondary {
+		padding: 8px 16px;
+		font-size: 1rem;
+		border: none;
+		border-radius: 5px;
+		cursor: pointer;
+		white-space: nowrap;
+	  }
+	
+	  .btn-primary {
+		background-color: #007bff;
+		color: #fff;
+	  }
+	
+	  .btn-secondary {
+		background-color: #6c757d;
+		color: #fff;
+	  }
+	
+	  .btn-primary:hover {
+		background-color: #0056b3;
+	  }
+	
+	  .btn-secondary:hover {
+		background-color: #5a6268;
+	  }
+	  #verifyMobileOtp  input[name="whatsapp_otp"]{
+		margin: 0 auto !important; 
+		padding-bottom: 20px !important;
+	  }
+	  .position-absolute{ right: 0; top: 0; z-index: 111; }
+	  @media (max-width: 576px) {
+		.input-row {
+		  flex-direction: column;
+		  align-items: stretch;
+		}
+	  }
+	  #verifyMobileOtp .modal .modal-content{
+		padding: 10px;
+	  }
+	#id_omc_cylinder_photo_before_container label,
+	#id_omc_cylinder_photo_after_container label{
+		display: none;
+	}
+	{% comment %} #id_omc_cylinder_photo_before,
+	#id_omc_cylinder_photo_after {
+		display: none;
+	}
+	.form_label label {
+		display: none !important;
+	} {% endcomment %}
+	.otp-input {
+		max-width: 180px;
+		margin: 0 auto;
+		font-size: 1.25rem;
+		letter-spacing: 0.3em;
+		padding: 10px 15px;
+		border: 2px solid #ced4da;
+		border-radius: 0.5rem;
+	  }
+	
+	  .modal-content {
+		border-radius: 1rem;
+		overflow: hidden;
+	  }
+	
+	  .modal-header h6 {
+		font-size: 1rem;
+	  }
+	
+	  @media (max-width: 576px) {
+		.otp-input {
+		  max-width: 140px;
+		  font-size: 1rem;
+		}
+	  }
+	  #verifyMobileOtp{
+		background-color: transparent;
+		box-shadow: none;
+	}
+	label[for="omc_cylinder_photo_before"], input[name="omc_cylinder_photo_before"], 
+	label[for="omc_cylinder_photo_after"], input[name="omc_cylinder_photo_after"]{
+		display: none;
+	}
+
+	input[name="contact_mobile"]{
+		margin-bottom: 0px !important;
+	}
+
+	select[name="cylinder_type"]{
+		margin-bottom: 0px !important;
+		padding:2px 10px !important;
+	}
+
+</style>
 {% endblock %}

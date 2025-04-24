@@ -57,7 +57,7 @@ def get_form_to_load(self):
 		return BackOfficeReactivation
 
 
-class ConnectionApplication(models.Model):
+class ConnectionApplication(models.Model):        
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
 	name = models.CharField(max_length=255, null=True)
@@ -71,7 +71,7 @@ class ConnectionApplication(models.Model):
 	distributor = models.ForeignKey(Distributor, on_delete=models.PROTECT, null=True)
 	item_code = models.CharField(max_length=25, choices=ItemCodeEnum.choices)
 	connection_type = models.CharField(max_length=25, choices=ConnectionTypeEnum.choices, null=True)
-	referral_code = models.CharField(max_length=16, null=True, blank=True)
+	referral_code = models.CharField(max_length=48, null=True, blank=True)
 
 	documents_reupload_remarks = models.TextField(null=True, blank=True)
 	documents_required_for_reupload = models.TextField(null=True, blank=True)
