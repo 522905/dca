@@ -59,6 +59,7 @@
 									<button type="button" id="changeWhatsappButton" class="btn-secondary"
 									onclick="whatsapp_verifier.reset_verification()" style="display: none;">Change</button>
 								</div>
+								<div id="contactError" style="display: none; color: red; margin-top: 5px;"></div>
 							</div>
 							<div class="form-group">
 								<label for="customer_name">Customer Name</label>
@@ -104,20 +105,30 @@
 			</div>
 		</form>
 
+		<div id="submissionModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
+			<div style="background:#fff; padding:40px; border-radius:8px; max-width:600px; width:90%; text-align:center;">
+				<h2>🎉 Form Submitted!</h2>
+				<p>Thank you for your submission. We'll be in touch soon.</p>
+				<button onclick="document.getElementById('submissionModal').style.display='none'">Close</button>
+			</div>
+		</div>
+		
+		<!-- Existing Alert -->
 		<div id="submissionAlert" style="display: none; color: green; margin-top: 10px;">
 			Form submitted successfully!
 		</div>
 	</div>
 	
 	<script>
-		document.getElementById("omc-cylinder-change-form").addEventListener("submit", function (e) {
+		
+		document.getElementById("omc-cylinder-change-form").addEventListener("submit", function(e) {
 			e.preventDefault();
+		
+			const submitBtn = document.querySelector("#omc-cylinder-change-form button[type='submit']");
+			if (submitBtn) submitBtn.disabled = true;
+		
 			const form = e.target;
 			const formData = new FormData(form);
-			const submitButton = form.querySelector('button[type="submit"]'); // or use specific ID if needed
-		
-			// Disable submit button
-			submitButton.disabled = true;
 		
 			fetch("", {
 				method: "POST",
@@ -130,36 +141,43 @@
 				if (response.ok) {
 					return response.text();
 				} else {
-					throw new Error("Network response was not ok");
+					return response.json().then(errData => {
+						throw errData;
+					});
 				}
 			})
 			.then(data => {
 				console.log("Server response:", data);
 		
-				// Show success popup
-				const alertBox = document.getElementById("submissionAlert");
-				alertBox.style.display = "block";
-				alertBox.innerText = "Form submitted successfully!";
+				// Hide any previous contact error
+				document.getElementById("contactError").style.display = "none";
 		
-				// Reset form fields
+				// Show modal and alert
+				document.getElementById("submissionModal").style.display = "flex";
+				document.getElementById("submissionAlert").style.display = "block";
+		
 				form.reset();
-		
-				// Clear file inputs and uploaded URLs if needed
-				$('input[name="omc_cylinder_photo_before"]').val('');
-				$('input[name="omc_cylinder_photo_after"]').val('');
+				uppy.reset();
 		
 				setTimeout(() => {
-					alertBox.style.display = "none";
-					// Re-enable the button after alert hides, if you want
-					submitButton.disabled = false;
+					document.getElementById("submissionAlert").style.display = "none";
+					location.reload();
 				}, 3000);
 			})
 			.catch(error => {
-				alert("Error submitting form: " + error);
-				// Re-enable the button if submission fails
-				submitButton.disabled = false;
+				let contactErrorBox = document.getElementById("contactError");
+		
+				if (error.error === "duplicate_contact") {
+					contactErrorBox.innerText = `⚠️ Number ${error.phone} is already registered under "${error.name}".`;
+					contactErrorBox.style.display = "block";
+				} else {
+					alert("Error submitting form: " + (error?.error || error));
+				}
+		
+				if (submitBtn) submitBtn.disabled = false;
 			});
 		});
+		
 
 		// Uppy instance for omccylinderphotoAfter
 		const uppyAfter = new Uppy.Core({
@@ -434,7 +452,6 @@
 	  }
 	  #verifyMobileOtp  input[name="whatsapp_otp"]{
 		margin: 0 auto !important; 
-		padding-bottom: 20px !important;
 	  }
 	  .position-absolute{ right: 0; top: 0; z-index: 111; }
 	  @media (max-width: 576px) {
@@ -491,14 +508,26 @@
 		display: none;
 	}
 
-	input[name="contact_mobile"]{
-		margin-bottom: 0px !important;
-	}
 
-	select[name="cylinder_type"]{
+	select[name="omc_type"]{
 		margin-bottom: 0px !important;
 		padding:2px 10px !important;
 	}
+
+	#submissionModal {
+		display: none;
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(0, 0, 0, 0.7);
+		z-index: 9999;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	
 
 </style>
 {% endblock %}
