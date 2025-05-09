@@ -97,7 +97,7 @@
 		var initialData = {
 			"mobile": "",
 			"referral_code": "",
-			"mobile_number_2": "",
+			"mobile2": "",
 		};
 
 		function fillInitialData() {
@@ -161,40 +161,41 @@
     }
 	.form_block label{ padding-left: 12px;}
 	.form_block .form-group{ padding-left: 30px;}
+	.whatsapp_mob{ position: relative;}
+	.verify_button{ position: absolute; right: 0; top: 0;}
+	.verify_button button{ border-radius: 0; }
+	.uppy-Dashboard{ height: 150px; width: 100% !important;}
+	.uppy-Dashboard-innerWrap{ width: 100% !important; height: 108px !important;}
+	input.form-control, select.form-control {
+		border-radius: 8px;
+		transition: all 0.3s ease;
+	  }
+	  
+	  input.form-control:focus, select.form-control:focus {
+		box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25);
+		border-color: #007bff;
+	  }
+	  
+	  .container {
+		background-color: #fafafa;
+	  }
+	  
+	  h4 {
+		font-weight: 600;
+	  }
   </style>
-<body>	        
-	<div class="main">
+<body class="main">	        
+	<div class="container register">
 		<div class="col-md-12" style="padding: 0;">
-			<img src="https://arungas.com/ujjwala/Banner_2024.jpg">
+			<img src="https://arungas.com/dca-images/may_25/14.2_single_bottal.png">
+			<!-- <img src="https://arungas.com/images/navratri/new-con-main.png"> -->
 		</div>
-	</div>
-	<div class="container register">	
 		<div class="form-contain">
 			<div id="form_hide">
                 <!-- <img style="width:100%; height:250px;" src="">  -->
-				
 				<h3 class="text-center">Form to Apply New Domestic LPG Gas Connection</h3>
 				<h4 class="text-center" style="color: #004ea1;">नया घरेलू गैस कनेक्शन आवेदन करने के लिए फार्म</h4><br>
 				<form class="form-horizontal" action="" id="punjab" method="POST" enctype="multipart/form-data">
-					<!-- <div class="form_block">
-						<label><b>Application Type (किस लिए आवेदन)</b><strong style="color:red">*</strong></label>
-						<div class="form-group">
-							<div class="input-block">
-								<input type="radio" class="form-check-input" name="application_type" value="NEW_CONNECTION"
-								required>
-								<span style="padding-left:10px;"> New Connection (नया कनेक्शन)</span>
-							</div>
-							<div class="input-block">
-								<input type="radio" class="form-check-input" name="application_type" value="BLUE_BOOK" required>
-								<span style="padding-left:10px;"> Gas Book (गैस कॉपी)</span>
-							</div>
-							<div class="input-block">
-								<input type="radio" class="form-check-input" name="application_type" value="ADD_ON_CYLINDER" required>
-								<span style="padding-left:10px;"> ADD On Cylinder (ADD On कनेक्शन)</span>
-							</div>
-						</div>
-					</div> -->
-
 					<div id="additional-fields" class="hidden">
 						<div class="form-group">
 							<label for="consumer-id">Enter Consumer ID (उपभोक्ता आईडी दर्ज करें)</label>
@@ -209,425 +210,220 @@
 						</div>
 					</div>
 
-					<script>
-						document.addEventListener('DOMContentLoaded', function() {
-							var applicationTypeInputs = document.getElementsByName('application_type');
-							var additionalFields = document.getElementById('additional-fields');
-				
-							applicationTypeInputs.forEach(function(input) {
-								input.addEventListener('change', function() {
-									if (this.value === 'ADD_ON_CYLINDER') {
-										additionalFields.classList.remove('hidden');
-									} else {
-										additionalFields.classList.add('hidden');
-									}
-								});
-							});
-						});
-					</script>
-
-					<!-- start Whatsapp OTP Verification Modal -->
-					<div class="modal fade" id="verifyMobileOtp" tabindex="-1" role="dialog" aria-labelledby="verifyMobileOtp" aria-hidden="true">
-						<div class="modal-dialog" role="document">
-							<div class="modal-content">
-								<div class="modal-header">
-								<h6 class="modal-title text-center" id="verifyMobileOtp">OTP Sent on <span id="verifyMobileNumber"></span></h6>
-								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-									<span aria-hidden="true">&times;</span>
-								</button>
-								</div>
-								<div class="modal-body">
-									<input name="whatsapp_otp" style="margin: 0 auto; max-width: 150px;" type="tel" class="form-control" id="whatsapp_otp"
-									required />
-								</div>
-								<div class="modal-footer">
-									<button type="button" class="btn btn-secondary" data-dismiss="modal">Change Number</button>
-									<button type="button" class="btn btn-primary" onclick="whatsapp_verifier.verify_otp()">Verify & Submit</button>
-								</div>
-							</div>
-						</div>
-					</div>
-					 <!-- end Whatsapp OTP Verification Modal -->
-
-					<div id="uid_linked_mobile_form_group" class="form-group whatsapp-form-group">
-						<label style="margin-bottom: 0;">Own or Family Mobile Number(अपना या परिवार के किसी सदस्य का
-							मोबाइल नंबर) <i class="fa fa-whatsapp" aria-hidden="true"></i> <strong
-								style="color:red">*</strong></label>
-							<span style="color:red; font-size:12px; display: block; width: 100%;">जो कि कनेक्शन मिलने तक
-							चलता रहे ताकि हम आपको संपर्क कर सके</span>
-						<div class="row m-0">
-							<div class="col-8 pl-0">
-								<input type="tel"  class="form-control" id="contact_mobile"
-								pattern="[6789][0-9]{9}" name="contact_mobile" maxlength="10" required />
-								
-							</div>
-							<div class="col-4 pr-0">
-								<button type="button" id="verifyWhatsappButton" class="btn btn-primary float-right" 
-								onclick="whatsapp_verifier.start_verification()">
-									Verify
-								</button>
-								<button type="button" id="changeWhatsappButton" class="btn btn-primary float-right" 
-								onclick="whatsapp_verifier.reset_verification()" style="display: none;">
-									Change
-								</button>
-							</div>
-						</div>
-						<div class="row m-0">
-							<span id="contact_mobile_detail_whatsapp"></span>
-						</div>
-					</div>
-
-					<!-- Hidden input for application_type -->
-					<input type="hidden" name="application_type" value="NEW_CONNECTION">
-
-					<div class="form-group whatsapp-form-group">
-						<label for="mobileNumber" style="margin-bottom: 0 !important;">Mobile Number(मोबाइल नंबर) <i class="fa fa-phone" aria-hidden="true"></i> <strong
-								style="color:red;">*</strong></label>
-						<span style="color:red; font-size:12px; display: block; width: 100%;">जो कि कनेक्शन मिलने तक
-							चलता रहे ताकि हम आपको संपर्क कर सके</span>
-						<div class="row m-0">
-							<div class="col-8 pl-0">
-								<input type="tel" class="form-control" id="mobile_number_2" name="mobile_number_2"
-                                    placeholder="Enter your number" onblur="this.reportValidity();"  required />
-							</div>
-						</div>
-						<div class="row m-0">
-							<p id="errorMessage" class="error"></p>
-						</div>
-					</div>
-
 					<div class="row">
-						<div class="col-md-6">	
-							<div class="form-group">
-								<label>Your Name (आपका नाम)<strong style="color:red">*</strong></label>
-								<input type="text" class="form-control" id="customername" name="name" value="" placeholder="Enter Your Name" required />
-								<!-- <span id="customername_detail" class="text-danger"></span> -->
+						<div class="col-md-6 pr-0">
+							<div id="uid_linked_mobile_form_group" class="form-group whatsapp-form-group">
+								<label style="margin-bottom: 0; font-size: 12px;">Own or Family Mobile Number(अपना या परिवार के किसी सदस्य का
+									मोबाइल नंबर) <i class="fa fa-whatsapp" aria-hidden="true"></i> <strong
+										style="color:red">*</strong>
+								</label>
+								<span style="color:red; font-size:12px; display: block; width: 100%;">जो कि कनेक्शन मिलने तक
+								चलता रहे ताकि हम आपको संपर्क कर सके</span>
+								<div class="whatsapp_mob">
+									<input type="tel"  class="form-control" id="contact_mobile"
+										pattern="[6789][0-9]{9}" name="contact_mobile" maxlength="10" required />
+										<div class="verify_button">
+											<button type="button" id="verifyWhatsappButton" class="btn btn-primary float-right" 
+											onclick="whatsapp_verifier.start_verification()">
+												Verify
+											</button>
+											<button type="button" id="changeWhatsappButton" class="btn btn-primary float-right" 
+											onclick="whatsapp_verifier.reset_verification()" style="display: none;">
+												Change
+											</button>
+										</div>
+								</div>
+								<div class="row m-0">
+									<span id="contact_mobile_detail_whatsapp"></span>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<!-- Hidden input for application_type -->
+							<input type="hidden" name="application_type" value="NEW_CONNECTION">
+							<div class="form-group whatsapp-form-group">
+								<label for="mobileNumber" style="margin-bottom: 0 !important;">Mobile Number(मोबाइल नंबर) <i class="fa fa-phone" aria-hidden="true"></i> <strong
+										style="color:red;">*</strong></label>
+								<span style="color:red; font-size:12px; display: block; width: 100%;">जो कि कनेक्शन मिलने तक
+									चलता रहे ताकि हम आपको संपर्क कर सके</span>
+								<div class="row m-0">
+									<input type="tel" class="form-control" id="mobile_number_2" name="mobile2"
+											placeholder="Enter your number" onblur="this.reportValidity();"  required />
+									<p id="errorMessage" class="error"></p>
+								</div>
+
 							</div>
 						</div>
 					</div>
-					
-					<script>
-						document.getElementById('mobile_number_2').addEventListener('blur', function () {
-							const mobileNumber = this.value.trim();
-							const errorMessage = document.getElementById('errorMessage');
+
+					<div class="container py-4 px-3 rounded shadow-sm bg-white">
+
+						<h4 class="mb-4 text-primary">Customer Details (ग्राहक विवरण)</h4>
 					  
-							// Regex for Indian mobile numbers
-							const mobileRegex = /^[6-9]\d{9}$/;
+						<!-- Name -->
+						<div class="form-row">
+							<div class="form-group">
+								<label for="customername">Your Name (आपका नाम)<strong class="text-danger">*</strong></label>
+								<input type="text" class="form-control form-control-lg" id="customername" name="name" placeholder="Enter Your Name" required>
+							</div>
+						</div>
 					  
-							if (mobileRegex.test(mobileNumber)) {
-							  errorMessage.textContent = "Valid mobile number!";
-							  errorMessage.classList.remove("error");
-							  errorMessage.classList.add("success");
-							} else {
-							  errorMessage.textContent = "Invalid mobile number. Please enter a 10-digit number starting with 6, 7, 8, or 9.";
-							  errorMessage.classList.remove("success");
-							  errorMessage.classList.add("error");
-							}
-						  });
-
-						function WhatsappMobileVerifiedController() {
-							var state = 'INITIAL';
-							var whatsappRefNo = undefined;
-
-							function setAsVerified() {
-								state = 'VERIFIED';
-								$("#contact_mobile_detail_whatsapp").show();
-								$("#contact_mobile_detail_whatsapp").html('✔ Contact Verified').css({'color': 'green', 'font-size' : '14px'});
-
-								$('#changeWhatsappButton').show();
-								$('#verifyWhatsappButton').hide();
-
-								$('[name="contact_mobile"]').attr('readonly', true);
-							}
-
-							function resetVerification() {
-								state = 'INITIAL';
-								$("#contact_mobile_detail_whatsapp").hide();
-								$("#contact_mobile_detail_whatsapp").html('');
-
-								$('#changeWhatsappButton').hide();
-								$('#verifyWhatsappButton').show();
-
-								$('#whatsapp_otp').val('');
-								$('[name="contact_mobile"]').val('');
-
-								$('[name="contact_mobile"]').attr('readonly', false);
-							}
-
-							{% if source == 'link_share' %}
-							$('[name="contact_mobile"]').val("{{ signed_contact_mobile }}");
-							setAsVerified();
-							$('.whatsapp-form-group button').attr('disabled', true);
-							{% endif %}
-							
-							return {
-								start_verification: () => {
-									// reset custom validity
-									$('[name="contact_mobile"]')[0].setCustomValidity('');
-
-									if (!$('[name="contact_mobile"]')[0].reportValidity()) return;
-									
-									var mobile = $('[name="contact_mobile"]').val();
-									$('#verifyWhatsappButton').attr('disabled', true);
-
-									return jQuery.ajax({
-										url: '/connection_app/connection-application/check_phone/',
-										type: "GET",
-										data: {'contact_mobile': mobile}
-									}).
-									then(response => {
-										if (response.status != true) {
-											console.log(response);
-											var msg = response.msg;
-											var applications = response.applications;
-
-											$('[name="contact_mobile"]')[0].setCustomValidity(
-												`ID: ${applications[0].id} Name: ${applications[0].name}`
-											);
-											$('[name="contact_mobile"]')[0].reportValidity();
-
-											msg = applications.map(e=>`<p>आपका आवेदन पहले से मौजूद है ${e.id} Name: ${e.name}</p>`).join('');
-
-											$("#contact_mobile_detail_whatsapp").html(msg).css({'color': 'red', 'font-size' : '17px'});
-											throw new Error(`आपका आवेदन पहले से मौजूद है आइ डी: ${applications[0].id} और नाम ${applications[0].name} स्टेटस ` + msg);
-										}
-										return true;
-									}).
-									then(() => {
-										return jQuery.ajax({
-											url: '/ujjwala/ujjwala-otp/send_sms_otp/',
-											type: "GET",
-											data: {
-												contact_mobile: mobile
-											},
-											headers: {'X-CSRFToken': getCookie('csrftoken')}
-										});
-									}).
-									then(data=> {
-										$('#verifyMobileNumber')[0].innerHTML = mobile;
-										$('#verifyMobileOtp').modal('show');
-										whatsappRefNo = data.reference_number;
-										return whatsappRefNo;
-									}).
-									fail(e => {
-										alert(e);
-									}).
-									always(() => {
-										$('#verifyWhatsappButton').attr('disabled', false);
-									});
-								},
-
-								verify_otp: () => {
-									var whatsapp_otp = $('#whatsapp_otp').val();
-									return new Promise((resolve, reject) => {
-										$('.modal-footer button').attr('disabled', true);
-										
-										jQuery.ajax({
-											url: '/ujjwala/ujjwala-otp/verify_sms_otp/',
-											type: "POST",
-											data: {
-												"otp": whatsapp_otp,
-												"reference_number": whatsappRefNo
-											},
-											headers: {'X-CSRFToken': getCookie('csrftoken')},
-											success: function (data) {
-												$('#verifyMobileOtp').modal('show');
-												if (data.verified) {
-													return resolve(data.signed_value);
-												}
-												return reject("Invalid Code, enter again");
-											},
-										});
-									}).
-									then(signed_number=> {
-										$('[name="contact_mobile"]').val(signed_number);
-										$('.modal.show').modal('hide');
-										setAsVerified();
-									}).
-									catch((e) => {
-										alert(e);
-									}).
-									finally(() => {
-										$('.modal-footer button').attr('disabled', false);
-									});
-								},
-
-								reset_verification: () => {
-									resetVerification();
-								},
-
-								is_valid: () => {
-									if (state !== 'VERIFIED') {
-										alert(`व्हाट्सएप नंबर मान्य नहीं है`);
-										setTimeout(() => {
-											$("#verifyWhatsappButton").focus();
-										}, 0);
-										return false;
-									}
-									return true;
-								},
-
-								get_validated_data: () => {
-									return {
-										'contact_mobile': $('[name="contact_mobile"]').val()
-									}
-								}
-							}
-						}
-
-						whatsapp_verifier = WhatsappMobileVerifiedController();
-					</script>
-
-					<div class="row">
-						<div class="col-md-6 pr-0">
-							<div class="form-group">
-								<label>House no. (हाउस नंबर)<strong style="color:red">*</strong></label>
-								<input type="text" class="form-control" id="house_no" name="house_no" value="" placeholder="House no" required>
-								<!-- <span id="currentaddress_detail" class="text-danger"></span> -->
-							</div>
+						<!-- Gender & DOB -->
+						<div class="form-row">
+						  <div class="form-group col-md-6">
+							<label for="gender">Gender (लिंग)<strong class="text-danger">*</strong></label>
+							<select class="form-control" id="gender" name="gender" required>
+							  <option value="">Select Gender</option>
+							  <option value="MALE">Male (पुरुष)</option>
+							  <option value="FEMALE">Female (महिला)</option>
+							</select>
+						  </div>
+						  <div class="form-group col-md-6">
+							<label for="dob">Date of Birth (जन्म तिथि)<strong class="text-danger">*</strong></label>
+							<input type="date" class="form-control" id="dob" name="dob" required>
+						  </div>
 						</div>
-						<div class="col-md-6">
-							<div class="form-group">
-								<label>Street no. (गली नंबर)<strong style="color:red">*</strong></label>
-								<input type="text" class="form-control" id="street_no" name="street_no" value="" placeholder="Street no." required>
-								<!-- <span id="currentaddress_detail" class="text-danger"></span> -->
-							</div>
-						</div>	
-					</div>
-
-					<div class="row">
-						<div class="col-md-6 pr-0">
-							<div class="form-group">
-								<label>Landmark (नजदीकी स्थान )<strong style="color:red">*</strong></label>
-								<input type="text" class="form-control" id="landmark" name="landmark" value="" placeholder="Landmark" required>
-								<!-- <span id="currentaddress_detail" class="text-danger"></span> -->
-							</div>
+					  
+						<!-- Address 1 -->
+						<div class="form-row">
+						  <div class="form-group col-md-6">
+							<label for="house_no">House No. (हाउस नंबर)<strong class="text-danger">*</strong></label>
+							<input type="text" class="form-control" id="house_no" name="house_no" placeholder="House no" required>
+						  </div>
+						  <div class="form-group col-md-6">
+							<label for="street_no">Street No. (गली नंबर)<strong class="text-danger">*</strong></label>
+							<input type="text" class="form-control" id="street_no" name="street_no" placeholder="Street no." required>
+						  </div>
 						</div>
-						<div class="col-md-6">
-							<div class="form-group">
-								<label>Area/Locality Village (क्षेत्र/इलाका )<strong style="color:red">*</strong></label>
-								<input type="text" class="form-control" id="village" name="village" value="" placeholder="Area/Locality" required>
-								<!-- <span id="currentaddress_detail" class="text-danger"></span> -->
-							</div>
+					  
+						<!-- Address 2 -->
+						<div class="form-row">
+						  <div class="form-group col-md-6">
+							<label for="landmark">Landmark (नजदीकी स्थान)<strong class="text-danger">*</strong></label>
+							<input type="text" class="form-control" id="landmark" name="landmark" placeholder="Landmark" required>
+						  </div>
+						  <div class="form-group col-md-6">
+							<label for="village">Area/Locality/Village (क्षेत्र/इलाका)<strong class="text-danger">*</strong></label>
+							<input type="text" class="form-control" id="village" name="village" placeholder="Area/Locality" required>
+						  </div>
 						</div>
-					</div>
-
-					<!-- <div class="row">
-						<div class="col pr-0">
-							<div class="form-group">
-								<label for="ward_no">Ward No. (वर्ड नंबर)<strong style="color:red">*</strong></label>
-								<input type="text" class="form-control" id="ward_no" name="ward_no" placeholder="Ward No." maxlength="3" required />
-							</div>
+					  
+						<!-- City & Pincode -->
+						<div class="form-row">
+						  <div class="form-group col-md-6">
+							<label for="city">City (शहर)<strong class="text-danger">*</strong></label>
+							<input type="text" class="form-control" id="city" name="city" placeholder="City" required>
+						  </div>
+						  <div class="form-group col-md-6">
+							<label for="pincode">Pincode (पिनकोड)<strong class="text-danger">*</strong></label>
+							<input type="text" class="form-control" id="pincode" name="pincode" placeholder="Pincode" required>
+						  </div>
 						</div>
-						<div class="col">
-							<div class="form-group">
-								<label for="post_office">Post Office <br>(पोस्ट ऑफीस)<strong style="color:red">*</strong></label>
-								<input type="text" class="form-control" id="post_office" name="post_office" minlength="5" placeholder="Post Office" required  />
-							</div>
-						</div>
-					</div> -->
-
-					<div class="row">
-						<div class="col-md-6 pr-0">
-							<div class="form-group">
-								<label for="city">City (शहर)<strong style="color:red">*</strong></label>
-								<input type="text" class="form-control" id="city" name="city" placeholder="City" required />
-							</div>
-						</div>
-						<div class="col-md-6">
-							<div class="form-group">
-								<label>Pincode (पिनकोड)<strong style="color:red">*</strong></label>
-								<input type="text" class="form-control" id="pincode" name="pincode" value="" placeholder="Pincode" required>
-								<!-- <span id="currentaddress_detail" class="text-danger"></span> -->
-							</div>
-						</div>
-					</div>
+					  
+					  </div>
 					
-					<div class="form-group">
-						<div class="row">
-							<div class="col-sm-2">
-								<p>Your Picture or Selfie(ग्राहक की फोटो)<strong style="color:red">*</strong>
-								</p><br>
-								<span class="custom-file-input" name="customerpicture"
-									id="customerpicture"></span><br> 
-								<span id="customerpicture_detail" class="text-danger"></span>
-							</div>
-							<div class="col-sm-2">
-								<p>Aadhar Card Front Photo (आधार कार्ड की फोटो)<strong
-									style="color:red">*</strong></p>
-								<span class="custom-file-input" name="aadharcard" id="aadharcard">
-								</span><br>
-							</div>
-							<div class="col-sm-2">
-								<p>Aadhar Card Back Photo (आधार कार्ड की फोटो)<strong style="color:red">*</strong>
-								</p>
-								<span class="custom-file-input" name="aadharcardback" id="aadharcardback">
-								</span><br>
-							</div>
-							<div class="col-sm-2">
-								<p>Bank Detail (पास बुक का विवरण)</p><br>
-								<span class="custom-file-input" id="bankdetail" name="bankdetail"></span><br>
-							</div>
-							<div class="col-sm-2">
-								<p>Any Other Identification Proof <br>(कोई अन्य पहचान पत्र)</p><br>
-								<span class="custom-file-input" name="OTHER_ID_PROOF"
-									id="identification"></span><br>
-							</div>
+					<div class="form-group image-grid">
+						<div class="image-box" style="--box-color: #ffdddd">
+						  <p>Your Picture or Selfie<br>(ग्राहक की फोटो)<strong style="color:red">*</strong></p>
+						  <span class="custom-file-input" id="customerpicture"></span>
+						  <span id="customerpicture_detail" class="text-danger"></span>
 						</div>
-					</div>
-					<!-- <div class="form-group">
-						<p>Application Type (किस लिए आवेदन)<strong style="color:red">*</strong></p>
-						<div class="input-block">
-							<input type="radio" class="form-check-input" name="application_type" value="NEW_CONNECTION"
-							required>
-							<span style="padding-left:10px;"> New Connection (नया कनेक्शन)</span>
+						<div class="image-box" style="--box-color: #ddffdd">
+						  <p>Aadhar Card Front Photo<br>(आधार कार्ड की फोटो)<strong style="color:red">*</strong></p>
+						  <span class="custom-file-input" id="aadharcard"></span>
 						</div>
-						<div class="input-block">
-							<input type="radio" class="form-check-input" name="application_type" value="BLUE_BOOK" required>
-							<span style="padding-left:10px;"> Gas Book (गैस कॉपी)</span>
+						<div class="image-box" style="--box-color: #ddddff">
+						  <p>Aadhar Card Back Photo<br>(आधार कार्ड की फोटो)<strong style="color:red">*</strong></p>
+						  <span class="custom-file-input" id="aadharcardback"></span>
 						</div>
-					</div> -->
-					<div class="form-group">
+						<div class="image-box" style="--box-color: #ffffcc">
+						  <p>Bank Detail<br>(पास बुक का विवरण)</p>
+						  <span class="custom-file-input" id="bankdetail"></span>
+						</div>
+						<div class="image-box" style="--box-color: #e6ccff">
+						  <p>Any Other ID Proof<br>(कोई अन्य पहचान पत्र)</p>
+						  <span class="custom-file-input" id="identification"></span>
+						</div>
+					  </div>
+					  <style>
+						.image-grid {
+							display: grid;
+							grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+							gap: 15px;
+							margin-top: 15px;
+						  }
+						  
+						  .image-box {
+							background-color: var(--box-color);
+							padding: 10px;
+							border: 1px solid #ccc;
+							border-radius: 10px;
+							text-align: center;
+							font-size: 14px;
+						  }
+						  
+						  .custom-file-input {
+							display: block;
+							margin-top: 10px;
+							min-height: 120px;
+							background-color: #f9f9f9;
+							border: 1px dashed #aaa;
+							padding: 5px;
+							border-radius: 8px;
+							overflow: hidden;
+						  }
+						</style>
+					  
+
+					<div class="form-group" style="margin-bottom:10px;">
 						<p>Connection Type (गैस कनेक्शन का प्रकार)<strong style="color:red">*</strong></p>
 						<select class="selectpicker form-control" data-style="warning" name="connection_type" id="connectionType" onchange="showImage()" required>
 							<option value="" selected="selected">Select Connection Type (गैस कनेक्शन प्रकार चुनें)</option>
 							<option value="FC14#SINGLE">14.2 KG Single Connection (14.2 किलो सिंगल कनेक्शन)</option>
-							<!-- <option value="FC14#DOUBLE">14.2 Kg Double Connection (14.2 किलो डबल कनेक्श)</option> -->
 							<option value="FC5#SINGLE">5 KG Single Connection (5 किलो सिंगल कनेक्श)</option>
-							<!-- <option value="FC5#DOUBLE">5 KG Double Connection (5 किलो डबल कनेक्श)</option> -->
-                            <!-- <option value="INVERTOR_BACKUP">5 KG Invertor/Backup Single Connection (5 किलो सिंगल कनेक्श)</option> -->
-                            <!-- <option value="DOUBLE_INVERTOR_BACKUP">5 KG Invertor/Backup Double Connection (5 किलो डबल कनेक्श)</option> -->
 						</select>
-                        <img class="custome-image" id="imageContainer" src="" alt="">
 					</div>
-                    <!-- Image container to display the selected image -->
-                    <!-- <div>
-                        <img class="custome-image" id="imageContainer" src="cylinder_14.png" alt="Gas Cylinder Image">
-                    </div> -->
+					
+					<div class="row">
+						<div class="col-md-6 pr-0">
+							<div class="form-group">
+								<p>Enter Total Amount<strong style="color:red">*</strong></p>
+								<div class="form-group">
+									<input type="number" class="form-control" id="connection_price" name="new_connection_price" placeholder="Enter Connection Price" 
+									>
+									<!-- <span id="currentaddress_detail" class="text-danger"></span> -->
+								</div>
+							</div>
+		
+						</div>
+						<div class="col-md-6 pr-0">
+							<div class="form-group">
+								<p>Referral Code</p>
+								<input type="text" class="form-control" id="reference" name="referral_code" value="">
+							</div>
+						</div>		
+					</div>
 
-					<div class="form-group">
-						<p>Referral Code</p>
-						<input type="text" class="form-control" id="reference" name="referral_code" value="">
-						<br>
-                         <!-- Suggestion Box -->
-                        <label for="suggestion">Remarks:</label>
-                        <textarea class="form-control" id="customer_remarks" name="customer_remarks" rows="3"></textarea>
-                        <br>
-						<input type="submit" id="submit" name="submit" value="submit" class="btn btn-success">
+					<div class="row">
+						<div class="form-group">
+							<!-- Suggestion Box -->
+						   <label for="suggestion">Remarks:</label>
+						   <textarea class="form-control" id="customer_remarks" name="customer_remarks" rows="3"></textarea>
+						   <br>
+						   <input type="submit" id="submit" name="submit" value="submit" class="btn btn-success">
+					   </div>
 					</div>
 				</form>
 
 				<br>
 			</div>
-			<div id="cus_id"></div>
+
+			<div id="id"></div>
 			<div id="application_receipt">
-				<span id="app_id"></span>
-				<span id="app_id_creation"></span>
+				<span id="id"></span>
 			</div>
-			<div id="message"></div>
 		</div>
 	</div>
-	
 	<div class="footer">
 		<div class="container">
 			<div class="row">
@@ -655,7 +451,45 @@
 			</div>
 		</div>
 	</div>
+	<div id="message"></div>
+	<!-- start Whatsapp OTP Verification Modal -->
+	<div class="modal fade" id="verifyMobileOtp" tabindex="-1" role="dialog" aria-labelledby="verifyMobileOtp" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+				<h6 class="modal-title text-center" id="verifyMobileOtp">OTP Sent on <span id="verifyMobileNumber"></span></h6>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				</div>
+				<div class="modal-body">
+					<input name="whatsapp_otp" style="margin: 0 auto; max-width: 150px;" type="tel" class="form-control" id="whatsapp_otp"
+					required />
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Change Number</button>
+					<button type="button" class="btn btn-primary" onclick="whatsapp_verifier.verify_otp()">Verify & Submit</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end Whatsapp OTP Verification Modal -->
 	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			var applicationTypeInputs = document.getElementsByName('application_type');
+			var additionalFields = document.getElementById('additional-fields');
+
+			applicationTypeInputs.forEach(function(input) {
+				input.addEventListener('change', function() {
+					if (this.value === 'ADD_ON_CYLINDER') {
+						additionalFields.classList.remove('hidden');
+					} else {
+						additionalFields.classList.add('hidden');
+					}
+				});
+			});
+		});
+
 		function getCookie(name) {
 		let cookieValue = null;
 			if (document.cookie && document.cookie !== '') {
@@ -671,6 +505,178 @@
 			}
 			return cookieValue;
 		}
+
+
+		document.getElementById('mobile_number_2').addEventListener('blur', function () {
+			const mobileNumber = this.value.trim();
+			const errorMessage = document.getElementById('errorMessage');
+		
+			// Regex for Indian mobile numbers
+			const mobileRegex = /^[6-9]\d{9}$/;
+		
+			if (mobileRegex.test(mobileNumber)) {
+				errorMessage.textContent = "Valid mobile number!";
+				errorMessage.classList.remove("error");
+				errorMessage.classList.add("success");
+			} else {
+				errorMessage.textContent = "Invalid mobile number. Please enter a 10-digit number starting with 6, 7, 8, or 9.";
+				errorMessage.classList.remove("success");
+				errorMessage.classList.add("error");
+			}
+		});
+
+		function WhatsappMobileVerifiedController() {
+			var state = 'INITIAL';
+			var whatsappRefNo = undefined;
+
+			function setAsVerified() {
+				state = 'VERIFIED';
+				$("#contact_mobile_detail_whatsapp").show();
+				$("#contact_mobile_detail_whatsapp").html('✔ Contact Verified').css({'color': 'green', 'font-size' : '14px'});
+
+				$('#changeWhatsappButton').show();
+				$('#verifyWhatsappButton').hide();
+
+				$('[name="contact_mobile"]').attr('readonly', true);
+			}
+
+			function resetVerification() {
+				state = 'INITIAL';
+				$("#contact_mobile_detail_whatsapp").hide();
+				$("#contact_mobile_detail_whatsapp").html('');
+
+				$('#changeWhatsappButton').hide();
+				$('#verifyWhatsappButton').show();
+
+				$('#whatsapp_otp').val('');
+				$('[name="contact_mobile"]').val('');
+
+				$('[name="contact_mobile"]').attr('readonly', false);
+			}
+
+			{% if source == 'link_share' %}
+			$('[name="contact_mobile"]').val("{{ signed_contact_mobile }}");
+			setAsVerified();
+			$('.whatsapp-form-group button').attr('disabled', true);
+			{% endif %}
+			
+			return {
+				start_verification: () => {
+					// reset custom validity
+					$('[name="contact_mobile"]')[0].setCustomValidity('');
+
+					if (!$('[name="contact_mobile"]')[0].reportValidity()) return;
+					
+					var mobile = $('[name="contact_mobile"]').val();
+					$('#verifyWhatsappButton').attr('disabled', true);
+
+					return jQuery.ajax({
+						url: '/connection_app/connection-application/check_phone/',
+						type: "GET",
+						data: {'contact_mobile': mobile}
+					}).
+					then(response => {
+						if (response.status != true) {
+							console.log(response);
+							var msg = response.msg;
+							var applications = response.applications;
+
+							$('[name="contact_mobile"]')[0].setCustomValidity(
+								`ID: ${applications[0].id} Name: ${applications[0].name}`
+							);
+							$('[name="contact_mobile"]')[0].reportValidity();
+
+							msg = applications.map(e=>`<p>आपका आवेदन पहले से मौजूद है ${e.id} Name: ${e.name}</p>`).join('');
+
+							$("#contact_mobile_detail_whatsapp").html(msg).css({'color': 'red', 'font-size' : '17px'});
+							throw new Error(`आपका आवेदन पहले से मौजूद है आइ डी: ${applications[0].id} और नाम ${applications[0].name} स्टेटस ` + msg);
+						}
+						return true;
+					}).
+					then(() => {
+						return jQuery.ajax({
+							url: '/ujjwala/ujjwala-otp/send_sms_otp/',
+							type: "GET",
+							data: {
+								contact_mobile: mobile
+							},
+							headers: {'X-CSRFToken': getCookie('csrftoken')}
+						});
+					}).
+					then(data=> {
+						$('#verifyMobileNumber')[0].innerHTML = mobile;
+						$('#verifyMobileOtp').modal('show');
+						whatsappRefNo = data.reference_number;
+						return whatsappRefNo;
+					}).
+					fail(e => {
+						alert(e);
+					}).
+					always(() => {
+						$('#verifyWhatsappButton').attr('disabled', false);
+					});
+				},
+
+				verify_otp: () => {
+					var whatsapp_otp = $('#whatsapp_otp').val();
+					return new Promise((resolve, reject) => {
+						$('.modal-footer button').attr('disabled', true);
+						
+						jQuery.ajax({
+							url: '/ujjwala/ujjwala-otp/verify_sms_otp/',
+							type: "POST",
+							data: {
+								"otp": whatsapp_otp,
+								"reference_number": whatsappRefNo
+							},
+							headers: {'X-CSRFToken': getCookie('csrftoken')},
+							success: function (data) {
+								$('#verifyMobileOtp').modal('show');
+								if (data.verified) {
+									return resolve(data.signed_value);
+								}
+								return reject("Invalid Code, enter again");
+							},
+						});
+					}).
+					then(signed_number=> {
+						$('[name="contact_mobile"]').val(signed_number);
+						$('.modal.show').modal('hide');
+						setAsVerified();
+					}).
+					catch((e) => {
+						alert(e);
+					}).
+					finally(() => {
+						$('.modal-footer button').attr('disabled', false);
+					});
+				},
+
+				reset_verification: () => {
+					resetVerification();
+				},
+
+				is_valid: () => {
+					if (state !== 'VERIFIED') {
+						alert(`व्हाट्सएप नंबर मान्य नहीं है`);
+						setTimeout(() => {
+							$("#verifyWhatsappButton").focus();
+						}, 0);
+						return false;
+					}
+					return true;
+				},
+
+				get_validated_data: () => {
+					return {
+						'contact_mobile': $('[name="contact_mobile"]').val()
+					}
+				}
+			}
+		}
+
+		whatsapp_verifier = WhatsappMobileVerifiedController();
+
 		$('#punjab').on('submit', function (event) {
 			
 
@@ -706,7 +712,9 @@
 				pincode: formdata.pincode,
 				village: formdata.village,
 				post_office: formdata.post_office,
-				city: formdata.city
+				city: formdata.city,
+				gender: formdata.gender,
+				dob: formdata.dob,
 			}
 
 			console.log(JSON.stringify(formdata));
@@ -738,17 +746,18 @@
 						icon: "success",
 					})
 
-					$("#message").html('<div class="alert alert-success" style="color:red; text-align:center; margin-top:250px;"><strong>SUCCESS!</strong> 	Your New Connection application has been submitted</div>');
-					$("#cus_id").append(result);
+					$("#message").html('<div class="alert alert-success" style="color:red; text-align:center; margin-top:250px;"><strong>SUCCESS!</strong> 	your application has been submitted</div>');
+					$("#id").append(result);
 					$("#message").append(result.id).css({ "text-align": "center" }).append(" <b>is you application Id</b>.");
 
 					$('#application_receipt').show();
-					$('#cus_id').attr('id');
+					$('#id').attr('id');
 				}
 			});
 		});
 		
 		$(document).ready(function () {
+
 			fillInitialData();
 			$("#mobile").blur(function(){
 			var mobile = $("#mobile").val();
@@ -812,7 +821,7 @@
 				target: '#gas_copy_photo',
 				showProgressDetails: true,
 				note: 'Images and video only, 2–3 files, up to 10 MB',
-				height: 250,
+				height: 150,
 				metaFields: [],
 				id: 'gas_copy_photo',
 				browserBackButtonClose: false
@@ -850,7 +859,7 @@
 				target: '#customerpicture',
 				showProgressDetails: true,
 				note: 'Images and video only, 2–3 files, up to 10 MB',
-				height: 250,
+				height: 150,
 				metaFields: [],
 				id: 'customerpicture',
 				browserBackButtonClose: false
@@ -888,7 +897,7 @@
 					target: '#aadharcard',
 					showProgressDetails: true,
 					note: 'Images and video only, 2–3 files, up to 10 MB',
-					height: 250,
+					height: 150,
 					metaFields: [],
 					id: 'aadharcard',
 					browserBackButtonClose: false
@@ -926,7 +935,7 @@
 				target: '#aadharcardback',
 				showProgressDetails: true,
 				note: 'Images and video only, 2–3 files, up to 10 MB',
-				height: 250,
+				height: 150,
 				metaFields: [],
 				id: 'aadharcardback',
 				browserBackButtonClose: false
@@ -966,7 +975,7 @@
 				target: '#identification',
 				showProgressDetails: true,
 				note: 'Images and video only, 2–3 files, up to 10 MB',
-				height: 250,
+				height: 150,
 				metaFields: [],
 				id: 'identification',
 				browserBackButtonClose: false
@@ -1006,7 +1015,7 @@
 				target: '#bankdetail',
 				showProgressDetails: true,
 				note: 'Images and video only, 2–3 files, up to 10 MB',
-				height: 250,
+				height: 150,
 				metaFields: [],
 				id: 'bankdetail',
 				browserBackButtonClose: false
@@ -1026,6 +1035,14 @@
 				console.log('successful files:', result.successful)
 				console.log('failed files:', result.failed)
 			})
+
+			 // Auto-show modal
+			 $("#notificationModal").fadeIn();
+
+			// Close modal on click of close button or OK button
+			$("#closeModal, #closeModalBtn").click(function () {
+				$("#notificationModal").fadeOut();
+			});
 		});
 
 	</script>
@@ -1040,7 +1057,6 @@
 	.main{ display: block; width: 100%; background: #efefef;}
 	.main img{
 		width: 100%;
-		height: 400px;
 		margin: 0 auto;
 		display: block;
 	 }
@@ -1102,9 +1118,6 @@
     }
     .align-right{ text-align: right;}
     @media only screen and (max-width: 600px) {
-		.main img{
-			height: auto !important;
-	 	}
 		.footer .col-md-6 p{ text-align: center !important;}
 		.footer .col-md-6{ text-align: center !important;}
 		
@@ -1281,5 +1294,69 @@
 	.hidden {
 		display: none;
 	}
+	.custom-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex; /* Show modal automatically */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .custom-modal {
+            background: #fff;
+            padding: 20px;
+            width: 300px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .custom-modal-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .custom-modal-body {
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            float: right;
+        }
+
+        .custom-modal-footer {
+            margin-top: 15px;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
 	
 </style>

@@ -72,6 +72,8 @@ class ConnectionApplication(models.Model):
 	item_code = models.CharField(max_length=25, choices=ItemCodeEnum.choices)
 	connection_type = models.CharField(max_length=25, choices=ConnectionTypeEnum.choices, null=True)
 	referral_code = models.CharField(max_length=48, null=True, blank=True)
+	new_connection_price = models.CharField(max_length=10)
+	
 
 	documents_reupload_remarks = models.TextField(null=True, blank=True)
 	documents_required_for_reupload = models.TextField(null=True, blank=True)
