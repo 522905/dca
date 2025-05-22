@@ -3,259 +3,139 @@
 {% block page_title %}LPG OMC BPCL/HPCL Cylinder to Indane Cylinder Change Form{% endblock %}
 {% load material_form %}
 {% block content %}
-
     <link rel="stylesheet" href="{% static '/css/style.css' %}">
     <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700,800,900&display=swap" rel="stylesheet">
 	<!-- jQuery (required first) -->
 	<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-
 	<!-- Bootstrap JS (after jQuery) -->
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
     <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
-
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<style>
+		.hidden_block{ display: none;}
+		.form-group { margin: 0 !important;}
+		.form-group input{ padding: 0 5px !important;}
+		{% comment %} .card{ padding: 20px;} {% endcomment %}
+		.modal{ background-color: transparent; box-shadow: none;}
+	</style>
 	<div class="main p-2 pt-0 form_label">
+		{% csrf_token %}
 		<div class="modal fade" id="verifyMobileOtp" tabindex="-1" role="dialog" aria-labelledby="verifyMobileOtpLabel" aria-hidden="true">
 			<div class="modal-dialog modal-dialog-centered" role="document">
-			  <div class="modal-content shadow rounded-3">
-				<div class="modal-header border-0 pb-0">
-				  <h6 class="modal-title w-100 text-center fw-bold" id="verifyMobileOtpLabel">
-					OTP Sent to <span id="verifyMobileNumber" class="text-primary"></span>
-				  </h6>
-				  <button type="button" class="close position-absolute end-0 top-0 m-3" data-dismiss="modal" aria-label="Close">
-					<span aria-hidden="true" style="font-size: 1.5rem;">&times;</span>
-				  </button>
+				<div class="modal-content shadow rounded-3">
+					<div class="modal-header border-0 pb-0">
+						<h6 class="modal-title w-100 text-center fw-bold" id="verifyMobileOtpLabel">
+						OTP Sent to <span id="verifyMobileNumber" class="text-primary"></span>
+						</h6>
+						<button type="button" class="close position-absolute end-0 top-0 m-3" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true" style="font-size: 1.5rem;">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body text-center">
+						<p class="mb-2 text-muted">Please enter the OTP sent to your mobile number</p>
+						<input name="whatsapp_otp" type="tel" class="form-control text-center otp-input" id="whatsapp_otp" maxlength="6" required />
+					</div>
+					<div class="modal-footer justify-content-between border-0 pt-0">
+						<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Change Number</button>
+						<button type="button" class="btn btn-primary" onclick="whatsapp_verifier.verify_otp()">Verify & Submit</button>
+					</div>
 				</div>
-				<div class="modal-body text-center">
-				  <p class="mb-2 text-muted">Please enter the OTP sent to your mobile number</p>
-				  <input name="whatsapp_otp" type="tel" class="form-control text-center otp-input" id="whatsapp_otp" maxlength="6" required />
-				</div>
-				<div class="modal-footer justify-content-between border-0 pt-0">
-				  <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Change Number</button>
-				  <button type="button" class="btn btn-primary" onclick="whatsapp_verifier.verify_otp()">Verify & Submit</button>
-				</div>
-			  </div>
 			</div>
-		  </div>
-		<form method="post" id="omc-cylinder-change-form">
-			{% csrf_token %}
+		</div> 
+		<form method="post" enctype="multipart/form-data">
 			<div class="card">
 				<div class="card-header bg-primary text-white">LPG OMC BPCL/HPCL Cylinder to Indane Cylinder Change Form</div>
-					<form method="post" enctype="multipart/form-data">
-						{% csrf_token %}
-						<div class="card-body">
-							<div class="form-group">
-								<p>Click Photo with Cylinder or Person</p>
-								<div id="omc_cylinder_photo_before" class="p-2"></div>
-							</div>
-							<div class="form-group">
-								<label for="contact_mobile">Contact Mobile</label>
-								<div class="input-row">
-									<input type="tel" pattern="[6789][0-9]{9}" class="form-control" name="contact_mobile" id="contact_mobile"
-									value="{{ form.contact_mobile.value|default_if_none:'' }}" required>
-									<button type="button" id="verifyWhatsappButton" class="btn-primary"
-									onclick="whatsapp_verifier.start_verification()">Verify</button>
-									<button type="button" id="changeWhatsappButton" class="btn-secondary"
-									onclick="whatsapp_verifier.reset_verification()" style="display: none;">Change</button>
-								</div>
-								<div id="contactError" style="display: none; color: red; margin-top: 5px;"></div>
-							</div>
-							<div class="form-group">
-								<label for="customer_name">Customer Name</label>
-								<input type="text" class="form-control" name="customer_name" id="customer_name" value="{{ form.customer_name.value|default_if_none:'' }}">
-							</div>
+				<div class="card-body">
+				{% csrf_token %}
+				<div class="form-group">
+					<label for="id_contact_mobile">Contact Mobile</label>
+					
+					<div class="d-flex gap-2">
+						<input type="tel" pattern="[6789][0-9]{9}" class="form-control me-2"
+							   name="contact_mobile" id="contact_mobile"
+							   value="{{ form.contact_mobile.value|default_if_none:'' }}" required>
+				
+						<button type="button" id="verifyWhatsappButton" class="btn btn-primary me-2"
+								onclick="whatsapp_verifier.start_verification()">Verify</button>
+				
+						<button type="button" id="changeWhatsappButton" class="btn btn-secondary"
+								onclick="whatsapp_verifier.reset_verification()" style="display: none;">Change</button>
+					</div>
+				
+					{{ form.contact_mobile.errors }}
+				</div>
+			<div class="form-group">
+				<label for="id_customer_name">Customer Name</label>
+				{{ form.customer_name }}
+				{{ form.customer_name.errors }}
+			</div>
+			<div class="form-group">
+				<label for="id_area">Area</label>
+				{{ form.area }}
+				{{ form.area.errors }}
+			</div>	
+			<div class="form-group hidden_block">
+				<label for="id_onboard_by">Onboarded By</label>
+				{{ form.onboard_by }}
+				<input type="hidden" name="onboard_by" value="{{ request.user.id }}">
+			</div>
 
-							<div class="form-group">
-								<label for="area">Area</label>
-								<input type="text" class="form-control" name="area" id="area" value="{{ form.area.value|default_if_none:'' }}">
-							</div>
-
-							<div class="form-group">
-								<label for="id_omc_type">OMC Type <strong style="color:red">*</strong></label>
-								<select name="omc_type" id="id_omc_type" class="form-control" required>
-									<option value="">-- Select OMC Type --</option>
-									<option value="HPCL">HPCL</option>
-									<option value="BPCL">BPCL</option>
-								</select>
-							</div>
-
-							<div class="form-group">
-								<label for="omc_cylinder_photo_before">OMC Cylinder Photo (Before) URL</label>
-								<input type="text" class="form-control" name="omc_cylinder_photo_before" id="omc_cylinder_photo_before_input" value="{{ form.omc_cylinder_photo_before.value|default_if_none:'' }}">
-							</div>
-
-							
-
-							<div class="form-group">
-								<label for="omc_cylinder_photo_after">OMC Cylinder Photo (After) URL</label>
-								<input type="text" class="form-control" name="omc_cylinder_photo_after" id="omc_cylinder_photo_after_input" value="{{ form.omc_cylinder_photo_after.value|default_if_none:'' }}">
-							</div>
-
-							<div class="form-group">
-								<p>Click Photo with Cylinder, Person or Blue-Book</p>
-								<div id="omc_cylinder_photo_after" class="p-2"></div>
-							</div>
-							
-						</div>
-						<div class="card-footer text-end">
-							<button type="submit" class="btn btn-success float-end rounded-0">Submit</button>
-						</div>		
-					</form>
+			<div class="hidden_block">
+				{{ form.omc_cylinder_photo_after }}
+				{{ form.omc_cylinder_photo_after.errors }}
+			</div>
+					
+			<div class="form-group">
+				<p>Click Photo with Cylinder, Person or Blue-Book</p>
+				<div id="omc_cylinder_photo_after" class="p-1"></div>
+			</div>
+			<div class="form-group">
+				<label for="id_omc_type">OMC Type <strong style="color:red">*</strong></label>
+				<select name="omc_type" id="id_omc_type" class="form-control" required>
+					<option value="">-- Select OMC Type --</option>
+					<option value="HPCL">HPCL</option>
+					<option value="BPCL">BPCL</option>
+					<option value="IOCL">IOCL</option>
+				</select>
+				{{ form.omc_type.errors }}
+			</div>					
+			</div>
+			<div class="card-footer">
+				<button class="btn btn-primary" type="submit">Submit</button>	
 			</div>
 		</form>
-
-		<div id="submissionModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
-			<div style="background:#fff; padding:40px; border-radius:8px; max-width:600px; width:90%; text-align:center;">
-				<h2>🎉 Form Submitted!</h2>
-				<p>Thank you for your submission. We'll be in touch soon.</p>
-				<button onclick="document.getElementById('submissionModal').style.display='none'">Close</button>
-			</div>
-		</div>
-		
-		<!-- Existing Alert -->
-		<div id="submissionAlert" style="display: none; color: green; margin-top: 10px;">
-			Form submitted successfully!
+			
 		</div>
 	</div>
-	
-	<script>
-		
-		document.getElementById("omc-cylinder-change-form").addEventListener("submit", function(e) {
-			e.preventDefault();
-		
-			const submitBtn = document.querySelector("#omc-cylinder-change-form button[type='submit']");
-			if (submitBtn) submitBtn.disabled = true;
-		
-			const form = e.target;
-			const formData = new FormData(form);
-		
-			fetch("", {
-				method: "POST",
-				body: formData,
-				headers: {
-					'X-Requested-With': 'XMLHttpRequest',
-				}
-			})
-			.then(response => {
-				if (response.ok) {
-					return response.text();
-				} else {
-					return response.json().then(errData => {
-						throw errData;
-					});
-				}
-			})
-			.then(data => {
-				console.log("Server response:", data);
-		
-				// Hide any previous contact error
-				document.getElementById("contactError").style.display = "none";
-		
-				// Show modal and alert
-				document.getElementById("submissionModal").style.display = "flex";
-				document.getElementById("submissionAlert").style.display = "block";
-		
-				form.reset();
-				uppy.reset();
-		
-				setTimeout(() => {
-					document.getElementById("submissionAlert").style.display = "none";
-					location.reload();
-				}, 3000);
-			})
-			.catch(error => {
-				let contactErrorBox = document.getElementById("contactError");
-		
-				if (error.error === "duplicate_contact") {
-					contactErrorBox.innerText = `⚠️ Number ${error.phone} is already registered under "${error.name}".`;
-					contactErrorBox.style.display = "block";
-				} else {
-					alert("Error submitting form: " + (error?.error || error));
-				}
-		
-				if (submitBtn) submitBtn.disabled = false;
-			});
-		});
-		
 
-		// Uppy instance for omccylinderphotoAfter
-		const uppyAfter = new Uppy.Core({
-			debug: true,
-			autoProceed: true,
-			restrictions: {
-				maxFileSize: 50000000,
-				maxNumberOfFiles: 1,
-				allowedFileTypes: ['image/*'],
+	<script>
+		function handleBlur(input) {
+			const mobile = input.value.trim();
+			const mobileRegex = /^[6-9]\d{9}$/;
+		
+			if (mobileRegex.test(mobile)) {
+				// ✅ Valid number - show success
+				Swal.fire({
+					icon: 'success',
+					title: 'Valid!',
+					text: 'Mobile number is valid.',
+					timer: 1500,
+					showConfirmButton: false
+				});
+			} else {
+				// ❌ Invalid number - show error
+				Swal.fire({
+					icon: 'error',
+					title: 'Invalid Mobile Number',
+					text: 'Please enter a valid 10-digit number starting with 6–9.',
+					confirmButtonText: 'OK'
+				});
 			}
-		})
-		.use(Uppy.Dashboard, {
-			trigger: '#omc_cylinder_photo_after',
-			inline: true,
-			target: '#omc_cylinder_photo_after',
-			showProgressDetails: true,
-			note: 'Upload one image (max 50MB)',
-			height: 250,
-			browserBackButtonClose: false
-		})
-		.use(Uppy.Tus, {
-			endpoint: 'https://tus.dca.arungas.com/files/',
-		})
-		.use(Uppy.Compressor, {
-			quality: 0.9,
-			maxWidth: 2048,
-			resize: 'contain',
-			limit: 10,
-			convertTypes: ['image/png', 'image/jpg', 'image/jpeg'],
-			convertSize: 1000000,
-		});
-	
-		uppyAfter.on('complete', result => {
-			const uploadedURL = result.successful[0]?.uploadURL;
-			console.log('After photo uploaded:', uploadedURL);
-			if (uploadedURL) {
-				$('input[name="omc_cylinder_photo_after"]').val(uploadedURL);
-			}
-		});
-	
-		// Uppy instance for omccylinderphotoBefore
-		const uppyBefore = new Uppy.Core({
-			debug: true,
-			autoProceed: true,
-			restrictions: {
-				maxFileSize: 50000000,
-				maxNumberOfFiles: 1,
-				allowedFileTypes: ['image/*'],
-			}
-		})
-		.use(Uppy.Dashboard, {
-			trigger: '#omc_cylinder_photo_before',
-			inline: true,
-			target: '#omc_cylinder_photo_before',
-			showProgressDetails: true,
-			note: 'Upload one image (max 50MB)',
-			height: 250,
-			browserBackButtonClose: false
-		})
-		.use(Uppy.Tus, {
-			endpoint: 'https://tus.dca.arungas.com/files/',
-		})
-		.use(Uppy.Compressor, {
-			quality: 0.9,
-			maxWidth: 2048,
-			resize: 'contain',
-			limit: 10,
-			convertTypes: ['image/png', 'image/jpg', 'image/jpeg'],
-			convertSize: 1000000,
-		});
-	
-		uppyBefore.on('complete', result => {
-			const uploadedURL = result.successful[0]?.uploadURL;
-			console.log('Before photo uploaded:', uploadedURL);
-			if (uploadedURL) {
-				$('input[name="omc_cylinder_photo_before"]').val(uploadedURL);
-			}
-		});
+
+			
+		}
 
 		function getCookie(name) {
 			let cookieValue = null;
@@ -406,128 +286,93 @@
 
 		whatsapp_verifier = WhatsappMobileVerifiedController(); 
 
+		</script>
+	
+	<script>
+		
+		
+
+		// Uppy instance for omccylinderphotoBefore
+		const uppyBefore = new Uppy.Core({
+			debug: true,
+			autoProceed: true,
+			restrictions: {
+				maxFileSize: 50000000,
+				maxNumberOfFiles: 1,
+				allowedFileTypes: ['image/*'],
+			}
+		})
+		.use(Uppy.Dashboard, {
+			trigger: '#omc_cylinder_photo_before',
+			inline: true,
+			target: '#omc_cylinder_photo_before',
+			showProgressDetails: true,
+			note: 'Upload one image (max 50MB)',
+			height: 250,
+			browserBackButtonClose: false
+		})
+		.use(Uppy.Tus, {
+			endpoint: 'https://tus.dca.arungas.com/files/',
+		})
+		.use(Uppy.Compressor, {
+			quality: 0.9,
+			maxWidth: 2048,
+			resize: 'contain',
+			limit: 10,
+			convertTypes: ['image/png', 'image/jpg', 'image/jpeg'],
+			convertSize: 1000000,
+		});
+	
+		uppyBefore.on('complete', result => {
+			const uploadedURL = result.successful[0]?.uploadURL;
+			console.log('Before photo uploaded:', uploadedURL);
+			if (uploadedURL) {
+				$('input[name="omc_cylinder_photo_before"]').val(uploadedURL);
+			}
+		});
+
+
+		// Uppy instance for omccylinderphotoAfter
+		const uppyAfter = new Uppy.Core({
+			debug: true,
+			autoProceed: true,
+			restrictions: {
+				maxFileSize: 50000000,
+				maxNumberOfFiles: 1,
+				allowedFileTypes: ['image/*'],
+			}
+		})
+		.use(Uppy.Dashboard, {
+			trigger: '#omc_cylinder_photo_after',
+			inline: true,
+			target: '#omc_cylinder_photo_after',
+			showProgressDetails: true,
+			note: 'Upload one image (max 50MB)',
+			height: 250,
+			browserBackButtonClose: false
+		})
+		.use(Uppy.Tus, {
+			endpoint: 'https://tus.dca.arungas.com/files/',
+		})
+		.use(Uppy.Compressor, {
+			quality: 0.9,
+			maxWidth: 2048,
+			resize: 'contain',
+			limit: 10,
+			convertTypes: ['image/png', 'image/jpg', 'image/jpeg'],
+			convertSize: 1000000,
+		});
+	
+		uppyAfter.on('complete', result => {
+			const uploadedURL = result.successful[0]?.uploadURL;
+			console.log('After photo uploaded:', uploadedURL);
+			if (uploadedURL) {
+				$('input[name="omc_cylinder_photo_after"]').val(uploadedURL);
+			}
+		});
+	
+		
+
 	</script>
 
-<style>
-	.input-row {
-		display: flex;
-		gap: 10px;
-		align-items: center;
-	  }
-	
-	  .form-control {
-		flex: 1;
-		padding: 10px;
-		font-size: 1rem;
-		border: 1px solid #ccc;
-		border-radius: 5px;
-	  }
-	
-	  .btn-primary,
-	  .btn-secondary {
-		padding: 8px 16px;
-		font-size: 1rem;
-		border: none;
-		border-radius: 5px;
-		cursor: pointer;
-		white-space: nowrap;
-	  }
-	
-	  .btn-primary {
-		background-color: #007bff;
-		color: #fff;
-	  }
-	
-	  .btn-secondary {
-		background-color: #6c757d;
-		color: #fff;
-	  }
-	
-	  .btn-primary:hover {
-		background-color: #0056b3;
-	  }
-	
-	  .btn-secondary:hover {
-		background-color: #5a6268;
-	  }
-	  #verifyMobileOtp  input[name="whatsapp_otp"]{
-		margin: 0 auto !important; 
-	  }
-	  .position-absolute{ right: 0; top: 0; z-index: 111; }
-	  @media (max-width: 576px) {
-		.input-row {
-		  flex-direction: column;
-		  align-items: stretch;
-		}
-	  }
-	  #verifyMobileOtp .modal .modal-content{
-		padding: 10px;
-	  }
-	#id_omc_cylinder_photo_before_container label,
-	#id_omc_cylinder_photo_after_container label{
-		display: none;
-	}
-	{% comment %} #id_omc_cylinder_photo_before,
-	#id_omc_cylinder_photo_after {
-		display: none;
-	}
-	.form_label label {
-		display: none !important;
-	} {% endcomment %}
-	.otp-input {
-		max-width: 180px;
-		margin: 0 auto;
-		font-size: 1.25rem;
-		letter-spacing: 0.3em;
-		padding: 10px 15px;
-		border: 2px solid #ced4da;
-		border-radius: 0.5rem;
-	  }
-	
-	  .modal-content {
-		border-radius: 1rem;
-		overflow: hidden;
-	  }
-	
-	  .modal-header h6 {
-		font-size: 1rem;
-	  }
-	
-	  @media (max-width: 576px) {
-		.otp-input {
-		  max-width: 140px;
-		  font-size: 1rem;
-		}
-	  }
-	  #verifyMobileOtp{
-		background-color: transparent;
-		box-shadow: none;
-	}
-	label[for="omc_cylinder_photo_before"], input[name="omc_cylinder_photo_before"], 
-	label[for="omc_cylinder_photo_after"], input[name="omc_cylinder_photo_after"]{
-		display: none;
-	}
-
-
-	select[name="omc_type"]{
-		margin-bottom: 0px !important;
-		padding:2px 10px !important;
-	}
-
-	#submissionModal {
-		display: none;
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background-color: rgba(0, 0, 0, 0.7);
-		z-index: 9999;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-	}
-	
-
-</style>
 {% endblock %}

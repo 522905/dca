@@ -5,6 +5,8 @@ from django import forms, apps
 from django.core.exceptions import ValidationError
 from django.forms import NumberInput
 from django_currentuser.middleware import get_current_user
+from datetime import timedelta
+from django.utils import timezone
 
 from connection_app.enums import ConnectionApplicationProcessType, ConnectionApplicationLeadStatus, \
         ConnectionApplicationDocumentsEnum, HouseTypeEnum, PostInspectionActivityTypeEnum, PostInspectionStatusEnum, \
@@ -24,6 +26,24 @@ class OmcCylinderConversionForm(forms.ModelForm):
 		super().__init__(*args, **kwargs)
 		# Overriding choices for the omc_type field
 		self.fields['omc_type'].choices = [('HPCL', 'HPCL'), ('BPCL', 'BPCL')]
+
+	def clean_contact_mobile(self):
+		mobile = self.cleaned_data.get('contact_mobile')
+		if not mobile:
+			return mobile
+
+		fifteen_days_ago = timezone.now() - timedelta(days=15)
+
+		recent_request = OmcConversionRequest.objects.filter(
+			contact_mobile=mobile,
+			created_on__gte=fifteen_days_ago
+		).exists()
+
+		if recent_request:
+			raise ValidationError("A request with this mobile number was already submitted in the last 15 days.")
+
+		return mobile
+
 
 	class Meta:
 		model = OmcConversionRequest

@@ -17,32 +17,23 @@ from django.urls import path, reverse
 from django.http import JsonResponse, HttpResponseRedirect
 from itertools import groupby
 from django.contrib import admin
-
 from django.contrib import admin
 from django_object_actions import DjangoObjectActions, action
-
 from hashicorp import hashicorp_client
 from .models import VaultSecret, OmcConversionRequest
 
 @admin.register(OmcConversionRequest)
 class OmcConversionRequestAdmin(admin.ModelAdmin):
-    list_display = ['id', 'customer_name', 'contact_mobile', 'area', 'onboard_by', 'created_on', 'omc_type' ]
+    list_display = ['id', 'customer_name', 'contact_mobile', 'area', 'onboard_by', 'created_on', 'omc_type']
     search_fields = ['customer_name', 'contact_mobile', 'area']
     list_filter = [
-        ('created_on', DateRangeFilter),  # 👈 Date filter with nice UI
-        'onboard_by'
+        ('created_on', DateRangeFilter),
+        'onboard_by',
     ]
-
     def save_model(self, request, obj, form, change):
         if not obj.onboard_by:
-            obj.onboard_by = request.user  # Auto-assign the logged-in user
+            obj.onboard_by = request.user
         super().save_model(request, obj, form, change)
-
-    def save_model(self, request, obj, form, change):
-        if not obj.onboard_by:
-            obj.onboard_by = request.user  # 👈 Auto-assign logged-in user
-        super().save_model(request, obj, form, change)
-
 
 class StatusFilter(SimpleListFilter):
     title = 'Application Status'  # or use _('country') for translated title

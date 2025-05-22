@@ -1,6 +1,5 @@
 import datetime
 import io
-
 import django_rq
 import requests
 import track
@@ -72,9 +71,7 @@ class ConnectionApplication(models.Model):
 	item_code = models.CharField(max_length=25, choices=ItemCodeEnum.choices)
 	connection_type = models.CharField(max_length=25, choices=ConnectionTypeEnum.choices, null=True)
 	referral_code = models.CharField(max_length=48, null=True, blank=True)
-	new_connection_price = models.CharField(max_length=10)
-	
-
+	new_connection_price = models.FloatField(default=0)
 	documents_reupload_remarks = models.TextField(null=True, blank=True)
 	documents_required_for_reupload = models.TextField(null=True, blank=True)
 
@@ -101,7 +98,6 @@ class ConnectionApplication(models.Model):
 	customer_remarks = models.TextField(null=True, blank=True)
 	# def status(request):
 	# 	status = Status.objects.all()
-
 	# 	return render(request, 'connection_app/status.html', {'status': status})
 
 	def lead_details_in_html(self):
@@ -1420,7 +1416,6 @@ class OmcConversionRequest(models.Model):
 	customer_name = models.CharField(max_length=200)
 	area = models.CharField(max_length=200)
 	onboard_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-	omc_cylinder_photo_before = models.URLField()
 	omc_cylinder_photo_after = models.URLField()
 	omc_type = models.CharField(max_length=128, null=True, blank=True)
 
