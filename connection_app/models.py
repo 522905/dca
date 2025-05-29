@@ -1419,7 +1419,7 @@ class OmcConversionRequest(models.Model):
 	omc_cylinder_photo_after = models.URLField()
 	omc_type = models.CharField(max_length=128, null=True, blank=True)
 	dac_code = models.CharField(max_length=10)
-	consumer_id = models.CharField(max_length=10)
+	consumer_id = models.CharField(max_length=28)
 	cylinder_type = models.CharField(max_length=128, null=True, blank=True)	
 
 	def __str__(self):
