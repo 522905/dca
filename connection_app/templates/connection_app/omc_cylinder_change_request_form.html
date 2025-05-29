@@ -51,7 +51,6 @@
 				{% csrf_token %}
 				<div class="form-group">
 					<label for="id_contact_mobile">Contact Mobile</label>
-					
 					<div class="d-flex gap-2">
 						<input type="tel" pattern="[6789][0-9]{9}" class="form-control me-2"
 							   name="contact_mobile" id="contact_mobile"
@@ -63,7 +62,6 @@
 						<button type="button" id="changeWhatsappButton" class="btn btn-secondary"
 								onclick="whatsapp_verifier.reset_verification()" style="display: none;">Change</button>
 					</div>
-				
 					{{ form.contact_mobile.errors }}
 				</div>
 			<div class="form-group">
@@ -76,6 +74,7 @@
 				{{ form.area }}
 				{{ form.area.errors }}
 			</div>	
+				
 			<div class="form-group hidden_block">
 				<label for="id_onboard_by">Onboarded By</label>
 				{{ form.onboard_by }}
@@ -91,6 +90,35 @@
 				<p>Click Photo with Cylinder, Person or Blue-Book</p>
 				<div id="omc_cylinder_photo_after" class="p-1"></div>
 			</div>
+
+			<div class="form-group">
+				<label for="id_area">Enter Consumer Id</label>
+				<input type="text" name="consumer_id" id="consumer_id"
+					class="form-control"
+					title="Please enter Consumer Id">
+				{{ form.consumer_id.errors }}
+			</div>
+
+			<div class="form-group">
+				<label for="id_area">Enter DAC Code</label>
+				<input type="text" name="dac_code" id="id_dac_code"
+					class="form-control"
+					pattern="\d{4}"
+					maxlength="4"
+					title="Please enter exactly 4 digits">
+				{{ form.dac_code.errors }}
+			</div>
+
+			<div class="form-group" >
+				<label for="id_cylinder_type">Cylinder Type</label>
+				<select style="margin-bottom: 20px; display: inline-block;" name="cylinder_type" id="id_cylinder_type" class="form-control">
+					<option value="">-- Select Cylinder Type --</option>
+					<option value="14.2KG">14.2KG</option>
+					<option value="19KG">19KG</option>
+				</select>
+				{{ form.cylinder_type.errors }}
+			</div>	
+
 			<div class="form-group">
 				<label for="id_omc_type">OMC Type <strong style="color:red">*</strong></label>
 				<select name="omc_type" id="id_omc_type" class="form-control" required>
@@ -100,7 +128,9 @@
 					<option value="IOCL">IOCL</option>
 				</select>
 				{{ form.omc_type.errors }}
-			</div>					
+			</div>
+			
+							
 			</div>
 			<div class="card-footer">
 				<button class="btn btn-primary" type="submit">Submit</button>	
@@ -109,7 +139,6 @@
 			
 		</div>
 	</div>
-
 	<script>
 		function handleBlur(input) {
 			const mobile = input.value.trim();
@@ -288,50 +317,7 @@
 
 		</script>
 	
-	<script>
-		
-		
-
-		// Uppy instance for omccylinderphotoBefore
-		const uppyBefore = new Uppy.Core({
-			debug: true,
-			autoProceed: true,
-			restrictions: {
-				maxFileSize: 50000000,
-				maxNumberOfFiles: 1,
-				allowedFileTypes: ['image/*'],
-			}
-		})
-		.use(Uppy.Dashboard, {
-			trigger: '#omc_cylinder_photo_before',
-			inline: true,
-			target: '#omc_cylinder_photo_before',
-			showProgressDetails: true,
-			note: 'Upload one image (max 50MB)',
-			height: 250,
-			browserBackButtonClose: false
-		})
-		.use(Uppy.Tus, {
-			endpoint: 'https://tus.dca.arungas.com/files/',
-		})
-		.use(Uppy.Compressor, {
-			quality: 0.9,
-			maxWidth: 2048,
-			resize: 'contain',
-			limit: 10,
-			convertTypes: ['image/png', 'image/jpg', 'image/jpeg'],
-			convertSize: 1000000,
-		});
-	
-		uppyBefore.on('complete', result => {
-			const uploadedURL = result.successful[0]?.uploadURL;
-			console.log('Before photo uploaded:', uploadedURL);
-			if (uploadedURL) {
-				$('input[name="omc_cylinder_photo_before"]').val(uploadedURL);
-			}
-		});
-
-
+	<script>	
 		// Uppy instance for omccylinderphotoAfter
 		const uppyAfter = new Uppy.Core({
 			debug: true,
@@ -370,9 +356,5 @@
 				$('input[name="omc_cylinder_photo_after"]').val(uploadedURL);
 			}
 		});
-	
-		
-
 	</script>
-
 {% endblock %}
