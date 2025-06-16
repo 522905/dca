@@ -752,7 +752,7 @@ def update_customer_profile_in_dca(relationship_details, customer_profile_id):
 			relationship_details['suspend_deact_date'], "%d-%b-%Y") if \
 			relationship_details['suspend_deact_date'] else None
 		relationship_details['tight_joint_replacement_date'] = datetime.datetime.strptime(
-			relationship_details['tight_joint_replacement_date'], "%d-%b-%Y") if \
+			relationship_details['tight_joint_replacement_date'], "%d-%b-%Y %H:%M:%S %p") if \
 			relationship_details['tight_joint_replacement_date'] else None
 
 		relationship_details['ekyc_flag'] = True if relationship_details['ekyc_flag'] == 'Y' else False
