@@ -188,7 +188,10 @@ def create_sales_order(so, distributor_code):
 	portability_flag = True if so['Portability Flag'] else False
 
 	cp_obj = get_customer_profile(so["Relationship Id"], so["Consumer Name"], so["Consumer Address"], distributor_code, portability_flag)
-	distributor: Distributor = Distributor.objects.filter(code=distributor_code).first()
+	distributor: Distributor = Distributor.objects.filter(code__contains=distributor_code).first()
+
+	if distributor is None:
+		raise IntegrityError(f"Distributor with code {distributor_code} not found.")
 
 	so_obj = SalesOrder.objects.create(
 		parent=cp_obj,
