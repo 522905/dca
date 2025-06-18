@@ -89,7 +89,9 @@ def handle_task(task: ExternalTask) -> TaskResult:
 			return task.complete(global_variables=result_variables)
 		elif topic == 'process_fetch_sales_order_details_from_sdms#cleanup_sales_order_tasks':
 			sales_order_id = task.get_variable('sales_order_id')
-			clean_sales_order_tasks(sales_order_id, task.get_process_instance_id())
+			importing = task.get_variable('importing')
+			if not importing:
+				clean_sales_order_tasks(sales_order_id, task.get_process_instance_id())
 			return task.complete()
 		elif topic == 'process_dca_service_request#update_service_request_status_in_dca':
 			update_service_request_in_dca(task)
