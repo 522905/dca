@@ -70,6 +70,16 @@ def start_read_customer_profile(customer_profile_id):
 	print(res)
 
 
+def import_sales_order(csv_file_rows):
+	from connection_app.camunda_functions import start_process_fetch_sales_order_details_from_sdms_for_import
+
+	for idx, row in enumerate(csv_file_rows):
+		sales_order_number = row['sales_order_number']
+		order_status = 'Completed'
+		distributor_code = row['distributor_code'].replace(";", "")
+		start_process_fetch_sales_order_details_from_sdms_for_import(sales_order_number, distributor_code,order_status)
+	return True
+
 
 def import_bulk_is_dirty(csv_file_rows):
 	from connection_app.models import CustomerProfile

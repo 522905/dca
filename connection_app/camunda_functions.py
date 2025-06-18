@@ -100,6 +100,34 @@ def start_process_fetch_sales_order_details_from_sdms(so_id, distributor_code):
 		print(res)
 
 
+def start_process_fetch_sales_order_details_from_sdms_for_import(sales_order_number, distributor_code, order_status):
+	result = is_process_exist_in_camunda(
+		'cb0cbe24-f241-11ee-b887-0242ac140002', 'sales_order_number', sales_order_number
+	)
+	# distributor_code = "0000110338" if "gas" in distributor_code else "0000305948"
+
+	# if so_obj.parent.distributor_code != distributor_code:
+	# 	so_obj.parent.distributor_code = distributor_code
+	# 	so_obj.parent.save()
+
+	if result == 0:
+		variables = {
+			"variables":
+				{
+					# "sales_order_id": {"value": so_obj.id, "type": "Long"},
+					"sales_order_number": {"value": sales_order_number, "type": "String"},
+					"order_status": {"value": order_status, "type": "String"},
+					"distributor_code": {"value": distributor_code, "type": "String"},
+					"importing": {"value": True, "type": "Boolean"},
+				}
+			}
+		try:
+			res, pid = start_process_in_camunda_v2('process_fetch_sales_order_details_from_sdms', variables=variables)
+			return True
+		except Exception as e:
+			logger.error(f"Error starting process for sales order {sales_order_number}: {str(e)}")
+			raise
+
 def start_processes_for_return_sales_order_list(so_id_list):
 	from connection_app.models import SalesOrder
 
@@ -326,7 +354,31 @@ def process_update_sales_order_in_dca(sales_order_list, distributor_code):
 	# django_rq.enqueue(evaluate_change_cylinder_type_requests)
 
 
-def update_sales_order_details_in_dca(sales_order_id, sales_order_details, existing_order_status):
+def update_importing_of_sales_order(sales_order_details, distributor_code):
+	from connection_app.models import SalesOrder
+
+	so = sales_order_details
+	try:
+		so_obj: SalesOrder = SalesOrder.objects.filter(
+			sales_order=so['Sales Order #'],
+			order_date=datetime.datetime.strptime(so["Order Date"], '%d-%b-%Y %H:%M:%S %p')
+		).first()
+
+		if so_obj:
+			if so_obj.order_status != so['Order Status']:
+				so_obj.order_status = so['Order Status']
+				so_obj.save()
+		else:
+			so_obj = create_sales_order(so, distributor_code)
+
+		# start_process_fetch_sales_order_details_from_sdms(so_obj.id, distributor_code)
+		return True
+	except Exception as e:
+		return False
+
+
+def update_sales_order_details_in_dca(
+		sales_order_id, sales_order_details, existing_order_status, importing=False, distributor_code=None):
 	"""
 	{
 	  "sales_order": "2-003678554023",
@@ -388,6 +440,10 @@ def update_sales_order_details_in_dca(sales_order_id, sales_order_details, exist
 	  "ship_to_address": "DcaId-13383 Room No 0 Floor No Ground Floor  House No 330/1 Street No 0 Salem Tabri,Neta Ji Near Shera Vali Mata Mandir  Ward No 25 Post Office Salem Tabri   Ludhiana LUDHIANA Punjab 141008"
 	}
 	"""
+
+	if importing:
+		return update_importing_of_sales_order(sales_order_details, distributor_code)
+
 	from connection_app.models import SalesOrder
 
 	if sales_order_details.get('sales_order_status', '') == 'NOT_FOUND':
