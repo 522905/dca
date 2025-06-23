@@ -8,7 +8,7 @@ from .vicidial.views import delivery_boy_signup_view, vicidial_webhook, check_ac
     CustomerProfileListView
 from connection_app.viewsets import ConnectionApplicationViewSet, ConnectionApplicationAPIViewSet, BookSalesOrderViewSet
 from . import views, report_views
-from .views import UpdateDistributorLoginDetailsFormView, UpdateSDMSUserLoginPasswordFormView, get_template_details
+from .views import UpdateDistributorLoginDetailsFormView, UpdateSDMSUserLoginPasswordFormView, OmcCylinderRequestListView, get_template_details
 
 router = routers.DefaultRouter()
 router.register(r'connection-application', ConnectionApplicationViewSet)
@@ -289,6 +289,11 @@ urlpatterns = [
         'omc-conversion-request/',
         views.OmcConversionRequestView.as_view(),
         name="omc_conversion_request"
+    ),
+  
+    path('omc_conversion_request/list_view/',
+         views.OmcCylinderRequestListView.as_view(),
+         name="omc_conversion_request_list"
     ),
     path('load-data-list/',
          AgentActionView.as_view(),

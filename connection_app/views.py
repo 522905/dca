@@ -9,6 +9,7 @@ from functools import partial
 import logging
 import django_filters
 import django_rq
+import csv
 from dal import autocomplete
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -16,7 +17,8 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db import transaction
-from django.db.models import F, ExpressionWrapper, fields, Count
+from django.db.models import F, ExpressionWrapper, fields, Count, Q
+from django.utils.dateparse import parse_date
 from django.http import Http404, HttpResponseRedirect, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -27,6 +29,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, ListView, FormView, TemplateView
 from django_currentuser.middleware import get_current_user
 from django_filters.views import FilterView
+from xhtml2pdf import pisa
 
 from connection_app.camunda_functions import start_process_return_sales_order, start_book_sales_order_camunda_process, \
 	start_processes_for_return_sales_order_list
@@ -2090,3 +2093,33 @@ class OmcConversionRequestView(FormView):
 			self.request, self.template_name,
 			{"heading": "Conversion Request Form", "message": "Conversion Request Successfully Submitted."}
 		)
+
+class OmcCylinderRequestListView(ListView):
+    model = OmcConversionRequest
+    template_name = 'connection_app/omc_cylinder_change_request_listview.html'
+    context_object_name = 'requests'
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        application_id = self.request.GET.get('application_id')
+        query = self.request.GET.get('q', '')
+
+        if application_id:
+            qs = qs.filter(consumer_id=application_id)
+
+        if query:
+            qs = qs.filter(
+                Q(customer_name__icontains=query) |
+                Q(contact_mobile__icontains=query) |
+                Q(area__icontains=query) |
+                Q(dac_code__icontains=query)
+            )
+
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['query'] = self.request.GET.get('q', '')
+        return context
+	
+
