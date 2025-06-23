@@ -5,7 +5,7 @@ from collections import defaultdict
 import django_rq
 import requests
 from camunda.external_task.external_task import ExternalTask
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 
 from connection_app.enums import SalesOrderStatusEnum, DistributorStatusEnum
 from connection_app.jobs import start_read_customer_profile
@@ -100,6 +100,34 @@ def start_process_fetch_sales_order_details_from_sdms(so_id, distributor_code):
 		print(res)
 
 
+def start_process_fetch_sales_order_details_from_sdms_for_import(sales_order_number, distributor_code, order_status):
+	result = is_process_exist_in_camunda(
+		'cb0cbe24-f241-11ee-b887-0242ac140002', 'sales_order_number', sales_order_number
+	)
+	# distributor_code = "0000110338" if "gas" in distributor_code else "0000305948"
+
+	# if so_obj.parent.distributor_code != distributor_code:
+	# 	so_obj.parent.distributor_code = distributor_code
+	# 	so_obj.parent.save()
+
+	if result == 0:
+		variables = {
+			"variables":
+				{
+					# "sales_order_id": {"value": so_obj.id, "type": "Long"},
+					"sales_order_number": {"value": sales_order_number, "type": "String"},
+					"order_status": {"value": order_status, "type": "String"},
+					"distributor_code": {"value": distributor_code, "type": "String"},
+					"importing": {"value": True, "type": "Boolean"},
+				}
+			}
+		try:
+			res, pid = start_process_in_camunda_v2('process_fetch_sales_order_details_from_sdms', variables=variables)
+			return True
+		except Exception as e:
+			logger.error(f"Error starting process for sales order {sales_order_number}: {str(e)}")
+			raise
+
 def start_processes_for_return_sales_order_list(so_id_list):
 	from connection_app.models import SalesOrder
 
@@ -188,7 +216,10 @@ def create_sales_order(so, distributor_code):
 	portability_flag = True if so['Portability Flag'] else False
 
 	cp_obj = get_customer_profile(so["Relationship Id"], so["Consumer Name"], so["Consumer Address"], distributor_code, portability_flag)
-	distributor: Distributor = Distributor.objects.filter(code=distributor_code).first()
+	distributor: Distributor = Distributor.objects.filter(code__contains=distributor_code).first()
+
+	if distributor is None:
+		raise IntegrityError(f"Distributor with code {distributor_code} not found.")
 
 	so_obj = SalesOrder.objects.create(
 		parent=cp_obj,
@@ -322,8 +353,138 @@ def process_update_sales_order_in_dca(sales_order_list, distributor_code):
 
 	# django_rq.enqueue(evaluate_change_cylinder_type_requests)
 
+def parse_bool(val):
+	return val == 'Y'
 
-def update_sales_order_details_in_dca(sales_order_id, sales_order_details, existing_order_status):
+
+def parse_float(val):
+	if not val:
+		return 0.0
+	return float(val.replace('Rs.', '').replace(',', '').strip())
+
+
+def parse_datetime(val):
+	if val:
+		try:
+			return datetime.datetime.strptime(val, '%d-%b-%Y %I:%M:%S %p')
+		except ValueError:
+			pass
+	return None
+
+
+@transaction.atomic
+def update_importing_of_sales_order(sales_order_details, distributor_code):
+	from connection_app.models import SalesOrder, Distributor
+
+	try:
+		so = sales_order_details
+
+		portability_flag = True if so['portability_flag'] else False
+
+		cp_obj = get_customer_profile(so["relationship_id"], so["consumer_name"], so["consumer_address"],
+		                              distributor_code, portability_flag)
+		distributor: Distributor = Distributor.objects.filter(code__contains=distributor_code).first()
+
+		if distributor is None:
+			raise IntegrityError(f"Distributor with code {distributor_code} not found.")
+
+
+		order_date = parse_datetime(so.get("order_date"))
+
+		so_obj = SalesOrder.objects.filter(
+			sales_order=so.get('sales_order'),
+			order_date=order_date
+		).first()
+
+		if so_obj:
+			if so_obj.order_status != so.get('order_status'):
+				so_obj.order_status = so.get('order_status')
+				so_obj.save()
+		else:
+			# Create new SalesOrder entry
+			so_obj = SalesOrder.objects.create(
+				parent=cp_obj,
+				sales_order=so.get('sales_order'),
+				order_type=so.get('order_type'),
+				order_sub_type=so.get('order_sub_type'),
+				order_status=so.get('order_status'),
+				order_date=order_date,
+				channel=so.get('channel'),
+				channel_ref=so.get('channel_ref'),
+				relationship_id=so.get('relationship_id'),
+				consumer_name=so.get('consumer_name'),
+				consumer_address=so.get('consumer_address'),
+				price_list=so.get('price_list'),
+				total_due_amount=parse_float(so.get('total_due_amount')),
+				total_payment_amount=parse_float(so.get('total_payment_amount')),
+				order_total=parse_float(so.get('order_total')),
+				attempted_during_pdt_daytime=parse_bool(so.get('attempted_during_pdt_daytime')),
+				indenting_po_number=so.get('indenting_po_number'),
+				zone_distributor_id=so.get('zone_distributor_id'),
+				scheme_opted=so.get('scheme_opted'),
+				delivery_type=so.get('delivery_type'),
+				delivery_date=parse_datetime(so.get('delivery_date')),
+				dac_flag=parse_bool(so.get('dac_flag')),
+				portability_flag=parse_bool(so.get('portability_flag')),
+				sub_channel=so.get('sub_channel'),
+				booked_by=so.get('booked_by'),
+				qc_due=parse_bool(so.get('qc_due')),
+				consumed_quota=parse_float(so.get('consumed_quota')),
+				account_name=so.get('account_name'),
+				consumer_type=so.get('consumer_type'),
+				mobile_number=extract_mobile(so.get('consumer_address')),
+				tatkal_order=so.get('tatkal_order'),
+				scheme_onboarding_status=so.get('scheme_onboarding_status'),
+				subsidy_status=so.get('subsidy_status'),
+				smart_card_num=so.get('smart_card_num'),
+				perferred_day=so.get('perferred_day'),
+				preferred_time_slot=so.get('preferred_time_slot'),
+				preferred_flag=parse_bool(so.get('preferred_flag')),
+				isi_mark_ho_plate=parse_bool(so.get('isi_mark_ho_plate')),
+				burner_type=so.get('burner_type'),
+				cancellation_reason=so.get('cancellation_reason'),
+				cancellation_date=parse_datetime(so.get('cancellation_date')),
+				dac_disable_reason=so.get('dac_disable_reason'),
+				campaign_code=so.get('campaign_code'),
+				campaign_name=so.get('campaign_name'),
+				distributor_name=so.get('distributor_name'),
+				service_area=so.get('service_area'),
+				delivery_boy_login=so.get('delivery_boy_login'),
+				delivery_boy_full_name=so.get('delivery_boy_full_name'),
+				otp=so.get('otp'),
+				delivery_confirmation_type=so.get('delivery_confirmation_type'),
+				delivery_confirmed_by=so.get('delivery_confirmed_by'),
+				delivery_confirm_full_name=so.get('delivery_confirm_full_name'),
+				error_message=so.get('error_message'),
+				paid_flag=parse_bool(so.get('paid_flag')),
+				digital_payment=parse_bool(so.get('digital_payment')),
+				subsidized=parse_bool(so.get('subsidized')),
+				subsidized_on_invoice_gen=parse_bool(so.get('subsidized_on_invoice_gen')),
+				cancel_source=so.get('cancel_source'),
+				dac_disable_by=so.get('dac_disable_by'),
+				ship_to_address=so.get('ship_to_address'),
+				full_filled_by_distributor=distributor
+				# Note: you might need to assign `parent` (CustomerProfile) and `full_filled_by_distributor`
+			)
+
+		return True
+	except Exception as e:
+		# Optional: log exception
+		print(f"Error importing sales order: {e}")
+		return False
+
+
+def extract_mobile(address):
+	"""Extracts a 10-digit mobile number from the address field if present."""
+	import re
+	if not address:
+		return None
+	match = re.search(r'\b[6-9]\d{9}\b', address)
+	return match.group() if match else None
+
+
+def update_sales_order_details_in_dca(
+		sales_order_id, sales_order_details, existing_order_status, importing=False, distributor_code=None):
 	"""
 	{
 	  "sales_order": "2-003678554023",
@@ -385,6 +546,10 @@ def update_sales_order_details_in_dca(sales_order_id, sales_order_details, exist
 	  "ship_to_address": "DcaId-13383 Room No 0 Floor No Ground Floor  House No 330/1 Street No 0 Salem Tabri,Neta Ji Near Shera Vali Mata Mandir  Ward No 25 Post Office Salem Tabri   Ludhiana LUDHIANA Punjab 141008"
 	}
 	"""
+
+	if importing:
+		return update_importing_of_sales_order(sales_order_details, distributor_code)
+
 	from connection_app.models import SalesOrder
 
 	if sales_order_details.get('sales_order_status', '') == 'NOT_FOUND':
@@ -749,7 +914,7 @@ def update_customer_profile_in_dca(relationship_details, customer_profile_id):
 			relationship_details['suspend_deact_date'], "%d-%b-%Y") if \
 			relationship_details['suspend_deact_date'] else None
 		relationship_details['tight_joint_replacement_date'] = datetime.datetime.strptime(
-			relationship_details['tight_joint_replacement_date'], "%d-%b-%Y") if \
+			relationship_details['tight_joint_replacement_date'], "%d-%b-%Y %H:%M:%S %p") if \
 			relationship_details['tight_joint_replacement_date'] else None
 
 		relationship_details['ekyc_flag'] = True if relationship_details['ekyc_flag'] == 'Y' else False
@@ -931,8 +1096,8 @@ def update_returned_booked_order(sales_order_id, status):
 	so_obj.save()
 
 	if status in ['NOT_FOUND', 'CANCELLED']:
-		if so_obj.full_filled_by_distributor:
-			start_process_fetch_sales_order_details_from_sdms(so_obj.id, so_obj.full_filled_by_distributor.code)
+		# if so_obj.full_filled_by_distributor:
+		start_process_fetch_sales_order_details_from_sdms(so_obj.id, so_obj.full_filled_by_distributor.code)
 
 	return variables
 

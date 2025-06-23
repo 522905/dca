@@ -48,11 +48,7 @@ def handle_task(task: ExternalTask) -> TaskResult:
 		if topic == 'process_update_sales_order_in_dca#update':
 			sdms_task = task.get_variable('sdms_task')
 
-			if sdms_task == 'fetch_sales_order_delivered_today':
-				sales_order_completed = json.loads(task.get_variable('sales_order_completed'))
-				process_update_sales_order_completed_today(sales_order_completed)
-				return task.complete()
-			elif sdms_task == 'fetch_sales_order':
+			if sdms_task == 'fetch_sales_order':
 				distributor_code = task.get_variable('distributor_code')
 				sales_order_list = json.loads(task.get_variable('sales_order_list'))
 				process_update_sales_order_in_dca(sales_order_list, distributor_code)
@@ -61,7 +57,10 @@ def handle_task(task: ExternalTask) -> TaskResult:
 			sales_order_details = json.loads(task.get_variable('sales_order_details'))
 			sales_order_id = task.get_variable('sales_order_id')
 			existing_order_status = task.get_variable('order_status')
-			updated = update_sales_order_details_in_dca(sales_order_id, sales_order_details, existing_order_status)
+			distributor_code = task.get_variable('distributor_code')
+			importing = task.get_variable('importing')
+			updated = update_sales_order_details_in_dca(sales_order_id, sales_order_details, existing_order_status,
+			                                            importing, distributor_code)
 			if not updated:
 				return task.bpmn_error("sales order read error", "Could not read sales order details from SDMS")
 			return task.complete()
@@ -90,7 +89,9 @@ def handle_task(task: ExternalTask) -> TaskResult:
 			return task.complete(global_variables=result_variables)
 		elif topic == 'process_fetch_sales_order_details_from_sdms#cleanup_sales_order_tasks':
 			sales_order_id = task.get_variable('sales_order_id')
-			clean_sales_order_tasks(sales_order_id, task.get_process_instance_id())
+			importing = task.get_variable('importing')
+			if not importing:
+				clean_sales_order_tasks(sales_order_id, task.get_process_instance_id())
 			return task.complete()
 		elif topic == 'process_dca_service_request#update_service_request_status_in_dca':
 			update_service_request_in_dca(task)

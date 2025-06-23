@@ -27,7 +27,7 @@ class OmcCylinderConversionForm(forms.ModelForm):
 		super().__init__(*args, **kwargs)
 		# Overriding choices for the omc_type field
 		self.fields['omc_type'].choices = [('HPCL', 'HPCL', 'IOCL'), ('BPCL', 'BPCL', 'IOCL')]
-		self.fields['cylinder_type'].choices = [('14.2KG', '19KG'), ('14.2KG', '19KG')]
+		self.fields['cylinder_type'].choices = [('14.2KG', '19KG, 5KG, 5KG_FTL'), ('14.2KG', '19KG', '5KG_FTL')]
 
 	def clean_contact_mobile(self):
 		mobile = self.cleaned_data.get('contact_mobile')
