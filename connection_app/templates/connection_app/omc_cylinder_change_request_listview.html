@@ -1,0 +1,135 @@
+{% extends "material/frontend/base_module.html" %}
+{% load static %}
+{% block page_title %}List of Installation{% endblock %}
+{% block content %}
+
+
+<link rel="stylesheet" href="{% static '/css/style.css' %}" >
+<link href="https://fonts.googleapis.com/css?family=Muli:400,500,600,700,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<style>
+    .card-title {
+  font-weight: 600;
+}
+.card ul li {
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+}
+.filled_timing{ padding: 10px 10px; color: #fff; border-radius: 3px;}
+.card-body{ padding: 10px; }
+.card.shadow-sm{ margin-bottom: 0px; }
+.omc_cyl label{ display: inline-block; }
+.card .card-title{
+    font-size: 20px;
+}
+.card-footer a{ color: #fff;}
+</style>
+<div class="p-2 pt-0 form_label" style="width: 100%;">
+     <!-- Page Title -->
+  <div class="bg-heading text-center filled_timing ">List of OMC Requests</div>
+
+  <!-- Filter Form -->
+  <form method="get" class="form-inline omc_cyl">
+    <div class="card " style="width: 100%;">
+        <div style=" padding: 10px;">
+            <input type="text" name="q" value="{{ query }}" class="form-control mr-2" placeholder="Search by name, mobile, area, or DAC">
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="start_date" class="mr-2 font-weight-bold ">From Date</label>
+                    <input type="date" name="start_date" value="{{ start_date }}" class="form-control mr-2" placeholder="Start Date">
+                </div>
+                <div class="col-md-6">
+                    <label for="end_date" class="mr-2 font-weight-bold">To Date</label>
+                    <input type="date" name="end_date" value="{{ end_date }}" class="form-control mr-2" placeholder="End Date">
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row">
+                <div class="col-md-6">
+                    
+                </div>
+                <div class="col-md-6" style="text-align: right; padding: 0; ">
+                    <button type="submit" class="btn btn-primary mr-2">Search</button>
+                        <a href="{% url 'omc_conversion_request_list' %}" class="btn btn-secondary">Clear</a>
+                </div>
+            </div>
+
+            {% if request.GET.application_id %}
+            <input type="hidden" name="application_id" value="{{ request.GET.application_id }}">
+            {% endif %}
+    </div>
+  </form>
+
+  <!-- Export Buttons -->
+  {% comment %} <div class="text-right mb-3">
+    <a href="{% url 'export_excel' %}?q={{ query }}&omc_type={{ omc_type }}&start_date={{ start_date }}&end_date={{ end_date }}" class="btn btn-success">
+      <i class="fas fa-file-excel"></i> Export to Excel
+    </a>
+    <a href="{% url 'export_pdf' %}?q={{ query }}&omc_type={{ omc_type }}&start_date={{ start_date }}&end_date={{ end_date }}" class="btn btn-danger">
+      <i class="fas fa-file-pdf"></i> Export to PDF
+    </a>
+  </div> {% endcomment %}
+
+  <!-- Cards Grid -->
+  <div class="row">
+    {% for request in requests %}
+    <div class="col-md-12">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">
+            <i class="fas fa-user-circle text-primary mr-2"></i>{{ request.customer_name }}
+            <span class="badge badge-warning float-right">DAC: {{ request.dac_code }}</span>
+          </h5>
+
+          <div class="row">
+            <div class="col-md-6">
+              <p><i class="fas fa-calendar-alt text-muted mr-2"></i><strong>Created:</strong> {{ request.created_on|date:"d M Y H:i" }}</p>
+              <p><i class="fas fa-phone-alt text-muted mr-2"></i><strong>Mobile:</strong> {{ request.contact_mobile }}</p>
+            </div>
+            <div class="col-md-6">
+              <p><i class="fas fa-industry text-muted mr-2"></i><strong>OMC Type:</strong> {{ request.omc_type }}</p>
+              <p><i class="fas fa-id-card text-muted mr-2"></i><strong>Consumer ID:</strong> {{ request.consumer_id }}</p>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-12">
+              <p><i class="fas fa-map-marker-alt text-muted mr-2"></i><strong>Area:</strong> {{ request.area }}</p>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <p><i class="fas fa-gas-pump text-muted mr-2"></i><strong>Cylinder Type:</strong> {{ request.cylinder_type }}</p>
+            </div>
+            <div class="col-md-6">
+              <p><i class="fas fa-image text-muted mr-2"></i><strong>Photo:</strong> 
+                <a href="{{ request.omc_cylinder_photo_after }}" target="_blank" class="text-info">View</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="alert alert-warning text-center">No requests found.</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Pagination Info -->
+  {% if requests.paginator.num_pages > 1 %}
+  <div class="text-center text-muted mb-2">
+    Page {{ requests.number }} of {{ requests.paginator.num_pages }}
+  </div>
+  {% endif %}
+
+  
+</div>
+
+{% endblock %}
+
+   
