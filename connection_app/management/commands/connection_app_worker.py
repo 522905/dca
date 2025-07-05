@@ -85,7 +85,8 @@ def handle_task(task: ExternalTask) -> TaskResult:
 		elif topic == 'process_book_sales_order#update_returned_booked_order':
 			sales_order_id = task.get_variable('sales_order_id')
 			status = task.get_variable('status')
-			result_variables = update_returned_booked_order(sales_order_id, status)
+			distributor_code = task.get_variable('distributor_code')
+			result_variables = update_returned_booked_order(sales_order_id, status, distributor_code)
 			return task.complete(global_variables=result_variables)
 		elif topic == 'process_fetch_sales_order_details_from_sdms#cleanup_sales_order_tasks':
 			sales_order_id = task.get_variable('sales_order_id')
