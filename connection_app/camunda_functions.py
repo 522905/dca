@@ -1076,7 +1076,7 @@ def get_next_midnight():
 	return next_midnight
 
 
-def update_returned_booked_order(sales_order_id, status):
+def update_returned_booked_order(sales_order_id, status, distributor_code):
 	from connection_app.models import SalesOrder
 
 	so_obj = SalesOrder.objects.get(pk=sales_order_id)
@@ -1096,8 +1096,7 @@ def update_returned_booked_order(sales_order_id, status):
 	so_obj.save()
 
 	if status in ['NOT_FOUND', 'CANCELLED']:
-		# if so_obj.full_filled_by_distributor:
-		start_process_fetch_sales_order_details_from_sdms(so_obj.id, so_obj.full_filled_by_distributor.code)
+		start_process_fetch_sales_order_details_from_sdms(so_obj.id, distributor_code)
 
 	return variables
 
