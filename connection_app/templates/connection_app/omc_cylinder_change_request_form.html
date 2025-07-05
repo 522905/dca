@@ -19,6 +19,8 @@
 		.form-group input{ padding: 0 5px !important;}
 		{% comment %} .card{ padding: 20px;} {% endcomment %}
 		.modal{ background-color: transparent; box-shadow: none;}
+		.pdL{ padding-left: 0 !important;}
+		.pdR{ padding-right: 0 !important;}
 	</style>
 	<div class="main p-2 pt-0 form_label">
 		{% csrf_token %}
@@ -47,99 +49,112 @@
 		<form method="post" enctype="multipart/form-data">
 			<div class="card">
 				<div class="card-header bg-primary text-white">LPG OMC BPCL/HPCL Cylinder to Indane Cylinder Change Form</div>
-				<div class="card-body">
-				{% csrf_token %}
-				<div class="form-group">
-					<label for="id_contact_mobile">Contact Mobile</label>
-					<div class="d-flex gap-2">
-						<input type="tel" pattern="[6789][0-9]{9}" class="form-control me-2"
-							   name="contact_mobile" id="contact_mobile"
-							   value="{{ form.contact_mobile.value|default_if_none:'' }}" required>
-				
-						<button type="button" id="verifyWhatsappButton" class="btn btn-primary me-2"
-								onclick="whatsapp_verifier.start_verification()">Verify</button>
-				
-						<button type="button" id="changeWhatsappButton" class="btn btn-secondary"
-								onclick="whatsapp_verifier.reset_verification()" style="display: none;">Change</button>
-					</div>
-					{{ form.contact_mobile.errors }}
-				</div>
-			<div class="form-group">
-				<label for="id_customer_name">Customer Name</label>
-				{{ form.customer_name }}
-				{{ form.customer_name.errors }}
-			</div>
-			<div class="form-group">
-				<label for="id_area">Area</label>
-				{{ form.area }}
-				{{ form.area.errors }}
-			</div>	
-				
-			<div class="form-group hidden_block">
-				<label for="id_onboard_by">Onboarded By</label>
-				{{ form.onboard_by }}
-				<input type="hidden" name="onboard_by" value="{{ request.user.id }}">
-			</div>
-
-			<div class="hidden_block">
-				{{ form.omc_cylinder_photo_after }}
-				{{ form.omc_cylinder_photo_after.errors }}
-			</div>
-					
-			<div class="form-group">
-				<p>Click Photo with Cylinder, Person or Blue-Book</p>
-				<div id="omc_cylinder_photo_after" class="p-1"></div>
-			</div>
-
-			<div class="form-group">
-				<label for="id_area">Enter Consumer Id</label>
-				<input type="text" name="consumer_id" id="consumer_id"
-					class="form-control"
-					title="Please enter Consumer Id">
-				{{ form.consumer_id.errors }}
-			</div>
-
-			<div class="form-group">
-				<label for="id_area">Enter DAC Code</label>
-				<input type="text" name="dac_code" id="id_dac_code"
-					class="form-control"
-					pattern="\d{4}"
-					maxlength="4"
-					title="Please enter exactly 4 digits">
-				{{ form.dac_code.errors }}
-			</div>
-
-			<div class="form-group" >
-				<label for="id_cylinder_type">Cylinder Type</label>
-				<select style="margin-bottom: 20px; display: inline-block;" name="cylinder_type" id="id_cylinder_type" class="form-control">
-					<option value="">-- Select Cylinder Type --</option>
-					<option value="14.2KG">14.2KG</option>
-					<option value="19KG">19KG</option>
-					<option value="5KG">5KG</option>
-					<option value="5KG_FTL">5KG FTL</option>
-				</select>
-				{{ form.cylinder_type.errors }}
-			</div>	
-
-			<div class="form-group">
-				<label for="id_omc_type">OMC Type <strong style="color:red">*</strong></label>
-				<select name="omc_type" id="id_omc_type" class="form-control" required>
-					<option value="">-- Select OMC Type --</option>
-					<option value="HPCL">HPCL</option>
-					<option value="BPCL">BPCL</option>
-					<option value="IOCL">IOCL</option>
-				</select>
-				{{ form.omc_type.errors }}
-			</div>
-			
+					<div class="card-body">
+						{% csrf_token %}
+						<div class="form-group">
+							<label for="id_contact_mobile">Contact Mobile</label>
+							<div class="d-flex gap-2">
+								<input type="tel" pattern="[6789][0-9]{9}" class="form-control me-2"
+									name="contact_mobile" id="contact_mobile"
+									value="{{ form.contact_mobile.value|default_if_none:'' }}" required>
+						
+								<button type="button" id="verifyWhatsappButton" class="btn btn-primary me-2"
+										onclick="whatsapp_verifier.start_verification()">Verify</button>
+						
+								<button type="button" id="changeWhatsappButton" class="btn btn-secondary"
+										onclick="whatsapp_verifier.reset_verification()" style="display: none;">Change</button>
+							</div>
+							{{ form.contact_mobile.errors }}
+						</div>
+						<div class="form-group">
+							<label for="id_customer_name">Customer Name</label>
+							{{ form.customer_name }}
+							{{ form.customer_name.errors }}
+						</div>
+						<div class="form-group">
+							<label for="id_area">Area</label>
+							{{ form.area }}
+							{{ form.area.errors }}
+						</div>	
 							
+						<div class="form-group hidden_block">
+							<label for="id_onboard_by">Onboarded By</label>
+							{{ form.onboard_by }}
+							<input type="hidden" name="onboard_by" value="{{ request.user.id }}">
+						</div>
+
+						<div class="hidden_block">
+							{{ form.omc_cylinder_photo_after }}
+							{{ form.omc_cylinder_photo_after.errors }}
+						</div>
+								
+						<div class="form-group">
+							<p>Click Photo with Cylinder, Person or Blue-Book</p>
+							<div id="omc_cylinder_photo_after" class="p-1"></div>
+						</div>
+						<div class="row">
+							<div class="col-md-6 ">
+								<div class="form-group">
+									<label for="id_area">Enter Consumer Id</label>
+									<input type="text" name="consumer_id" id="consumer_id"
+										class="form-control"
+										title="Please enter Consumer Id">
+									{{ form.consumer_id.errors }}
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label for="id_area">Enter DAC Code</label>
+									<input type="text" name="dac_code" id="id_dac_code"
+										class="form-control"
+										pattern="\d{4}"
+										maxlength="4"
+										title="Please enter exactly 4 digits">
+									{{ form.dac_code.errors }}
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-6 pdR">
+								<div class="form-group" >
+									<label for="id_cylinder_type">Cylinder Type</label>
+									<select style="margin-bottom: 20px; display: inline-block;" name="cylinder_type" id="id_cylinder_type" class="form-control">
+										<option value="">-- Select Cylinder Type --</option>
+										<option value="14.2KG">14.2KG</option>
+										<option value="19KG">19KG</option>
+										<option value="5KG">5KG</option>
+										<option value="5KG_FTL">5KG FTL</option>
+									</select>
+									{{ form.cylinder_type.errors }}
+								</div>	
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label for="id_omc_type">OMC Type <strong style="color:red">*</strong></label>
+									<select name="omc_type" id="id_omc_type" class="form-control" required>
+										<option value="">-- Select OMC Type --</option>
+										<option value="HPCL">HPCL</option>
+										<option value="BPCL">BPCL</option>
+										<option value="IOCL">IOCL</option>
+									</select>
+									{{ form.omc_type.errors }}
+								</div>		
+							</div>
+						</div>
+						<div class="row">
+							<label for="id_area">Enter Consumer Id</label>
+							<input type="text" name="remarks" id="remarks"
+								class="form-control"
+								title="Remarks">
+								{{ form.remarks.errors }}
+						</div>
+					</div>
+				</div>
+				<div class="card-footer">
+					<button class="btn btn-primary" type="submit">Submit</button>	
+				</div>
 			</div>
-			<div class="card-footer">
-				<button class="btn btn-primary" type="submit">Submit</button>	
-			</div>
-		</form>
-			
-		</div>
+		</form>		
 	</div>
 	<script>
 		function handleBlur(input) {

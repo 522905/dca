@@ -9,8 +9,8 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 <style>
-    .card-title {
-  font-weight: 600;
+.card-title {
+    font-weight: 600;
 }
 .card ul li {
   margin-bottom: 6px;
@@ -21,9 +21,12 @@
 .card.shadow-sm{ margin-bottom: 0px; }
 .omc_cyl label{ display: inline-block; }
 .card .card-title{
-    font-size: 20px;
+    font-size: 18px;
+    color: #e35d2d !important;
+    font-weight: 600;
 }
 .card-footer a{ color: #fff;}
+.form-inline.omc_cyl .card-title span{ }
 </style>
 <div class="p-2 pt-0 form_label" style="width: 100%;">
      <!-- Page Title -->
@@ -31,8 +34,8 @@
 
   <!-- Filter Form -->
   <form method="get" class="form-inline omc_cyl">
-    <div class="card " style="width: 100%;">
-        <div style=" padding: 10px;">
+    <div class="card" style="width: 100%;">
+        <div style="padding: 10px;">
             <input type="text" name="q" value="{{ query }}" class="form-control mr-2" placeholder="Search by name, mobile, area, or DAC">
             <div class="row">
                 <div class="col-md-6">
@@ -45,10 +48,10 @@
                 </div>
             </div>
         </div>
-        <div class="card-footer">
+        <div class="card-footer" style="border-bottom: 1px;">
             <div class="row">
                 <div class="col-md-6">
-                    
+                    <span style="color: red; display: inline;">{{request.onboard_by}}</span>
                 </div>
                 <div class="col-md-6" style="text-align: right; padding: 0; ">
                     <button type="submit" class="btn btn-primary mr-2">Search</button>
@@ -102,14 +105,20 @@
 
           <div class="row">
             <div class="col-md-6">
-              <p><i class="fas fa-gas-pump text-muted mr-2"></i><strong>Cylinder Type:</strong> {{ request.cylinder_type }}</p>
+              <p><i class="fas fa-gas-pump text-muted mr-2"></i><strong>Cylinder Type:</strong> {{ request.cylinder_type }} </p>
+              <span style="color: #e35d2d;">{{  request.onboard_by}}</span>
             </div>
             <div class="col-md-6">
               <p><i class="fas fa-image text-muted mr-2"></i><strong>Photo:</strong> 
                 <a href="{{ request.omc_cylinder_photo_after }}" target="_blank" class="text-info">View</a>
               </p>
             </div>
+             <div class="col-md-6">
+                <p>Area:</strong> {{ request.remarks }}</p>
+              </p>
+            </div>
           </div>
+
         </div>
       </div>
     </div>
