@@ -50,3 +50,4 @@ class OmcCylinderConversionForm(forms.ModelForm):
 	class Meta:
 		model = OmcConversionRequest
 		fields = ['contact_mobile', 'customer_name', 'area', 'omc_type', 'omc_cylinder_photo_after', 'consumer_id', 'dac_code', 'cylinder_type']
+		exclude = ['onboarded_by']

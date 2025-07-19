@@ -30,6 +30,7 @@ from django.views.generic import DetailView, ListView, FormView, TemplateView
 from django_currentuser.middleware import get_current_user
 from django_filters.views import FilterView
 from xhtml2pdf import pisa
+from datetime import datetime
 
 from connection_app.camunda_functions import start_process_return_sales_order, start_book_sales_order_camunda_process, \
 	start_processes_for_return_sales_order_list
@@ -2087,6 +2088,8 @@ class OmcConversionRequestView(FormView):
 	# 	return context
 
 	def form_valid(self, form):
+		instance = form.save(commit=False)
+		instance.onboard_by = self.request.user  # Assuming 'onboarded_by' is the field name in your model
 		form.save()
 		messages.success(self.request, "Conversion Request Successfully Submitted.")
 		return render(
@@ -2095,31 +2098,49 @@ class OmcConversionRequestView(FormView):
 		)
 
 class OmcCylinderRequestListView(ListView):
-    model = OmcConversionRequest
-    template_name = 'connection_app/omc_cylinder_change_request_listview.html'
-    context_object_name = 'requests'
+	model = OmcConversionRequest
+	template_name = 'connection_app/omc_cylinder_change_request_listview.html'
+	context_object_name = 'requests'
 
-    def get_queryset(self):
-        qs = super().get_queryset()
-        application_id = self.request.GET.get('application_id')
-        query = self.request.GET.get('q', '')
+	def get_queryset(self):
+		qs = super().get_queryset().select_related('onboard_by')
+		application_id = self.request.GET.get('application_id')
+		query = self.request.GET.get('q', '')
 
-        if application_id:
-            qs = qs.filter(consumer_id=application_id)
+		from_date_str = self.request.GET.get('from_date')
+		to_date_str = self.request.GET.get('to_date')
 
-        if query:
-            qs = qs.filter(
-                Q(customer_name__icontains=query) |
-                Q(contact_mobile__icontains=query) |
-                Q(area__icontains=query) |
-                Q(dac_code__icontains=query)
-            )
+		if application_id:
+			qs = qs.filter(consumer_id=application_id)
 
-        return qs
+		if query:
+			qs = qs.filter(
+				Q(customer_name__icontains=query) |
+				Q(contact_mobile__icontains=query) |
+				Q(area__icontains=query) |
+				Q(dac_code__icontains=query)
+			)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['query'] = self.request.GET.get('q', '')
-        return context
-	
+		if from_date_str:
+			try:
+				from_date = datetime.strptime(from_date_str, '%Y-%m-%d').date()
+				qs = qs.filter(created_on__date__gte=from_date)
+			except ValueError:
+				pass  # Ignore invalid date
+
+		if to_date_str:
+			try:
+				to_date = datetime.strptime(to_date_str, '%Y-%m-%d').date()
+				qs = qs.filter(created_on__date__lte=to_date)
+			except ValueError:
+				pass  # Ignore invalid date
+
+		return qs.order_by('-created_on')
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['query'] = self.request.GET.get('q', '')
+		context['from_date'] = self.request.GET.get('from_date', '')
+		context['to_date'] = self.request.GET.get('to_date', '')
+		return context
 
