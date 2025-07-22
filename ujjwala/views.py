@@ -40,7 +40,7 @@ from ujjwala.enums import UjjwalaV2ApplicationStatus, PreInspectionStatusEnum, C
 	PreInspectionTypeEnum, DisbursementDriveStatusEnum, UjjwalaApplicationDocumentsEnum, \
 	UjjwalaV2ApplicationAvailabilityChannel, ConnectionDisbursementInvitationEnum, FilledByFilterEnum, \
 	UjjwalaSearchLogEnum, BankDetailsUpdateRequestEnum, ChangeCylinderTypeRequestStatusEnum
-from ujjwala.forms import UjjwalaDocumentsReuploadForm,  PreInspectionInitialForm, \
+from ujjwala.forms import UjjwalaDocumentsReuploadForm, PreInspectionInitialForm, \
 	UpdateBankDetailsForm, CancelInvitationForm, NewRelationCreated, ChangePhoneNumberForm, UpdateAddressForm, \
 	PreInspectionGenerateOtpForm, PreInspectionValidateOtpForm, \
 	KitchenPreInspectionForm, AudioOnSafetyForm, PreviewPreInspectionForm, PreInspectionAllocatedGenerateOtpForm, \
@@ -55,11 +55,11 @@ from ujjwala.forms import UjjwalaDocumentsReuploadForm,  PreInspectionInitialFor
 	NewRelationCreated, ChangePhoneNumberForm, UploadUIDForEKYCForm, UjjwalaApplicationServiceRequestForm, \
 	ReviewUpdatedAddressForm, UpdateBankDetailsNewForm, ChangeCylinderTypeForm, \
 	ChangeCylinderTypeForm, ChangeCylinderTypeRequestForm, ChangeCylinderTypeRequestOverrideForm, \
-	BankDetailsUpdateRequestForm, BarcodeForm
+	BankDetailsUpdateRequestForm, BarcodeForm, UpdateSdmsLoginDetailsForm
 from ujjwala.global_functions import login_required_if_mech_inspection
 from ujjwala.models import UjjwalaV2Application, PreInspection, ConnectionDisbursement, \
 	FamilyMembers, DisbursementDrive, UjjwalaSearchLog, ConnectionDisbursementInvitation, BankDetailsUpdateRequest, \
-	ChangeCylinderTypeRequest, VaultSecret
+	ChangeCylinderTypeRequest
 from ujjwala.sv_functions import create_installation_document
 from ujjwala.ujjwala_functions import ujjwala_application_reject_reason_log, is_pre_inspection_applicable, \
 	send_ujjwala_application_whatsapp_link_v2, download_audit_documents_for_ids, is_member_of_disbursement_drive, \
@@ -3160,10 +3160,11 @@ class BarCodeLabelPrintView(View):
 
 			return resp
 
-from connection_app.models import CustomerProfile,ConnectionApplication
+# from connection_app.models import CustomerProfile, ConnectionApplication, VaultSecret
 
 
 class NewBarCodeLabelPrintView(FormView):
+
 	template_name = "ujjwala/barcode_print/label_print.html"
 	form_class = BarcodeForm
 
@@ -3174,6 +3175,8 @@ class NewBarCodeLabelPrintView(FormView):
 		return consumer_id
 
 	def form_valid(self, form):
+		from connection_app.models import CustomerProfile, ConnectionApplication, VaultSecret
+
 		"""Handles form submission and processes barcode label generation."""
 		user_id = self.format_consumer_id(form.cleaned_data["user_id"])
 		print(f"the user_id we get is {user_id}")
@@ -3203,7 +3206,9 @@ class NewBarCodeLabelPrintView(FormView):
 
 		return JsonResponse({"status": "success", "prn_data": file_data.decode()})
 
-	def create_context_data(self, obj: Union[CustomerProfile, ConnectionApplication]) -> dict:
+	def create_context_data(self, obj):
+		from connection_app.models import CustomerProfile, ConnectionApplication, VaultSecret
+
 		"""Generates the context dictionary with consumer and address details."""
 		consumer_no = self.format_consumer_id(obj.consumer_id)
 		context_dict = {"consumer_no": consumer_no}

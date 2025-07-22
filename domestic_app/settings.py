@@ -95,6 +95,9 @@ INSTALLED_APPS = [
     'crispy_forms',
 
     'channels',
+    'options',
+    'django_summernote',
+    'lpg_dealer_association'
 ]
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
@@ -150,7 +153,8 @@ DATABASES = {
         'NAME': 'dca',
         'USER': 'dca_webapp',
         'PASSWORD': '3ty5JS8sJlqtk3bQ',
-        'HOST': 'localhost',
+        # 'HOST': '192.168.171.31',
+        'HOST': '192.168.171.17',
         # 'HOST': '10.1.1.132',
         # 'HOST': '192.168.171.66',
         'PORT': '',
@@ -263,7 +267,7 @@ MINIO_CREDENTIAL = {
 
 
 # Camunda Development URL
-CAMUNDA_WEB_ROOT_URL = "http://localhost:38080"
+CAMUNDA_WEB_ROOT_URL = "https://camunda.dca.arungas.com"
 
 # Camunda Base URL
 CAMUNDA_BASE_URL = f"{CAMUNDA_WEB_ROOT_URL}/engine-rest"

@@ -17,7 +17,7 @@ from .views import UjjwalaApplicationWebFormView, UpdateSdmsLoginDetailsView, We
     ChangeCylinderTypeRequestOverrideView
 from .viewsets import UjjwalaApplicationViewSet, UjjwalaApplicationAPIViewSet, UjjwalaApplicationOtpViewSet, \
     UjjwalaPreInspectionAPIViewSet
-from ujjwala.models import VaultSecret
+
 
 router = routers.DefaultRouter()
 router.register(r'ujjwala-application', UjjwalaApplicationViewSet)

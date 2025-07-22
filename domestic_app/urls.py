@@ -37,6 +37,7 @@ urlpatterns = [
     path(r'comments/', include('django_comments_xtd.urls')),
     path(r'reference_data/', include('reference_data.urls'), name='reference_data'),
     path(r'vicidial/', include('vicidial.urls'), name='vicidial'),
+    path(r'lpg_dealer_association/', include('lpg_dealer_association.urls'), name='lpg_dealer_association'),
     # path(r'', RedirectView.as_view(url='/ujjwala/portal/application-status-search/', permanent=False)),
     path(r'', RedirectView.as_view(url='/ujjwala/portal/user_dashboard/', permanent=False)),
     path(r'', include(frontend_urls)),

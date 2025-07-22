@@ -29,8 +29,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, ListView, FormView, TemplateView
 from django_currentuser.middleware import get_current_user
 from django_filters.views import FilterView
-from xhtml2pdf import pisa
 from datetime import datetime
+
 
 from connection_app.camunda_functions import start_process_return_sales_order, start_book_sales_order_camunda_process, \
 	start_processes_for_return_sales_order_list

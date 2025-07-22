@@ -52,7 +52,8 @@ def get_customer_profile(consumer_id, name, address, distributor_code, portabili
 			cp_obj.distributor_code = distributor.code
 			cp_obj.distributor_name = distributor.name
 			cp_obj.save()
-	django_rq.enqueue(start_read_customer_profile, args=(cp_obj.id,))
+	start_read_customer_profile(cp_obj.id)
+	#django_rq.enqueue(start_read_customer_profile, args=(cp_obj.id,))
 	return cp_obj
 
 
@@ -252,51 +253,6 @@ def create_sales_order(so, distributor_code):
 	)
 	print(so_obj)
 	return so_obj
-
-
-def process_update_sales_order_completed_today(sales_order_completed):
-	"""
-		{
-			"": "",
-			"Sales Order #": "2-003664888925",
-			"Order Date": "26-Mar-2024 09:13:44 PM",
-			"Relationship Id": "7200000033203814",
-			"Invoice Number": "5-104004535514",
-			"Consumer Name": "Arfa Parveen",
-			"Consumer Address": "hNo 1815/87 StNo 1 Industrial area a  millerganjVijay nagar   Ludhiana LUDHIANA Punjab 141003",
-			"Channel": "MissedCall",
-			"Order Type": "Sales Order",
-			"Order Sub Type": "Refill Order",
-			"Order Status": "Completed",
-			"Delivery Date": "27-Mar-2024 07:35:30 AM",
-			"Consumed Quota": "28.4",
-			"Campaign Name": "",
-			"Campaign Code": "",
-			"Digital Payment": "Y",
-			"Account Name": "",
-			"Consumer Type": "Single Bottle Connection",
-			"Cancellation Date": "",
-			"Paid": "Y",
-			"Delivery Confirm Full Name": "ANAND RAY",
-			"Mobile Number": "8969102423",
-			"Tatkal Order": "",
-			"Portability Flag": "N"
-		 }
-	"""
-	from connection_app.models import SalesOrder
-
-	for so_complete in sales_order_completed:
-		so_obj: SalesOrder = SalesOrder.objects.filter(
-			sales_order=so_complete['Sales Order #'],
-			order_date=datetime.datetime.strptime(so_complete["Order Date"], '%d-%b-%Y %H:%M:%S %p')
-		).first()
-
-		if so_obj:
-			if so_obj.order_status != so_complete['Order Status']:
-				start_process_fetch_sales_order_details_from_sdms(so_obj.id)
-		else:
-			so_obj = create_sales_order(so_complete)
-			start_process_fetch_sales_order_details_from_sdms(so_obj.id)
 
 
 def process_update_sales_order_in_dca(sales_order_list, distributor_code):

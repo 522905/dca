@@ -7,7 +7,7 @@ from camunda.external_task.external_task_worker import ExternalTaskWorker
 from django.core.management import BaseCommand
 
 from connection_app.camunda_functions import process_update_sales_order_in_dca, \
-	update_sales_order_details_in_dca, process_update_sales_order_completed_today, update_customer_profile_in_dca, \
+	update_sales_order_details_in_dca, update_customer_profile_in_dca, \
 	update_booked_order_details_in_dca, update_service_area_in_customer_profile, update_returned_booked_order, \
 	clean_sales_order_tasks, update_service_request_in_dca, update_distributor_status
 from domestic_app import settings
