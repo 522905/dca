@@ -7,11 +7,15 @@ from lpg_dealer_association.functions import send_response_template_phone_code_1
 
 class ViciDialViewSet(viewsets.ViewSet):
 
-	@action(methods=['get'], detail=False, url_path='inbound_call_manage')
-	def inbound_call_manage(self, request, *args, **kwargs):
-		contact_mobile = request.GET.get('contact_mobile')
-		phone_code = request.GET.get('phone_code')
-		if phone_code == '1':
-			send_response_template_phone_code_1_sms(contact_mobile)
+    @action(methods=['get'], detail=False, url_path='inbound_call_manage')
+    def inbound_call_manage(self, request, *args, **kwargs):
+        contact_mobile = request.GET.get('contact_mobile')
+        phone_code = request.GET.get('phone_code')
 
-		return HttpResponse("ok")
+        if contact_mobile:
+            contact_mobile = contact_mobile[-10:]  # 👈 Get last 10 characters
+
+        if phone_code == '1' and contact_mobile:
+            send_response_template_phone_code_1_sms(contact_mobile)
+
+        return HttpResponse("ok")
