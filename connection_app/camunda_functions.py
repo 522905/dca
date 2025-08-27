@@ -348,10 +348,11 @@ def update_importing_of_sales_order(sales_order_details, distributor_code):
 			raise IntegrityError(f"Distributor with code {distributor_code} not found.")
 
 		order_date = parse_datetime(so.get("order_date"))
+		order_date_only = order_date.date() if order_date else None
 
 		so_obj = SalesOrder.objects.filter(
 			sales_order=so.get('sales_order'),
-			order_date=order_date
+			order_date__date=order_date_only
 		).first()
 
 		if so_obj:
