@@ -123,18 +123,18 @@ CLIENT_ID = '1000.EAW6IW9F9TZDS7VXWLDJ3Q1XQBBTUO'
 CLIENT_SECRET = '6ea5fb7c5c8a43a3294733ffa9808280a72593e8cd'
 PROJECT_ID = '17193000000010109'
 zoho_client = ZohoCatalyst(CLIENT_ID, CLIENT_SECRET, PROJECT_ID)
-zoho_client.refresh_token = '1000.37ce5369c9a188442862da639ed322e2.1b31814496396f4162eef792c2fef30c'
-zoho_client.access_token = '1000.2ca66ad5ae733b4ec15ab2ee2d9e02c4.b1553434f15ce31260d083eefc00eb0b'
+zoho_client.refresh_token = '1000.24f3d28a87250da974540f73f89ac96a.b8ac0622f6a4d271822641ab4a4feb5'
+zoho_client.access_token = '1000.fd621455f88b80a858a9e89f1e671959.d103fc567ff4f858af7695bd34d09709'
 
 # if __name__ == '__main__':
 
-# 	CLIENT_ID = '1000.EAW6IW9F9TZDS7VXWLDJ3Q1XQBBTUO'
-# 	CLIENT_SECRET = '6ea5fb7c5c8a43a3294733ffa9808280a72593e8cd'
-# 	PROJECT_ID = '17193000000010109'
+	CLIENT_ID = '1000.EAW6IW9F9TZDS7VXWLDJ3Q1XQBBTUO'
+	CLIENT_SECRET = '6ea5fb7c5c8a43a3294733ffa9808280a72593e8cd'
+	PROJECT_ID = '17193000000010109'
 
 
-# 	grant_code = '1000.74812b19bf6f769121cd47bf5bba2dfe.663ba7861863dc78313ba9bd5c8b07a3'
-# 	zoho_client.create_refresh_token(grant_code)
+	grant_code = '1000.046d8b959b1291a1bb0616a54474d553.ad02a21d2f93c918be00176f69717d6d'
+	zoho_client.create_refresh_token(grant_code)
 
 # 	uid_ocr = zc.get_details_from_aadhaar(
 # 		'http://dca.arungas.com:6988/unsafe/filters:format(jpeg)/https://tus.dca.arungas.com/files/f77d002dcf3b284fba090264a31c007e',
