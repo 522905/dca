@@ -29,7 +29,7 @@ class ZohoCatalyst(object):
 				'code': grant_code,
 				'client_id': self.client_id,
 				'client_secret': self.client_secret,
-				'redirect_uri': 'www.zoho.com'
+				'redirect_uri': 'www.zoho.in'
 			}
 		)
 		print(resp.text)
@@ -50,7 +50,7 @@ class ZohoCatalyst(object):
 		"""
 
 		resp = requests.post(
-			"https://accounts.zoho.com/oauth/v2/token",
+			"https://accounts.zoho.in/oauth/v2/token",
 			params={
 				'grant_type': 'refresh_token',
 				'refresh_token': self.refresh_token,
