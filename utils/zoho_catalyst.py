@@ -128,13 +128,13 @@ zoho_client.access_token = '1000.fd621455f88b80a858a9e89f1e671959.d103fc567ff4f8
 
 # if __name__ == '__main__':
 
-	CLIENT_ID = '1000.EAW6IW9F9TZDS7VXWLDJ3Q1XQBBTUO'
-	CLIENT_SECRET = '6ea5fb7c5c8a43a3294733ffa9808280a72593e8cd'
-	PROJECT_ID = '17193000000010109'
+# 	CLIENT_ID = '1000.EAW6IW9F9TZDS7VXWLDJ3Q1XQBBTUO'
+# 	CLIENT_SECRET = '6ea5fb7c5c8a43a3294733ffa9808280a72593e8cd'
+# 	PROJECT_ID = '17193000000010109'
 
 
-	grant_code = '1000.046d8b959b1291a1bb0616a54474d553.ad02a21d2f93c918be00176f69717d6d'
-	zoho_client.create_refresh_token(grant_code)
+# 	grant_code = '1000.046d8b959b1291a1bb0616a54474d553.ad02a21d2f93c918be00176f69717d6d'
+# 	zoho_client.create_refresh_token(grant_code)
 
 # 	uid_ocr = zc.get_details_from_aadhaar(
 # 		'http://dca.arungas.com:6988/unsafe/filters:format(jpeg)/https://tus.dca.arungas.com/files/f77d002dcf3b284fba090264a31c007e',
