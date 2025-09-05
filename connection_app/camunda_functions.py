@@ -334,30 +334,54 @@ def update_importing_of_sales_order(sales_order_details, distributor_code):
 
 	try:
 		so = sales_order_details
-
 		portability_flag = True if so['portability_flag'] else False
 
-		cp_obj = get_customer_profile(so["relationship_id"], so["consumer_name"], so["consumer_address"],
-		                              distributor_code, portability_flag)
+		cp_obj = get_customer_profile(
+			so["relationship_id"],
+			so["consumer_name"],
+			so["consumer_address"],
+			distributor_code,
+			portability_flag
+		)
 		distributor: Distributor = Distributor.objects.filter(code__contains=distributor_code).first()
-
 		if distributor is None:
 			raise IntegrityError(f"Distributor with code {distributor_code} not found.")
 
-
 		order_date = parse_datetime(so.get("order_date"))
+		order_date_only = order_date.date() if order_date else None
 
 		so_obj = SalesOrder.objects.filter(
 			sales_order=so.get('sales_order'),
-			order_date=order_date
+			order_date__date=order_date_only
 		).first()
 
 		if so_obj:
-			if so_obj.order_status != so.get('order_status'):
-				so_obj.order_status = so.get('order_status')
-				so_obj.save()
+			# --- Selective update for non-null fields ---
+			for field, value in {
+				"order_status": so.get("order_status"),
+				"delivery_date": parse_datetime(so.get("delivery_date")),
+				"delivery_type": so.get("delivery_type"),
+				"delivery_boy_login": so.get("delivery_boy_login"),
+				"delivery_boy_full_name": so.get("delivery_boy_full_name"),
+				"delivery_confirmation_type": so.get("delivery_confirmation_type"),
+				"delivery_confirmed_by": so.get("delivery_confirmed_by"),
+				"delivery_confirm_full_name": so.get("delivery_confirm_full_name"),
+				"cancellation_reason": so.get("cancellation_reason"),
+				"cancellation_date": parse_datetime(so.get("cancellation_date")),
+				"paid_flag": parse_bool(so.get("paid_flag")),
+				"digital_payment": parse_bool(so.get("digital_payment")),
+				"subsidized": parse_bool(so.get("subsidized")),
+				"subsidized_on_invoice_gen": parse_bool(so.get("subsidized_on_invoice_gen")),
+				"error_message": so.get("error_message"),
+				"otp": so.get("otp"),
+			}.items():
+				if value is not None and getattr(so_obj, field) != value:
+					setattr(so_obj, field, value)
+
+			so_obj.save()
+
 		else:
-			# Create new SalesOrder entry
+			# --- Create new SalesOrder entry ---
 			so_obj = SalesOrder.objects.create(
 				parent=cp_obj,
 				sales_order=so.get('sales_order'),
@@ -420,12 +444,10 @@ def update_importing_of_sales_order(sales_order_details, distributor_code):
 				dac_disable_by=so.get('dac_disable_by'),
 				ship_to_address=so.get('ship_to_address'),
 				full_filled_by_distributor=distributor
-				# Note: you might need to assign `parent` (CustomerProfile) and `full_filled_by_distributor`
 			)
 
 		return True
 	except Exception as e:
-		# Optional: log exception
 		print(f"Error importing sales order: {e}")
 		return False
 
