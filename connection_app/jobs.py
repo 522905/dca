@@ -222,3 +222,46 @@ def update_phone(self, agent_user, phone_number, request=None):
 		return result2
 
 	return {"status": "success", "message": "Phone and call url updated successfully.", "pass": request.user.id}
+
+
+def compare_and_update_delivery_register(distributor_code, delivery_register_date, csv_file_path):
+	from connection_app.models import SalesOrder
+
+	try:
+		with open(csv_file_path, mode='r', newline='') as csvfile:
+			reader = csv.DictReader(csvfile)
+			results = []
+
+			for row in reader:
+				sales_order_number = row.get('Book No')
+				so: SalesOrder = SalesOrder.objects.filter(sales_order=sales_order_number).first()
+
+				if so.order_status != 'Completed':
+					variables = {
+						"variables":
+							{
+								"sales_order_id": {"value": so.id, "type": "Long"},
+								"sales_order_number": {"value": sales_order_number, "type": "String"},
+								"order_status": {"value": so.order_status, "type": "String"},
+								"distributor_code": {"value": distributor_code, "type": "String"},
+							}
+					}
+					res, pid = start_process_in_camunda_v2(
+						'process_fetch_sales_order_details_from_sdms', variables=variables
+					)
+
+					results.append(
+						{
+							"sales_order_id": so.id,
+							"sales_order_number": sales_order_number,
+							"status": res,
+							"process_id": pid,
+							"order_status": so.order_status,
+							"distributor_code": distributor_code
+						}
+					)
+			return results
+	except FileNotFoundError:
+		print(f"File not found: {csv_file_path}")
+	except Exception as e:
+		print(f"Error reading file: {e}")

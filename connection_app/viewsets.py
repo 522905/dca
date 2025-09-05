@@ -1,19 +1,25 @@
 import datetime
+import os
+import uuid
 from collections import defaultdict
 
 import pandas as pd
 import requests
 from django.contrib.auth.models import User
-from django.http import JsonResponse
+from django.core.files.storage import default_storage
+from django.http import JsonResponse, HttpResponse
 from django.urls import reverse
 from django_currentuser.middleware import get_current_user
+from django_rq import get_queue
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from domestic_app import settings
 from teams.models import SDMSUser
 from . import models
 from .enums import ConnectionApplicationLeadStatus
+from .jobs import compare_and_update_delivery_register
 from .models import ConnectionApplication
 from .serializer import SalesOrderSerializer
 from .serializers import ConnectionApplicationSerializer
@@ -94,6 +100,45 @@ class ConnectionApplicationViewSet(viewsets.ModelViewSet):
         instance.save()
 
         return Response({'id': instance.id})
+
+    @action(methods=['post'], detail=False, url_path='compare_delivery_register')
+    def compare_delivery_register(self, request, *args, **kwargs):
+        try:
+            # Extract params
+            delivery_register_date = request.POST.get("delivery_register_date")
+            distributor_code = request.POST.get("distributor_code")
+            file_obj = request.FILES.get("file")
+
+            if not (delivery_register_date and distributor_code and file_obj):
+                return HttpResponse("Missing required parameters", status=400)
+
+            # Generate unique filename
+            filename = f"delivery_register_{distributor_code}_{uuid.uuid4().hex}.csv"
+            file_path = os.path.join(settings.MEDIA_ROOT, "delivery_registers", filename)
+
+            # Ensure directory exists
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+            # Save file locally
+            with default_storage.open(file_path, "wb+") as destination:
+                for chunk in file_obj.chunks():
+                    destination.write(chunk)
+
+
+            # compare_and_update_delivery_register(distributor_code, delivery_register_date, file_path)
+            # Enqueue background job (using RQ as example)
+            queue = get_queue("default")  # or celery app.send_task
+            queue.enqueue(
+                "connection_app.jobs.compare_and_update_delivery_register",  # import path to your function
+                file_path=file_path,
+                delivery_register_date=delivery_register_date,
+                distributor_code=distributor_code,
+            )
+
+            return HttpResponse("Scheduled For Processing", status=200)
+
+        except Exception as e:
+            return HttpResponse(f"Error: {str(e)}", status=500)
 
 
 class ConnectionApplicationAPIViewSet(viewsets.ViewSet):
