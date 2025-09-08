@@ -224,11 +224,11 @@ def update_phone(self, agent_user, phone_number, request=None):
 	return {"status": "success", "message": "Phone and call url updated successfully.", "pass": request.user.id}
 
 
-def compare_and_update_delivery_register(distributor_code, delivery_register_date, csv_file_path):
+def compare_and_update_delivery_register(distributor_code, delivery_register_date, file_path):
 	from connection_app.models import SalesOrder
 
 	try:
-		with open(csv_file_path, mode='r', newline='') as csvfile:
+		with open(file_path, mode='r', newline='') as csvfile:
 			reader = csv.DictReader(csvfile)
 			results = []
 
