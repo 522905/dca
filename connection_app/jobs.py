@@ -1,4 +1,6 @@
 import csv
+import datetime
+
 
 from connection_app.enums import TemplateEnum, ImportDataStatusEnum, DistributorStatusEnum
 from connection_app.vicidial.jobs import make_api_request, VICIDIAL_NON_AGENT_API, VICIDIAL_CAMPAIGN_API
@@ -225,7 +227,8 @@ def update_phone(self, agent_user, phone_number, request=None):
 
 
 def compare_and_update_delivery_register(distributor_code, delivery_register_date, file_path):
-	from connection_app.models import SalesOrder
+	from connection_app.models import SalesOrder, Distributor
+	from connection_app.camunda_functions import get_customer_profile
 
 	try:
 		with open(file_path, mode='r', newline='') as csvfile:
@@ -236,7 +239,36 @@ def compare_and_update_delivery_register(distributor_code, delivery_register_dat
 				sales_order_number = row.get('Book No')
 				so: SalesOrder = SalesOrder.objects.filter(sales_order=sales_order_number).first()
 
-				if so.order_status != 'Completed':
+				order_date = datetime.datetime.strptime(f"{row['Book Date']} {row['Book Time']}", '%Y-%m-%d %H:%M:%S')
+				read_details = False
+				if so is None:
+					relationship_id = row['Consumer Id'].replace(".", "")
+					distributor: Distributor = Distributor.objects.get(code__contains=row['Distributor Code'])
+					cp_obj = get_customer_profile(
+						relationship_id, row['Consumer Name'], row['Address'], distributor.code
+					)
+
+					so_obj = SalesOrder.objects.create(
+						parent=cp_obj,
+						sales_order=row['Book No'],
+						relationship_id=relationship_id,
+						order_status='Completed',
+						order_date=order_date
+					)
+					read_details = True
+
+				if row.get('Installation Booking') == 'Installation Order':
+					read_details = True
+				else:
+					if so.order_status == 'Completed':
+						if so.delivery_date is None:
+							read_details = True
+						if not so.paid_flag:
+							read_details = True
+					else:
+						read_details = True
+
+				if read_details:
 					variables = {
 						"variables":
 							{
@@ -262,6 +294,6 @@ def compare_and_update_delivery_register(distributor_code, delivery_register_dat
 					)
 			return results
 	except FileNotFoundError:
-		print(f"File not found: {csv_file_path}")
+		print(f"File not found: {file_path}")
 	except Exception as e:
 		print(f"Error reading file: {e}")
