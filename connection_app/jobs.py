@@ -236,29 +236,38 @@ def parse_datetime(date_str, time_str):
 		return None
 
 
-def compare_and_update_delivery_register(distributor_code, delivery_register_date, file_path):
+def compare_and_update_delivery_register(distributor_code: str, delivery_register_date: str, file_path: str):
+	"""
+	Compare delivery register CSV with SalesOrder records, create missing ones,
+	and trigger Camunda processes where details need to be updated.
+	"""
 	from connection_app.models import SalesOrder, Distributor
 	from connection_app.camunda_functions import get_customer_profile
 
-	try:
-		with open(file_path, mode='r', newline='', encoding="utf-8") as csvfile:
-			reader = csv.DictReader(csvfile)
-			results = []
+	results = []
 
+	try:
+		with open(file_path, mode="r", newline="", encoding="utf-8") as csvfile:
+			reader = csv.DictReader(csvfile)
+
+			# Pre-fetch distributor
+			distributor = Distributor.objects.get(code__contains=distributor_code.lstrip("0"))
 
 			for row in reader:
 				sales_order_number = row.get("Book No")
+				if not sales_order_number:
+					continue  # skip invalid rows
+
 				so: SalesOrder = SalesOrder.objects.filter(sales_order=sales_order_number).first()
 
 				read_details = False
 
-				# Parse order and delivery datetime
-				order_date = parse_datetime(row["Book Date"], row["Book Time"])
-				delivery_date = parse_datetime(row["Delivery Date"], row["Delivery Time"])
+				# Parse order & delivery datetimes safely
+				order_date = parse_datetime(row.get("Book Date"), row.get("Book Time"))
+				delivery_date = parse_datetime(row.get("Delivery Date"), row.get("Delivery Time"))
 
-				# Relationship ID & Distributor
-				relationship_id = row["Consumer Id"].replace(".", "")
-				distributor: Distributor = Distributor.objects.get(code__contains=distributor_code.lstrip("0"))
+				# Consumer details
+				relationship_id = (row.get("Consumer Id") or "").replace(".", "")
 
 				if so is None:
 					# Create CustomerProfile if missing
@@ -285,9 +294,8 @@ def compare_and_update_delivery_register(distributor_code, delivery_register_dat
 						order_sub_type=row.get("Installation Booking"),
 						delivery_date=delivery_date,
 						channel=row.get("Mode of Booking"),
-						digital_payment=row.get("Payment Mode"),
 						order_total=float(row.get("Total") or 0.0),
-						delivery_type=True if row.get('Delivery Mode') == 'Digital Payments' else False,
+						digital_payment=True if row.get('Delivery Mode') == 'Digital Payments' else False,
 						delivery_confirm_full_name=row.get("Delivered By"),
 						delivery_boy_full_name=row.get("Delivery Boy"),
 						distributor_name=distributor.name,
@@ -296,31 +304,32 @@ def compare_and_update_delivery_register(distributor_code, delivery_register_dat
 					)
 					read_details = True
 				else:
-					# Special case: Installation orders
+					# Update if installation order OR missing delivery details
 					if row.get("Installation Booking") == "Installation Order":
 						read_details = True
-					else:
-						if so.order_status == "Completed":
-							if so.delivery_date is None:
-								read_details = True
-							if not so.paid_flag:
-								read_details = True
-						else:
+					elif so.order_status == "Completed":
+						if any(
+								getattr(so, field) is None
+								for field in ("delivery_date", "digital_payment",
+											  "delivery_confirmed_by", "delivery_confirmation_type")
+						):
 							read_details = True
+					else:
+						read_details = True
 
-				# If we need to push details to Camunda
+				# Trigger Camunda if needed
 				if read_details:
 					variables = {
-						"variables":
-							{
-								"sales_order_id": {"value": so.id, "type": "Long"},
-								"sales_order_number": {"value": sales_order_number, "type": "String"},
-								"order_status": {"value": so.order_status, "type": "String"},
-								"distributor_code": {"value": distributor_code, "type": "String"},
-							}
+						"variables": {
+							"sales_order_id": {"value": so.id, "type": "Long"},
+							"sales_order_number": {"value": sales_order_number, "type": "String"},
+							"order_status": {"value": so.order_status, "type": "String"},
+							"distributor_code": {"value": distributor_code, "type": "String"},
+						}
 					}
+
 					res, pid = start_process_in_camunda_v2(
-						'process_fetch_sales_order_details_from_sdms', variables=variables
+						"process_fetch_sales_order_details_from_sdms", variables=variables
 					)
 
 					results.append(
@@ -330,11 +339,15 @@ def compare_and_update_delivery_register(distributor_code, delivery_register_dat
 							"status": res,
 							"process_id": pid,
 							"order_status": so.order_status,
-							"distributor_code": distributor_code
+							"distributor_code": distributor_code,
 						}
 					)
+
 			return results
+
 	except FileNotFoundError:
-		print(f"File not found: {file_path}")
+		print(f"❌ File not found: {file_path}")
+	except Distributor.DoesNotExist:
+		print(f"❌ Distributor not found for code: {distributor_code}")
 	except Exception as e:
-		print(f"Error reading file: {e}")
+		print(f"❌ Error processing file {file_path}: {e}")
