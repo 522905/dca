@@ -226,48 +226,89 @@ def update_phone(self, agent_user, phone_number, request=None):
 	return {"status": "success", "message": "Phone and call url updated successfully.", "pass": request.user.id}
 
 
+def parse_datetime(date_str, time_str):
+	"""Helper to parse datetime from CSV"""
+	if not date_str:
+		return None
+	try:
+		return datetime.datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M:%S")
+	except Exception:
+		return None
+
+
 def compare_and_update_delivery_register(distributor_code, delivery_register_date, file_path):
 	from connection_app.models import SalesOrder, Distributor
 	from connection_app.camunda_functions import get_customer_profile
 
 	try:
-		with open(file_path, mode='r', newline='') as csvfile:
+		with open(file_path, mode='r', newline='', encoding="utf-8") as csvfile:
 			reader = csv.DictReader(csvfile)
 			results = []
 
+
 			for row in reader:
-				sales_order_number = row.get('Book No')
+				sales_order_number = row.get("Book No")
 				so: SalesOrder = SalesOrder.objects.filter(sales_order=sales_order_number).first()
 
-				order_date = datetime.datetime.strptime(f"{row['Book Date']} {row['Book Time']}", '%Y-%m-%d %H:%M:%S')
 				read_details = False
+
+				# Parse order and delivery datetime
+				order_date = parse_datetime(row["Book Date"], row["Book Time"])
+				delivery_date = parse_datetime(row["Delivery Date"], row["Delivery Time"])
+
+				# Relationship ID & Distributor
+				relationship_id = row["Consumer Id"].replace(".", "")
+				distributor: Distributor = Distributor.objects.get(code__contains=distributor_code.lstrip("0"))
+
 				if so is None:
-					relationship_id = row['Consumer Id'].replace(".", "")
-					distributor: Distributor = Distributor.objects.get(code__contains=row['Distributor Code'])
+					# Create CustomerProfile if missing
 					cp_obj = get_customer_profile(
-						relationship_id, row['Consumer Name'], row['Address'], distributor.code
+						relationship_id,
+						row["Customer Name"],
+						row.get("Address", ""),
+						distributor.code
 					)
 
-					so_obj = SalesOrder.objects.create(
+					# Create new SalesOrder with all mapped fields
+					so = SalesOrder.objects.create(
 						parent=cp_obj,
-						sales_order=row['Book No'],
+						sales_order=row["Book No"],
 						relationship_id=relationship_id,
-						order_status='Completed',
-						order_date=order_date
+						order_status="Completed",
+						order_date=order_date,
+						invoice_number=row.get("Cashmemo Number"),
+						consumer_name=row.get("Customer Name"),
+						consumer_address=row.get("Address"),
+						mobile_number=row.get("Customer Mobile Number"),
+						consumer_type=row.get("Category"),
+						order_type="Sales Order",
+						order_sub_type=row.get("Installation Booking"),
+						delivery_date=delivery_date,
+						channel=row.get("Mode of Booking"),
+						digital_payment=row.get("Payment Mode"),
+						order_total=float(row.get("Total") or 0.0),
+						delivery_type=True if row.get('Delivery Mode') == 'Digital Payments' else False,
+						delivery_confirm_full_name=row.get("Delivered By"),
+						delivery_boy_full_name=row.get("Delivery Boy"),
+						distributor_name=distributor.name,
+						service_area=None,
+						otp=row.get("Mode of Delivery")
 					)
-					read_details = True
-
-				if row.get('Installation Booking') == 'Installation Order':
 					read_details = True
 				else:
-					if so.order_status == 'Completed':
-						if so.delivery_date is None:
-							read_details = True
-						if not so.paid_flag:
-							read_details = True
-					else:
+					# Special case: Installation orders
+					if row.get("Installation Booking") == "Installation Order":
 						read_details = True
+					else:
+						if so.order_status == "Completed":
+							if so.delivery_date is None:
+								read_details = True
+							if not so.paid_flag:
+								read_details = True
+						else:
+							read_details = True
 
+				# If we need to push details to Camunda
 				if read_details:
 					variables = {
 						"variables":
