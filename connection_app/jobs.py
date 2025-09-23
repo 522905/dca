@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 def dialogflow_chat_assignment(session_id):
 	body_text = {
 		"user_phone_number": f"91{session_id}",
-		"agent_email": "guriarora8140@gmail.com",
+		"agent_email": "ankiadhimaan27@gmail.com",
 		"wc_id": " ",
 	}
 
@@ -306,12 +306,15 @@ def compare_and_update_delivery_register(distributor_code: str, delivery_registe
 				else:
 					# Update if installation order OR missing delivery details
 					if row.get("Installation Booking") == "Installation Order":
+						if so.order_status == "Not Found":
+							so.order_status = "Completed"
+							so.save(update_fields=["order_status"])
 						read_details = True
 					elif so.order_status == "Completed":
 						if any(
 								getattr(so, field) is None
 								for field in ("delivery_date", "digital_payment",
-											  "delivery_confirmed_by", "delivery_confirmation_type")
+											  "delivery_confirmed_by", "delivery_confirmation       _type")
 						):
 							read_details = True
 					else:

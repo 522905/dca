@@ -355,10 +355,15 @@ def update_importing_of_sales_order(sales_order_details, distributor_code):
 			order_date__date=order_date_only
 		).first()
 
+		# # New Condition For Installation Order
+		# order_status = so.get("order_status")
+		# if so.get("order_sub_type") == "Installation Order":
+		# 	order_status = "Completed"
+
 		if so_obj:
 			# --- Selective update for non-null fields ---
 			for field, value in {
-				"order_status": so.get("order_status"),
+				"order_status": so.get('order_status'),   # <<-- using normalized status
 				"delivery_date": parse_datetime(so.get("delivery_date")),
 				"delivery_type": so.get("delivery_type"),
 				"delivery_boy_login": so.get("delivery_boy_login"),
@@ -377,6 +382,10 @@ def update_importing_of_sales_order(sales_order_details, distributor_code):
 			}.items():
 				if value is not None and getattr(so_obj, field) != value:
 					setattr(so_obj, field, value)
+
+			# # Force complete for existing Installation Orders
+			# if so_obj.order_sub_type == "Installation Order" and so_obj.order_status != "Completed":
+			# 	so_obj.order_status = "Completed"
 
 			so_obj.save()
 
@@ -461,8 +470,9 @@ def extract_mobile(address):
 	return match.group() if match else None
 
 
+
 def update_sales_order_details_in_dca(
-		sales_order_id, sales_order_details, existing_order_status, importing=False, distributor_code=None):
+		sales_order_id, sales_order_details, existing_order_status, importing=False, distributor_code=None, sales_order_number=None):
 	"""
 	{
 	  "sales_order": "2-003678554023",
@@ -530,11 +540,30 @@ def update_sales_order_details_in_dca(
 
 	from connection_app.models import SalesOrder
 
-	if sales_order_details.get('sales_order_status', '') == 'NOT_FOUND':
-		so_obj = SalesOrder.objects.get(id=sales_order_id)
-		so_obj.transition_sales_order_not_found()
-		so_obj.save()
-		return so_obj
+	# if sales_order_details.get('sales_order_status', '') == "NOT_FOUND":
+	# 	so_obj = SalesOrder.objects.get(id=sales_order_id)
+	# 	so_obj.transition_sales_order_not_found()
+	# 	so_obj.save()
+	# 	return so_obj
+
+	if sales_order_details.get('sales_order_status', '') == "NOT_FOUND":
+		so_obj = None
+		if sales_order_id:
+			so_obj = SalesOrder.objects.filter(id=sales_order_id).first()
+		if not so_obj and sales_order_number:
+			so_obj = SalesOrder.objects.filter(sales_order=sales_order_number).first()
+
+		if so_obj:
+			if so_obj.order_sub_type == "Installation Order":
+				# if so_obj.order_status == "Not Found":
+				# 	so_obj.order_status = "Completed"
+				# 	so_obj.transition_sales_order_completed()
+				print(f"Installation Order {so_obj.sales_order} already in DB with status {so_obj.order_status}. No change applied.")
+				return so_obj
+
+			so_obj.transition_sales_order_not_found()
+			so_obj.save()
+			return so_obj
 
 	so = sales_order_details.pop('sales_order')
 
