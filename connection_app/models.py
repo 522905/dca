@@ -24,7 +24,7 @@ from connection_app.enums import ApplicationTypeEnum, ItemCodeEnum, ConnectionTy
 	ConnectionApplicationLeadCommunicationMode, ConnectionInstallationStatus, \
 	PaymentProfileApprovalStatusEnum, CustomerTypeEnum, SalesOrderStatusEnum, InspectionTypeEnum, \
 	PostInspectionStatusEnum, PostInspectionActivityTypeEnum, LeadStatusEnum, SalesOrderPortabilityStatusEnum, \
-	TemplateEnum, ImportDataStatusEnum, ProofTypeEnum, ConnectionApplicationGenderEnum,	DistributorStatusEnum
+	TemplateEnum, ImportDataStatusEnum, ProofTypeEnum, ConnectionApplicationGenderEnum, DistributorStatusEnum
 
 from connection_app.forms import ConnectionVerificationResult, BackOfficeForm, FrontOfficeCompleted, \
 	BackOfficeReactivation, BackOfficeRegularisation, \
@@ -56,7 +56,7 @@ def get_form_to_load(self):
 		return BackOfficeReactivation
 
 
-class ConnectionApplication(models.Model):        
+class ConnectionApplication(models.Model):
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
 	name = models.CharField(max_length=255, null=True)
@@ -96,6 +96,7 @@ class ConnectionApplication(models.Model):
 	filled_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
 	customer_profile = models.ForeignKey("connection_app.CustomerProfile", on_delete=models.CASCADE, null=True)
 	customer_remarks = models.TextField(null=True, blank=True)
+
 	# def status(request):
 	# 	status = Status.objects.all()
 	# 	return render(request, 'connection_app/status.html', {'status': status})
@@ -119,13 +120,15 @@ class ConnectionApplication(models.Model):
 			return self.address
 		if self.address_json:
 			return "{}, {}, {}, {}, {}, {}".format(
-				self.address_json.get('house_no').strip(), self.address_json.get('street_no').strip(), self.address_json.get('village').strip(),
-				self.address_json.get('landmark').strip(), self.address_json.get('city').strip(), self.address_json.get('pincode').strip()
+				self.address_json.get('house_no').strip(), self.address_json.get('street_no').strip(),
+				self.address_json.get('village').strip(),
+				self.address_json.get('landmark').strip(), self.address_json.get('city').strip(),
+				self.address_json.get('pincode').strip()
 			)
 
-	@ fsm_log_description
-	@ fsm_log_by
-	@ transition(
+	@fsm_log_description
+	@fsm_log_by
+	@transition(
 		field=status,
 		source=[
 			ConnectionApplicationLeadStatus.SUBMITTED,
@@ -186,8 +189,8 @@ class ConnectionApplication(models.Model):
 		source=ConnectionInstallationStatus.SUBMITTED,
 		target=GET_STATE(
 			lambda self, **kwargs: \
-				ConnectionInstallationStatus.ACCEPTED \
-				if kwargs.get("verified") else ConnectionInstallationStatus.REUPLOAD,
+					ConnectionInstallationStatus.ACCEPTED \
+							if kwargs.get("verified") else ConnectionInstallationStatus.REUPLOAD,
 			states=[
 				ConnectionInstallationStatus.ACCEPTED,
 				ConnectionInstallationStatus.REUPLOAD
@@ -201,7 +204,6 @@ class ConnectionApplication(models.Model):
 
 		self.documents_reupload_remarks = kwargs.get('remarks')
 		self.documents_required_for_reupload = kwargs.get('documents_required_for_reupload')
-
 
 	@fsm_log_description
 	@fsm_log_by
@@ -244,7 +246,7 @@ class ConnectionApplication(models.Model):
 			# "callbackData": "some_callback_data",
 			"template": {
 				"name": "domestic_application_sub_8v",
-				"languageCode": "en_GB",	
+				"languageCode": "en_GB",
 				"headerValues": [
 					# "Alert",  #
 				],
@@ -391,7 +393,7 @@ class ConnectionApplication(models.Model):
 		target=GET_STATE(
 			lambda self, **kwargs: \
 					ConnectionApplicationLeadStatus.BACK_OFFICE_START \
-					if kwargs.get("required") == 'Y' else ConnectionApplicationLeadStatus.NOT_INTERESTED,
+							if kwargs.get("required") == 'Y' else ConnectionApplicationLeadStatus.NOT_INTERESTED,
 			states=[
 				ConnectionApplicationLeadStatus.BACK_OFFICE_START,
 				ConnectionApplicationLeadStatus.NOT_INTERESTED
@@ -491,7 +493,6 @@ class ConnectionApplication(models.Model):
 				link=get_minio_public_url(settings.MINIO_BUCKET_NAME, sv_doc_file_name)
 			)
 
-
 	@fsm_log_description
 	@fsm_log_by
 	@transition(
@@ -557,14 +558,14 @@ class ConnectionApplication(models.Model):
 
 		if data['result']:
 			CommunicationLog.objects.create(
-					content_type=connection_application_content_type,
+				content_type=connection_application_content_type,
 				object_id=self.pk,
 				event="submit", channel="whatsapp",
 				message_id=data.get('id')
 			)
 		else:
 			pass
-			#self.event_submit_channel_sms()
+		# self.event_submit_channel_sms()
 
 	def event_installation_upload_channel_sms(self):
 		send_template_link_sms(
@@ -585,7 +586,7 @@ class ConnectionApplication(models.Model):
 			# "callbackData": "some_callback_data",
 			"template": {
 				"name": "domestic_application_reupload",
-				"languageCode": "en_GB",	
+				"languageCode": "en_GB",
 				"headerValues": [
 					# "Alert",  #
 				],
@@ -670,7 +671,7 @@ class PaymentProfile(models.Model):
 	profile_type = models.CharField(max_length=256)
 	pfms_payment_method = models.CharField(max_length=128)
 	approval_status = models.CharField(max_length=128, choices=PaymentProfileApprovalStatusEnum.choices,
-                        default=PaymentProfileApprovalStatusEnum.PENDING)
+	                                   default=PaymentProfileApprovalStatusEnum.PENDING)
 	action = models.CharField(max_length=1, null=True)
 
 
@@ -680,7 +681,7 @@ class CustomerProfile(models.Model):
 	name = models.CharField(max_length=256)
 	consumer_id = models.CharField(max_length=128)
 	customer_type = models.CharField(max_length=128, choices=CustomerTypeEnum.choices, default=CustomerTypeEnum.GENERAL,
-                               null=True)
+	                                 null=True)
 	address = models.TextField(null=True)
 	relationship_type = models.CharField(max_length=128, null=True)
 	consumer_no = models.CharField(max_length=128, null=True)
@@ -928,89 +929,87 @@ class PostInspection(models.Model):
 	def suraksha_pipe_updated(self):
 		return self.activities.get(activity_type=PostInspectionActivityTypeEnum.SURAKSHA_PIPE_UPDATE).completed
 
-
-
-	# @fsm_log_description
-	# @fsm_log_by
-	# @transition(
-	# 	field=status,
-	# 	source=[
-	# 		PostInspectionStatusEnum.REJECTED,
-	# 		PostInspectionStatusEnum.REDO,
-	# 	],
-	# 	target=PostInspectionStatusEnum.CHANGE_ADDRESS,
-	# 	custom=dict(short_description='Verify Otp', admin=False),
-	# )
-	# def transition_post_inspection_otp_verified(self, *args, **kwargs):
-	# 	# Deleting existing documents
-	# 	if self.status == PostInspectionStatusEnum.REJECTED:
-	# 		self.documents.all().delete()
-	#
-	# @fsm_log_description
-	# @fsm_log_by
-	# @transition(
-	# 	field=status,
-	# 	source=[
-	# 		PostInspectionStatusEnum.CHANGE_ADDRESS,
-	# 	],
-	# 	target=PostInspectionStatusEnum.KITCHEN_PHOTO,
-	# 	custom=dict(short_description='Change Address', admin=False),
-	# )
-	# def transition_post_inspection_changed_address(self, *args, **kwargs):
-	# 	pass
-	#
-	# @fsm_log_description
-	# @fsm_log_by
-	# @transition(
-	# 	field=status,
-	# 	source=[
-	# 		PostInspectionStatusEnum.KITCHEN_PHOTO,
-	# 	],
-	# 	target=PostInspectionStatusEnum.PREVIEW_INSPECTION,
-	# 	custom=dict(short_description='Upload Main Gate Pic & Location', admin=False),
-	# )
-	# def transition_post_inspection_kitchen_photo_uploaded(self, *args, **kwargs):
-	# 	self.documents.filter(
-	# 		type=ConnectionApplicationDocumentsEnum.KITCHEN_PHOTO
-	# 	).delete()
-	#
-	# 	self.documents.create(
-	# 		type=ConnectionApplicationDocumentsEnum.KITCHEN_PHOTO,
-	# 		link=kwargs.get('link')
-	# 	)
-	#
-	# @fsm_log_description
-	# @fsm_log_by
-	# @transition(
-	# 	field=status,
-	# 	source=PostInspectionStatusEnum.PREVIEW_INSPECTION,
-	# 	target=PostInspectionStatusEnum.SUBMITTED,
-	# 	custom=dict(short_description='Submit Pre-Inspection', admin=False),
-	# )
-	# def transition_post_inspection_submitted(self, *args, **kwargs):
-	# 	self.documents.filter(
-	# 		type=ConnectionApplicationDocumentsEnum.MAIN_GATE
-	# 	).delete()
-	#
-	# 	self.documents.create(
-	# 		type=ConnectionApplicationDocumentsEnum.MAIN_GATE,
-	# 		link=kwargs.get('link')
-	# 	)
-	#
-	# 	if self.type == InspectionTypeEnum.SELF:
-	# 		self.mechanic = None
-	# 	else:
-	# 		self.mechanic = get_current_user()
-	# 	self.submitted_on = datetime.datetime.now()
-	# 	self.save()
-	#
-	# 	# start_process_in_camunda_v2('Process_preinspection', variables)
-	# 	create_camunda_preinspection_review_function = partial(
-	# 		start_process_in_camunda_v2,
-	# 		process_definition_key='Process_preinspection',
-	# 		variables={"variables": {"preinspection_id": {"value": self.id, "type": "String"}}}
-	# 	)
-	# 	transaction.on_commit(create_camunda_preinspection_review_function)
+# @fsm_log_description
+# @fsm_log_by
+# @transition(
+# 	field=status,
+# 	source=[
+# 		PostInspectionStatusEnum.REJECTED,
+# 		PostInspectionStatusEnum.REDO,
+# 	],
+# 	target=PostInspectionStatusEnum.CHANGE_ADDRESS,
+# 	custom=dict(short_description='Verify Otp', admin=False),
+# )
+# def transition_post_inspection_otp_verified(self, *args, **kwargs):
+# 	# Deleting existing documents
+# 	if self.status == PostInspectionStatusEnum.REJECTED:
+# 		self.documents.all().delete()
+#
+# @fsm_log_description
+# @fsm_log_by
+# @transition(
+# 	field=status,
+# 	source=[
+# 		PostInspectionStatusEnum.CHANGE_ADDRESS,
+# 	],
+# 	target=PostInspectionStatusEnum.KITCHEN_PHOTO,
+# 	custom=dict(short_description='Change Address', admin=False),
+# )
+# def transition_post_inspection_changed_address(self, *args, **kwargs):
+# 	pass
+#
+# @fsm_log_description
+# @fsm_log_by
+# @transition(
+# 	field=status,
+# 	source=[
+# 		PostInspectionStatusEnum.KITCHEN_PHOTO,
+# 	],
+# 	target=PostInspectionStatusEnum.PREVIEW_INSPECTION,
+# 	custom=dict(short_description='Upload Main Gate Pic & Location', admin=False),
+# )
+# def transition_post_inspection_kitchen_photo_uploaded(self, *args, **kwargs):
+# 	self.documents.filter(
+# 		type=ConnectionApplicationDocumentsEnum.KITCHEN_PHOTO
+# 	).delete()
+#
+# 	self.documents.create(
+# 		type=ConnectionApplicationDocumentsEnum.KITCHEN_PHOTO,
+# 		link=kwargs.get('link')
+# 	)
+#
+# @fsm_log_description
+# @fsm_log_by
+# @transition(
+# 	field=status,
+# 	source=PostInspectionStatusEnum.PREVIEW_INSPECTION,
+# 	target=PostInspectionStatusEnum.SUBMITTED,
+# 	custom=dict(short_description='Submit Pre-Inspection', admin=False),
+# )
+# def transition_post_inspection_submitted(self, *args, **kwargs):
+# 	self.documents.filter(
+# 		type=ConnectionApplicationDocumentsEnum.MAIN_GATE
+# 	).delete()
+#
+# 	self.documents.create(
+# 		type=ConnectionApplicationDocumentsEnum.MAIN_GATE,
+# 		link=kwargs.get('link')
+# 	)
+#
+# 	if self.type == InspectionTypeEnum.SELF:
+# 		self.mechanic = None
+# 	else:
+# 		self.mechanic = get_current_user()
+# 	self.submitted_on = datetime.datetime.now()
+# 	self.save()
+#
+# 	# start_process_in_camunda_v2('Process_preinspection', variables)
+# 	create_camunda_preinspection_review_function = partial(
+# 		start_process_in_camunda_v2,
+# 		process_definition_key='Process_preinspection',
+# 		variables={"variables": {"preinspection_id": {"value": self.id, "type": "String"}}}
+# 	)
+# 	transaction.on_commit(create_camunda_preinspection_review_function)
 
 
 class PostInspectionDocuments(models.Model):
@@ -1062,6 +1061,11 @@ class SalesOrder(models.Model):
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
 	sales_order = models.CharField(max_length=128)
+
+	# ADDING NEW FIELDS THAT IS PRODUCT AND QUANTITY
+	product = models.CharField(max_length=255, null=True, blank=True)
+	quantity = models.FloatField(null=True, blank=True)
+
 	order_type = models.CharField(max_length=128, null=True)
 	order_sub_type = models.CharField(max_length=128, null=True)
 	order_status = FSMField(
@@ -1210,6 +1214,34 @@ class SalesOrder(models.Model):
 		pass
 
 
+class InventoryTransaction(models.Model):
+	"""
+    Stores inventory transaction data fetched from SDMS (HTML table).
+    """
+
+	sales_order = models.ForeignKey(
+		SalesOrder,
+		on_delete=models.CASCADE,
+		related_name="inventory_transactions",
+		null=True, blank=True
+	)
+
+	transaction_datetime = models.DateTimeField()  # "Transaction Date/Time"
+	transaction_type = models.CharField(max_length=64)  # "Type"
+	part_number = models.CharField(max_length=64, null=True, blank=True)  # "Part#"
+	product = models.CharField(max_length=128)  # "Product"
+
+	created_on = models.DateTimeField(auto_now_add=True)
+	updated_on = models.DateTimeField(auto_now=True)
+
+	class Meta:
+		db_table = "inventory_transaction"
+		ordering = ['-transaction_datetime']
+
+	def __str__(self):
+		return f"{self.transaction_type} - {self.product} ({self.transaction_datetime})"
+
+
 class SalesOrderInvoice(models.Model):
 	"""
 	{
@@ -1277,8 +1309,9 @@ class SalesOrderInvoice(models.Model):
 	class Meta:
 		constraints = [
 			models.UniqueConstraint(fields=['invoice_date', 'invoice_number'],
-		                      name='unique sales_order_invoice_date_invoice_number')
+			                        name='unique sales_order_invoice_date_invoice_number')
 		]
+
 
 class Lead(models.Model):
 	parent = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, null=True)
@@ -1394,7 +1427,6 @@ class VaultSecret(models.Model):
 	last_updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True,
 	                                    related_name='vault_secrets')
 
-
 	class Meta:
 		permissions = (
 			("can_update_distributor_password", "Can Update Distributor Password"),
@@ -1420,9 +1452,14 @@ class OmcConversionRequest(models.Model):
 	omc_type = models.CharField(max_length=128, null=True, blank=True)
 	dac_code = models.CharField(max_length=10, null=False, blank=True)
 	consumer_id = models.CharField(max_length=28, null=False, blank=True)
-	cylinder_type = models.CharField(max_length=128, null=True, blank=True)	
-	remarks = models.CharField(max_length=256, null=True, blank=True)	
+	cylinder_type = models.CharField(max_length=128, null=True, blank=True)
+	remarks = models.CharField(max_length=256, null=True, blank=True)
 
 	def __str__(self):
 		return f"{self.customer_name} ({self.contact_mobile})"
 
+
+class SmsLog(models.Model):
+	mobile = models.CharField(max_length=15)
+	response_text = models.TextField()
+	sent_at = models.DateTimeField(auto_now_add=True)
