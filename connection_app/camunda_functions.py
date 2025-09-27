@@ -1,3 +1,4 @@
+
 import datetime
 import logging
 from collections import defaultdict
@@ -17,7 +18,6 @@ from service_request.models import ServiceRequest
 from ujjwala.camunda_functions import start_process_in_camunda_v2, is_process_exist_in_camunda
 from ujjwala.jobs import ensure_db_connection
 from ujjwala.models import UjjwalaV2Application
-from .models import InventoryTransaction
 from ujjwala.ujjwala_functions import evaluate_change_cylinder_type_requests
 
 logger = logging.getLogger(__name__)
@@ -335,8 +335,7 @@ def parse_datetime(val):
 
 @transaction.atomic
 def update_importing_of_sales_order(sales_order_details, distributor_code):
-	from connection_app.models import SalesOrder, Distributor
-
+	from connection_app.models import SalesOrder, Distributor, InventoryTransaction
 	try:
 		so = sales_order_details
 		portability_flag = True if so['portability_flag'] else False

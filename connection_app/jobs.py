@@ -1,9 +1,7 @@
 import csv
 import datetime
 
-from connection_app.camunda_functions import parse_float
 from connection_app.enums import TemplateEnum, ImportDataStatusEnum, DistributorStatusEnum
-from connection_app.models import InventoryTransaction
 from connection_app.vicidial.jobs import make_api_request, VICIDIAL_NON_AGENT_API, VICIDIAL_CAMPAIGN_API
 from ujjwala.camunda_functions import start_process_in_camunda_v2
 import logging
@@ -305,7 +303,7 @@ def compare_and_update_delivery_register(distributor_code: str, delivery_registe
 
 						# New Fields
 						product=row.get("Product"),
-						quantity=parse_float(row.get("Quantity"))
+						quantity=float(row.get("Quantity"))
 					)
 					read_details = True
 				else:
