@@ -1,8 +1,9 @@
 import csv
 import datetime
 
-
+from connection_app.camunda_functions import parse_float
 from connection_app.enums import TemplateEnum, ImportDataStatusEnum, DistributorStatusEnum
+from connection_app.models import InventoryTransaction
 from connection_app.vicidial.jobs import make_api_request, VICIDIAL_NON_AGENT_API, VICIDIAL_CAMPAIGN_API
 from ujjwala.camunda_functions import start_process_in_camunda_v2
 import logging
@@ -300,7 +301,11 @@ def compare_and_update_delivery_register(distributor_code: str, delivery_registe
 						delivery_boy_full_name=row.get("Delivery Boy"),
 						distributor_name=distributor.name,
 						service_area=None,
-						otp=row.get("Mode of Delivery")
+						otp=row.get("Mode of Delivery"),
+
+						# New Fields
+						product=row.get("Product"),
+						quantity=parse_float(row.get("Quantity"))
 					)
 					read_details = True
 				else:
@@ -314,7 +319,7 @@ def compare_and_update_delivery_register(distributor_code: str, delivery_registe
 						if any(
 								getattr(so, field) is None
 								for field in ("delivery_date", "digital_payment",
-											  "delivery_confirmed_by", "delivery_confirmation       _type")
+											  "delivery_confirmed_by", "delivery_confirmation_type")
 						):
 							read_details = True
 					else:
@@ -345,7 +350,6 @@ def compare_and_update_delivery_register(distributor_code: str, delivery_registe
 							"distributor_code": distributor_code,
 						}
 					)
-
 			return results
 
 	except FileNotFoundError:

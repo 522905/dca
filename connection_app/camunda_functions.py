@@ -17,6 +17,7 @@ from service_request.models import ServiceRequest
 from ujjwala.camunda_functions import start_process_in_camunda_v2, is_process_exist_in_camunda
 from ujjwala.jobs import ensure_db_connection
 from ujjwala.models import UjjwalaV2Application
+from .models import InventoryTransaction
 from ujjwala.ujjwala_functions import evaluate_change_cylinder_type_requests
 
 logger = logging.getLogger(__name__)
@@ -45,7 +46,7 @@ def get_customer_profile(consumer_id, name, address, distributor_code, portabili
 				distributor=distributor,
 				distributor_code=distributor_code,
 			)
-		# django_rq.enqueue(start_read_customer_profile, args=(cp_obj.id,))
+	# django_rq.enqueue(start_read_customer_profile, args=(cp_obj.id,))
 	else:
 		if cp_obj.distributor != distributor:
 			cp_obj.distributor = distributor
@@ -53,7 +54,7 @@ def get_customer_profile(consumer_id, name, address, distributor_code, portabili
 			cp_obj.distributor_name = distributor.name
 			cp_obj.save()
 	start_read_customer_profile(cp_obj.id)
-	#django_rq.enqueue(start_read_customer_profile, args=(cp_obj.id,))
+	# django_rq.enqueue(start_read_customer_profile, args=(cp_obj.id,))
 	return cp_obj
 
 
@@ -93,7 +94,7 @@ def start_process_fetch_sales_order_details_from_sdms(so_id, distributor_code):
 					"order_status": {"value": so_obj.order_status, "type": "String"},
 					"distributor_code": {"value": distributor_code, "type": "String"}
 				}
-			}
+		}
 		res, pid = start_process_in_camunda_v2('process_fetch_sales_order_details_from_sdms', variables=variables)
 		if res == 200:
 			so_obj.camunda_process_instance_id = pid
@@ -121,13 +122,14 @@ def start_process_fetch_sales_order_details_from_sdms_for_import(sales_order_num
 					"distributor_code": {"value": distributor_code, "type": "String"},
 					"importing": {"value": True, "type": "Boolean"},
 				}
-			}
+		}
 		try:
 			res, pid = start_process_in_camunda_v2('process_fetch_sales_order_details_from_sdms', variables=variables)
 			return True
 		except Exception as e:
 			logger.error(f"Error starting process for sales order {sales_order_number}: {str(e)}")
 			raise
+
 
 def start_processes_for_return_sales_order_list(so_id_list):
 	from connection_app.models import SalesOrder
@@ -184,7 +186,7 @@ def start_process_return_sales_order(so_id, distributor_code):
 					"sdms_task": {"value": "cancel_booked_sales_order", "type": "String"},
 					"delivery_boy_login": {"value": so_obj.delivery_boy_login, "type": "String"},
 				}
-			}
+		}
 		res, pid = start_process_in_camunda_v2('Process_book_sales_order', variables=variables)
 		if res == 200:
 			so_obj.cancellation_camunda_pid = pid
@@ -204,7 +206,8 @@ def start_process_fetch_subsidy_status_of_customer_from_sdms(phone_number):
 		logger.error(f"the issue in chat assignment {str(e)}")
 		return "आपकी ऑर्डर जानकारी उपलब्ध नहीं है, कृपया अपनी ऑर्डर स्थिति की जांच करें। +91 161 520 1005"
 
-	# TODO
+
+# TODO
 
 
 @ensure_db_connection
@@ -216,7 +219,8 @@ def create_sales_order(so, distributor_code):
 
 	portability_flag = True if so['Portability Flag'] else False
 
-	cp_obj = get_customer_profile(so["Relationship Id"], so["Consumer Name"], so["Consumer Address"], distributor_code, portability_flag)
+	cp_obj = get_customer_profile(so["Relationship Id"], so["Consumer Name"], so["Consumer Address"], distributor_code,
+	                              portability_flag)
 	distributor: Distributor = Distributor.objects.filter(code__contains=distributor_code).first()
 
 	if distributor is None:
@@ -307,7 +311,8 @@ def process_update_sales_order_in_dca(sales_order_list, distributor_code):
 		except Exception as e:
 			continue
 
-	# django_rq.enqueue(evaluate_change_cylinder_type_requests)
+
+# django_rq.enqueue(evaluate_change_cylinder_type_requests)
 
 def parse_bool(val):
 	return val == 'Y'
@@ -360,10 +365,18 @@ def update_importing_of_sales_order(sales_order_details, distributor_code):
 		# if so.get("order_sub_type") == "Installation Order":
 		# 	order_status = "Completed"
 
+		items = so.get("items", [])
+		max_item = None
+		if items:
+			max_item = max(
+				items,
+				key=lambda x: float(str(x.get("Total Price", "0")).replace("Rs.", "").replace(",", "").strip() or 0)
+			)
+
 		if so_obj:
 			# --- Selective update for non-null fields ---
 			for field, value in {
-				"order_status": so.get('order_status'),   # <<-- using normalized status
+				"order_status": so.get('order_status'),  # <<-- using normalized status
 				"delivery_date": parse_datetime(so.get("delivery_date")),
 				"delivery_type": so.get("delivery_type"),
 				"delivery_boy_login": so.get("delivery_boy_login"),
@@ -379,6 +392,10 @@ def update_importing_of_sales_order(sales_order_details, distributor_code):
 				"subsidized_on_invoice_gen": parse_bool(so.get("subsidized_on_invoice_gen")),
 				"error_message": so.get("error_message"),
 				"otp": so.get("otp"),
+
+				# UPDATE PRODUCT AND QUANTITY FROM SAES ORDER ITEM
+				"product": max_item.get("Product"),
+				"quantity": int(max_item.get("Quantity", 0)),
 			}.items():
 				if value is not None and getattr(so_obj, field) != value:
 					setattr(so_obj, field, value)
@@ -452,8 +469,38 @@ def update_importing_of_sales_order(sales_order_details, distributor_code):
 				cancel_source=so.get('cancel_source'),
 				dac_disable_by=so.get('dac_disable_by'),
 				ship_to_address=so.get('ship_to_address'),
-				full_filled_by_distributor=distributor
+				full_filled_by_distributor=distributor,
+				product=max_item.get("Product") if max_item else None,
+				quantity=int(max_item.get("Quantity") or 0) if max_item else None
 			)
+
+			# sales_order_items = []
+			# for item in so_obj.get("items", []):
+			# 	start_price = float(item.get("Start Price", "0").replace("Rs.", "").replace(",", ""))
+			# 	net_price = float(item.get("Start Price", "0").replace("Rs.", "").replace(",", ""))
+			# 	total_price = float(item.get("Start Price", "0").replace("Rs.", "").replace(",", ""))
+			#
+			# 	if start_price > 0 or net_price > 0 or total_price > 0:
+			# 		sales_order_items.append({
+			# 			"product": max_item.get("Product"),
+			# 			"quantity": int(max_item.get("Quantity", 0))
+			# 		})
+
+			inventory_list = so.get("inventory", [])
+			for item in inventory_list:
+				InventoryTransaction.objects.create(
+					sales_order=so_obj,
+					transaction_datetime=item.get("Transaction Date/Time"),
+					type=item.get("Type"),
+					part_number=item.get("Part#"),
+					product=item.get("Product"),
+					quantity=parse_float(item.get("Quantity"))
+				)
+
+			print(so_obj)
+			return so_obj
+
+
 
 		return True
 	except Exception as e:
@@ -470,9 +517,9 @@ def extract_mobile(address):
 	return match.group() if match else None
 
 
-
 def update_sales_order_details_in_dca(
-		sales_order_id, sales_order_details, existing_order_status, importing=False, distributor_code=None, sales_order_number=None):
+		sales_order_id, sales_order_details, existing_order_status, importing=False, distributor_code=None,
+		sales_order_number=None):
 	"""
 	{
 	  "sales_order": "2-003678554023",
@@ -558,7 +605,8 @@ def update_sales_order_details_in_dca(
 				# if so_obj.order_status == "Not Found":
 				# 	so_obj.order_status = "Completed"
 				# 	so_obj.transition_sales_order_completed()
-				print(f"Installation Order {so_obj.sales_order} already in DB with status {so_obj.order_status}. No change applied.")
+				print(
+					f"Installation Order {so_obj.sales_order} already in DB with status {so_obj.order_status}. No change applied.")
 				return so_obj
 
 			so_obj.transition_sales_order_not_found()
@@ -604,9 +652,9 @@ def update_sales_order_details_in_dca(
 	so_new_details['digital_payment'] = True if so_new_details['digital_payment'] == 'Y' else False
 	so_new_details['subsidized'] = True if so_new_details['subsidized'] == 'Y' else False
 	so_new_details['subsidized_on_invoice_gen'] = True if so_new_details[
-															  'subsidized_on_invoice_gen'] == 'Y' else False
+		                                                      'subsidized_on_invoice_gen'] == 'Y' else False
 	so_new_details['attempted_during_pdt_daytime'] = True if so_new_details[
-																 'attempted_during_pdt_daytime'] == 'Y' else False
+		                                                         'attempted_during_pdt_daytime'] == 'Y' else False
 	so_new_details['preferred_flag'] = True if so_new_details['preferred_flag'] == 'Y' else False
 	so_new_details['isi_mark_ho_plate'] = True if so_new_details['isi_mark_ho_plate'] == 'Y' else False
 	so_new_details['dac_flag'] = True if so_new_details['dac_flag'] == 'Y' else False
@@ -886,17 +934,18 @@ def update_customer_profile_in_dca(relationship_details, customer_profile_id):
 			relationship_details['relationship_start_date'], "%d-%b-%Y") if \
 			relationship_details['relationship_start_date'] else None
 		relationship_details['ekyc_date'] = datetime.datetime.strptime(relationship_details['ekyc_date'],
-																	   '%d-%b-%Y %H:%M:%S %p') if \
+		                                                               '%d-%b-%Y %H:%M:%S %p') if \
 			relationship_details['ekyc_date'] else None
-		relationship_details['kyc_approval_date'] = datetime.datetime.strptime(relationship_details['kyc_approval_date'],
-																	   '%d-%b-%Y %H:%M:%S %p') if \
+		relationship_details['kyc_approval_date'] = datetime.datetime.strptime(
+			relationship_details['kyc_approval_date'],
+			'%d-%b-%Y %H:%M:%S %p') if \
 			relationship_details['kyc_approval_date'] else None
 
 		relationship_details['kyc_date'] = datetime.datetime.strptime(relationship_details['kyc_date'],
-																	   '%d-%b-%Y %H:%M:%S %p') if \
+		                                                              '%d-%b-%Y %H:%M:%S %p') if \
 			relationship_details['kyc_date'] else None
 		relationship_details['release_date'] = datetime.datetime.strptime(relationship_details['release_date'],
-																	   '%d-%b-%Y %H:%M:%S %p') if \
+		                                                                  '%d-%b-%Y %H:%M:%S %p') if \
 			relationship_details['release_date'] else None
 		relationship_details['intimation_release_date'] = datetime.datetime.strptime(
 			relationship_details['intimation_release_date'],
@@ -933,7 +982,7 @@ def update_customer_profile_in_dca(relationship_details, customer_profile_id):
 		relationship_details['tcs_flag'] = True if relationship_details['tcs_flag'] == 'Y' else False
 		relationship_details['mi_refusal_flag'] = True if relationship_details['mi_refusal_flag'] == 'Y' else False
 		relationship_details['tight_joint_replacement_flag'] = True if relationship_details[
-																		   'tight_joint_replacement_flag'] == 'Y' else False
+			                                                               'tight_joint_replacement_flag'] == 'Y' else False
 		relationship_details['priority'] = True if relationship_details['priority'] == 'Y' else False
 		relationship_details['migrant'] = True if relationship_details['migrant'] == 'Yes' else False
 
@@ -944,12 +993,11 @@ def update_customer_profile_in_dca(relationship_details, customer_profile_id):
 
 		if not distributor:
 			distributor = Distributor.objects.create(code=relationship_details['distributor_code'],
-									   name=relationship_details['distributor_name'])
+			                                         name=relationship_details['distributor_name'])
 		relationship_details['distributor'] = distributor
 
-
 		relationship_details['sdms_service_area'] = get_sdms_service_area(relationship_details['service_area'],
-																		  distributor.code)
+		                                                                  distributor.code)
 		relationship_details['address'] = relationship_details.pop('primary_account_address')
 		relationship_details['is_dirty'] = False
 		relationship_details['distributor_status'] = DistributorStatusEnum.VALID
@@ -1035,9 +1083,9 @@ def update_booked_order_details_in_dca(sales_order_details, consumer_id, process
 	so_new_details['digital_payment'] = True if so_new_details['digital_payment'] == 'Y' else False
 	so_new_details['subsidized'] = True if so_new_details['subsidized'] == 'Y' else False
 	so_new_details['subsidized_on_invoice_gen'] = True if so_new_details[
-															  'subsidized_on_invoice_gen'] == 'Y' else False
+		                                                      'subsidized_on_invoice_gen'] == 'Y' else False
 	so_new_details['attempted_during_pdt_daytime'] = True if so_new_details[
-																 'attempted_during_pdt_daytime'] == 'Y' else False
+		                                                         'attempted_during_pdt_daytime'] == 'Y' else False
 	so_new_details['preferred_flag'] = True if so_new_details['preferred_flag'] == 'Y' else False
 	so_new_details['isi_mark_ho_plate'] = True if so_new_details['isi_mark_ho_plate'] == 'Y' else False
 	so_new_details['dac_flag'] = True if so_new_details['dac_flag'] == 'Y' else False
@@ -1045,7 +1093,6 @@ def update_booked_order_details_in_dca(sales_order_details, consumer_id, process
 	so_new_details['tatkal_order'] = True if so_new_details.get('tatkal_flag') == 'Y' else False
 	so_new_details['qc_due'] = True if so_new_details.get('qc_due') == 'Y' else False
 	so_new_details['auto_generated'] = True
-
 
 	SalesOrder.objects.filter(pk=so_obj.id).update(**so_new_details)
 	# so_obj = SalesOrder.objects.get(pk=sales_order_id)
@@ -1132,56 +1179,57 @@ def clean_sales_order_tasks(sales_order_id, process_instance_id):
 			res = requests.delete(f"{CAMUNDA_URL}/process-instance/" + r['id'])
 	return True
 
-	# PROCESS_DEFINITION_KEY = "Process_book_sales_order"
-	# ACTIVITY_ID = "Activity_return_booked_order"  # Activity instance to filter on
 
-	# Get unfinished activity instances for the specific activity
-	# activity_instance_url = f"{CAMUNDA_URL}/history/activity-instance"
-	# response = requests.post(
-	# 	activity_instance_url,
-	# 	json={
-	# 		"activityId": ACTIVITY_ID,
-	# 		"processDefinitionKey": PROCESS_DEFINITION_KEY,
-	# 		"unfinished": True  # Only get unfinished (running) activity instances
-	# 	}
-	# )
-	# response.raise_for_status()  # Check for request errors
-	#
-	# activity_instances = response.json()
-	#
-	# # Extract process instance IDs from the unfinished activity instances
-	# pids = [instance['processInstanceId'] for instance in activity_instances]
+# PROCESS_DEFINITION_KEY = "Process_book_sales_order"
+# ACTIVITY_ID = "Activity_return_booked_order"  # Activity instance to filter on
 
-	# Fetch process variables for the filtered process instance IDs
-	# variable_instance_url = f"{CAMUNDA_URL}/variable-instance"
-	# response = requests.post(
-	# 	variable_instance_url, json={
-	# 		'processInstanceIdIn': [
-	# 			process_instance_id
-	# 		]
-	# 	}
-	# )
-	# response.raise_for_status()
-	#
-	# grouped_variables = defaultdict(list)
-	#
-	# for variable in response.json():
-	# 	instance_id = variable['processInstanceId']
-	# 	grouped_variables[instance_id].append({'name': variable['name'], 'value': variable['value']})
-	#
-	# result = []
-	# for instance_id, variables in grouped_variables.items():
-	# 	row = {'process_instance_id': instance_id}
-	# 	for var in variables:
-	# 		row[var['name']] = var['value']
-	# 	result.append(row)
-	# print(result)
-	#
-	# for r in result:
-	# 	so_obj = SalesOrder.objects.get(id=r['sales_order_id'])
-	# 	if so_obj.order_status in (SalesOrderStatusEnum.COMPLETED, SalesOrderStatusEnum.CANCELLED):
-	# 		requests.delete(f"{CAMUNDA_URL}/process-instance/" + r['process_instance_id'])
-	# return True
+# Get unfinished activity instances for the specific activity
+# activity_instance_url = f"{CAMUNDA_URL}/history/activity-instance"
+# response = requests.post(
+# 	activity_instance_url,
+# 	json={
+# 		"activityId": ACTIVITY_ID,
+# 		"processDefinitionKey": PROCESS_DEFINITION_KEY,
+# 		"unfinished": True  # Only get unfinished (running) activity instances
+# 	}
+# )
+# response.raise_for_status()  # Check for request errors
+#
+# activity_instances = response.json()
+#
+# # Extract process instance IDs from the unfinished activity instances
+# pids = [instance['processInstanceId'] for instance in activity_instances]
+
+# Fetch process variables for the filtered process instance IDs
+# variable_instance_url = f"{CAMUNDA_URL}/variable-instance"
+# response = requests.post(
+# 	variable_instance_url, json={
+# 		'processInstanceIdIn': [
+# 			process_instance_id
+# 		]
+# 	}
+# )
+# response.raise_for_status()
+#
+# grouped_variables = defaultdict(list)
+#
+# for variable in response.json():
+# 	instance_id = variable['processInstanceId']
+# 	grouped_variables[instance_id].append({'name': variable['name'], 'value': variable['value']})
+#
+# result = []
+# for instance_id, variables in grouped_variables.items():
+# 	row = {'process_instance_id': instance_id}
+# 	for var in variables:
+# 		row[var['name']] = var['value']
+# 	result.append(row)
+# print(result)
+#
+# for r in result:
+# 	so_obj = SalesOrder.objects.get(id=r['sales_order_id'])
+# 	if so_obj.order_status in (SalesOrderStatusEnum.COMPLETED, SalesOrderStatusEnum.CANCELLED):
+# 		requests.delete(f"{CAMUNDA_URL}/process-instance/" + r['process_instance_id'])
+# return True
 
 
 def start_book_sales_order_camunda_process():

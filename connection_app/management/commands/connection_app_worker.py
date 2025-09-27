@@ -60,7 +60,9 @@ def handle_task(task: ExternalTask) -> TaskResult:
 			distributor_code = task.get_variable('distributor_code')
 			importing = task.get_variable('importing')
 			updated = update_sales_order_details_in_dca(sales_order_id, sales_order_details, existing_order_status,
-			                                            importing, distributor_code)
+			                                            importing, distributor_code,
+			                                            sales_order_number=task.get_variable('sales_order_number'))
+			print("Update result:", updated)
 			if not updated:
 				return task.bpmn_error("sales order read error", "Could not read sales order details from SDMS")
 			return task.complete()
