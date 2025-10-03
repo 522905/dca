@@ -1,9 +1,7 @@
 import csv
 import datetime
 
-from connection_app.camunda_functions import parse_float
 from connection_app.enums import TemplateEnum, ImportDataStatusEnum, DistributorStatusEnum
-from connection_app.models import InventoryTransaction
 from connection_app.vicidial.jobs import make_api_request, VICIDIAL_NON_AGENT_API, VICIDIAL_CAMPAIGN_API
 from ujjwala.camunda_functions import start_process_in_camunda_v2
 import logging
@@ -43,7 +41,7 @@ def start_sales_order_portability_process(sales_order_portability_id):
 				"sales_order_id": {"value": sop_obj.sales_order_number, "type": "String"},
 				"delivery_boy_id": {"value": sdms_user.delivery_boy_login, "type": "String"},
 			}
-		}
+	}
 
 	res, pid = start_process_in_camunda_v2('Process_domestic_app', variables=variables)
 	if res == 200:
@@ -80,7 +78,7 @@ def import_sales_order(csv_file_rows):
 		sales_order_number = row['sales_order_number']
 		order_status = 'Completed'
 		distributor_code = row['distributor_code'].replace(";", "")
-		start_process_fetch_sales_order_details_from_sdms_for_import(sales_order_number, distributor_code,order_status)
+		start_process_fetch_sales_order_details_from_sdms_for_import(sales_order_number, distributor_code, order_status)
 	return True
 
 
@@ -181,12 +179,14 @@ def schedule_upload_data(template, id_obj):
 			id_obj.status = ImportDataStatusEnum.COMPLETED
 			id_obj.save()
 		else:
-			raise Exception("{} Function not found".format("import_{}".format(id_obj.import_data_template.template.lower().replace(" ", "_"))))
+			raise Exception("{} Function not found".format(
+				"import_{}".format(id_obj.import_data_template.template.lower().replace(" ", "_"))))
 
 	except Exception as e:
 		id_obj.error_log = str(e)
 		id_obj.status = ImportDataStatusEnum.FAILED
 		id_obj.save()
+
 
 def update_camp_url(self, agent_user):
 	campaign_payload = {
@@ -201,6 +201,7 @@ def update_camp_url(self, agent_user):
 		print("Error in creating campaign", result)
 		return result
 	return {"status": "success", "message": "Campaign updated successfully."}
+
 
 def update_phone(self, agent_user, phone_number, request=None):
 	if not phone_number and not agent_user:
@@ -263,7 +264,7 @@ def compare_and_update_delivery_register(distributor_code: str, delivery_registe
 
 				read_details = False
 
-				# Parse order & delivery datetimes safely
+				# Parse order & delivery datetime safely
 				order_date = parse_datetime(row.get("Book Date"), row.get("Book Time"))
 				delivery_date = parse_datetime(row.get("Delivery Date"), row.get("Delivery Time"))
 
@@ -278,6 +279,30 @@ def compare_and_update_delivery_register(distributor_code: str, delivery_registe
 						row.get("Address", ""),
 						distributor.code
 					)
+
+					# Get max price product
+					sales_order_items = row.get("sales_order", [])
+					selected_product = None
+					selected_quantity = 0
+
+					if sales_order_items:
+						# Filter items jink Start, Net, Total Price sab valid number ho
+						valid_items = []
+						for item in sales_order_items:
+							try:
+								start_price = float(item.get("Start Price", "0").replace("Rs.", "").replace(",", ""))
+								net_price = float(item.get("Net Price", "0").replace("Rs.", "").replace(",", ""))
+								total_price = float(item.get("Total Price", "0").replace("Rs.", "").replace(",", ""))
+								if start_price >= 0 and net_price >= 0 and total_price >= 0:
+									valid_items.append((item, total_price))
+							except:
+								continue
+
+						if valid_items:
+							# Pick item with max total_price
+							max_item = max(valid_items, key=lambda x: x[1])[0]
+							selected_product = max_item.get("Product")
+							selected_quantity = float(max_item.get("Quantity", 0))
 
 					# Create new SalesOrder with all mapped fields
 					so = SalesOrder.objects.create(
@@ -304,8 +329,8 @@ def compare_and_update_delivery_register(distributor_code: str, delivery_registe
 						otp=row.get("Mode of Delivery"),
 
 						# New Fields
-						product=row.get("Product"),
-						quantity=parse_float(row.get("Quantity"))
+						product=selected_product,
+						quantity=selected_quantity
 					)
 					read_details = True
 				else:
@@ -319,7 +344,7 @@ def compare_and_update_delivery_register(distributor_code: str, delivery_registe
 						if any(
 								getattr(so, field) is None
 								for field in ("delivery_date", "digital_payment",
-											  "delivery_confirmed_by", "delivery_confirmation_type")
+								              "delivery_confirmed_by", "delivery_confirmation_type")
 						):
 							read_details = True
 					else:

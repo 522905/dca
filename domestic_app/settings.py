@@ -154,7 +154,7 @@ DATABASES = {
         'USER': 'dca_webapp',
         'PASSWORD': '3ty5JS8sJlqtk3bQ',
         # 'HOST': '192.168.171.31',
-        'HOST': '192.168.171.17',
+        'HOST': '192.168.171.20',
         # 'HOST': '10.1.1.132',
         # 'HOST': '192.168.171.66',
         'PORT': '',

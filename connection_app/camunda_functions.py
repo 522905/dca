@@ -1,6 +1,5 @@
 import datetime
 import logging
-from collections import defaultdict
 
 import django_rq
 import requests
@@ -17,7 +16,6 @@ from service_request.models import ServiceRequest
 from ujjwala.camunda_functions import start_process_in_camunda_v2, is_process_exist_in_camunda
 from ujjwala.jobs import ensure_db_connection
 from ujjwala.models import UjjwalaV2Application
-from .models import InventoryTransaction
 from ujjwala.ujjwala_functions import evaluate_change_cylinder_type_requests
 
 logger = logging.getLogger(__name__)
@@ -335,6 +333,7 @@ def parse_datetime(val):
 
 @transaction.atomic
 def update_importing_of_sales_order(sales_order_details, distributor_code):
+	from connection_app.models import InventoryTransaction
 	from connection_app.models import SalesOrder, Distributor
 
 	try:
@@ -470,8 +469,8 @@ def update_importing_of_sales_order(sales_order_details, distributor_code):
 				dac_disable_by=so.get('dac_disable_by'),
 				ship_to_address=so.get('ship_to_address'),
 				full_filled_by_distributor=distributor,
-				product=max_item.get("Product") if max_item else None,
-				quantity=int(max_item.get("Quantity") or 0) if max_item else None
+				product=max_item.get("Product"),
+				quantity=int(max_item.get("Quantity"))
 			)
 
 			# sales_order_items = []
@@ -618,7 +617,9 @@ def update_sales_order_details_in_dca(
 	if so == '':
 		return False
 
-	so_new_details: dict = sales_order_details
+	so_new_details: dict = sales_order_details.copy()
+	so_new_details.pop("order_items_lists", None)
+	so_new_details.pop("sales_order", None)
 
 	new_order_status = so_new_details.pop('order_status')
 
@@ -662,8 +663,36 @@ def update_sales_order_details_in_dca(
 	so_new_details['tatkal_order'] = True if so_new_details.get('tatkal_flag') == 'Y' else False
 	so_new_details['qc_due'] = True if so_new_details.get('qc_due') == 'Y' else False
 
+	items = sales_order_details.get("order_items_lists", [])
+	max_item = None
+	valid_items = []
+
+	for item in items:
+			print("Product:", item.get("Product"), "Total Price:", item.get("Total Price"))
+			total_price = item.get("Total Price", "0").replace("Rs.", "").replace(",", "").strip()
+			try:
+				total_price = float(total_price)
+				if total_price > 0:
+					valid_items.append((item, total_price))
+			except ValueError:
+				continue
+
+	if valid_items:
+		max_item = max(valid_items, key=lambda x: x[1])[0]
+		print("Max item selected:", max_item)
+	else:
+		print("No Valid item found")
+
+	if max_item:
+		product = max_item.get("Product"),
+		quantity = int(max_item.get("Quantity", 0))
+
+		so_new_details["product"] = product
+		so_new_details["quantity"] = quantity
+
 	SalesOrder.objects.filter(pk=sales_order_id).update(**so_new_details)
 	so_obj = SalesOrder.objects.get(pk=sales_order_id)
+
 	if not new_order_status == existing_order_status:
 		if new_order_status == 'Cancelled':
 			so_obj.transition_sales_order_cancelled(

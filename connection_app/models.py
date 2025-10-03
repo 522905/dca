@@ -1061,8 +1061,6 @@ class SalesOrder(models.Model):
 	created_on = models.DateTimeField(auto_now_add=True)
 	updated_on = models.DateTimeField(auto_now=True)
 	sales_order = models.CharField(max_length=128)
-
-	# ADDING NEW FIELDS THAT IS PRODUCT AND QUANTITY
 	product = models.CharField(max_length=255, null=True, blank=True)
 	quantity = models.FloatField(null=True, blank=True)
 
