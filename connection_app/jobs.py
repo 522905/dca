@@ -327,8 +327,13 @@ def compare_and_update_delivery_register(distributor_code: str, file_path: str):
 						otp=row.get("Mode of Delivery"),
 
 						# New Fields
+<<<<<<< HEAD
 						product=selected_product,
 						quantity=selected_quantity
+=======
+						product=row.get("Product"),
+						quantity=float(row.get("Quantity"))
+>>>>>>> 190b0dd3671c7cdd8d270e4aeaf6edfb4a31177c
 					)
 					read_details = True
 				else:
