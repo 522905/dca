@@ -689,7 +689,7 @@ def update_sales_order_details_in_dca(
 		so_new_details["product"] = product
 		so_new_details["quantity"] = quantity
 
-	model_fields = [f.name for f in SalesOrder._meta.get_field()]
+	model_fields = [f.name for f in SalesOrder._meta.get_fields()]
 	so_new_details_safe = {k: v for k, v in so_new_details.items() if k in model_fields}
 
 	SalesOrder.objects.filter(pk=sales_order_id).update(**so_new_details)
