@@ -619,9 +619,8 @@ def update_sales_order_details_in_dca(
 
 	so_new_details: dict = sales_order_details.copy()
 	so_new_details.pop("order_items_lists", None)
-	so_new_details.pop("sales_order", None)
 
-	new_order_status = so_new_details.pop('order_status')
+	new_order_status = so_new_details.pop('order_status', None)
 
 	so_new_details['order_date'] = datetime.datetime.strptime(
 		so_new_details['order_date'], '%d-%b-%Y %H:%M:%S %p') if so_new_details[
@@ -689,6 +688,9 @@ def update_sales_order_details_in_dca(
 
 		so_new_details["product"] = product
 		so_new_details["quantity"] = quantity
+
+	model_fields = [f.name for f in SalesOrder._meta.get_field()]
+	so_new_details_safe = {k: v for k, v in so_new_details.items() if k in model_fields}
 
 	SalesOrder.objects.filter(pk=sales_order_id).update(**so_new_details)
 	so_obj = SalesOrder.objects.get(pk=sales_order_id)
