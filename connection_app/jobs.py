@@ -1,7 +1,7 @@
 import csv
 import datetime
 
-from connection_app.enums import ImportDataStatusEnum, DistributorStatusEnum
+from connection_app.enums import TemplateEnum, ImportDataStatusEnum, DistributorStatusEnum
 from connection_app.vicidial.jobs import make_api_request, VICIDIAL_NON_AGENT_API, VICIDIAL_CAMPAIGN_API
 from ujjwala.camunda_functions import start_process_in_camunda_v2
 import logging
@@ -236,7 +236,7 @@ def parse_datetime(date_str, time_str):
 		return None
 
 
-def compare_and_update_delivery_register(distributor_code: str, file_path: str):
+def compare_and_update_delivery_register(distributor_code: str, delivery_register_date: str, file_path: str):
 	"""
 	Compare delivery register CSV with SalesOrder records, create missing ones,
 	and trigger Camunda processes where details need to be updated.
@@ -327,8 +327,8 @@ def compare_and_update_delivery_register(distributor_code: str, file_path: str):
 						otp=row.get("Mode of Delivery"),
 
 						# New Fields
-						product=selected_product,
-						quantity=selected_quantity
+						product=0,
+						quantity=None
 					)
 					read_details = True
 				else:
@@ -342,7 +342,8 @@ def compare_and_update_delivery_register(distributor_code: str, file_path: str):
 						if any(
 								getattr(so, field) is None
 								for field in ("delivery_date", "digital_payment",
-								              "delivery_confirmed_by", "delivery_confirmation_type")
+								              "delivery_confirmed_by", "delivery_confirmation_type",
+								              "product", "quantity")
 						):
 							read_details = True
 					else:
