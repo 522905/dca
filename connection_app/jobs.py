@@ -1,7 +1,7 @@
 import csv
 import datetime
 
-from connection_app.enums import TemplateEnum, ImportDataStatusEnum, DistributorStatusEnum
+from connection_app.enums import ImportDataStatusEnum, DistributorStatusEnum
 from connection_app.vicidial.jobs import make_api_request, VICIDIAL_NON_AGENT_API, VICIDIAL_CAMPAIGN_API
 from ujjwala.camunda_functions import start_process_in_camunda_v2
 import logging
@@ -155,9 +155,7 @@ def import_service_area(csv_file_rows):
 		requests.post(url, json=variables)
 
 
-def schedule_upload_data(template, id_obj):
-	from connection_app.functions import schedule_booking_cancellation_csv
-
+def schedule_upload_data(id_obj):
 	id_obj.status = ImportDataStatusEnum.PROCESSING
 	id_obj.save()
 
@@ -238,7 +236,7 @@ def parse_datetime(date_str, time_str):
 		return None
 
 
-def compare_and_update_delivery_register(distributor_code: str, delivery_register_date: str, file_path: str):
+def compare_and_update_delivery_register(distributor_code: str, file_path: str):
 	"""
 	Compare delivery register CSV with SalesOrder records, create missing ones,
 	and trigger Camunda processes where details need to be updated.
