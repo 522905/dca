@@ -1,4 +1,3 @@
-
 import datetime
 import logging
 
@@ -334,13 +333,9 @@ def parse_datetime(val):
 
 @transaction.atomic
 def update_importing_of_sales_order(sales_order_details, distributor_code):
-<<<<<<< HEAD
 	from connection_app.models import InventoryTransaction
 	from connection_app.models import SalesOrder, Distributor
 
-=======
-	from connection_app.models import SalesOrder, Distributor, InventoryTransaction
->>>>>>> 190b0dd3671c7cdd8d270e4aeaf6edfb4a31177c
 	try:
 		so = sales_order_details
 		portability_flag = True if so['portability_flag'] else False
