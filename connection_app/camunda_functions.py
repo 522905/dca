@@ -364,7 +364,7 @@ def update_importing_of_sales_order(sales_order_details, distributor_code):
 		# if so.get("order_sub_type") == "Installation Order":
 		# 	order_status = "Completed"
 
-		items = so.get("items", [])
+		items = so.get("order_items_lists", [])
 		max_item = None
 		if items:
 			max_item = max(
@@ -393,7 +393,7 @@ def update_importing_of_sales_order(sales_order_details, distributor_code):
 				"otp": so.get("otp"),
 
 				# UPDATE PRODUCT AND QUANTITY FROM SAES ORDER ITEM
-				"product": max_item.get("Product"),
+				"product": max_item.get("Product") if max_item.get('Product') else None,
 				"quantity": int(max_item.get("Quantity", 0)),
 			}.items():
 				if value is not None and getattr(so_obj, field) != value:
@@ -592,7 +592,7 @@ def update_sales_order_details_in_dca(
 	# 	so_obj.save()
 	# 	return so_obj
 
-	if sales_order_details.get('sales_order_status', '') == "NOT_FOUND":
+	if sales_order_details.get('order_status', '') == "NOT_FOUND":
 		so_obj = None
 		if sales_order_id:
 			so_obj = SalesOrder.objects.filter(id=sales_order_id).first()

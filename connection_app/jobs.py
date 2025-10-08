@@ -155,7 +155,9 @@ def import_service_area(csv_file_rows):
 		requests.post(url, json=variables)
 
 
-def schedule_upload_data(id_obj):
+def schedule_upload_data(template, id_obj):
+	# from connection_app.functions import schedule_booking_cancellation_csv
+
 	id_obj.status = ImportDataStatusEnum.PROCESSING
 	id_obj.save()
 
@@ -277,30 +279,6 @@ def compare_and_update_delivery_register(distributor_code: str, delivery_registe
 						row.get("Address", ""),
 						distributor.code
 					)
-
-					# Get max price product
-					sales_order_items = row.get("sales_order", [])
-					selected_product = None
-					selected_quantity = 0
-
-					if sales_order_items:
-						# Filter items jink Start, Net, Total Price sab valid number ho
-						valid_items = []
-						for item in sales_order_items:
-							try:
-								start_price = float(item.get("Start Price", "0").replace("Rs.", "").replace(",", ""))
-								net_price = float(item.get("Net Price", "0").replace("Rs.", "").replace(",", ""))
-								total_price = float(item.get("Total Price", "0").replace("Rs.", "").replace(",", ""))
-								if start_price >= 0 and net_price >= 0 and total_price >= 0:
-									valid_items.append((item, total_price))
-							except:
-								continue
-
-						if valid_items:
-							# Pick item with max total_price
-							max_item = max(valid_items, key=lambda x: x[1])[0]
-							selected_product = max_item.get("Product")
-							selected_quantity = float(max_item.get("Quantity", 0))
 
 					# Create new SalesOrder with all mapped fields
 					so = SalesOrder.objects.create(
