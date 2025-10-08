@@ -592,7 +592,7 @@ def update_sales_order_details_in_dca(
 	# 	so_obj.save()
 	# 	return so_obj
 
-	if sales_order_details.get('order_status', '') == "NOT_FOUND":
+	if sales_order_details.get('sales_order_status', '') == "NOT_FOUND":
 		so_obj = None
 		if sales_order_id:
 			so_obj = SalesOrder.objects.filter(id=sales_order_id).first()
