@@ -1,3 +1,6 @@
+import os
+
+from django.core.files.storage import FileSystemStorage
 from django.db import models
 from django_comments.models import Comment
 from django_comments_xtd.models import XtdComment
@@ -84,3 +87,89 @@ class HTMLTemplate(models.Model):
 class HTMLTemplateVariable(models.Model):
 	parent = models.ForeignKey(HTMLTemplate, on_delete=models.CASCADE)
 	name = models.CharField(max_length=52)
+
+
+# Custom storage outside Django project
+ration_card_storage = FileSystemStorage(
+	location='/opt/data/dca.arungas.com/',
+	base_url='/ration_card_files/'
+)
+
+
+def ration_card_file_upload_path(instance, filename):
+	"""
+	Upload path: ration_cards/{ration_no}/filename
+	"""
+	return os.path.join(
+		'ration_cards',
+		instance.ration_no or 'unknown',
+		filename
+	)
+
+
+class RationCard(models.Model):
+	"""Store ration card details extracted from Camunda"""
+
+	# Core identifiers
+	uid = models.CharField(max_length=255, db_index=True)
+	ration_no = models.CharField(max_length=255, unique=True, db_index=True)
+
+	# Ration card fields from JSON
+	scheme = models.CharField(max_length=100, null=True, blank=True)
+	conn_type = models.CharField(max_length=255, null=True, blank=True)
+	gas_no = models.CharField(max_length=255, null=True, blank=True)
+	gas_company = models.CharField(max_length=255, null=True, blank=True)
+	owner_name = models.CharField(max_length=255, null=True, blank=True)
+	gas_agency = models.CharField(max_length=255, null=True, blank=True)
+	head_of_family = models.CharField(max_length=255, null=True, blank=True)
+	address = models.TextField(null=True, blank=True)
+	annual_income = models.CharField(max_length=100, null=True, blank=True)
+	fps_no = models.CharField(max_length=100, null=True, blank=True)
+	fps_name_address = models.TextField(null=True, blank=True)
+
+	# Screenshot file - uses custom storage
+	screenshot_file = models.FileField(
+		upload_to=ration_card_file_upload_path,
+		storage=ration_card_storage,
+		null=True,
+		blank=True
+	)
+
+	raw_html = models.FileField(
+		upload_to=ration_card_file_upload_path,
+		storage=ration_card_storage,
+		null=True,
+		blank=True
+	)
+
+	# Raw data dump
+	raw_variables = models.JSONField(default=dict)
+
+	# Timestamps
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+
+	def __str__(self):
+		return f"{self.ration_no} - {self.head_of_family}"
+
+
+class RationCardFamilyMember(models.Model):
+	"""Store family members from ration card"""
+
+	ration_card = models.ForeignKey(
+		RationCard,
+		on_delete=models.CASCADE,
+		related_name='family_members'
+	)
+
+	sr = models.CharField(max_length=10, null=True, blank=True)
+	name = models.CharField(max_length=255, null=True, blank=True)
+	aadhar = models.CharField(max_length=10, null=True, blank=True)
+	sex = models.CharField(max_length=1, null=True, blank=True)
+	age = models.CharField(max_length=10, null=True, blank=True)
+
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+
+	def __str__(self):
+		return f"{self.name} - {self.ration_card.ration_no}"
