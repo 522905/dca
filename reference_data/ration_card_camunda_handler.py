@@ -65,14 +65,18 @@ def download_file_from_camunda(camunda_url: str, process_instance_id: str, var_n
 		for chunk in response.iter_content(chunk_size=8192):
 			file_content += chunk
 
-		# Get filename or generate based on variable name
+		# Get filename from content-disposition header
 		filename = f"{process_instance_id}_{var_name}"
 		if 'content-disposition' in response.headers:
 			cd = response.headers['content-disposition']
-			if 'filename=' in cd:
-				filename = cd.split('filename=')[1].strip('"')
-		else:
-			# Set extension based on variable name
+			# Parse properly: filename="something.png"
+			import re
+			match = re.search(r'filename="?([^";\s]+)"?', cd)
+			if match:
+				filename = match.group(1)
+
+		# Set default extension if missing
+		if '.' not in filename:
 			if var_name == 'screenshot_file':
 				filename = f"{filename}.png"
 			elif var_name == 'raw_html':
