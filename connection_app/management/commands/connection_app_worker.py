@@ -25,7 +25,8 @@ EXTERNAL_TASK_TO_SUBSCRIBE = [
 	'process_fetch_sales_order_details_from_sdms#cleanup_sales_order_tasks',
 	'process_dca_service_request#update_service_request_in_dca',
 	'process_dca_service_request#update_service_request_status_in_dca',
-	'RATION_CARD#PROCESS_DETAILS'
+	'RATION_CARD#PROCESS_DETAILS',
+	'RATION_CARD#CLEANUP'
 ]
 
 default_config = {
@@ -105,6 +106,13 @@ def handle_task(task: ExternalTask) -> TaskResult:
 			return handle_ration_card_process_details(task)
 			# raise Exception("Should not reach here")
 			# return task.complete()
+		elif topic == 'RATION_CARD#CLEANUP':
+			from reference_data.ration_card_camunda_handler import cleanup_ration_card_tasks
+			result = cleanup_ration_card_tasks(task)
+			if result:
+				return task.complete()
+			else:
+				raise Exception("Cleanup failed")
 	except Exception as e:
 		return task.failure(
 			str(e), traceback.format_exc(),

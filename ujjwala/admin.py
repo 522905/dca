@@ -122,7 +122,7 @@ class FamilyMembersInline(admin.TabularInline):
     extra = 0
     model = FamilyMembers
     fields = ('name', 'relation', 'dob', 'uid_no', 'download_links',
-              'uid_check_result', 'uid_front_file_size', 'uid_back_file_size',)
+              'uid_check_result', 'uid_front_file_size', 'uid_back_file_size', 'ration_card_available',)
     readonly_fields = ('download_links', 'uid_check_result', 'uid_front_file_size', 'uid_back_file_size',)
 
     # def get_readonly_fields(self, request, obj=None):

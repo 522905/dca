@@ -1026,6 +1026,7 @@ class FamilyMembers(models.Model):
 	additional_details = models.JSONField(null=True, blank=True)
 	is_valid_uid = models.BooleanField(null=True, blank=True)
 	validated = models.BooleanField(default=False)
+	ration_card_available = models.BooleanField(null=True, blank=True)
 
 	def get_gender(self):
 		if self.relation in (

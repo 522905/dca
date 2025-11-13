@@ -6,7 +6,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 
 from .models import TokensExcluded, IFSCodeList, ServiceType, Distributor, HTMLTemplate, HTMLTemplateVariable, Product, \
-    Form, RationCardFamilyMember, RationCard
+    Form, RationCardFamilyMember, RationCard, UIDNotHavingRationCard
 
 
 @admin.register(TokensExcluded)
@@ -74,7 +74,8 @@ class RationCardAdmin(admin.ModelAdmin):
         'scheme',
         'gas_company',
         'has_screenshot',
-        'created_at'
+        'created_at',
+        'object_id',
     )
 
     list_filter = (
@@ -177,3 +178,12 @@ class RationCardFamilyMemberAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         })
     )
+
+
+@admin.register(UIDNotHavingRationCard)
+class UIDNotHavingRationCardAdmin(admin.ModelAdmin):
+    list_display = ('created_at', 'updated_at', 'uid', 'auto_checked', 'mapped')
+    readonly_fields = ('created_at', 'updated_at')
+
+    def has_change_permission(self, request, obj=None):
+        return False

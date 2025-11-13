@@ -3,11 +3,15 @@ from camunda.external_task.external_task import ExternalTask, TaskResult
 import json
 import requests
 from typing import Dict, Any, Optional
+
+from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import ContentFile
 from django.db import transaction
 from reference_data.models import RationCard, RationCardFamilyMember
 
 import logging
+
+from ujjwala.models import UjjwalaV2Application
 
 logger = logging.getLogger(__name__)
 CAMUNDA_URL = "https://camunda.dca.arungas.com/engine-rest"
@@ -210,6 +214,34 @@ def process_ration_card_task(
 
 	return ration_card
 
+
+def cleanup_ration_card_tasks(task: ExternalTask):
+	from ujjwala.models import FamilyMembers
+	from reference_data.models import UIDNotHavingRationCard, RationCardFamilyMember, RationCard
+
+	ration_card = task.get_variable('ration_card')
+	uid = task.get_variable('uid')
+
+	fm_obj = FamilyMembers.objects.filter(uid_no=uid).first()
+
+	if not fm_obj:
+		raise Exception("No Family Member Found")
+
+	if ration_card == 'False':
+		fm_obj.ration_card_available = False
+		unhrc = UIDNotHavingRationCard.objects.create(uid=uid, auto_checked=True)
+		unhrc.mapped = True
+		unhrc.save()
+	else:
+		rc_obj: RationCard = RationCard.objects.filter(uid=uid).first()
+		fm_obj.ration_card_available = True
+		rc_obj.content_type = ContentType.objects.get_for_model(FamilyMembers)
+		rc_obj.object_id = fm_obj.id
+		rc_obj.save()
+
+	fm_obj.save()
+
+	return True
 
 def handle_ration_card_process_details(task: ExternalTask) -> TaskResult:
 	"""Handler for RATION_CARD#PROCESS_DETAILS topic"""

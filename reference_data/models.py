@@ -1,5 +1,6 @@
 import os
 
+from django.contrib.contenttypes.models import ContentType
 from django.core.files.storage import FileSystemStorage
 from django.db import models
 from django_comments.models import Comment
@@ -126,6 +127,9 @@ class RationCard(models.Model):
 	annual_income = models.CharField(max_length=100, null=True, blank=True)
 	fps_no = models.CharField(max_length=100, null=True, blank=True)
 	fps_name_address = models.TextField(null=True, blank=True)
+	mapped = models.BooleanField(null=True, blank=True)
+	content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True)
+	object_id = models.PositiveIntegerField(null=True)
 
 	# Screenshot file - uses custom storage
 	screenshot_file = models.FileField(
@@ -173,3 +177,11 @@ class RationCardFamilyMember(models.Model):
 
 	def __str__(self):
 		return f"{self.name} - {self.ration_card.ration_no}"
+
+
+class UIDNotHavingRationCard(models.Model):
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+	uid = models.CharField(max_length=18)
+	auto_checked = models.BooleanField(null=True, blank= True)
+	mapped = models.BooleanField(null=True, blank=True)
