@@ -26,7 +26,7 @@ from django_fsm import FSMField, transition
 from .enums import (
     Gender, Caste, FamilyDocumentType, LPGConnectionType,
     ApplicationStatus, AddressType, RelationToApplicant,
-    DocumentType, POACode, IndianState, VerificationStatus
+    DocumentType, POACode, VerificationStatus
 )
 from .validators import (
     validate_aadhaar_number, validate_mobile_number, validate_ifsc_code,
@@ -136,12 +136,11 @@ class UjjwalaV3Application(TimeStampedModel):
 
     # ==================== FAMILY COMPOSITION DOCUMENT METADATA ====================
     family_doc_issuing_state = models.CharField(
-        max_length=2,
-        choices=IndianState.choices,
+        max_length=100,
         null=True,
         blank=True,
         db_index=True,
-        help_text='State that issued the family composition document'
+        help_text='State that issued the family composition document (e.g., Punjab)'
     )
 
     family_doc_type = models.CharField(
@@ -201,53 +200,6 @@ class UjjwalaV3Application(TimeStampedModel):
         default=LPGConnectionType.SINGLE_14_2KG,
         db_index=True,
         help_text='Type of LPG connection/cylinder'
-    )
-
-    is_new_connection = models.BooleanField(
-        default=True,
-        help_text='Whether this is a new connection request'
-    )
-
-    connection_remarks = models.TextField(
-        null=True,
-        blank=True,
-        help_text='Additional remarks about the connection'
-    )
-
-    # ==================== CONSENTS & DECLARATIONS ====================
-    aadhaar_consent_signed = models.BooleanField(
-        default=False,
-        help_text='Consent for Aadhaar-based authentication'
-    )
-
-    agrees_to_dbtl = models.BooleanField(
-        default=False,
-        help_text='Agreement to receive subsidy via DBTL (Direct Benefit Transfer for LPG)'
-    )
-
-    agrees_pre_installation_check = models.BooleanField(
-        default=False,
-        help_text='Agreement for pre-installation safety check'
-    )
-
-    agrees_mandatory_inspections = models.BooleanField(
-        default=False,
-        help_text='Agreement for mandatory safety inspections'
-    )
-
-    declares_no_existing_lpg_or_png_connection = models.BooleanField(
-        default=False,
-        help_text='Declaration of no existing LPG or PNG connection in household'
-    )
-
-    declares_use_for_domestic_cooking_only = models.BooleanField(
-        default=False,
-        help_text='Declaration to use LPG for domestic cooking only'
-    )
-
-    consent_data_sharing_omc_bank = models.BooleanField(
-        default=False,
-        help_text='Consent for data sharing with OMC and bank'
     )
 
     # ==================== APPLICATION LIFECYCLE ====================
@@ -415,21 +367,6 @@ class UjjwalaV3Application(TimeStampedModel):
                 raise ValidationError({
                     'applicant_dob': f'Applicant must be at least 18 years old. Current age: {age}'
                 })
-
-        # Validate all mandatory consents before submission
-        if self.status not in [ApplicationStatus.DRAFT]:
-            if not all([
-                self.aadhaar_consent_signed,
-                self.agrees_to_dbtl,
-                self.agrees_pre_installation_check,
-                self.agrees_mandatory_inspections,
-                self.declares_no_existing_lpg_or_png_connection,
-                self.declares_use_for_domestic_cooking_only,
-                self.consent_data_sharing_omc_bank,
-            ]):
-                raise ValidationError(
-                    'All mandatory consents and declarations must be signed before submission.'
-                )
 
     def save(self, *args, **kwargs):
         """Override save to generate application number and validate."""
@@ -600,19 +537,6 @@ class UjjwalaV3Application(TimeStampedModel):
                     "For migrant applications, CURRENT and PERMANENT addresses must be in different states"
                 )
 
-    def _validate_consents(self):
-        """Validate all mandatory consents are signed."""
-        if not all([
-            self.aadhaar_consent_signed,
-            self.agrees_to_dbtl,
-            self.agrees_pre_installation_check,
-            self.agrees_mandatory_inspections,
-            self.declares_no_existing_lpg_or_png_connection,
-            self.declares_use_for_domestic_cooking_only,
-            self.consent_data_sharing_omc_bank,
-        ]):
-            raise ValidationError("All mandatory consents and declarations must be signed")
-
     # ==================== FSM TRANSITIONS ====================
 
     @transition(
@@ -625,7 +549,6 @@ class UjjwalaV3Application(TimeStampedModel):
         Submit application for review.
 
         Validates:
-        - All consents signed
         - All required documents uploaded
         - CURRENT and PERMANENT addresses exist
         - SELF family member exists and matches applicant
@@ -640,9 +563,6 @@ class UjjwalaV3Application(TimeStampedModel):
         # Validate age >= 18
         if self.applicant_age < 18:
             raise ValidationError(f"Applicant must be at least 18 years old (current age: {self.applicant_age})")
-
-        # Validate consents
-        self._validate_consents()
 
         # Validate addresses
         self._validate_addresses()
@@ -830,10 +750,9 @@ class UjjwalaV3Address(TimeStampedModel):
     )
 
     state = models.CharField(
-        max_length=2,
-        choices=IndianState.choices,
+        max_length=100,
         db_index=True,
-        help_text='State/UT code'
+        help_text='State/UT name (e.g., Punjab, Haryana)'
     )
 
     pincode = models.CharField(
@@ -1085,10 +1004,9 @@ class UjjwalaV3Document(TimeStampedModel):
         help_text='Type of document'
     )
 
-    file = models.FileField(
-        upload_to='ujjwala_v3_documents/%Y/%m/%d/',
+    file_url = models.URLField(
         max_length=500,
-        help_text='Uploaded document file'
+        help_text='URL to uploaded document file (from TUS or other upload service)'
     )
 
     file_name = models.CharField(
