@@ -27,9 +27,7 @@ class Caste(models.TextChoices):
 class FamilyDocumentType(models.TextChoices):
     """Types of family composition documents."""
     RATION_CARD = 'RATION_CARD', 'Ration Card'
-    STATE_FAMILY_CERT = 'STATE_FAMILY_CERT', 'State Family Certificate'
     SELF_DECLARATION_MIGRANT = 'SELF_DECLARATION_MIGRANT', 'Self Declaration (Migrant)'
-    VOTER_ID = 'VOTER_ID', 'Voter ID Card'
     OTHER = 'OTHER', 'Other Document'
 
 
@@ -151,49 +149,7 @@ class POACode(models.TextChoices):
     POA22 = 'POA22', 'POA22 - Revenue Record (Patawari/Tehsildar)'
     POA23 = 'POA23', 'POA23 - Arms License'
     POA24 = 'POA24', 'POA24 - Court Order/Decree'
-    POA25 = 'POA25', 'POA25 - Other Government-issued Document'
-
-
-class IndianState(models.TextChoices):
-    """Indian States and Union Territories."""
-    ANDHRA_PRADESH = 'AP', 'Andhra Pradesh'
-    ARUNACHAL_PRADESH = 'AR', 'Arunachal Pradesh'
-    ASSAM = 'AS', 'Assam'
-    BIHAR = 'BR', 'Bihar'
-    CHHATTISGARH = 'CG', 'Chhattisgarh'
-    GOA = 'GA', 'Goa'
-    GUJARAT = 'GJ', 'Gujarat'
-    HARYANA = 'HR', 'Haryana'
-    HIMACHAL_PRADESH = 'HP', 'Himachal Pradesh'
-    JHARKHAND = 'JH', 'Jharkhand'
-    KARNATAKA = 'KA', 'Karnataka'
-    KERALA = 'KL', 'Kerala'
-    MADHYA_PRADESH = 'MP', 'Madhya Pradesh'
-    MAHARASHTRA = 'MH', 'Maharashtra'
-    MANIPUR = 'MN', 'Manipur'
-    MEGHALAYA = 'ML', 'Meghalaya'
-    MIZORAM = 'MZ', 'Mizoram'
-    NAGALAND = 'NL', 'Nagaland'
-    ODISHA = 'OR', 'Odisha'
-    PUNJAB = 'PB', 'Punjab'
-    RAJASTHAN = 'RJ', 'Rajasthan'
-    SIKKIM = 'SK', 'Sikkim'
-    TAMIL_NADU = 'TN', 'Tamil Nadu'
-    TELANGANA = 'TS', 'Telangana'
-    TRIPURA = 'TR', 'Tripura'
-    UTTAR_PRADESH = 'UP', 'Uttar Pradesh'
-    UTTARAKHAND = 'UK', 'Uttarakhand'
-    WEST_BENGAL = 'WB', 'West Bengal'
-
-    # Union Territories
-    ANDAMAN_NICOBAR = 'AN', 'Andaman and Nicobar Islands'
-    CHANDIGARH = 'CH', 'Chandigarh'
-    DADRA_NAGAR_HAVELI_DAMAN_DIU = 'DH', 'Dadra and Nagar Haveli and Daman and Diu'
-    DELHI = 'DL', 'Delhi'
-    JAMMU_KASHMIR = 'JK', 'Jammu and Kashmir'
-    LADAKH = 'LA', 'Ladakh'
-    LAKSHADWEEP = 'LD', 'Lakshadweep'
-    PUDUCHERRY = 'PY', 'Puducherry'
+    POA25 = 'POA25', 'POA25 - Migrant Certificate / Other Government-issued Document'
 
 
 class VerificationStatus(models.TextChoices):
