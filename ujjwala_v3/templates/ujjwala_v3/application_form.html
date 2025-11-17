@@ -1184,6 +1184,110 @@
                     $('#current_pincode').val(pincodeValue);
                 }
             }
+
+            // Automatically add SELF as family member
+            addSelfFamilyMember(data, frontUrl, backUrl);
+        }
+
+        // Add SELF family member automatically from OCR data
+        function addSelfFamilyMember(data, frontUrl, backUrl) {
+            familyMemberCounter++;
+            const memberId = familyMemberCounter;
+
+            // Extract name
+            let fullName = '';
+            if (data.name && data.name.value) {
+                fullName = data.name.value.trim();
+            }
+
+            // Extract DOB
+            let dobValue = '';
+            if (data.dob && data.dob.value) {
+                dobValue = data.dob.value;
+                const dobParts = dobValue.split('/');
+                if (dobParts.length === 1) {
+                    dobValue = `${dobParts[0]}-01-01`;
+                } else if (dobParts.length === 3) {
+                    dobValue = `${dobParts[2]}-${dobParts[1]}-${dobParts[0]}`;
+                }
+            }
+
+            // Extract gender
+            let gender = 'F'; // Default to Female for Ujjwala
+            if (data.gender && data.gender.value) {
+                const genderMap = { 'MALE': 'M', 'FEMALE': 'F', 'male': 'M', 'female': 'F' };
+                gender = genderMap[data.gender.value] || 'F';
+            }
+
+            // Extract Aadhaar
+            let aadhaar = '';
+            if (data.aadhaar && data.aadhaar.value) {
+                aadhaar = data.aadhaar.value.replace(/\s/g, '');
+            }
+
+            const memberHtml = `
+                <div class="family-member-item" id="familyMember${memberId}">
+                    <div class="d-flex justify-content-between mb-2">
+                        <h6><i class="fas fa-user"></i> Family Member ${memberId} (Self - Applicant)</h6>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="removeFamilyMember(${memberId})">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" name="family_member_${memberId}_name" class="form-control"
+                                       value="${fullName}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Relation</label>
+                                <select name="family_member_${memberId}_relation" class="form-control" required>
+                                    <option value="">Select</option>
+                                    <option value="SELF" selected>Self</option>
+                                    <option value="HUSBAND">Husband</option>
+                                    <option value="WIFE">Wife</option>
+                                    <option value="SON">Son</option>
+                                    <option value="DAUGHTER">Daughter</option>
+                                    <option value="FATHER">Father</option>
+                                    <option value="MOTHER">Mother</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Gender</label>
+                                <select name="family_member_${memberId}_gender" class="form-control" required>
+                                    <option value="">Select</option>
+                                    <option value="M" ${gender === 'M' ? 'selected' : ''}>Male</option>
+                                    <option value="F" ${gender === 'F' ? 'selected' : ''}>Female</option>
+                                    <option value="O" ${gender === 'O' ? 'selected' : ''}>Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Date of Birth</label>
+                                <input type="date" name="family_member_${memberId}_dob" class="form-control"
+                                       value="${dobValue}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Aadhaar Number</label>
+                                <input type="text" name="family_member_${memberId}_aadhaar" class="form-control"
+                                       value="${aadhaar}" required pattern="[0-9]{12}" maxlength="12">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            $('#familyMembersContainer').append(memberHtml);
         }
 
         // Add Family Member
