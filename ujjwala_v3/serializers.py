@@ -409,16 +409,57 @@ class ApplicationSubmitSerializer(serializers.Serializer):
         if not application.family_members.filter(relation_to_applicant=RelationToApplicant.SELF).exists():
             raise serializers.ValidationError('Applicant must be added as SELF family member.')
 
-        # Check required documents
+        # Check required documents (as per FSM requirements)
         required_docs = [
-            DocumentType.AADHAAR_FRONT,
-            DocumentType.AADHAAR_BACK,
+            DocumentType.CURRENT_ADDRESS_POA,
+            DocumentType.PERMANENT_ADDRESS_POA,
+            DocumentType.FAMILY_COMPOSITION_DOC,
+            DocumentType.DEPRIVATION_DECLARATION,
             DocumentType.BANK_PROOF,
             DocumentType.MIGRANT_DECLARATION,
         ]
+        missing_docs = []
         for doc_type in required_docs:
             if not application.documents.filter(doc_type=doc_type).exists():
-                raise serializers.ValidationError(f'{doc_type} document is required.')
+                missing_docs.append(doc_type)
+
+        if missing_docs:
+            raise serializers.ValidationError(
+                f"Missing required documents: {', '.join(missing_docs)}"
+            )
+
+        # Validate each family member has Aadhaar documents
+        for member in application.family_members.all():
+            has_front = application.documents.filter(
+                family_member=member,
+                doc_type=DocumentType.AADHAAR_FRONT
+            ).exists()
+            has_back = application.documents.filter(
+                family_member=member,
+                doc_type=DocumentType.AADHAAR_BACK
+            ).exists()
+
+            if not (has_front and has_back):
+                raise serializers.ValidationError(
+                    f"Family member {member.full_name} missing Aadhaar documents (front and back required)"
+                )
+
+        # Check for duplicate Aadhaar numbers within application
+        aadhaar_numbers = list(
+            application.family_members.values_list('aadhaar_number', flat=True)
+        )
+        if len(aadhaar_numbers) != len(set(aadhaar_numbers)):
+            raise serializers.ValidationError("Duplicate Aadhaar numbers found in family members")
+
+        # Validate migrant status (different states)
+        current_addr = application.get_current_address()
+        permanent_addr = application.get_permanent_address()
+
+        if current_addr and permanent_addr:
+            if current_addr.state == permanent_addr.state:
+                raise serializers.ValidationError(
+                    "For migrant applications, CURRENT and PERMANENT addresses must be in different states"
+                )
 
         return data
 

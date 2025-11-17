@@ -136,17 +136,12 @@ class UjjwalaV3ApplicationViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def submit(self, request, pk=None):
         """
-        Submit application for review.
+        Submit application for review using FSM transition.
 
         Validates all requirements and moves application from DRAFT to SUBMITTED status.
+        Uses FSM transition which performs comprehensive validation.
         """
         application = self.get_object()
-
-        if application.status != ApplicationStatus.DRAFT:
-            return Response(
-                {'error': f'Application cannot be submitted from {application.status} status.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
 
         serializer = ApplicationSubmitSerializer(
             data=request.data,
@@ -154,18 +149,22 @@ class UjjwalaV3ApplicationViewSet(viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
 
-        # Update application
-        application.status = ApplicationStatus.SUBMITTED
-        application.submitted_at = timezone.now()
-        application.submitted_by = request.user if request.user.is_authenticated else None
-        application.save()
+        try:
+            # Use FSM transition (includes all validation)
+            application.submit(user=request.user if request.user.is_authenticated else None)
+            application.save()
 
-        # Create audit log
-        self._create_audit_log(
-            application=application,
-            action='SUBMITTED',
-            remarks=serializer.validated_data.get('remarks', 'Application submitted')
-        )
+            # Create audit log
+            self._create_audit_log(
+                application=application,
+                action='SUBMITTED',
+                remarks=serializer.validated_data.get('remarks', 'Application submitted via FSM transition')
+            )
+        except ValidationError as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         return Response(
             UjjwalaV3ApplicationDetailSerializer(application).data,
@@ -173,33 +172,32 @@ class UjjwalaV3ApplicationViewSet(viewsets.ModelViewSet):
         )
 
     @action(detail=True, methods=['post'])
-    def mark_verified(self, request, pk=None):
+    def start_verification(self, request, pk=None):
         """
-        Mark application as verified.
+        Start verification process using FSM transition.
 
-        Moves application to UNDER_VERIFICATION or updates verification status.
+        Moves application from SUBMITTED to UNDER_VERIFICATION status.
         """
         application = self.get_object()
 
-        if application.status not in [ApplicationStatus.SUBMITTED, ApplicationStatus.UNDER_VERIFICATION]:
-            return Response(
-                {'error': f'Application cannot be verified from {application.status} status.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
         remarks = request.data.get('remarks', '')
 
-        application.status = ApplicationStatus.UNDER_VERIFICATION
-        application.verified_at = timezone.now()
-        application.verified_by = request.user if request.user.is_authenticated else None
-        application.save()
+        try:
+            # Use FSM transition
+            application.start_verification(user=request.user if request.user.is_authenticated else None)
+            application.save()
 
-        # Create audit log
-        self._create_audit_log(
-            application=application,
-            action='VERIFIED',
-            remarks=remarks or 'Application marked as verified'
-        )
+            # Create audit log
+            self._create_audit_log(
+                application=application,
+                action='VERIFICATION_STARTED',
+                remarks=remarks or 'Verification process started via FSM transition'
+            )
+        except ValidationError as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         return Response(
             UjjwalaV3ApplicationDetailSerializer(application).data,
@@ -209,17 +207,12 @@ class UjjwalaV3ApplicationViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
         """
-        Approve application.
+        Approve application using FSM transition.
 
-        Moves application to APPROVED status.
+        Moves application from UNDER_VERIFICATION to APPROVED status.
+        Validates that all verifications (Aadhaar, Bank, Address) are completed.
         """
         application = self.get_object()
-
-        if application.status not in [ApplicationStatus.UNDER_VERIFICATION]:
-            return Response(
-                {'error': f'Application cannot be approved from {application.status} status.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
 
         serializer = ApplicationApprovalSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -230,17 +223,22 @@ class UjjwalaV3ApplicationViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        application.status = ApplicationStatus.APPROVED
-        application.approved_at = timezone.now()
-        application.approved_by = request.user if request.user.is_authenticated else None
-        application.save()
+        try:
+            # Use FSM transition (validates all verifications are complete)
+            application.approve(user=request.user if request.user.is_authenticated else None)
+            application.save()
 
-        # Create audit log
-        self._create_audit_log(
-            application=application,
-            action='APPROVED',
-            remarks=serializer.validated_data.get('remarks', 'Application approved')
-        )
+            # Create audit log
+            self._create_audit_log(
+                application=application,
+                action='APPROVED',
+                remarks=serializer.validated_data.get('remarks', 'Application approved via FSM transition')
+            )
+        except ValidationError as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         return Response(
             UjjwalaV3ApplicationDetailSerializer(application).data,
@@ -250,17 +248,12 @@ class UjjwalaV3ApplicationViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
         """
-        Reject application.
+        Reject application using FSM transition.
 
         Moves application to REJECTED status with rejection reason.
+        Can be called from SUBMITTED, UNDER_VERIFICATION, or VERIFICATION_FAILED states.
         """
         application = self.get_object()
-
-        if application.status in [ApplicationStatus.REJECTED, ApplicationStatus.CANCELLED]:
-            return Response(
-                {'error': f'Application is already {application.status}.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
 
         serializer = ApplicationApprovalSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -271,16 +264,25 @@ class UjjwalaV3ApplicationViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        application.status = ApplicationStatus.REJECTED
-        application.rejection_reason = serializer.validated_data['rejection_reason']
-        application.save()
+        try:
+            # Use FSM transition (validates rejection_reason is provided)
+            application.reject(
+                reason=serializer.validated_data['rejection_reason'],
+                user=request.user if request.user.is_authenticated else None
+            )
+            application.save()
 
-        # Create audit log
-        self._create_audit_log(
-            application=application,
-            action='REJECTED',
-            remarks=serializer.validated_data.get('remarks', 'Application rejected')
-        )
+            # Create audit log
+            self._create_audit_log(
+                application=application,
+                action='REJECTED',
+                remarks=serializer.validated_data.get('remarks', 'Application rejected via FSM transition')
+            )
+        except ValidationError as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         return Response(
             UjjwalaV3ApplicationDetailSerializer(application).data,
@@ -290,23 +292,19 @@ class UjjwalaV3ApplicationViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def issue_connection(self, request, pk=None):
         """
-        Issue LPG connection.
+        Issue LPG connection using FSM transition.
 
         Final step - marks connection as issued.
+        Only possible from APPROVED status.
         """
         application = self.get_object()
 
-        if application.status != ApplicationStatus.APPROVED:
-            return Response(
-                {'error': 'Only approved applications can have connection issued.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
         remarks = request.data.get('remarks', '')
 
-        application.status = ApplicationStatus.CONNECTION_ISSUED
-        application.connection_issued_at = timezone.now()
-        application.save()
+        try:
+            # Use FSM transition
+            application.issue_connection(user=request.user if request.user.is_authenticated else None)
+            application.save()
 
         # Create audit log
         self._create_audit_log(

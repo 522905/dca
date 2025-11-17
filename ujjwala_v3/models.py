@@ -22,6 +22,7 @@ from django.core.validators import MinLengthValidator, MaxLengthValidator
 from django.db import models
 from django.db.models import Q, CheckConstraint, UniqueConstraint
 from django.utils import timezone
+from django_fsm import FSMField, transition
 
 from .enums import (
     Gender, Caste, FamilyDocumentType, LPGConnectionType,
@@ -268,12 +269,13 @@ class UjjwalaV3Application(TimeStampedModel):
         help_text='Unique application reference number (auto-generated)'
     )
 
-    status = models.CharField(
+    status = FSMField(
         max_length=30,
         choices=ApplicationStatus.choices,
         default=ApplicationStatus.DRAFT,
         db_index=True,
-        help_text='Current status of the application'
+        protected=True,
+        help_text='Current status of the application (FSM-controlled)'
     )
 
     rejection_reason = models.TextField(
@@ -306,6 +308,18 @@ class UjjwalaV3Application(TimeStampedModel):
         null=True,
         blank=True,
         help_text='Timestamp when LPG connection was issued'
+    )
+
+    verification_started_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='Timestamp when verification process started'
+    )
+
+    rejected_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='Timestamp when application was rejected'
     )
 
     # ==================== VERIFICATION TRACKING ====================
@@ -508,6 +522,242 @@ class UjjwalaV3Application(TimeStampedModel):
 
         # Migrant = different states
         return current_addr.state != permanent_addr.state
+
+    def _validate_required_documents(self):
+        """Validate that all required documents are uploaded."""
+        required_docs = [
+            DocumentType.CURRENT_ADDRESS_POA,
+            DocumentType.PERMANENT_ADDRESS_POA,
+            DocumentType.FAMILY_COMPOSITION_DOC,
+            DocumentType.DEPRIVATION_DECLARATION,
+            DocumentType.BANK_PROOF,
+            DocumentType.MIGRANT_DECLARATION,
+        ]
+
+        missing_docs = []
+        for doc_type in required_docs:
+            if not self.documents.filter(doc_type=doc_type).exists():
+                missing_docs.append(doc_type)
+
+        if missing_docs:
+            raise ValidationError(
+                f"Missing required documents: {', '.join(missing_docs)}"
+            )
+
+    def _validate_family_members(self):
+        """Validate family member requirements."""
+        # Check SELF member exists
+        self_member = self.family_members.filter(
+            relation_to_applicant=RelationToApplicant.SELF
+        ).first()
+
+        if not self_member:
+            raise ValidationError("Applicant must be added as SELF family member")
+
+        # Validate SELF member matches applicant
+        if self_member.aadhaar_number != self.applicant_aadhaar_number:
+            raise ValidationError("SELF member Aadhaar must match applicant Aadhaar")
+
+        if self_member.dob != self.applicant_dob:
+            raise ValidationError("SELF member DOB must match applicant DOB")
+
+        if self_member.gender != self.applicant_gender:
+            raise ValidationError("SELF member gender must match applicant gender")
+
+        # Validate each family member has Aadhaar documents
+        for member in self.family_members.all():
+            has_front = self.documents.filter(
+                family_member=member,
+                doc_type=DocumentType.AADHAAR_FRONT
+            ).exists()
+            has_back = self.documents.filter(
+                family_member=member,
+                doc_type=DocumentType.AADHAAR_BACK
+            ).exists()
+
+            if not (has_front and has_back):
+                raise ValidationError(
+                    f"Family member {member.full_name} missing Aadhaar documents"
+                )
+
+        # Check for duplicate Aadhaar within application
+        aadhaar_numbers = list(
+            self.family_members.values_list('aadhaar_number', flat=True)
+        )
+        if len(aadhaar_numbers) != len(set(aadhaar_numbers)):
+            raise ValidationError("Duplicate Aadhaar numbers found in family members")
+
+    def _validate_addresses(self):
+        """Validate address requirements."""
+        if not self.addresses.filter(address_type=AddressType.CURRENT).exists():
+            raise ValidationError("CURRENT address is required")
+
+        if not self.addresses.filter(address_type=AddressType.PERMANENT).exists():
+            raise ValidationError("PERMANENT address is required")
+
+    def _validate_migrant_status(self):
+        """Validate migrant requirements."""
+        if not self.is_migrant:
+            raise ValidationError("Application must be for migrant households")
+
+        current_addr = self.get_current_address()
+        permanent_addr = self.get_permanent_address()
+
+        if current_addr and permanent_addr:
+            if current_addr.state == permanent_addr.state:
+                raise ValidationError(
+                    "For migrant applications, CURRENT and PERMANENT addresses must be in different states"
+                )
+
+    def _validate_consents(self):
+        """Validate all mandatory consents are signed."""
+        if not all([
+            self.aadhaar_consent_signed,
+            self.agrees_to_dbtl,
+            self.agrees_pre_installation_check,
+            self.agrees_mandatory_inspections,
+            self.declares_no_existing_lpg_or_png_connection,
+            self.declares_use_for_domestic_cooking_only,
+            self.consent_data_sharing_omc_bank,
+        ]):
+            raise ValidationError("All mandatory consents and declarations must be signed")
+
+    # ==================== FSM TRANSITIONS ====================
+
+    @transition(
+        field=status,
+        source=ApplicationStatus.DRAFT,
+        target=ApplicationStatus.SUBMITTED
+    )
+    def submit(self, user=None):
+        """
+        Submit application for review.
+
+        Validates:
+        - All consents signed
+        - All required documents uploaded
+        - CURRENT and PERMANENT addresses exist
+        - SELF family member exists and matches applicant
+        - All family members have Aadhaar docs
+        - Migrant status verified
+        - LPG connection type specified
+        """
+        # Validate female applicant
+        if self.applicant_gender != Gender.FEMALE:
+            raise ValidationError("Applicant must be female")
+
+        # Validate age >= 18
+        if self.applicant_age < 18:
+            raise ValidationError(f"Applicant must be at least 18 years old (current age: {self.applicant_age})")
+
+        # Validate consents
+        self._validate_consents()
+
+        # Validate addresses
+        self._validate_addresses()
+
+        # Validate family members
+        self._validate_family_members()
+
+        # Validate migrant status
+        self._validate_migrant_status()
+
+        # Validate required documents
+        self._validate_required_documents()
+
+        # Validate LPG connection type
+        if not self.lpg_connection_type:
+            raise ValidationError("LPG connection type must be specified")
+
+        # Set timestamps and metadata
+        self.submitted_at = timezone.now()
+        if user:
+            self.submitted_by = user
+
+        # Generate application number
+        if not self.application_number:
+            self.application_number = self._generate_application_number()
+
+    @transition(
+        field=status,
+        source=ApplicationStatus.SUBMITTED,
+        target=ApplicationStatus.UNDER_VERIFICATION
+    )
+    def start_verification(self, user=None):
+        """
+        Start verification process.
+
+        Moves application from SUBMITTED to UNDER_VERIFICATION.
+        """
+        self.verification_started_at = timezone.now()
+        if user:
+            self.verified_by = user
+
+    @transition(
+        field=status,
+        source=ApplicationStatus.UNDER_VERIFICATION,
+        target=ApplicationStatus.APPROVED
+    )
+    def approve(self, user=None):
+        """
+        Approve application.
+
+        Moves application from UNDER_VERIFICATION to APPROVED.
+        Only possible after all verifications are complete.
+        """
+        # Additional validation: ensure all verifications are done
+        if self.aadhaar_verification_status != VerificationStatus.VERIFIED:
+            raise ValidationError("Aadhaar verification must be completed before approval")
+
+        if self.bank_verification_status != VerificationStatus.VERIFIED:
+            raise ValidationError("Bank verification must be completed before approval")
+
+        if self.address_verification_status != VerificationStatus.VERIFIED:
+            raise ValidationError("Address verification must be completed before approval")
+
+        self.approved_at = timezone.now()
+        self.verified_at = timezone.now()
+        if user:
+            self.approved_by = user
+
+    @transition(
+        field=status,
+        source=[
+            ApplicationStatus.SUBMITTED,
+            ApplicationStatus.UNDER_VERIFICATION,
+            ApplicationStatus.VERIFICATION_FAILED
+        ],
+        target=ApplicationStatus.REJECTED
+    )
+    def reject(self, reason, user=None):
+        """
+        Reject application.
+
+        Args:
+            reason: Reason for rejection (required)
+            user: User performing the rejection
+        """
+        if not reason:
+            raise ValidationError("Rejection reason is required")
+
+        self.rejection_reason = reason
+        self.rejected_at = timezone.now()
+        if user:
+            self.verified_by = user
+
+    @transition(
+        field=status,
+        source=ApplicationStatus.APPROVED,
+        target=ApplicationStatus.CONNECTION_ISSUED
+    )
+    def issue_connection(self, user=None):
+        """
+        Issue LPG connection.
+
+        Final step - marks connection as issued.
+        Only possible from APPROVED status.
+        """
+        self.connection_issued_at = timezone.now()
 
 
 class UjjwalaV3Address(TimeStampedModel):
