@@ -873,6 +873,7 @@
 
         // Uppy Instances
         let aadhaarFrontUppy, aadhaarBackUppy, documentUploadedList = [], familyMemberCount = 0;
+        let uploadedDocumentTypes = new Set(); // Track which document types are already uploaded
 
         // Initialize Aadhaar Front Uppy
         aadhaarFrontUppy = new Uppy.Core({
@@ -957,6 +958,14 @@
                         return;
                     }
 
+                    // Check if this document type is already uploaded
+                    if (uploadedDocumentTypes.has(docType)) {
+                        alert('This document type has already been uploaded. Please remove the existing one first or select a different document type.');
+                        currentDocUppy.reset();
+                        initDocumentUppy();
+                        return;
+                    }
+
                     const file = result.successful[0];
                     addDocumentToList({
                         type: docType,
@@ -978,6 +987,12 @@
         function addDocumentToList(doc) {
             const docId = Date.now();
             documentUploadedList.push({ ...doc, id: docId });
+
+            // Add document type to the set of uploaded types
+            uploadedDocumentTypes.add(doc.type);
+
+            // Update dropdown to disable this option
+            updateDocumentTypeDropdown();
 
             // Check if it's an image or PDF
             const isPDF = doc.fileName.toLowerCase().endsWith('.pdf');
@@ -1038,8 +1053,36 @@
 
         // Remove document
         function removeDocument(docId) {
+            // Find the document to get its type before removing
+            const doc = documentUploadedList.find(d => d.id === docId);
+            if (doc) {
+                // Remove the document type from the set
+                uploadedDocumentTypes.delete(doc.type);
+            }
+
             $(`#doc_${docId}`).remove();
             documentUploadedList = documentUploadedList.filter(d => d.id !== docId);
+
+            // Update dropdown to re-enable this option
+            updateDocumentTypeDropdown();
+        }
+
+        // Update document type dropdown to disable already uploaded types
+        function updateDocumentTypeDropdown() {
+            $('#newDocType option').each(function() {
+                const optionValue = $(this).val();
+                if (optionValue && uploadedDocumentTypes.has(optionValue)) {
+                    // Disable and mark as uploaded
+                    $(this).prop('disabled', true);
+                    if (!$(this).text().includes('(Uploaded)')) {
+                        $(this).text($(this).text() + ' (Uploaded)');
+                    }
+                } else if (optionValue) {
+                    // Re-enable and remove uploaded marker
+                    $(this).prop('disabled', false);
+                    $(this).text($(this).text().replace(' (Uploaded)', ''));
+                }
+            });
         }
 
         // Process OCR
