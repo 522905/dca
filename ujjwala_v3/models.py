@@ -895,6 +895,8 @@ class UjjwalaV3FamilyMember(TimeStampedModel):
     )
 
     dob = models.DateField(
+        null=False,
+        blank=False,
         validators=[validate_future_date],
         help_text='Date of birth as per Aadhaar'
     )

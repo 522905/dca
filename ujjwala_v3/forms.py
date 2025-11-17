@@ -201,7 +201,7 @@ class UjjwalaV3FamilyMemberForm(forms.ModelForm):
             'full_name',
             'relation_to_applicant',
             'gender',
-            'date_of_birth',
+            'dob',
             'aadhaar_number',
         ]
         widgets = {
@@ -211,9 +211,10 @@ class UjjwalaV3FamilyMemberForm(forms.ModelForm):
             }),
             'relation_to_applicant': forms.Select(attrs={'class': 'form-control'}),
             'gender': forms.Select(attrs={'class': 'form-control'}),
-            'date_of_birth': forms.DateInput(attrs={
+            'dob': forms.DateInput(attrs={
                 'class': 'form-control',
-                'type': 'date'
+                'type': 'date',
+                'required': True
             }),
             'aadhaar_number': forms.TextInput(attrs={
                 'class': 'form-control',
