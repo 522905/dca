@@ -12,7 +12,6 @@ Core Models:
     - UjjwalaV3AuditLog: Audit trail for application changes
 """
 
-import uuid
 from datetime import date
 from decimal import Decimal
 
@@ -58,14 +57,6 @@ class UjjwalaV3Application(TimeStampedModel):
         - documents: Related UjjwalaV3Document instances
         - audit_logs: Related UjjwalaV3AuditLog instances
     """
-
-    # Primary Key
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-        help_text='Unique application identifier'
-    )
 
     # ==================== APPLICANT DETAILS ====================
     applicant_full_name = models.CharField(
@@ -771,12 +762,6 @@ class UjjwalaV3Address(TimeStampedModel):
     For migrant applications, CURRENT and PERMANENT addresses should be in different states.
     """
 
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False
-    )
-
     application = models.ForeignKey(
         'UjjwalaV3Application',
         on_delete=models.CASCADE,
@@ -957,12 +942,6 @@ class UjjwalaV3FamilyMember(TimeStampedModel):
     Each family member's Aadhaar documents are stored in UjjwalaV3Document model.
     """
 
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False
-    )
-
     application = models.ForeignKey(
         'UjjwalaV3Application',
         on_delete=models.CASCADE,
@@ -1073,12 +1052,6 @@ class UjjwalaV3Document(TimeStampedModel):
     - Family member (optional, for member-specific docs like Aadhaar)
     - Address (optional, for address-specific POA docs)
     """
-
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False
-    )
 
     application = models.ForeignKey(
         'UjjwalaV3Application',
@@ -1235,12 +1208,6 @@ class UjjwalaV3AuditLog(TimeStampedModel):
 
     Provides a complete audit trail of who did what and when.
     """
-
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False
-    )
 
     application = models.ForeignKey(
         'UjjwalaV3Application',
