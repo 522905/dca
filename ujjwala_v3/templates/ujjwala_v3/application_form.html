@@ -356,7 +356,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label class="required-field">District</label>
-                                    <input type="text" name="current_district" class="form-control" required maxlength="200">
+                                    <input type="text" name="current_district" id="current_district" class="form-control" required value="Ludhiana" maxlength="200">
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -883,12 +883,41 @@
                 const addr = data.address.value;
                 $('#permanent_house_flat_no').val(addr.substring(0, 50));
                 $('#permanent_street_road').val(addr);
+
+                // Try to extract state, district, city from address if available
+                // Common format: "House, Area, City, District, State, Pincode"
+                const addrParts = addr.split(',').map(p => p.trim());
+
+                // If we have multiple parts, try to extract location info
+                if (addrParts.length >= 3) {
+                    // Last meaningful parts often contain city/district/state
+                    const city = addrParts[addrParts.length - 3] || '';
+                    const district = addrParts[addrParts.length - 2] || '';
+                    const state = addrParts[addrParts.length - 1] || '';
+
+                    if (city && city.length < 100 && !/^\d+$/.test(city)) {
+                        $('#permanent_city_town').val(city);
+                    }
+                    if (district && district.length < 100 && !/^\d+$/.test(district)) {
+                        $('#permanent_district').val(district);
+                    }
+                    if (state && state.length < 100 && !/^\d+$/.test(state)) {
+                        $('#permanent_state').val(state);
+                    }
+                }
             }
 
-            // Pincode
+            // Pincode - handle both string and object formats
             if (data.pincode) {
-                $('#permanent_pincode').val(data.pincode);
-                $('#current_pincode').val(data.pincode);
+                // If pincode is an object with value property, use that; otherwise use it directly
+                const pincodeValue = typeof data.pincode === 'object' && data.pincode.value
+                    ? data.pincode.value
+                    : data.pincode;
+
+                if (pincodeValue && pincodeValue.toString().length === 6) {
+                    $('#permanent_pincode').val(pincodeValue);
+                    $('#current_pincode').val(pincodeValue);
+                }
             }
         }
 
