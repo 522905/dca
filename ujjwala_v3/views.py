@@ -4,16 +4,10 @@ Views for Ujjwala V3 Public Application Form
 This module contains views for the public-facing application form.
 """
 
-import os
-import uuid
 from datetime import datetime, date
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from django.conf import settings
-from minio import Minio
-from minio.error import S3Error
 
 from .models import (
     UjjwalaV3Application,
@@ -37,53 +31,6 @@ def calculate_age(birth_date):
     today = date.today()
     age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
     return age
-
-
-def upload_to_minio(file, bucket_name, object_name):
-    """
-    Upload file to MinIO storage.
-
-    Args:
-        file: The uploaded file object
-        bucket_name: Name of the MinIO bucket
-        object_name: Name to give the object in MinIO
-
-    Returns:
-        str: Public URL of the uploaded file, or None if upload failed
-    """
-    try:
-        # Initialize MinIO client
-        minio_client = Minio(
-            settings.MINIO_ENDPOINT,
-            access_key=settings.MINIO_CREDENTIAL['access_key'],
-            secret_key=settings.MINIO_CREDENTIAL['secret_key'],
-            secure=True
-        )
-
-        # Check if bucket exists, create if not
-        if not minio_client.bucket_exists(bucket_name):
-            minio_client.make_bucket(bucket_name)
-
-        # Upload file
-        file.seek(0)  # Reset file pointer
-        minio_client.put_object(
-            bucket_name,
-            object_name,
-            file,
-            length=file.size,
-            content_type=file.content_type
-        )
-
-        # Return public URL
-        public_url = f"{settings.MINIO_PUBLIC_URL}/{bucket_name}/{object_name}"
-        return public_url
-
-    except S3Error as e:
-        print(f"MinIO upload error: {e}")
-        return None
-    except Exception as e:
-        print(f"Upload error: {e}")
-        return None
 
 
 @require_http_methods(["GET", "POST"])
@@ -122,10 +69,6 @@ def public_application_form(request):
         if age < 18:
             messages.error(request, 'Applicant must be at least 18 years old.')
             return render(request, 'ujjwala_v3/application_form.html')
-
-        # Validate gender (should be Female for PMUY V3)
-        if applicant_gender != Gender.FEMALE:
-            messages.warning(request, 'Note: PMUY V3 is primarily for female applicants. Your application will be reviewed.')
 
         # Get address details
         current_state = request.POST.get('current_state')
@@ -228,81 +171,79 @@ def public_application_form(request):
                     )
                     family_member_count += 1
 
-        if family_member_count == 0:
-            messages.warning(request, 'No family members were added. Please add at least yourself as a family member.')
+        # Process Aadhaar documents from TUS URLs
+        uid_front_url = request.POST.get('uid_front_url')
+        uid_back_url = request.POST.get('uid_back_url')
 
-        # Upload documents
-        bucket_name = settings.MINIO_UJJWALA_BUCKET_NAME
+        if uid_front_url:
+            UjjwalaV3Document.objects.create(
+                application=application,
+                doc_type=DocumentType.AADHAAR_FRONT,
+                file_url=uid_front_url,
+                file_name='aadhaar_front.jpg',
+                description='Aadhaar Card Front (OCR Processed)'
+            )
+
+        if uid_back_url:
+            UjjwalaV3Document.objects.create(
+                application=application,
+                doc_type=DocumentType.AADHAAR_BACK,
+                file_url=uid_back_url,
+                file_name='aadhaar_back.jpg',
+                description='Aadhaar Card Back (OCR Processed)'
+            )
+
+        # Process dynamically uploaded documents
         documents_uploaded = []
+        for key in request.POST.keys():
+            if key.startswith('document_') and key.endswith('_type'):
+                doc_id = key.split('_')[1]
 
-        # Document mapping: form field name -> (DocumentType, description, is_required)
-        document_mapping = {
-            'aadhaar_front': (DocumentType.AADHAAR_FRONT, 'Aadhaar Card Front', True),
-            'aadhaar_back': (DocumentType.AADHAAR_BACK, 'Aadhaar Card Back', True),
-            'current_address_poa': (DocumentType.CURRENT_ADDRESS_POA, 'Current Address Proof', True),
-            'permanent_address_poa': (DocumentType.PERMANENT_ADDRESS_POA, 'Permanent Address Proof', True),
-            'bank_proof': (DocumentType.BANK_PROOF, 'Bank Proof Document', True),
-            'applicant_photo': (DocumentType.APPLICANT_PHOTO, 'Applicant Photograph', True),
-            'family_photo': (DocumentType.FAMILY_PHOTO, 'Family Photograph', True),
-            'applicant_signature': (DocumentType.APPLICANT_SIGNATURE, 'Applicant Signature', True),
-            'caste_certificate': (DocumentType.CASTE_CERTIFICATE, 'Caste Certificate', False),
-            'kitchen_photo': (DocumentType.KITCHEN_PHOTO, 'Kitchen Photograph', False),
-            'lpg_installation_area_photo': (DocumentType.LPG_INSTALLATION_AREA_PHOTO, 'LPG Installation Area Photo', False),
-        }
+                doc_type = request.POST.get(f'document_{doc_id}_type')
+                doc_url = request.POST.get(f'document_{doc_id}_url')
+                doc_filename = request.POST.get(f'document_{doc_id}_filename', 'uploaded_document')
 
-        for field_name, (doc_type, description, is_required) in document_mapping.items():
-            file = request.FILES.get(field_name)
-
-            if file:
-                # Generate unique filename
-                file_ext = os.path.splitext(file.name)[1]
-                object_name = f"ujjwala_v3/{application.application_number}/{doc_type.value}/{uuid.uuid4()}{file_ext}"
-
-                # Upload to MinIO
-                file_url = upload_to_minio(file, bucket_name, object_name)
-
-                if file_url:
+                if doc_type and doc_url:
                     # Determine address relationship for POA documents
                     address = None
-                    if doc_type == DocumentType.CURRENT_ADDRESS_POA:
+                    if doc_type == 'CURRENT_ADDRESS_POA':
                         address = current_address
-                    elif doc_type == DocumentType.PERMANENT_ADDRESS_POA:
+                    elif doc_type == 'PERMANENT_ADDRESS_POA':
                         address = permanent_address
 
-                    # Create document record
-                    UjjwalaV3Document.objects.create(
-                        application=application,
-                        address=address,
-                        doc_type=doc_type,
-                        file_url=file_url,
-                        file_name=file.name,
-                        file_size=file.size,
-                        mime_type=file.content_type,
-                        description=description
-                    )
-                    documents_uploaded.append(description)
-                else:
-                    if is_required:
-                        messages.warning(request, f'Failed to upload {description}. Please contact support.')
-            elif is_required:
-                messages.warning(request, f'{description} is required but was not uploaded.')
+                    # Map document type string to DocumentType enum
+                    try:
+                        doc_type_enum = getattr(DocumentType, doc_type)
+
+                        UjjwalaV3Document.objects.create(
+                            application=application,
+                            address=address,
+                            doc_type=doc_type_enum,
+                            file_url=doc_url,
+                            file_name=doc_filename,
+                            description=f'{doc_type} - {doc_filename}'
+                        )
+                        documents_uploaded.append(doc_type)
+                    except AttributeError:
+                        print(f"Invalid document type: {doc_type}")
+                        continue
 
         # Success message
         messages.success(
             request,
             f'Your application has been submitted successfully! '
-            f'Your application number is: {application.application_number}. '
+            f'Application Number: {application.application_number}. '
             f'Please save this number for future reference.'
         )
 
-        # Redirect to success page or show form again
+        # Redirect to success page
         return redirect('ujjwala_v3_application_success', application_number=application.application_number)
 
     except Exception as e:
         print(f"Error creating application: {e}")
         import traceback
         traceback.print_exc()
-        messages.error(request, f'An error occurred while submitting your application: {str(e)}. Please try again.')
+        messages.error(request, f'An error occurred while submitting your application. Please try again.')
         return render(request, 'ujjwala_v3/application_form.html')
 
 
