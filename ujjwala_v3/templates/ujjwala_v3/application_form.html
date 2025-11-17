@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PMUY V3 Application Form - Migrant Households</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        .form-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            margin: 20px auto;
+            max-width: 1200px;
+        }
+        .form-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+        .form-header h1 {
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .form-header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        .section-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .section-title i {
+            margin-right: 10px;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 40px;
+            font-size: 1.1em;
+            border-radius: 25px;
+            transition: transform 0.2s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .btn-secondary {
+            background: #6c757d;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 20px;
+        }
+        .required-field::after {
+            content: " *";
+            color: red;
+        }
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .family-member-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #dee2e6;
+        }
+        .remove-member-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .file-upload-label {
+            display: block;
+            padding: 10px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .file-upload-label:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+        .file-info {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <div class="form-header">
+                <h1><i class="fas fa-fire"></i> PMUY V3 Application Form</h1>
+                <p>Pradhan Mantri Ujjwala Yojana - For Migrant Households</p>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="info-box">
+                <strong><i class="fas fa-info-circle"></i> Important Information:</strong>
+                <ul class="mb-0 mt-2">
+                    <li>This form is for migrant households requiring LPG connections</li>
+                    <li>Only female applicants (18+ years) are eligible</li>
+                    <li>Current and Permanent addresses must be in different states</li>
+                    <li>All fields marked with <span class="text-danger">*</span> are mandatory</li>
+                    <li>Please keep all documents ready before filling the form</li>
+                </ul>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data" id="applicationForm">
+                {% csrf_token %}
+
+                <!-- Section 1: Applicant Details -->
+                <div class="section-title">
+                    <i class="fas fa-user"></i> Applicant Details
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-field">First Name</label>
+                            <input type="text" name="applicant_first_name" class="form-control" required maxlength="100">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Middle Name</label>
+                            <input type="text" name="applicant_middle_name" class="form-control" maxlength="100">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Last Name</label>
+                            <input type="text" name="applicant_last_name" class="form-control" maxlength="100">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-field">Date of Birth (Must be 18+ years)</label>
+                            <input type="date" name="applicant_dob" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-field">Gender</label>
+                            <select name="applicant_gender" class="form-control" required>
+                                <option value="">Select Gender</option>
+                                <option value="F" selected>Female</option>
+                                <option value="M">Male</option>
+                                <option value="O">Other</option>
+                            </select>
+                            <small class="form-text text-muted">Note: PMUY V3 is primarily for female applicants</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-field">Caste/Category</label>
+                            <select name="caste" class="form-control" required>
+                                <option value="">Select Category</option>
+                                <option value="SC">Scheduled Caste (SC)</option>
+                                <option value="ST">Scheduled Tribe (ST)</option>
+                                <option value="OBC">Other Backward Class (OBC)</option>
+                                <option value="GENERAL">General</option>
+                                <option value="OTHERS">Others</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-field">Aadhaar Number</label>
+                            <input type="text" name="applicant_aadhaar_number" class="form-control" required
+                                   pattern="[0-9]{12}" maxlength="12" placeholder="Enter 12-digit Aadhaar">
+                            <small class="form-text text-muted">12-digit Aadhaar number</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-field">Mobile Number</label>
+                            <input type="text" name="applicant_mobile" class="form-control" required
+                                   pattern="[0-9]{10}" maxlength="10" placeholder="Enter 10-digit mobile">
+                            <small class="form-text text-muted">10-digit mobile number</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Email Address (Optional)</label>
+                            <input type="email" name="applicant_email" class="form-control" placeholder="your@email.com">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Current Address -->
+                <div class="section-title">
+                    <i class="fas fa-map-marker-alt"></i> Current Address (Connection Location)
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="required-field">House/Flat Number</label>
+                            <input type="text" name="current_house_flat_no" class="form-control" required maxlength="50">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Floor Number</label>
+                            <input type="text" name="current_floor_number" class="form-control" maxlength="20">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Building/Colony Name</label>
+                            <input type="text" name="current_building_colony" class="form-control" maxlength="200">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Street/Road</label>
+                            <input type="text" name="current_street_road" class="form-control" maxlength="200">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Village/Panchayat/Area</label>
+                            <input type="text" name="current_village_panchayat_area" class="form-control" maxlength="200">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Block/Sub-District</label>
+                            <input type="text" name="current_block_sub_district" class="form-control" maxlength="200">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-field">State</label>
+                            <select name="current_state" class="form-control" required id="current_state">
+                                <option value="">Select State</option>
+                                <option value="Andhra Pradesh">Andhra Pradesh</option>
+                                <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                                <option value="Assam">Assam</option>
+                                <option value="Bihar">Bihar</option>
+                                <option value="Chhattisgarh">Chhattisgarh</option>
+                                <option value="Goa">Goa</option>
+                                <option value="Gujarat">Gujarat</option>
+                                <option value="Haryana">Haryana</option>
+                                <option value="Himachal Pradesh">Himachal Pradesh</option>
+                                <option value="Jharkhand">Jharkhand</option>
+                                <option value="Karnataka">Karnataka</option>
+                                <option value="Kerala">Kerala</option>
+                                <option value="Madhya Pradesh">Madhya Pradesh</option>
+                                <option value="Maharashtra">Maharashtra</option>
+                                <option value="Manipur">Manipur</option>
+                                <option value="Meghalaya">Meghalaya</option>
+                                <option value="Mizoram">Mizoram</option>
+                                <option value="Nagaland">Nagaland</option>
+                                <option value="Odisha">Odisha</option>
+                                <option value="Punjab">Punjab</option>
+                                <option value="Rajasthan">Rajasthan</option>
+                                <option value="Sikkim">Sikkim</option>
+                                <option value="Tamil Nadu">Tamil Nadu</option>
+                                <option value="Telangana">Telangana</option>
+                                <option value="Tripura">Tripura</option>
+                                <option value="Uttar Pradesh">Uttar Pradesh</option>
+                                <option value="Uttarakhand">Uttarakhand</option>
+                                <option value="West Bengal">West Bengal</option>
+                                <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+                                <option value="Chandigarh">Chandigarh</option>
+                                <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+                                <option value="Delhi">Delhi</option>
+                                <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                                <option value="Ladakh">Ladakh</option>
+                                <option value="Lakshadweep">Lakshadweep</option>
+                                <option value="Puducherry">Puducherry</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-field">District</label>
+                            <input type="text" name="current_district" class="form-control" required maxlength="200">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-field">City/Town</label>
+                            <input type="text" name="current_city_town" class="form-control" required maxlength="200">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-field">Pincode</label>
+                            <input type="text" name="current_pincode" class="form-control" required
+                                   pattern="[0-9]{6}" maxlength="6" placeholder="Enter 6-digit pincode">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Landmark</label>
+                            <input type="text" name="current_landmark" class="form-control" maxlength="200">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-field">Proof of Address Type</label>
+                            <select name="current_poa_code" class="form-control" required>
+                                <option value="">Select POA Document</option>
+                                <option value="POA01">POA01 - Aadhaar Card</option>
+                                <option value="POA02">POA02 - Passport</option>
+                                <option value="POA03">POA03 - Voter ID Card</option>
+                                <option value="POA04">POA04 - Driving License</option>
+                                <option value="POA05">POA05 - Electricity Bill (&lt; 2 months)</option>
+                                <option value="POA06">POA06 - Telephone Bill (&lt; 2 months)</option>
+                                <option value="POA07">POA07 - Water Bill (&lt; 2 months)</option>
+                                <option value="POA08">POA08 - Bank Statement (&lt; 3 months)</option>
+                                <option value="POA09">POA09 - Ration Card</option>
+                                <option value="POA11">POA11 - Rent Agreement (registered)</option>
+                                <option value="POA25">POA25 - Migrant Certificate / Other Govt-issued Document</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Permanent Address -->
+                <div class="section-title">
+                    <i class="fas fa-home"></i> Permanent Address (As per Aadhaar)
+                </div>
+
+                <div class="info-box">
+                    <strong><i class="fas fa-exclamation-triangle"></i> Note:</strong>
+                    For migrant applications, the permanent address state must be different from the current address state.
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="required-field">House/Flat Number</label>
+                            <input type="text" name="permanent_house_flat_no" class="form-control" required maxlength="50">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Floor Number</label>
+                            <input type="text" name="permanent_floor_number" class="form-control" maxlength="20">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Building/Colony Name</label>
+                            <input type="text" name="permanent_building_colony" class="form-control" maxlength="200">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Street/Road</label>
+                            <input type="text" name="permanent_street_road" class="form-control" maxlength="200">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Village/Panchayat/Area</label>
+                            <input type="text" name="permanent_village_panchayat_area" class="form-control" maxlength="200">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Block/Sub-District</label>
+                            <input type="text" name="permanent_block_sub_district" class="form-control" maxlength="200">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-field">State</label>
+                            <select name="permanent_state" class="form-control" required id="permanent_state">
+                                <option value="">Select State</option>
+                                <option value="Andhra Pradesh">Andhra Pradesh</option>
+                                <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                                <option value="Assam">Assam</option>
+                                <option value="Bihar">Bihar</option>
+                                <option value="Chhattisgarh">Chhattisgarh</option>
+                                <option value="Goa">Goa</option>
+                                <option value="Gujarat">Gujarat</option>
+                                <option value="Haryana">Haryana</option>
+                                <option value="Himachal Pradesh">Himachal Pradesh</option>
+                                <option value="Jharkhand">Jharkhand</option>
+                                <option value="Karnataka">Karnataka</option>
+                                <option value="Kerala">Kerala</option>
+                                <option value="Madhya Pradesh">Madhya Pradesh</option>
+                                <option value="Maharashtra">Maharashtra</option>
+                                <option value="Manipur">Manipur</option>
+                                <option value="Meghalaya">Meghalaya</option>
+                                <option value="Mizoram">Mizoram</option>
+                                <option value="Nagaland">Nagaland</option>
+                                <option value="Odisha">Odisha</option>
+                                <option value="Punjab">Punjab</option>
+                                <option value="Rajasthan">Rajasthan</option>
+                                <option value="Sikkim">Sikkim</option>
+                                <option value="Tamil Nadu">Tamil Nadu</option>
+                                <option value="Telangana">Telangana</option>
+                                <option value="Tripura">Tripura</option>
+                                <option value="Uttar Pradesh">Uttar Pradesh</option>
+                                <option value="Uttarakhand">Uttarakhand</option>
+                                <option value="West Bengal">West Bengal</option>
+                                <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+                                <option value="Chandigarh">Chandigarh</option>
+                                <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+                                <option value="Delhi">Delhi</option>
+                                <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                                <option value="Ladakh">Ladakh</option>
+                                <option value="Lakshadweep">Lakshadweep</option>
+                                <option value="Puducherry">Puducherry</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-field">District</label>
+                            <input type="text" name="permanent_district" class="form-control" required maxlength="200">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-field">City/Town</label>
+                            <input type="text" name="permanent_city_town" class="form-control" required maxlength="200">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-field">Pincode</label>
+                            <input type="text" name="permanent_pincode" class="form-control" required
+                                   pattern="[0-9]{6}" maxlength="6" placeholder="Enter 6-digit pincode">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Landmark</label>
+                            <input type="text" name="permanent_landmark" class="form-control" maxlength="200">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-field">Proof of Address Type</label>
+                            <select name="permanent_poa_code" class="form-control" required>
+                                <option value="">Select POA Document</option>
+                                <option value="POA01">POA01 - Aadhaar Card</option>
+                                <option value="POA02">POA02 - Passport</option>
+                                <option value="POA03">POA03 - Voter ID Card</option>
+                                <option value="POA04">POA04 - Driving License</option>
+                                <option value="POA09">POA09 - Ration Card</option>
+                                <option value="POA25">POA25 - Migrant Certificate / Other Govt-issued Document</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Bank Details -->
+                <div class="section-title">
+                    <i class="fas fa-university"></i> Bank Account Details
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="required-field">Account Holder Name</label>
+                            <input type="text" name="bank_account_name" class="form-control" required maxlength="200">
+                            <small class="form-text text-muted">As per bank passbook</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="required-field">Bank Name</label>
+                            <input type="text" name="bank_name" class="form-control" required maxlength="200">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-field">Branch Name</label>
+                            <input type="text" name="bank_branch" class="form-control" required maxlength="200">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-field">IFSC Code</label>
+                            <input type="text" name="bank_ifsc" class="form-control" required
+                                   pattern="[A-Z]{4}0[A-Z0-9]{6}" maxlength="11"
+                                   placeholder="e.g., SBIN0001234" style="text-transform: uppercase;">
+                            <small class="form-text text-muted">11-character IFSC code</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-field">Account Number</label>
+                            <input type="text" name="bank_account_number" class="form-control" required
+                                   minlength="9" maxlength="18" placeholder="Enter account number">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 5: LPG Connection Details -->
+                <div class="section-title">
+                    <i class="fas fa-fire-alt"></i> LPG Connection Details
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="required-field">LPG Connection Type</label>
+                            <select name="lpg_connection_type" class="form-control" required>
+                                <option value="">Select Connection Type</option>
+                                <option value="SINGLE_14_2KG">Single 14.2 KG Cylinder</option>
+                                <option value="SINGLE_5KG">Single 5 KG Cylinder</option>
+                                <option value="DOUBLE_5KG">Double 5 KG Cylinders</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Family Document Type</label>
+                            <select name="family_doc_type" class="form-control">
+                                <option value="">Select Document Type</option>
+                                <option value="RATION_CARD">Ration Card</option>
+                                <option value="SELF_DECLARATION_MIGRANT">Self Declaration (Migrant)</option>
+                                <option value="OTHER">Other Document</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Family Document Issuing State</label>
+                            <input type="text" name="family_doc_issuing_state" class="form-control" maxlength="100">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Family Document Number</label>
+                            <input type="text" name="family_doc_number" class="form-control" maxlength="100">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 6: Family Members -->
+                <div class="section-title">
+                    <i class="fas fa-users"></i> Family Members
+                </div>
+
+                <div class="info-box">
+                    <strong><i class="fas fa-info-circle"></i> Note:</strong>
+                    Please add all family members living with you. The first member should be yourself (applicant) with relation as "SELF".
+                </div>
+
+                <div id="familyMembersContainer">
+                    <!-- Family member template will be added here -->
+                </div>
+
+                <button type="button" class="btn btn-secondary" id="addFamilyMember">
+                    <i class="fas fa-plus"></i> Add Family Member
+                </button>
+
+                <!-- Section 7: Document Uploads -->
+                <div class="section-title">
+                    <i class="fas fa-file-upload"></i> Document Uploads
+                </div>
+
+                <div class="info-box">
+                    <strong><i class="fas fa-info-circle"></i> Required Documents:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Aadhaar Card (Front & Back)</li>
+                        <li>Current Address Proof</li>
+                        <li>Permanent Address Proof</li>
+                        <li>Bank Proof (Passbook/Cancelled Cheque)</li>
+                        <li>Applicant Photograph</li>
+                        <li>Family Photograph</li>
+                        <li>Applicant Signature</li>
+                    </ul>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="required-field">Aadhaar Card - Front</label>
+                            <input type="file" name="aadhaar_front" class="form-control-file" required accept="image/*,.pdf">
+                            <small class="file-info">Max size: 5MB. Accepted formats: JPG, PNG, PDF</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="required-field">Aadhaar Card - Back</label>
+                            <input type="file" name="aadhaar_back" class="form-control-file" required accept="image/*,.pdf">
+                            <small class="file-info">Max size: 5MB. Accepted formats: JPG, PNG, PDF</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="required-field">Current Address Proof</label>
+                            <input type="file" name="current_address_poa" class="form-control-file" required accept="image/*,.pdf">
+                            <small class="file-info">Max size: 5MB. Accepted formats: JPG, PNG, PDF</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="required-field">Permanent Address Proof</label>
+                            <input type="file" name="permanent_address_poa" class="form-control-file" required accept="image/*,.pdf">
+                            <small class="file-info">Max size: 5MB. Accepted formats: JPG, PNG, PDF</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="required-field">Bank Proof (Passbook/Cancelled Cheque)</label>
+                            <input type="file" name="bank_proof" class="form-control-file" required accept="image/*,.pdf">
+                            <small class="file-info">Max size: 5MB. Accepted formats: JPG, PNG, PDF</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Caste Certificate (if applicable)</label>
+                            <input type="file" name="caste_certificate" class="form-control-file" accept="image/*,.pdf">
+                            <small class="file-info">Max size: 5MB. Accepted formats: JPG, PNG, PDF</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-field">Applicant Photograph</label>
+                            <input type="file" name="applicant_photo" class="form-control-file" required accept="image/*">
+                            <small class="file-info">Passport size photo. Max size: 2MB</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-field">Family Photograph</label>
+                            <input type="file" name="family_photo" class="form-control-file" required accept="image/*">
+                            <small class="file-info">Max size: 5MB</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-field">Applicant Signature</label>
+                            <input type="file" name="applicant_signature" class="form-control-file" required accept="image/*">
+                            <small class="file-info">Max size: 2MB</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Kitchen Photograph (Optional)</label>
+                            <input type="file" name="kitchen_photo" class="form-control-file" accept="image/*">
+                            <small class="file-info">Max size: 5MB</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>LPG Installation Area Photo (Optional)</label>
+                            <input type="file" name="lpg_installation_area_photo" class="form-control-file" accept="image/*">
+                            <small class="file-info">Max size: 5MB</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Declaration -->
+                <div class="section-title">
+                    <i class="fas fa-check-circle"></i> Declaration
+                </div>
+
+                <div class="form-group">
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" id="is_deprivation_decl_signed"
+                               name="is_deprivation_decl_signed" required>
+                        <label class="custom-control-label" for="is_deprivation_decl_signed">
+                            <strong>I hereby declare that:</strong>
+                            <ul class="mt-2">
+                                <li>I am a migrant household member requiring LPG connection</li>
+                                <li>All the information provided by me is true and correct to the best of my knowledge</li>
+                                <li>I understand that any false information may lead to rejection of my application</li>
+                                <li>I have read and agree to the terms and conditions of PMUY V3</li>
+                            </ul>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-paper-plane"></i> Submit Application
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let familyMemberCount = 0;
+
+        // Add initial family member (applicant)
+        $(document).ready(function() {
+            addFamilyMember(true);
+        });
+
+        $('#addFamilyMember').click(function() {
+            addFamilyMember(false);
+        });
+
+        function addFamilyMember(isApplicant) {
+            familyMemberCount++;
+            const memberId = familyMemberCount;
+
+            const memberHtml = `
+                <div class="family-member-item" id="familyMember${memberId}">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">
+                            <i class="fas fa-user"></i>
+                            ${isApplicant ? 'Applicant (Self)' : 'Family Member ' + memberId}
+                        </h5>
+                        ${!isApplicant ? '<button type="button" class="remove-member-btn" onclick="removeFamilyMember(' + memberId + ')"><i class="fas fa-times"></i> Remove</button>' : ''}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="required-field">Full Name</label>
+                                <input type="text" name="family_member_${memberId}_name" class="form-control" required maxlength="200">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="required-field">Relation to Applicant</label>
+                                <select name="family_member_${memberId}_relation" class="form-control" required ${isApplicant ? 'disabled' : ''}>
+                                    <option value="">Select Relation</option>
+                                    <option value="SELF" ${isApplicant ? 'selected' : ''}>Self (Applicant)</option>
+                                    <option value="HUSBAND">Husband</option>
+                                    <option value="WIFE">Wife</option>
+                                    <option value="SON">Son</option>
+                                    <option value="DAUGHTER">Daughter</option>
+                                    <option value="FATHER">Father</option>
+                                    <option value="MOTHER">Mother</option>
+                                    <option value="BROTHER">Brother</option>
+                                    <option value="SISTER">Sister</option>
+                                    <option value="GRANDFATHER">Grandfather</option>
+                                    <option value="GRANDMOTHER">Grandmother</option>
+                                    <option value="GRANDSON">Grandson</option>
+                                    <option value="GRANDDAUGHTER">Granddaughter</option>
+                                    <option value="UNCLE">Uncle</option>
+                                    <option value="AUNT">Aunt</option>
+                                    <option value="NEPHEW">Nephew</option>
+                                    <option value="NIECE">Niece</option>
+                                    <option value="FATHER_IN_LAW">Father-in-law</option>
+                                    <option value="MOTHER_IN_LAW">Mother-in-law</option>
+                                    <option value="SON_IN_LAW">Son-in-law</option>
+                                    <option value="DAUGHTER_IN_LAW">Daughter-in-law</option>
+                                    <option value="OTHER">Other</option>
+                                </select>
+                                ${isApplicant ? '<input type="hidden" name="family_member_' + memberId + '_relation" value="SELF">' : ''}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="required-field">Gender</label>
+                                <select name="family_member_${memberId}_gender" class="form-control" required>
+                                    <option value="">Select Gender</option>
+                                    <option value="M">Male</option>
+                                    <option value="F" ${isApplicant ? 'selected' : ''}>Female</option>
+                                    <option value="O">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="required-field">Date of Birth</label>
+                                <input type="date" name="family_member_${memberId}_dob" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="required-field">Aadhaar Number</label>
+                                <input type="text" name="family_member_${memberId}_aadhaar" class="form-control" required
+                                       pattern="[0-9]{12}" maxlength="12" placeholder="12-digit Aadhaar">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            $('#familyMembersContainer').append(memberHtml);
+        }
+
+        function removeFamilyMember(memberId) {
+            $(`#familyMember${memberId}`).remove();
+        }
+
+        // Validate that current and permanent states are different
+        $('#applicationForm').submit(function(e) {
+            const currentState = $('#current_state').val();
+            const permanentState = $('#permanent_state').val();
+
+            if (currentState && permanentState && currentState === permanentState) {
+                e.preventDefault();
+                alert('For migrant applications, Current Address and Permanent Address must be in different states.');
+                return false;
+            }
+        });
+
+        // Auto-format IFSC code to uppercase
+        $('input[name="bank_ifsc"]').on('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+    </script>
+</body>
+</html>
