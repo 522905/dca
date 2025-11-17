@@ -600,6 +600,15 @@
 
             const formData = new FormData(this);
 
+            // Check for duplicate document types (except OTHER)
+            const docTypes = formData.getAll('doc_type[]');
+            const docTypesFiltered = docTypes.filter(type => type !== 'OTHER' && type !== '');
+            const uniqueDocTypes = new Set(docTypesFiltered);
+            if (docTypesFiltered.length !== uniqueDocTypes.size) {
+                alert('Error: You have selected the same document type multiple times. Each document type (except "Other") can only be added once. Please remove duplicates.');
+                return;
+            }
+
             // Build application data
             const data = {
                 application: {

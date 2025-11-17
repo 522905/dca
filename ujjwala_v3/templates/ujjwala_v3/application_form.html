@@ -957,6 +957,16 @@
                         return;
                     }
 
+                    // Check if document type already exists (except for OTHER type)
+                    if (docType !== 'OTHER') {
+                        const existingDoc = documentUploadedList.find(d => d.type === docType);
+                        if (existingDoc) {
+                            alert('This document type has already been added. Please remove the existing one first or select a different type.');
+                            currentDocUppy.reset();
+                            return;
+                        }
+                    }
+
                     const file = result.successful[0];
                     addDocumentToList({
                         type: docType,
