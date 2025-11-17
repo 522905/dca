@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'teams',
     'formtools',
     'ujjwala.apps.UjjwalaAppConfig',
+    'ujjwala_v3.apps.UjjwalaV3Config',
     'sdms',
     'otp',
     'app_utilities',
