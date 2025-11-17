@@ -14,6 +14,7 @@ from .viewsets import (
     UjjwalaV3DocumentViewSet,
     UjjwalaV3AuditLogViewSet
 )
+from .views import public_application_form, application_success
 
 # Create a router and register our viewsets
 router = DefaultRouter()
@@ -50,6 +51,11 @@ router.register(
 
 # The API URLs are now determined automatically by the router
 urlpatterns = [
+    # Public application form URLs
+    path('apply/', public_application_form, name='ujjwala_v3_public_form'),
+    path('application-success/<str:application_number>/', application_success, name='ujjwala_v3_application_success'),
+
+    # REST API URLs
     path('', include(router.urls)),
 ]
 

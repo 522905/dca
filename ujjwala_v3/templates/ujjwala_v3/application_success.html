@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Submitted Successfully - PMUY V3</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .success-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            padding: 50px;
+            max-width: 800px;
+            text-align: center;
+        }
+        .success-icon {
+            font-size: 80px;
+            color: #28a745;
+            margin-bottom: 30px;
+            animation: scaleIn 0.5s ease-in-out;
+        }
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+        .application-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px dashed #667eea;
+        }
+        .info-card {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: left;
+            border-radius: 5px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 40px;
+            font-size: 1.1em;
+            border-radius: 25px;
+            transition: transform 0.2s;
+            margin: 10px;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        h1 {
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .applicant-info {
+            text-align: left;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .applicant-info p {
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+        .applicant-info strong {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-container">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+
+            <h1>Application Submitted Successfully!</h1>
+            <p class="lead">Your PMUY V3 application has been received and is being processed.</p>
+
+            <div class="application-number">
+                <i class="fas fa-file-alt"></i> Application Number<br>
+                <span id="appNumber">{{ application.application_number }}</span>
+                <button class="btn btn-sm btn-outline-primary ml-2" onclick="copyApplicationNumber()" title="Copy to clipboard">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+
+            <div class="applicant-info">
+                <h5><i class="fas fa-user"></i> Applicant Details</h5>
+                <hr>
+                <p><strong>Name:</strong> {{ application.applicant_full_name }}</p>
+                <p><strong>Mobile:</strong> {{ application.applicant_mobile }}</p>
+                {% if application.applicant_email %}
+                <p><strong>Email:</strong> {{ application.applicant_email }}</p>
+                {% endif %}
+                <p><strong>Application Status:</strong> <span class="badge badge-info">{{ application.get_status_display }}</span></p>
+                <p><strong>Submitted On:</strong> {{ application.created_at|date:"d M Y, h:i A" }}</p>
+            </div>
+
+            <div class="info-card">
+                <h5><i class="fas fa-info-circle"></i> What's Next?</h5>
+                <ul class="text-left mt-3">
+                    <li>Your application will be reviewed by our verification team</li>
+                    <li>You will receive updates via SMS/Email on the registered contact details</li>
+                    <li>The verification process typically takes 5-7 working days</li>
+                    <li>Please keep your documents ready for physical verification if required</li>
+                    <li>You can track your application status using the application number</li>
+                </ul>
+            </div>
+
+            <div class="info-card" style="background: #fff3cd; border-left-color: #ffc107;">
+                <h5><i class="fas fa-exclamation-triangle"></i> Important</h5>
+                <ul class="text-left mt-3 mb-0">
+                    <li><strong>Save your application number</strong> for future reference</li>
+                    <li>Take a screenshot or write down the application number</li>
+                    <li>You will need this number to check your application status</li>
+                    <li>Keep your mobile number active for receiving updates</li>
+                </ul>
+            </div>
+
+            <div class="mt-4">
+                <button class="btn btn-primary" onclick="window.print()">
+                    <i class="fas fa-print"></i> Print This Page
+                </button>
+                <a href="{% url 'ujjwala_v3_public_form' %}" class="btn btn-primary">
+                    <i class="fas fa-home"></i> Submit Another Application
+                </a>
+            </div>
+
+            <div class="mt-4 text-muted">
+                <small>
+                    <i class="fas fa-phone"></i> For any queries, please contact our helpline<br>
+                    or visit the nearest LPG distributor office
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function copyApplicationNumber() {
+            const appNumber = document.getElementById('appNumber').textContent;
+            navigator.clipboard.writeText(appNumber).then(function() {
+                // Show a temporary success message
+                const btn = event.target.closest('button');
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                btn.classList.remove('btn-outline-primary');
+                btn.classList.add('btn-success');
+
+                setTimeout(function() {
+                    btn.innerHTML = originalHTML;
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-outline-primary');
+                }, 2000);
+            }, function(err) {
+                alert('Failed to copy: ' + err);
+            });
+        }
+
+        // Confetti effect on page load (optional - simple version)
+        window.addEventListener('load', function() {
+            console.log('Application submitted successfully!');
+        });
+    </script>
+</body>
+</html>
