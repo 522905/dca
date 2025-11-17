@@ -731,12 +731,11 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="required-field">Connection Type</label>
-                                    <select name="lpg_connection_type" class="form-control" required>
-                                        <option value="">Select Type</option>
-                                        <option value="SINGLE_14_2KG">Single 14.2 KG Cylinder</option>
-                                        <option value="SINGLE_5KG">Single 5 KG Cylinder</option>
-                                        <option value="DOUBLE_5KG">Double 5 KG Cylinders</option>
+                                    <select name="lpg_connection_type" class="form-control" required disabled>
+                                        <option value="SINGLE_14_2KG" selected>Single 14.2 KG Cylinder</option>
                                     </select>
+                                    <input type="hidden" name="lpg_connection_type" value="SINGLE_14_2KG">
+                                    <small class="text-muted">Default connection type for Ujjwala V3</small>
                                 </div>
                             </div>
                             <div class="col-md-6">
