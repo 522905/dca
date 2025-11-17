@@ -1,0 +1,1312 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PMUY V3 Application Form - Migrant Households</title>
+    <link rel="icon" type="image/png" href="https://dca.arungas.com/static/img/logo2.png">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Uppy CSS -->
+    <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        .form-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            margin: 20px auto;
+            max-width: 1200px;
+        }
+        .form-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+        .section-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 40px;
+            font-size: 1.1em;
+            border-radius: 25px;
+        }
+        .required-field::after {
+            content: " *";
+            color: red;
+        }
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .loader {
+            position: fixed;
+            height: 100vh;
+            background-color: rgba(0,0,0,0.9);
+            z-index: 9999;
+            width: 100%;
+            top: 0;
+            left: 0;
+            display: none;
+        }
+        .loader_outer {
+            display: table;
+            height: 100vh;
+            margin: 0 auto;
+            text-align: center;
+            width: 100%;
+        }
+        .loader_outer_inner {
+            display: table-cell;
+            vertical-align: middle;
+        }
+        .loader_outer_inner img {
+            height: 100px;
+            width: 100px;
+        }
+        #ocr_loader {
+            font-size: 20px;
+            color: #fff;
+            max-width: 300px;
+            margin: 20px auto;
+        }
+        .document-item {
+            background: linear-gradient(to bottom, #ffffff, #f8f9fa);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 2px solid #e0e0e0;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .document-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+        }
+        .document-preview-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .document-preview-thumb {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #dee2e6;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .document-preview-thumb:hover {
+            border-color: #667eea;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        .document-preview-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .document-preview-thumb .pdf-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 2em;
+        }
+        .document-preview-thumb .zoom-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            color: white;
+            font-size: 1.5em;
+        }
+        .document-preview-thumb:hover .zoom-overlay {
+            opacity: 1;
+        }
+        .document-info {
+            flex-grow: 1;
+        }
+        .document-info h6 {
+            margin: 0 0 5px 0;
+            color: #333;
+            font-weight: 600;
+        }
+        .document-info small {
+            color: #666;
+            display: block;
+        }
+        .document-item .remove-doc-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+        }
+        .document-item .remove-doc-btn:hover {
+            background: #c82333;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.4);
+        }
+        .family-member-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #dee2e6;
+        }
+        .aadhaar-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .aadhaar-preview-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #dee2e6;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .aadhaar-preview-item:hover {
+            border-color: #667eea;
+            transform: translateY(-4px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+        }
+        .aadhaar-preview-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+        }
+        .aadhaar-preview-item .preview-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: white;
+            padding: 10px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        .aadhaar-preview-item .zoom-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.9);
+            color: #667eea;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .aadhaar-preview-item:hover .zoom-icon {
+            opacity: 1;
+        }
+        input[readonly] {
+            background-color: #e9ecef;
+        }
+
+        /* Image Modal Styles */
+        .image-modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.95);
+            animation: fadeIn 0.3s;
+        }
+        .image-modal-content {
+            position: relative;
+            margin: auto;
+            padding: 0;
+            width: 90%;
+            max-width: 1200px;
+            height: 90vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .image-modal-content img {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        .image-modal .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10001;
+            transition: all 0.3s;
+            background: rgba(255,255,255,0.1);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .image-modal .close-modal:hover {
+            background: rgba(255,255,255,0.2);
+            transform: rotate(90deg);
+        }
+        .modal-caption {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            background: rgba(0,0,0,0.7);
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            backdrop-filter: blur(10px);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="loader" id="loader">
+        <div class="loader_outer">
+            <div class="loader_outer_inner">
+                <img src="{% static 'img/VAyR.gif' %}" alt="Loading..."><br>
+                <span id="ocr_loader">Processing Aadhaar OCR, please wait...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="form-container">
+            <div class="form-header">
+                <div class="row align-items-center mb-3">
+                    <div class="col-6">
+                        <img style="max-width:200px; width: 100%;" src="https://www.arungas.com/wp-content/uploads/2022/04/Arungas-new-logo.png" alt="Arun Gas">
+                    </div>
+                    <div class="col-6 text-right">
+                        <img width="100px" src="https://www.pmuy.gov.in/hi/assets/images/logo.png" alt="PMUY">
+                    </div>
+                </div>
+                <h1><i class="fas fa-fire"></i> PMUY V3 Application Form</h1>
+                <p>प्रधानमंत्री उज्ज्वला योजना 2.0 - For Migrant Households</p>
+                <p class="text-muted"><small>नोट: सभी सेवाएँ निःशुल्क हैं</small></p>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="info-box">
+                <strong><i class="fas fa-info-circle"></i> Application Process:</strong>
+                <ol class="mb-0 mt-2">
+                    <li>First, upload your Aadhaar card (front & back) for OCR</li>
+                    <li>Your details will be automatically filled from Aadhaar</li>
+                    <li>Review and complete remaining details</li>
+                    <li>Upload required documents</li>
+                    <li>Submit your application</li>
+                </ol>
+            </div>
+
+            <!-- Aadhaar OCR Section -->
+            <div class="card mb-4" id="aadhaarOcrSection">
+                <div class="section-title">
+                    <i class="fas fa-id-card"></i> Step 1: Upload Aadhaar Card for Verification
+                </div>
+                <div class="p-3">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="required-field">Aadhaar Card Front Photo</label>
+                            <div id="aadhaar_front_uppy"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="required-field">Aadhaar Card Back Photo</label>
+                            <div id="aadhaar_back_uppy"></div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <button type="button" class="btn btn-primary btn-lg" id="processOcrBtn">
+                            <i class="fas fa-magic"></i> Process Aadhaar & Fill Details
+                        </button>
+                    </div>
+                    <div id="aadhaarPreview" class="aadhaar-preview" style="display:none;">
+                        <div class="aadhaar-preview-item" onclick="viewImage(this.querySelector('img').src, 'Aadhaar Card - Front')">
+                            <img id="aadhaarFrontPreview" alt="Aadhaar Front">
+                            <div class="preview-label">Aadhaar Card - Front</div>
+                            <div class="zoom-icon"><i class="fas fa-search-plus"></i></div>
+                        </div>
+                        <div class="aadhaar-preview-item" onclick="viewImage(this.querySelector('img').src, 'Aadhaar Card - Back')">
+                            <img id="aadhaarBackPreview" alt="Aadhaar Back">
+                            <div class="preview-label">Aadhaar Card - Back</div>
+                            <div class="zoom-icon"><i class="fas fa-search-plus"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Application Form (Hidden until OCR) -->
+            <form method="POST" id="applicationForm" style="display:none;">
+                {% csrf_token %}
+
+                <input type="hidden" name="uid_front_url" id="uid_front_url">
+                <input type="hidden" name="uid_back_url" id="uid_back_url">
+                <input type="hidden" name="ocr_processed" id="ocr_processed" value="no">
+
+                <!-- Section 1: Applicant Details -->
+                <div class="section-title">
+                    <i class="fas fa-user"></i> Applicant Details (आवेदक विवरण)
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="required-field">First Name</label>
+                                    <input type="text" name="applicant_first_name" id="applicant_first_name" class="form-control" required maxlength="100">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Middle Name</label>
+                                    <input type="text" name="applicant_middle_name" id="applicant_middle_name" class="form-control" maxlength="100">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Last Name</label>
+                                    <input type="text" name="applicant_last_name" id="applicant_last_name" class="form-control" maxlength="100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="required-field">Date of Birth</label>
+                                    <input type="date" name="applicant_dob" id="applicant_dob" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="required-field">Gender</label>
+                                    <select name="applicant_gender" id="applicant_gender" class="form-control" required>
+                                        <option value="">Select Gender</option>
+                                        <option value="F">Female</option>
+                                        <option value="M">Male</option>
+                                        <option value="O">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="required-field">Aadhaar Number</label>
+                                    <input type="text" name="applicant_aadhaar_number" id="applicant_aadhaar_number" class="form-control" required
+                                           pattern="[0-9]{12}" maxlength="12">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="required-field">Mobile Number</label>
+                                    <input type="text" name="applicant_mobile" id="applicant_mobile" class="form-control" required
+                                           pattern="[6789][0-9]{9}" maxlength="10">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Email Address</label>
+                                    <input type="email" name="applicant_email" id="applicant_email" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="required-field">Caste/Category</label>
+                                    <select name="caste" id="caste" class="form-control" required>
+                                        <option value="">Select Category</option>
+                                        <option value="SC">Scheduled Caste (SC)</option>
+                                        <option value="ST">Scheduled Tribe (ST)</option>
+                                        <option value="OBC">Other Backward Class (OBC)</option>
+                                        <option value="GENERAL">General</option>
+                                        <option value="OTHERS">Others</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Current Address -->
+                <div class="section-title">
+                    <i class="fas fa-map-marker-alt"></i> Current Address (वर्तमान पता)
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="required-field">House/Flat Number</label>
+                                    <input type="text" name="current_house_flat_no" id="current_house_flat_no" class="form-control" required maxlength="50">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Floor Number</label>
+                                    <input type="text" name="current_floor_number" class="form-control" maxlength="20">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Street/Road</label>
+                                    <input type="text" name="current_street_road" class="form-control" maxlength="200">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Landmark</label>
+                                    <input type="text" name="current_landmark" class="form-control" maxlength="200">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="required-field">State</label>
+                                    <input type="text" name="current_state" id="current_state" class="form-control" required value="Punjab" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="required-field">District</label>
+                                    <input type="text" name="current_district" id="current_district" class="form-control" required value="Ludhiana" maxlength="200">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="required-field">City/Town</label>
+                                    <input type="text" name="current_city_town" id="current_city_town" class="form-control" required value="Ludhiana" maxlength="200">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="required-field">Pincode</label>
+                                    <input type="text" name="current_pincode" id="current_pincode" class="form-control" required
+                                           pattern="[1-9][0-9]{5}" maxlength="6">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="required-field">Proof of Address Type</label>
+                                    <select name="current_poa_code" class="form-control" required>
+                                        <option value="">Select POA</option>
+                                        <option value="POA01">POA01 - Aadhaar Card</option>
+                                        <option value="POA05">POA05 - Electricity Bill</option>
+                                        <option value="POA11">POA11 - Rent Agreement</option>
+                                        <option value="POA25">POA25 - Migrant Certificate</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Permanent Address -->
+                <div class="section-title">
+                    <i class="fas fa-home"></i> Permanent Address (स्थायी पता - As per Aadhaar)
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> Permanent address state must be different from current address for migrant applications
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="required-field">House/Flat Number</label>
+                                    <input type="text" name="permanent_house_flat_no" id="permanent_house_flat_no" class="form-control" required maxlength="50">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Street/Road</label>
+                                    <input type="text" name="permanent_street_road" id="permanent_street_road" class="form-control" maxlength="200">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="required-field">Village/Area</label>
+                                    <input type="text" name="permanent_village_panchayat_area" id="permanent_village_panchayat_area" class="form-control" maxlength="200">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="required-field">District</label>
+                                    <input type="text" name="permanent_district" id="permanent_district" class="form-control" required maxlength="200">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="required-field">City/Town</label>
+                                    <input type="text" name="permanent_city_town" id="permanent_city_town" class="form-control" required maxlength="200">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="required-field">State</label>
+                                    <input type="text" name="permanent_state" id="permanent_state" class="form-control" required maxlength="100">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="required-field">Pincode</label>
+                                    <input type="text" name="permanent_pincode" id="permanent_pincode" class="form-control" required
+                                           pattern="[1-9][0-9]{5}" maxlength="6">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="required-field">Proof of Address Type</label>
+                                    <select name="permanent_poa_code" class="form-control" required>
+                                        <option value="">Select POA</option>
+                                        <option value="POA01">POA01 - Aadhaar Card</option>
+                                        <option value="POA09">POA09 - Ration Card</option>
+                                        <option value="POA25">POA25 - Other Document</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Bank Details -->
+                <div class="section-title">
+                    <i class="fas fa-university"></i> Bank Account Details
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="required-field">Account Holder Name</label>
+                                    <input type="text" name="bank_account_name" class="form-control" required maxlength="200">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="required-field">Bank Name</label>
+                                    <input type="text" name="bank_name" class="form-control" required maxlength="200">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="required-field">Branch Name</label>
+                                    <input type="text" name="bank_branch" class="form-control" required maxlength="200">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="required-field">IFSC Code</label>
+                                    <input type="text" name="bank_ifsc" id="bank_ifsc" class="form-control" required
+                                           pattern="[A-Z]{4}0[A-Z0-9]{6}" maxlength="11" style="text-transform: uppercase;">
+                                    <small id="ifsc_info" class="text-muted"></small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="required-field">Account Number</label>
+                                    <input type="text" name="bank_account_number" class="form-control" required
+                                           minlength="9" maxlength="18">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 5: LPG Connection -->
+                <div class="section-title">
+                    <i class="fas fa-fire-alt"></i> LPG Connection Details
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="required-field">Connection Type</label>
+                                    <select name="lpg_connection_type" class="form-control" required>
+                                        <option value="">Select Type</option>
+                                        <option value="SINGLE_14_2KG">Single 14.2 KG Cylinder</option>
+                                        <option value="SINGLE_5KG">Single 5 KG Cylinder</option>
+                                        <option value="DOUBLE_5KG">Double 5 KG Cylinders</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Family Document Type</label>
+                                    <select name="family_doc_type" class="form-control">
+                                        <option value="">Select Type</option>
+                                        <option value="RATION_CARD">Ration Card</option>
+                                        <option value="SELF_DECLARATION_MIGRANT">Self Declaration (Migrant)</option>
+                                        <option value="OTHER">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 6: Family Members -->
+                <div class="section-title">
+                    <i class="fas fa-users"></i> Family Members (परिवार के सदस्य)
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div id="familyMembersContainer">
+                            <!-- Dynamically added family members -->
+                        </div>
+                        <button type="button" class="btn btn-secondary" id="addFamilyMember">
+                            <i class="fas fa-plus"></i> Add Family Member
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Section 7: Documents Upload -->
+                <div class="section-title">
+                    <i class="fas fa-file-upload"></i> Upload Documents
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="info-box">
+                            <strong>Required Documents:</strong> Bank Proof, Applicant Photo, Family Photo, Signature
+                        </div>
+
+                        <div id="documentsContainer">
+                            <!-- Dynamically added documents -->
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Document Type</label>
+                                    <select id="newDocType" class="form-control">
+                                        <option value="">Select Document Type</option>
+                                        <option value="BANK_PROOF">Bank Proof</option>
+                                        <option value="APPLICANT_PHOTO">Applicant Photo</option>
+                                        <option value="FAMILY_PHOTO">Family Photo</option>
+                                        <option value="APPLICANT_SIGNATURE">Signature</option>
+                                        <option value="CURRENT_ADDRESS_POA">Current Address Proof</option>
+                                        <option value="PERMANENT_ADDRESS_POA">Permanent Address Proof</option>
+                                        <option value="CASTE_CERTIFICATE">Caste Certificate</option>
+                                        <option value="KITCHEN_PHOTO">Kitchen Photo</option>
+                                        <option value="OTHER">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label>&nbsp;</label>
+                                <div id="addDocumentUppy"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Declaration -->
+                <div class="section-title">
+                    <i class="fas fa-check-circle"></i> Declaration
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="is_deprivation_decl_signed"
+                                       name="is_deprivation_decl_signed" required>
+                                <label class="custom-control-label" for="is_deprivation_decl_signed">
+                                    मैं घोषणा करती हूं कि उपर दी गई सभी जानकारी सत्य है और मैं प्रवासी हूं
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane"></i> Submit Application
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="image-modal">
+        <span class="close-modal" onclick="closeImageModal()">&times;</span>
+        <div class="image-modal-content">
+            <img id="modalImage" src="" alt="Document Preview">
+        </div>
+        <div class="modal-caption" id="modalCaption"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
+    <script src="{% static '/js/moment.min.js' %}"></script>
+
+    <script>
+        // CSRF Token Helper
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Uppy Instances
+        let aadhaarFrontUppy, aadhaarBackUppy, documentUploadedList = [], familyMemberCount = 0;
+
+        // Initialize Aadhaar Front Uppy
+        aadhaarFrontUppy = new Uppy.Core({
+            restrictions: {
+                maxFileSize: 5000000,
+                maxNumberOfFiles: 1,
+                allowedFileTypes: ['image/*']
+            },
+            autoProceed: true
+        })
+        .use(Uppy.Dashboard, {
+            inline: true,
+            target: '#aadhaar_front_uppy',
+            height: 200,
+            note: 'Upload Aadhaar Front (Max 5MB)'
+        })
+        .use(Uppy.ImageEditor, { quality: 0.92 })
+        .use(Uppy.Compressor, {
+            quality: 0.92,
+            maxWidth: 1520
+        })
+        .use(Uppy.Tus, {
+            endpoint: 'https://tus.dca.arungas.com/files/'
+        });
+
+        // Initialize Aadhaar Back Uppy
+        aadhaarBackUppy = new Uppy.Core({
+            restrictions: {
+                maxFileSize: 5000000,
+                maxNumberOfFiles: 1,
+                allowedFileTypes: ['image/*']
+            },
+            autoProceed: true
+        })
+        .use(Uppy.Dashboard, {
+            inline: true,
+            target: '#aadhaar_back_uppy',
+            height: 200,
+            note: 'Upload Aadhaar Back (Max 5MB)'
+        })
+        .use(Uppy.ImageEditor, { quality: 0.92 })
+        .use(Uppy.Compressor, {
+            quality: 0.92,
+            maxWidth: 1520
+        })
+        .use(Uppy.Tus, {
+            endpoint: 'https://tus.dca.arungas.com/files/'
+        });
+
+        // Document Uppy for dynamic uploads
+        let currentDocUppy = null;
+
+        function initDocumentUppy() {
+            if (currentDocUppy) {
+                currentDocUppy.close();
+            }
+
+            currentDocUppy = new Uppy.Core({
+                restrictions: {
+                    maxFileSize: 5000000,
+                    maxNumberOfFiles: 1,
+                    allowedFileTypes: ['image/*', '.pdf']
+                },
+                autoProceed: true
+            })
+            .use(Uppy.Dashboard, {
+                inline: true,
+                target: '#addDocumentUppy',
+                height: 150,
+                note: 'Max 5MB'
+            })
+            .use(Uppy.Tus, {
+                endpoint: 'https://tus.dca.arungas.com/files/'
+            });
+
+            currentDocUppy.on('complete', result => {
+                if (result.successful.length > 0) {
+                    const docType = $('#newDocType').val();
+                    if (!docType) {
+                        alert('Please select document type');
+                        currentDocUppy.reset();
+                        return;
+                    }
+
+                    const file = result.successful[0];
+                    addDocumentToList({
+                        type: docType,
+                        typeName: $('#newDocType option:selected').text(),
+                        url: file.uploadURL,
+                        fileName: file.name
+                    });
+
+                    $('#newDocType').val('');
+                    currentDocUppy.reset();
+                    initDocumentUppy();
+                }
+            });
+        }
+
+        initDocumentUppy();
+
+        // Add document to list
+        function addDocumentToList(doc) {
+            const docId = Date.now();
+            documentUploadedList.push({ ...doc, id: docId });
+
+            // Check if it's an image or PDF
+            const isPDF = doc.fileName.toLowerCase().endsWith('.pdf');
+            const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(doc.fileName);
+
+            let previewHTML = '';
+            if (isImage) {
+                previewHTML = `
+                    <div class="document-preview-thumb" onclick="viewImage('${doc.url}', '${doc.typeName}')">
+                        <img src="${doc.url}" alt="${doc.typeName}">
+                        <div class="zoom-overlay">
+                            <i class="fas fa-search-plus"></i>
+                        </div>
+                    </div>
+                `;
+            } else if (isPDF) {
+                previewHTML = `
+                    <div class="document-preview-thumb" onclick="window.open('${doc.url}', '_blank')">
+                        <div class="pdf-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <div class="zoom-overlay">
+                            <i class="fas fa-external-link-alt"></i>
+                        </div>
+                    </div>
+                `;
+            } else {
+                previewHTML = `
+                    <div class="document-preview-thumb">
+                        <div class="pdf-icon" style="background: #6c757d;">
+                            <i class="fas fa-file"></i>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const docHtml = `
+                <div class="document-item" id="doc_${docId}">
+                    <button type="button" class="remove-doc-btn" onclick="removeDocument(${docId})">
+                        <i class="fas fa-times"></i> Remove
+                    </button>
+                    <div class="document-preview-container">
+                        ${previewHTML}
+                        <div class="document-info">
+                            <h6><i class="fas fa-file-alt"></i> ${doc.typeName}</h6>
+                            <small class="text-muted"><i class="fas fa-paperclip"></i> ${doc.fileName}</small>
+                            <small class="text-muted d-block mt-1"><i class="fas fa-check-circle text-success"></i> Uploaded successfully</small>
+                        </div>
+                    </div>
+                    <input type="hidden" name="document_${docId}_type" value="${doc.type}">
+                    <input type="hidden" name="document_${docId}_url" value="${doc.url}">
+                    <input type="hidden" name="document_${docId}_filename" value="${doc.fileName}">
+                </div>
+            `;
+
+            $('#documentsContainer').append(docHtml);
+        }
+
+        // Remove document
+        function removeDocument(docId) {
+            $(`#doc_${docId}`).remove();
+            documentUploadedList = documentUploadedList.filter(d => d.id !== docId);
+        }
+
+        // Process OCR
+        $('#processOcrBtn').click(function() {
+            const frontFile = aadhaarFrontUppy.getFiles()[0];
+            const backFile = aadhaarBackUppy.getFiles()[0];
+
+            if (!frontFile || !backFile) {
+                alert('Please upload both Aadhaar front and back images');
+                return;
+            }
+
+            if (!frontFile.uploadURL || !backFile.uploadURL) {
+                alert('Please wait for uploads to complete');
+                return;
+            }
+
+            const uid_front_url = frontFile.uploadURL;
+            const uid_back_url = backFile.uploadURL;
+
+            $('#loader').show();
+            $('#ocr_loader').text('Processing Aadhaar OCR, please wait 30 seconds...');
+
+            $.ajax({
+                url: '/app_utilities/application-utilities/get_details_for_aadhar/',
+                type: 'POST',
+                data: {
+                    uid_front_url: uid_front_url,
+                    uid_back_url: uid_back_url
+                },
+                headers: { 'X-CSRFToken': getCookie('csrftoken') },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        const data = JSON.parse(response.data.text);
+                        prefillFromOCR(data, uid_front_url, uid_back_url);
+                        $('#uid_front_url').val(uid_front_url);
+                        $('#uid_back_url').val(uid_back_url);
+                        $('#ocr_processed').val('yes');
+
+                        // Show preview
+                        $('#aadhaarFrontPreview').attr('src', uid_front_url);
+                        $('#aadhaarBackPreview').attr('src', uid_back_url);
+                        $('#aadhaarPreview').show();
+
+                        // Show form
+                        $('#applicationForm').slideDown();
+                        $('html, body').animate({ scrollTop: $('#applicationForm').offset().top }, 500);
+                    } else {
+                        alert('OCR processing failed. Please try again.');
+                    }
+                },
+                error: function() {
+                    alert('Error processing OCR. Please try again.');
+                },
+                complete: function() {
+                    $('#loader').hide();
+                }
+            });
+        });
+
+        // Prefill form from OCR data
+        function prefillFromOCR(data, frontUrl, backUrl) {
+            // Name parsing
+            if (data.name && data.name.value) {
+                const nameParts = data.name.value.trim().split(' ');
+                $('#applicant_first_name').val(nameParts[0] || '');
+                $('#applicant_middle_name').val(nameParts[1] || '');
+                $('#applicant_last_name').val(nameParts.slice(2).join(' ') || '');
+            }
+
+            // DOB
+            if (data.dob && data.dob.value) {
+                let dobValue = data.dob.value;
+                const dobParts = dobValue.split('/');
+                if (dobParts.length === 1) {
+                    dobValue = `${dobParts[0]}-01-01`;
+                } else if (dobParts.length === 3) {
+                    dobValue = `${dobParts[2]}-${dobParts[1]}-${dobParts[0]}`;
+                }
+                $('#applicant_dob').val(dobValue);
+            }
+
+            // Gender
+            if (data.gender && data.gender.value) {
+                const genderMap = { 'MALE': 'M', 'FEMALE': 'F', 'male': 'M', 'female': 'F' };
+                $('#applicant_gender').val(genderMap[data.gender.value] || 'F');
+            }
+
+            // Aadhaar
+            if (data.aadhaar && data.aadhaar.value) {
+                $('#applicant_aadhaar_number').val(data.aadhaar.value.replace(/\s/g, ''));
+            }
+
+            // Address (Permanent)
+            if (data.address && data.address.value) {
+                const addr = data.address.value;
+                $('#permanent_house_flat_no').val(addr.substring(0, 50));
+                $('#permanent_street_road').val(addr);
+
+                // Try to extract state, district, city from address if available
+                // Common format: "House, Area, City, District, State, Pincode"
+                const addrParts = addr.split(',').map(p => p.trim());
+
+                // If we have multiple parts, try to extract location info
+                if (addrParts.length >= 3) {
+                    // Last meaningful parts often contain city/district/state
+                    const city = addrParts[addrParts.length - 3] || '';
+                    const district = addrParts[addrParts.length - 2] || '';
+                    const state = addrParts[addrParts.length - 1] || '';
+
+                    if (city && city.length < 100 && !/^\d+$/.test(city)) {
+                        $('#permanent_city_town').val(city);
+                    }
+                    if (district && district.length < 100 && !/^\d+$/.test(district)) {
+                        $('#permanent_district').val(district);
+                    }
+                    if (state && state.length < 100 && !/^\d+$/.test(state)) {
+                        $('#permanent_state').val(state);
+                    }
+                }
+            }
+
+            // Pincode - handle both string and object formats
+            if (data.pincode) {
+                // If pincode is an object with value property, use that; otherwise use it directly
+                const pincodeValue = typeof data.pincode === 'object' && data.pincode.value
+                    ? data.pincode.value
+                    : data.pincode;
+
+                if (pincodeValue && pincodeValue.toString().length === 6) {
+                    $('#permanent_pincode').val(pincodeValue);
+                    $('#current_pincode').val(pincodeValue);
+                }
+            }
+        }
+
+        // Add Family Member
+        let familyMemberCounter = 0;
+        $('#addFamilyMember').click(function() {
+            familyMemberCounter++;
+            const memberId = familyMemberCounter;
+
+            const memberHtml = `
+                <div class="family-member-item" id="familyMember${memberId}">
+                    <div class="d-flex justify-content-between mb-2">
+                        <h6><i class="fas fa-user"></i> Family Member ${memberId}</h6>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="removeFamilyMember(${memberId})">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" name="family_member_${memberId}_name" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Relation</label>
+                                <select name="family_member_${memberId}_relation" class="form-control" required>
+                                    <option value="">Select</option>
+                                    <option value="SELF">Self</option>
+                                    <option value="HUSBAND">Husband</option>
+                                    <option value="WIFE">Wife</option>
+                                    <option value="SON">Son</option>
+                                    <option value="DAUGHTER">Daughter</option>
+                                    <option value="FATHER">Father</option>
+                                    <option value="MOTHER">Mother</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Gender</label>
+                                <select name="family_member_${memberId}_gender" class="form-control" required>
+                                    <option value="">Select</option>
+                                    <option value="M">Male</option>
+                                    <option value="F">Female</option>
+                                    <option value="O">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Date of Birth</label>
+                                <input type="date" name="family_member_${memberId}_dob" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Aadhaar Number</label>
+                                <input type="text" name="family_member_${memberId}_aadhaar" class="form-control" required
+                                       pattern="[0-9]{12}" maxlength="12">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            $('#familyMembersContainer').append(memberHtml);
+        });
+
+        function removeFamilyMember(memberId) {
+            $(`#familyMember${memberId}`).remove();
+        }
+
+        // IFSC validation
+        $('#bank_ifsc').on('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+
+        $('#bank_ifsc').on('blur', function() {
+            const ifsc = $(this).val();
+            if (ifsc.length === 11) {
+                $.getJSON('https://ifsc.razorpay.com/' + ifsc, function(data) {
+                    $('#ifsc_info').html(`<span class="text-success">✓ ${data.BANK}, ${data.BRANCH}</span>`);
+                }).fail(function() {
+                    $('#ifsc_info').html('<span class="text-danger">✗ Invalid IFSC</span>');
+                });
+            }
+        });
+
+        // Form validation
+        $('#applicationForm').submit(function(e) {
+            const currentState = $('#current_state').val();
+            const permanentState = $('#permanent_state').val();
+
+            if (currentState === permanentState) {
+                e.preventDefault();
+                alert('Current and Permanent addresses must be in different states for migrant applications');
+                return false;
+            }
+        });
+
+        // Image Modal Functions
+        function viewImage(imageUrl, caption) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            const modalCaption = document.getElementById('modalCaption');
+
+            modal.style.display = 'block';
+            modalImg.src = imageUrl;
+            modalCaption.innerHTML = caption;
+
+            // Close modal on click outside image
+            modal.onclick = function(event) {
+                if (event.target === modal) {
+                    closeImageModal();
+                }
+            };
+
+            // Close modal on ESC key
+            document.onkeydown = function(event) {
+                if (event.key === 'Escape') {
+                    closeImageModal();
+                }
+            };
+        }
+
+        function closeImageModal() {
+            const modal = document.getElementById('imageModal');
+            modal.style.display = 'none';
+            document.onkeydown = null;
+        }
+    </script>
+</body>
+</html>

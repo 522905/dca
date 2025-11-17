@@ -1,145 +1,265 @@
 """
 Views for Ujjwala V3 Public Application Form
 
-This module provides views for the public-facing application submission.
+This module contains views for the public-facing application form.
 """
 
+from datetime import datetime, date
 from django.shortcuts import render, redirect
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
 from django.views.decorators.http import require_http_methods
-from django.db import transaction
-import json
 
 from .models import (
-    UjjwalaV3Application, UjjwalaV3Address, UjjwalaV3FamilyMember,
+    UjjwalaV3Application,
+    UjjwalaV3Address,
+    UjjwalaV3FamilyMember,
     UjjwalaV3Document
 )
-from .forms import UjjwalaV3ApplicationForm, UjjwalaV3AddressForm, UjjwalaV3FamilyMemberForm
-from .enums import AddressType, DocumentType
+from .enums import (
+    Gender,
+    Caste,
+    AddressType,
+    RelationToApplicant,
+    LPGConnectionType,
+    DocumentType,
+    ApplicationStatus
+)
 
 
+def calculate_age(birth_date):
+    """Calculate age from birth date."""
+    today = date.today()
+    age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+    return age
+
+
+@require_http_methods(["GET", "POST"])
 def public_application_form(request):
-    """Display the public application form."""
-    context = {
-        'application_form': UjjwalaV3ApplicationForm(),
-        'address_form': UjjwalaV3AddressForm(),
-        'family_member_form': UjjwalaV3FamilyMemberForm(),
-    }
-    return render(request, 'ujjwala_v3/public_form.html', context)
+    """
+    Public application form view for Ujjwala V3.
 
+    GET: Display the application form
+    POST: Process form submission and create application
+    """
 
-@csrf_exempt
-@require_http_methods(["POST"])
-def submit_public_application(request):
-    """Handle the public application form submission via AJAX."""
+    if request.method == "GET":
+        return render(request, 'ujjwala_v3/application_form.html')
+
+    # POST request - process form submission
     try:
-        data = json.loads(request.body)
+        # Get applicant details
+        applicant_first_name = request.POST.get('applicant_first_name', '').strip()
+        applicant_middle_name = request.POST.get('applicant_middle_name', '').strip()
+        applicant_last_name = request.POST.get('applicant_last_name', '').strip()
 
-        with transaction.atomic():
-            # Create the main application
-            application_data = data.get('application', {})
-            application = UjjwalaV3Application.objects.create(
-                # Applicant Details
-                applicant_full_name=application_data.get('applicant_full_name'),
-                applicant_first_name=application_data.get('applicant_first_name'),
-                applicant_middle_name=application_data.get('applicant_middle_name', ''),
-                applicant_last_name=application_data.get('applicant_last_name', ''),
-                applicant_gender=application_data.get('applicant_gender'),
-                applicant_dob=application_data.get('applicant_dob'),
-                applicant_age=application_data.get('applicant_age'),
-                applicant_aadhaar_number=application_data.get('applicant_aadhaar_number'),
-                applicant_mobile_number=application_data.get('applicant_mobile_number'),
-                applicant_alternate_mobile_number=application_data.get('applicant_alternate_mobile_number', ''),
-                applicant_email=application_data.get('applicant_email', ''),
-                caste=application_data.get('caste'),
+        # Construct full name
+        name_parts = [applicant_first_name, applicant_middle_name, applicant_last_name]
+        applicant_full_name = ' '.join([part for part in name_parts if part])
 
-                # Bank Details
-                bank_account_number=application_data.get('bank_account_number'),
-                bank_ifsc_code=application_data.get('bank_ifsc_code'),
-                bank_name=application_data.get('bank_name'),
-                bank_branch_name=application_data.get('bank_branch_name'),
-                account_holder_name=application_data.get('account_holder_name'),
+        applicant_gender = request.POST.get('applicant_gender')
+        applicant_dob_str = request.POST.get('applicant_dob')
+        applicant_dob = datetime.strptime(applicant_dob_str, '%Y-%m-%d').date()
+        applicant_aadhaar = request.POST.get('applicant_aadhaar_number', '').strip()
+        applicant_mobile = request.POST.get('applicant_mobile', '').strip()
+        applicant_email = request.POST.get('applicant_email', '').strip()
+        caste = request.POST.get('caste')
 
-                # Migration
-                is_migrant=True,  # Always true for V3
+        # Validate age (must be 18+)
+        age = calculate_age(applicant_dob)
+        if age < 18:
+            messages.error(request, 'Applicant must be at least 18 years old.')
+            return render(request, 'ujjwala_v3/application_form.html')
 
-                # Family Document
-                family_doc_issuing_state=application_data.get('family_doc_issuing_state'),
-                family_doc_type=application_data.get('family_doc_type'),
-                family_doc_number=application_data.get('family_doc_number', ''),
+        # Get address details
+        current_state = request.POST.get('current_state')
+        permanent_state = request.POST.get('permanent_state')
 
-                # LPG Connection
-                lpg_connection_type=application_data.get('lpg_connection_type'),
+        # Validate that states are different for migrants
+        if current_state == permanent_state:
+            messages.error(request, 'For migrant applications, Current and Permanent addresses must be in different states.')
+            return render(request, 'ujjwala_v3/application_form.html')
+
+        # Check if Aadhaar already exists
+        if UjjwalaV3Application.objects.filter(applicant_aadhaar_number=applicant_aadhaar).exists():
+            messages.error(request, 'An application with this Aadhaar number already exists.')
+            return render(request, 'ujjwala_v3/application_form.html')
+
+        # Create application
+        application = UjjwalaV3Application.objects.create(
+            applicant_full_name=applicant_full_name,
+            applicant_first_name=applicant_first_name,
+            applicant_middle_name=applicant_middle_name or None,
+            applicant_last_name=applicant_last_name or None,
+            applicant_gender=applicant_gender,
+            applicant_dob=applicant_dob,
+            applicant_aadhaar_number=applicant_aadhaar,
+            applicant_mobile=applicant_mobile,
+            applicant_email=applicant_email or None,
+            caste=caste,
+            is_migrant=True,
+            bank_account_name=request.POST.get('bank_account_name', '').strip(),
+            bank_name=request.POST.get('bank_name', '').strip(),
+            bank_branch=request.POST.get('bank_branch', '').strip(),
+            bank_ifsc=request.POST.get('bank_ifsc', '').strip().upper(),
+            bank_account_number=request.POST.get('bank_account_number', '').strip(),
+            lpg_connection_type=request.POST.get('lpg_connection_type'),
+            family_doc_issuing_state=request.POST.get('family_doc_issuing_state', '').strip() or None,
+            family_doc_type=request.POST.get('family_doc_type') or None,
+            family_doc_number=request.POST.get('family_doc_number', '').strip() or None,
+            is_deprivation_decl_signed=request.POST.get('is_deprivation_decl_signed') == 'on',
+            status=ApplicationStatus.DRAFT
+        )
+
+        # Create Current Address
+        current_address = UjjwalaV3Address.objects.create(
+            application=application,
+            address_type=AddressType.CURRENT,
+            house_flat_no=request.POST.get('current_house_flat_no', '').strip(),
+            floor_number=request.POST.get('current_floor_number', '').strip() or None,
+            building_colony=request.POST.get('current_building_colony', '').strip() or None,
+            street_road=request.POST.get('current_street_road', '').strip() or None,
+            village_panchayat_area=request.POST.get('current_village_panchayat_area', '').strip() or None,
+            block_sub_district=request.POST.get('current_block_sub_district', '').strip() or None,
+            district=request.POST.get('current_district', '').strip(),
+            city_town=request.POST.get('current_city_town', '').strip(),
+            state=current_state,
+            pincode=request.POST.get('current_pincode', '').strip(),
+            landmark=request.POST.get('current_landmark', '').strip() or None,
+            poa_code=request.POST.get('current_poa_code')
+        )
+
+        # Create Permanent Address
+        permanent_address = UjjwalaV3Address.objects.create(
+            application=application,
+            address_type=AddressType.PERMANENT,
+            house_flat_no=request.POST.get('permanent_house_flat_no', '').strip(),
+            floor_number=request.POST.get('permanent_floor_number', '').strip() or None,
+            building_colony=request.POST.get('permanent_building_colony', '').strip() or None,
+            street_road=request.POST.get('permanent_street_road', '').strip() or None,
+            village_panchayat_area=request.POST.get('permanent_village_panchayat_area', '').strip() or None,
+            block_sub_district=request.POST.get('permanent_block_sub_district', '').strip() or None,
+            district=request.POST.get('permanent_district', '').strip(),
+            city_town=request.POST.get('permanent_city_town', '').strip(),
+            state=permanent_state,
+            pincode=request.POST.get('permanent_pincode', '').strip(),
+            landmark=request.POST.get('permanent_landmark', '').strip() or None,
+            poa_code=request.POST.get('permanent_poa_code')
+        )
+
+        # Create Family Members
+        family_member_count = 0
+        for key in request.POST.keys():
+            if key.startswith('family_member_') and key.endswith('_name'):
+                member_id = key.split('_')[2]
+
+                member_name = request.POST.get(f'family_member_{member_id}_name', '').strip()
+                member_relation = request.POST.get(f'family_member_{member_id}_relation')
+                member_gender = request.POST.get(f'family_member_{member_id}_gender')
+                member_dob_str = request.POST.get(f'family_member_{member_id}_dob')
+                member_aadhaar = request.POST.get(f'family_member_{member_id}_aadhaar', '').strip()
+
+                if member_name and member_relation and member_gender and member_dob_str and member_aadhaar:
+                    member_dob = datetime.strptime(member_dob_str, '%Y-%m-%d').date()
+
+                    UjjwalaV3FamilyMember.objects.create(
+                        application=application,
+                        full_name=member_name,
+                        relation_to_applicant=member_relation,
+                        gender=member_gender,
+                        dob=member_dob,
+                        aadhaar_number=member_aadhaar
+                    )
+                    family_member_count += 1
+
+        # Process Aadhaar documents from TUS URLs
+        uid_front_url = request.POST.get('uid_front_url')
+        uid_back_url = request.POST.get('uid_back_url')
+
+        if uid_front_url:
+            UjjwalaV3Document.objects.create(
+                application=application,
+                doc_type=DocumentType.AADHAAR_FRONT,
+                file_url=uid_front_url,
+                file_name='aadhaar_front.jpg',
+                description='Aadhaar Card Front (OCR Processed)'
             )
 
-            # Create addresses
-            addresses = data.get('addresses', [])
-            for addr_data in addresses:
-                UjjwalaV3Address.objects.create(
-                    application=application,
-                    address_type=addr_data.get('address_type'),
-                    house_number=addr_data.get('house_number'),
-                    building_name=addr_data.get('building_name', ''),
-                    floor_number=addr_data.get('floor_number', ''),
-                    street_road=addr_data.get('street_road', ''),
-                    area_locality=addr_data.get('area_locality'),
-                    landmark=addr_data.get('landmark', ''),
-                    village_town=addr_data.get('village_town', ''),
-                    city=addr_data.get('city'),
-                    state=addr_data.get('state'),
-                    pincode=addr_data.get('pincode'),
-                    poa_code=addr_data.get('poa_code'),
-                )
+        if uid_back_url:
+            UjjwalaV3Document.objects.create(
+                application=application,
+                doc_type=DocumentType.AADHAAR_BACK,
+                file_url=uid_back_url,
+                file_name='aadhaar_back.jpg',
+                description='Aadhaar Card Back (OCR Processed)'
+            )
 
-            # Create family members
-            family_members = data.get('family_members', [])
-            for member_data in family_members:
-                UjjwalaV3FamilyMember.objects.create(
-                    application=application,
-                    full_name=member_data.get('full_name'),
-                    relation_to_applicant=member_data.get('relation_to_applicant'),
-                    gender=member_data.get('gender'),
-                    date_of_birth=member_data.get('date_of_birth'),
-                    aadhaar_number=member_data.get('aadhaar_number'),
-                )
+        # Process dynamically uploaded documents
+        documents_uploaded = []
+        for key in request.POST.keys():
+            if key.startswith('document_') and key.endswith('_type'):
+                doc_id = key.split('_')[1]
 
-            # Create documents
-            documents = data.get('documents', [])
-            for doc_data in documents:
-                UjjwalaV3Document.objects.create(
-                    application=application,
-                    doc_type=doc_data.get('doc_type'),
-                    file_url=doc_data.get('file_url'),
-                    file_name=doc_data.get('file_name'),
-                    file_size=doc_data.get('file_size'),
-                    mime_type=doc_data.get('mime_type'),
-                    description=doc_data.get('description', ''),
-                )
+                doc_type = request.POST.get(f'document_{doc_id}_type')
+                doc_url = request.POST.get(f'document_{doc_id}_url')
+                doc_filename = request.POST.get(f'document_{doc_id}_filename', 'uploaded_document')
 
-            return JsonResponse({
-                'success': True,
-                'message': 'Application submitted successfully!',
-                'application_id': str(application.id),
-                'application_number': application.application_number or 'Will be generated upon submission'
-            })
+                if doc_type and doc_url:
+                    # Determine address relationship for POA documents
+                    address = None
+                    if doc_type == 'CURRENT_ADDRESS_POA':
+                        address = current_address
+                    elif doc_type == 'PERMANENT_ADDRESS_POA':
+                        address = permanent_address
+
+                    # Map document type string to DocumentType enum
+                    try:
+                        doc_type_enum = getattr(DocumentType, doc_type)
+
+                        UjjwalaV3Document.objects.create(
+                            application=application,
+                            address=address,
+                            doc_type=doc_type_enum,
+                            file_url=doc_url,
+                            file_name=doc_filename,
+                            description=f'{doc_type} - {doc_filename}'
+                        )
+                        documents_uploaded.append(doc_type)
+                    except AttributeError:
+                        print(f"Invalid document type: {doc_type}")
+                        continue
+
+        # Success message
+        messages.success(
+            request,
+            f'Your application has been submitted successfully! '
+            f'Application Number: {application.application_number}. '
+            f'Please save this number for future reference.'
+        )
+
+        # Redirect to success page
+        return redirect('ujjwala_v3_application_success', application_number=application.application_number)
 
     except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': f'Error submitting application: {str(e)}'
-        }, status=400)
+        print(f"Error creating application: {e}")
+        import traceback
+        traceback.print_exc()
+        messages.error(request, f'An error occurred while submitting your application. Please try again.')
+        return render(request, 'ujjwala_v3/application_form.html')
 
 
-def application_success(request, application_id):
-    """Display success page after application submission."""
+@require_http_methods(["GET"])
+def application_success(request, application_number):
+    """
+    Success page after application submission.
+
+    Args:
+        application_number: The application number to display
+    """
     try:
-        application = UjjwalaV3Application.objects.get(id=application_id)
-        context = {
-            'application': application,
-        }
-        return render(request, 'ujjwala_v3/success.html', context)
-    except UjjwalaV3Application.DoesNotExist:
-        return render(request, 'ujjwala_v3/error.html', {
-            'message': 'Application not found'
+        application = UjjwalaV3Application.objects.get(application_number=application_number)
+        return render(request, 'ujjwala_v3/application_success.html', {
+            'application': application
         })
+    except UjjwalaV3Application.DoesNotExist:
+        messages.error(request, 'Application not found.')
+        return redirect('ujjwala_v3_public_form')
