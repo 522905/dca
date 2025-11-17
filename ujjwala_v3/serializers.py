@@ -93,6 +93,17 @@ class UjjwalaV3FamilyMemberSerializer(serializers.ModelSerializer):
             return today.year - obj.dob.year - ((today.month, today.day) < (obj.dob.month, obj.dob.day))
         return None
 
+    def validate_dob(self, value):
+        """Validate that DOB is provided and is not in the future."""
+        if not value:
+            raise serializers.ValidationError('Date of birth is required for all family members.')
+
+        from datetime import date
+        if value > date.today():
+            raise serializers.ValidationError('Date of birth cannot be in the future.')
+
+        return value
+
     def validate(self, data):
         """Custom validation."""
         # SELF member must match applicant details
