@@ -100,12 +100,85 @@
             margin: 20px auto;
         }
         .document-item {
-            background: #f8f9fa;
+            background: linear-gradient(to bottom, #ffffff, #f8f9fa);
             padding: 15px;
-            border-radius: 8px;
+            border-radius: 10px;
             margin-bottom: 15px;
-            border: 1px solid #dee2e6;
+            border: 2px solid #e0e0e0;
             position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .document-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+        }
+        .document-preview-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .document-preview-thumb {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #dee2e6;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .document-preview-thumb:hover {
+            border-color: #667eea;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        .document-preview-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .document-preview-thumb .pdf-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 2em;
+        }
+        .document-preview-thumb .zoom-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            color: white;
+            font-size: 1.5em;
+        }
+        .document-preview-thumb:hover .zoom-overlay {
+            opacity: 1;
+        }
+        .document-info {
+            flex-grow: 1;
+        }
+        .document-info h6 {
+            margin: 0 0 5px 0;
+            color: #333;
+            font-weight: 600;
+        }
+        .document-info small {
+            color: #666;
+            display: block;
         }
         .document-item .remove-doc-btn {
             position: absolute;
@@ -114,10 +187,17 @@
             background: #dc3545;
             color: white;
             border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
+            padding: 5px 15px;
+            border-radius: 20px;
             cursor: pointer;
             font-size: 0.85em;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+        }
+        .document-item .remove-doc-btn:hover {
+            background: #c82333;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.4);
         }
         .family-member-item {
             background: #f8f9fa;
@@ -126,15 +206,133 @@
             margin-bottom: 15px;
             border: 1px solid #dee2e6;
         }
-        .aadhaar-preview img {
-            max-width: 150px;
-            height: auto;
+        .aadhaar-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .aadhaar-preview-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
             border: 2px solid #dee2e6;
-            border-radius: 5px;
-            margin: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .aadhaar-preview-item:hover {
+            border-color: #667eea;
+            transform: translateY(-4px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+        }
+        .aadhaar-preview-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+        }
+        .aadhaar-preview-item .preview-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: white;
+            padding: 10px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        .aadhaar-preview-item .zoom-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.9);
+            color: #667eea;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .aadhaar-preview-item:hover .zoom-icon {
+            opacity: 1;
         }
         input[readonly] {
             background-color: #e9ecef;
+        }
+
+        /* Image Modal Styles */
+        .image-modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.95);
+            animation: fadeIn 0.3s;
+        }
+        .image-modal-content {
+            position: relative;
+            margin: auto;
+            padding: 0;
+            width: 90%;
+            max-width: 1200px;
+            height: 90vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .image-modal-content img {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        .image-modal .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10001;
+            transition: all 0.3s;
+            background: rgba(255,255,255,0.1);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .image-modal .close-modal:hover {
+            background: rgba(255,255,255,0.2);
+            transform: rotate(90deg);
+        }
+        .modal-caption {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            background: rgba(0,0,0,0.7);
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            backdrop-filter: blur(10px);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
     </style>
 </head>
@@ -207,10 +405,17 @@
                             <i class="fas fa-magic"></i> Process Aadhaar & Fill Details
                         </button>
                     </div>
-                    <div id="aadhaarPreview" class="aadhaar-preview mt-3" style="display:none;">
-                        <h6>Uploaded Aadhaar:</h6>
-                        <img id="aadhaarFrontPreview" alt="Front">
-                        <img id="aadhaarBackPreview" alt="Back">
+                    <div id="aadhaarPreview" class="aadhaar-preview" style="display:none;">
+                        <div class="aadhaar-preview-item" onclick="viewImage(this.querySelector('img').src, 'Aadhaar Card - Front')">
+                            <img id="aadhaarFrontPreview" alt="Aadhaar Front">
+                            <div class="preview-label">Aadhaar Card - Front</div>
+                            <div class="zoom-icon"><i class="fas fa-search-plus"></i></div>
+                        </div>
+                        <div class="aadhaar-preview-item" onclick="viewImage(this.querySelector('img').src, 'Aadhaar Card - Back')">
+                            <img id="aadhaarBackPreview" alt="Aadhaar Back">
+                            <div class="preview-label">Aadhaar Card - Back</div>
+                            <div class="zoom-icon"><i class="fas fa-search-plus"></i></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -634,6 +839,15 @@
         </div>
     </div>
 
+    <!-- Image Modal -->
+    <div id="imageModal" class="image-modal">
+        <span class="close-modal" onclick="closeImageModal()">&times;</span>
+        <div class="image-modal-content">
+            <img id="modalImage" src="" alt="Document Preview">
+        </div>
+        <div class="modal-caption" id="modalCaption"></div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -765,13 +979,54 @@
             const docId = Date.now();
             documentUploadedList.push({ ...doc, id: docId });
 
+            // Check if it's an image or PDF
+            const isPDF = doc.fileName.toLowerCase().endsWith('.pdf');
+            const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(doc.fileName);
+
+            let previewHTML = '';
+            if (isImage) {
+                previewHTML = `
+                    <div class="document-preview-thumb" onclick="viewImage('${doc.url}', '${doc.typeName}')">
+                        <img src="${doc.url}" alt="${doc.typeName}">
+                        <div class="zoom-overlay">
+                            <i class="fas fa-search-plus"></i>
+                        </div>
+                    </div>
+                `;
+            } else if (isPDF) {
+                previewHTML = `
+                    <div class="document-preview-thumb" onclick="window.open('${doc.url}', '_blank')">
+                        <div class="pdf-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <div class="zoom-overlay">
+                            <i class="fas fa-external-link-alt"></i>
+                        </div>
+                    </div>
+                `;
+            } else {
+                previewHTML = `
+                    <div class="document-preview-thumb">
+                        <div class="pdf-icon" style="background: #6c757d;">
+                            <i class="fas fa-file"></i>
+                        </div>
+                    </div>
+                `;
+            }
+
             const docHtml = `
                 <div class="document-item" id="doc_${docId}">
                     <button type="button" class="remove-doc-btn" onclick="removeDocument(${docId})">
-                        <i class="fas fa-times"></i>
+                        <i class="fas fa-times"></i> Remove
                     </button>
-                    <strong>${doc.typeName}</strong><br>
-                    <small class="text-muted">${doc.fileName}</small>
+                    <div class="document-preview-container">
+                        ${previewHTML}
+                        <div class="document-info">
+                            <h6><i class="fas fa-file-alt"></i> ${doc.typeName}</h6>
+                            <small class="text-muted"><i class="fas fa-paperclip"></i> ${doc.fileName}</small>
+                            <small class="text-muted d-block mt-1"><i class="fas fa-check-circle text-success"></i> Uploaded successfully</small>
+                        </div>
+                    </div>
                     <input type="hidden" name="document_${docId}_type" value="${doc.type}">
                     <input type="hidden" name="document_${docId}_url" value="${doc.url}">
                     <input type="hidden" name="document_${docId}_filename" value="${doc.fileName}">
@@ -1021,6 +1276,37 @@
                 return false;
             }
         });
+
+        // Image Modal Functions
+        function viewImage(imageUrl, caption) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            const modalCaption = document.getElementById('modalCaption');
+
+            modal.style.display = 'block';
+            modalImg.src = imageUrl;
+            modalCaption.innerHTML = caption;
+
+            // Close modal on click outside image
+            modal.onclick = function(event) {
+                if (event.target === modal) {
+                    closeImageModal();
+                }
+            };
+
+            // Close modal on ESC key
+            document.onkeydown = function(event) {
+                if (event.key === 'Escape') {
+                    closeImageModal();
+                }
+            };
+        }
+
+        function closeImageModal() {
+            const modal = document.getElementById('imageModal');
+            modal.style.display = 'none';
+            document.onkeydown = null;
+        }
     </script>
 </body>
 </html>
