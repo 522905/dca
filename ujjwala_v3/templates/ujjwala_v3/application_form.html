@@ -418,11 +418,11 @@
                     <div>
                         <strong><i class="fas fa-info-circle"></i> Application Process:</strong>
                         <ol class="mb-0 mt-2">
-                            <li>Fill in your basic details (name, contact, etc.)</li>
-                            <li>Add family members with their Aadhaar cards (OCR auto-fills details)</li>
-                            <li>Provide bank account information</li>
-                            <li>Upload required documents</li>
-                            <li>Preview and submit your application</li>
+                            <li>First, upload your Aadhaar card (front & back) for OCR</li>
+                            <li>Your details will be automatically filled from Aadhaar</li>
+                            <li>A SELF family member will be created automatically</li>
+                            <li>Add additional family members if needed</li>
+                            <li>Complete remaining details and submit</li>
                         </ol>
                     </div>
                     <button type="button" class="btn btn-danger" onclick="discardAndStartOver()" style="white-space: nowrap;">
@@ -431,8 +431,59 @@
                 </div>
             </div>
 
+            <!-- Initial Aadhaar Upload Section -->
+            <div id="aadhaarOcrSection">
+                <div class="section-title">
+                    <i class="fas fa-id-card"></i> Step 1: Upload Applicant's Aadhaar Card for Verification
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="alert alert-primary">
+                            <i class="fas fa-info-circle"></i> <strong>Important:</strong> Please upload both front and back photos of your Aadhaar card. The system will automatically extract your details using OCR technology.
+                            <br><small>कृपया अपने आधार कार्ड की आगे और पीछे की फोटो अपलोड करें। सिस्टम OCR तकनीक का उपयोग करके आपके विवरण स्वचालित रूप से निकाल लेगा।</small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="required-field">Aadhaar Card - Front Side (आधार कार्ड - आगे की तरफ)</label>
+                                    <div id="aadhaar_front_uppy"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="required-field">Aadhaar Card - Back Side (आधार कार्ड - पीछे की तरफ)</label>
+                                    <div id="aadhaar_back_uppy"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <button type="button" id="processOcrBtn" class="btn btn-primary btn-lg">
+                                <i class="fas fa-magic"></i> Process Aadhaar & Auto-Fill Details
+                            </button>
+                        </div>
+
+                        <!-- Preview Area (Hidden by default) -->
+                        <div id="aadhaarPreview" class="aadhaar-preview" style="display:none;">
+                            <div class="aadhaar-preview-item" onclick="viewImage($('#aadhaarFrontPreview').attr('src'), 'Aadhaar Front')">
+                                <img id="aadhaarFrontPreview" src="" alt="Aadhaar Front">
+                                <div class="preview-label">Aadhaar Front</div>
+                                <div class="zoom-icon"><i class="fas fa-search-plus"></i></div>
+                            </div>
+                            <div class="aadhaar-preview-item" onclick="viewImage($('#aadhaarBackPreview').attr('src'), 'Aadhaar Back')">
+                                <img id="aadhaarBackPreview" src="" alt="Aadhaar Back">
+                                <div class="preview-label">Aadhaar Back</div>
+                                <div class="zoom-icon"><i class="fas fa-search-plus"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Main Application Form -->
-            <form method="POST" id="applicationForm">
+            <form method="POST" id="applicationForm" style="display:none;">
                 {% csrf_token %}
 
                 <input type="hidden" name="uid_front_url" id="uid_front_url">
@@ -1023,6 +1074,7 @@
             height: 200,
             note: 'Upload Aadhaar Front (Max 5MB)'
         })
+        .use(Uppy.Webcam, { target: Uppy.Dashboard })
         .use(Uppy.ImageEditor, { quality: 0.92 })
         .use(Uppy.Compressor, {
             quality: 0.92,
@@ -1047,6 +1099,7 @@
             height: 200,
             note: 'Upload Aadhaar Back (Max 5MB)'
         })
+        .use(Uppy.Webcam, { target: Uppy.Dashboard })
         .use(Uppy.ImageEditor, { quality: 0.92 })
         .use(Uppy.Compressor, {
             quality: 0.92,
@@ -1346,109 +1399,87 @@
                 }
             }
 
-            // Automatically add SELF as family member
-            addSelfFamilyMember(data, frontUrl, backUrl);
+            // Automatically add SELF as family member using modern card-based approach
+            createSelfFamilyMember(data, frontUrl, backUrl);
         }
 
-        // Add SELF family member automatically from OCR data
-        function addSelfFamilyMember(data, frontUrl, backUrl) {
-            familyMemberCounter++;
+        // Create SELF family member automatically from OCR data using the modern card-based approach
+        function createSelfFamilyMember(data, frontUrl, backUrl) {
+            // Add a new family member using the modern card-based structure
+            addFamilyMemberWithUID();
+
+            // Get the newly created member ID (latest counter value)
             const memberId = familyMemberCounter;
 
-            // Extract name
-            let fullName = '';
-            if (data.name && data.name.value) {
-                fullName = data.name.value.trim();
+            // Auto-select relation as SELF
+            $(`#familyMember_${memberId}_relation`).val('SELF');
+
+            // Trigger the relation label update to show profile photo section
+            updateRelationLabel(memberId);
+
+            // Pre-fill the UID photo URLs for this member
+            $(`#uidFrontUrl_${memberId}`).val(frontUrl);
+            $(`#uidBackUrl_${memberId}`).val(backUrl);
+
+            // Show UID photo previews
+            if (frontUrl && backUrl) {
+                $(`#uidFrontPreview_${memberId}`).html(`
+                    <div class="aadhaar-preview-item" onclick="viewImage('${frontUrl}', 'Aadhaar Front')">
+                        <img src="${frontUrl}" alt="Aadhaar Front" style="width:100%; height:150px; object-fit:cover;">
+                        <div class="preview-label">Aadhaar Front</div>
+                        <div class="zoom-icon"><i class="fas fa-search-plus"></i></div>
+                    </div>
+                `);
+
+                $(`#uidBackPreview_${memberId}`).html(`
+                    <div class="aadhaar-preview-item" onclick="viewImage('${backUrl}', 'Aadhaar Back')">
+                        <img src="${backUrl}" alt="Aadhaar Back" style="width:100%; height:150px; object-fit:cover;">
+                        <div class="preview-label">Aadhaar Back</div>
+                        <div class="zoom-icon"><i class="fas fa-search-plus"></i></div>
+                    </div>
+                `);
             }
 
-            // Extract DOB
-            let dobValue = '';
+            // Extract and pre-fill name
+            if (data.name && data.name.value) {
+                $(`#familyMember_${memberId}_name`).val(data.name.value.trim());
+            }
+
+            // Extract and pre-fill DOB
             if (data.dob && data.dob.value) {
-                dobValue = data.dob.value;
+                let dobValue = data.dob.value;
                 const dobParts = dobValue.split('/');
                 if (dobParts.length === 1) {
                     dobValue = `${dobParts[0]}-01-01`;
                 } else if (dobParts.length === 3) {
                     dobValue = `${dobParts[2]}-${dobParts[1]}-${dobParts[0]}`;
                 }
+                $(`#familyMember_${memberId}_dob`).val(dobValue);
             }
 
-            // Extract gender
-            let gender = 'F'; // Default to Female for Ujjwala
+            // Extract and pre-fill gender
             if (data.gender && data.gender.value) {
                 const genderMap = { 'MALE': 'M', 'FEMALE': 'F', 'male': 'M', 'female': 'F' };
-                gender = genderMap[data.gender.value] || 'F';
+                const gender = genderMap[data.gender.value] || 'F';
+                $(`#familyMember_${memberId}_gender`).val(gender);
             }
 
-            // Extract Aadhaar
-            let aadhaar = '';
+            // Extract and pre-fill Aadhaar
             if (data.aadhaar && data.aadhaar.value) {
-                aadhaar = data.aadhaar.value.replace(/\s/g, '');
+                const aadhaar = data.aadhaar.value.replace(/\s/g, '');
+                $(`#familyMember_${memberId}_aadhaar`).val(aadhaar);
             }
 
-            const memberHtml = `
-                <div class="family-member-item" id="familyMember${memberId}">
-                    <div class="d-flex justify-content-between mb-2">
-                        <h6><i class="fas fa-user"></i> Family Member ${memberId} (Self - Applicant)</h6>
-                        <button type="button" class="btn btn-sm btn-danger" onclick="removeFamilyMember(${memberId})">
-                            <i class="fas fa-times"></i> Remove
-                        </button>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Full Name</label>
-                                <input type="text" name="family_member_${memberId}_name" class="form-control"
-                                       value="${fullName}" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Relation</label>
-                                <select name="family_member_${memberId}_relation" class="form-control" required>
-                                    <option value="">Select</option>
-                                    <option value="SELF" selected>Self</option>
-                                    <option value="HUSBAND">Husband</option>
-                                    <option value="WIFE">Wife</option>
-                                    <option value="SON">Son</option>
-                                    <option value="DAUGHTER">Daughter</option>
-                                    <option value="FATHER">Father</option>
-                                    <option value="MOTHER">Mother</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label>Gender</label>
-                                <select name="family_member_${memberId}_gender" class="form-control" required>
-                                    <option value="">Select</option>
-                                    <option value="M" ${gender === 'M' ? 'selected' : ''}>Male</option>
-                                    <option value="F" ${gender === 'F' ? 'selected' : ''}>Female</option>
-                                    <option value="O" ${gender === 'O' ? 'selected' : ''}>Other</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="required-field">Date of Birth</label>
-                                <input type="date" name="family_member_${memberId}_dob" class="form-control"
-                                       value="${dobValue}" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label>Aadhaar Number</label>
-                                <input type="text" name="family_member_${memberId}_aadhaar" class="form-control"
-                                       value="${aadhaar}" required pattern="[0-9]{12}" maxlength="12">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
+            // Store OCR result for reference
+            $(`#ocrResult_${memberId}`).val(JSON.stringify(data));
 
-            $('#familyMembersContainer').append(memberHtml);
+            // Show success message in OCR status
+            $(`#ocrStatus_${memberId}`).html(`
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> <strong>OCR Successful!</strong>
+                    Details have been auto-filled from Aadhaar. Please verify the information.
+                </div>
+            `);
         }
 
         // Add Family Member
