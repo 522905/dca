@@ -578,7 +578,7 @@ function addFamilyMember(relation_name, relation_label) {
                     </div>
                 </div>
                 <div class="col-sm-4">
-                    <p>${relation_label} का जन्म की तारीख (Date Of Birth) <strong style="color:red">*</strong></p>
+                    <p>${relation_label} का जन्म की तारीख (Date Of Birth)<strong style="color:red">*</strong></p>
                     <div class="">
                         <input type="date" class="form-control aadhaar_ocr" name="${relation_name}-dob" id="${relation_name}-dob" required readonly />
                     </div>
