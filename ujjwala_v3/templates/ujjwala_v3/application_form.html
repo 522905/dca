@@ -457,11 +457,13 @@
                     <div>
                         <strong><i class="fas fa-info-circle"></i> Application Process:</strong>
                         <ol class="mb-0 mt-2">
-                            <li>First, upload your Aadhaar card (front & back) for OCR</li>
-                            <li>Your details will be automatically filled from Aadhaar</li>
-                            <li>A SELF family member will be created automatically</li>
+                            <li>Verify your mobile number with OTP</li>
+                            <li>Upload your Aadhaar card for OCR verification</li>
+                            <li>Your details will be automatically filled</li>
+                            <li>A SELF family member will be created</li>
                             <li>Add additional family members if needed</li>
-                            <li>Complete remaining details and submit</li>
+                            <li>Complete bank details and documents</li>
+                            <li>Submit your application</li>
                         </ol>
                     </div>
                     <div class="d-flex flex-column" style="gap: 10px;">
@@ -475,10 +477,62 @@
                 </div>
             </div>
 
-            <!-- Initial Aadhaar Upload Section -->
-            <div id="aadhaarOcrSection">
+            <!-- Step 1: Mobile Verification -->
+            <div class="card mb-4" id="mobileVerificationSection">
                 <div class="section-title">
-                    <i class="fas fa-id-card"></i> Step 1: Upload Applicant's Aadhaar Card for Verification
+                    <i class="fas fa-mobile-alt"></i> Step 1: Verify Mobile Number
+                </div>
+                <div class="p-3">
+                    <div class="alert alert-info">
+                        <strong>Note:</strong> Please verify your mobile number first. You will receive an OTP for verification.
+                        <br><small>कृपया पहले अपना मोबाइल नंबर सत्यापित करें। आपको सत्यापन के लिए एक OTP प्राप्त होगा।</small>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="required-field">Mobile Number (मोबाइल नंबर)</label>
+                            <input type="text" id="mobile_for_otp" class="form-control"
+                                   pattern="[6-9][0-9]{9}" maxlength="10" required
+                                   placeholder="Enter 10-digit mobile number">
+                        </div>
+                        <div class="col-md-6">
+                            <label>&nbsp;</label><br>
+                            <button type="button" class="btn btn-primary" id="sendOtpBtn">
+                                <i class="fas fa-paper-plane"></i> Send OTP
+                            </button>
+                        </div>
+                    </div>
+                    <div id="otpInputSection" style="display:none;" class="mt-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="required-field">Enter OTP</label>
+                                <input type="text" id="otp_input" class="form-control"
+                                       pattern="[0-9]{6}" maxlength="6"
+                                       placeholder="Enter 6-digit OTP">
+                            </div>
+                            <div class="col-md-6">
+                                <label>&nbsp;</label><br>
+                                <button type="button" class="btn btn-success" id="verifyOtpBtn">
+                                    <i class="fas fa-check-circle"></i> Verify OTP
+                                </button>
+                                <button type="button" class="btn btn-secondary ml-2" id="resendOtpBtn">
+                                    <i class="fas fa-redo"></i> Resend OTP
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="otpVerifiedMessage" style="display:none;" class="mt-3">
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i> Mobile number verified successfully! You can now proceed with Aadhaar upload.
+                            <br><small>मोबाइल नंबर सफलतापूर्वक सत्यापित हो गया! अब आप आधार अपलोड के साथ आगे बढ़ सकते हैं।</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Initial Aadhaar Upload Section -->
+            <div id="aadhaarOcrSection" style="display:none;">
+                <div class="section-title">
+                    <i class="fas fa-id-card"></i> Step 2: Upload Applicant's Aadhaar Card for Verification
                 </div>
 
                 <div class="card mb-3">
@@ -1099,6 +1153,101 @@
             return cookieValue;
         }
 
+        // OTP Verification Variables
+        let mobileVerified = false;
+        let verifiedMobile = '';
+
+        // OTP Verification Logic
+        $('#sendOtpBtn').click(function() {
+            const mobile = $('#mobile_for_otp').val();
+            if (!mobile || mobile.length !== 10) {
+                alert('Please enter a valid 10-digit mobile number');
+                return;
+            }
+
+            $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Sending...');
+
+            $.ajax({
+                url: '/communication_log/send-otp-generic/',
+                type: 'POST',
+                data: {
+                    mobile: mobile,
+                    purpose: 'ujjwala_v3_verification'
+                },
+                headers: { 'X-CSRFToken': getCookie('csrftoken') },
+                success: function(response) {
+                    $('#sendOtpBtn').prop('disabled', false).html('<i class="fas fa-paper-plane"></i> Send OTP');
+                    if (response.status === 'success') {
+                        $('#otpInputSection').slideDown();
+                        alert('OTP sent successfully to ' + mobile);
+                    } else {
+                        alert(response.message || 'Failed to send OTP');
+                    }
+                },
+                error: function() {
+                    $('#sendOtpBtn').prop('disabled', false).html('<i class="fas fa-paper-plane"></i> Send OTP');
+                    alert('Error sending OTP. Please try again.');
+                }
+            });
+        });
+
+        $('#verifyOtpBtn').click(function() {
+            const mobile = $('#mobile_for_otp').val();
+            const otp = $('#otp_input').val();
+
+            if (!otp || otp.length !== 6) {
+                alert('Please enter a valid 6-digit OTP');
+                return;
+            }
+
+            $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Verifying...');
+
+            $.ajax({
+                url: '/communication_log/verify-otp-generic/',
+                type: 'POST',
+                data: {
+                    mobile: mobile,
+                    otp: otp,
+                    purpose: 'ujjwala_v3_verification'
+                },
+                headers: { 'X-CSRFToken': getCookie('csrftoken') },
+                success: function(response) {
+                    $('#verifyOtpBtn').prop('disabled', false).html('<i class="fas fa-check-circle"></i> Verify OTP');
+                    if (response.status === 'success') {
+                        mobileVerified = true;
+                        verifiedMobile = mobile;
+
+                        // Update applicant mobile field if it exists
+                        if ($('#applicant_mobile').length) {
+                            $('#applicant_mobile').val(mobile).prop('readonly', true);
+                        }
+
+                        // Show success message
+                        $('#otpVerifiedMessage').slideDown();
+                        $('#otpInputSection').hide();
+                        $('#mobile_for_otp').prop('readonly', true);
+                        $('#sendOtpBtn').hide();
+
+                        // Show Aadhaar section
+                        $('#aadhaarOcrSection').slideDown();
+
+                        // Save to localStorage
+                        localStorage.setItem('ujjwala_v3_verified_mobile', mobile);
+                    } else {
+                        alert(response.message || 'Invalid OTP');
+                    }
+                },
+                error: function() {
+                    $('#verifyOtpBtn').prop('disabled', false).html('<i class="fas fa-check-circle"></i> Verify OTP');
+                    alert('Error verifying OTP. Please try again.');
+                }
+            });
+        });
+
+        $('#resendOtpBtn').click(function() {
+            $('#sendOtpBtn').click();
+        });
+
         // Uppy Instances
         let aadhaarFrontUppy, aadhaarBackUppy, documentUploadedList = [], familyMemberCount = 0;
         let uploadedDocumentTypes = new Set(); // Track which document types are already uploaded
@@ -1597,11 +1746,12 @@
             // Store OCR result for reference
             $(`#ocrResult_${memberId}`).val(JSON.stringify(data));
 
-            // Show success message in OCR status
+            // Show success message in OCR status for SELF member
             $(`#ocrStatus_${memberId}`).html(`
                 <div class="alert alert-success">
-                    <i class="fas fa-check-circle"></i> <strong>OCR Successful!</strong>
-                    Details have been auto-filled from Aadhaar. Please verify the information.
+                    <i class="fas fa-check-circle"></i> <strong>Aadhaar Already Verified!</strong>
+                    Your Aadhaar details have been extracted and auto-filled. Please verify the information.
+                    <br><small>आपके आधार विवरण निकाले गए और स्वचालित रूप से भरे गए हैं। कृपया जानकारी सत्यापित करें।</small>
                 </div>
             `);
         }
@@ -2266,13 +2416,9 @@
         // Restore form data on page load
         $(document).ready(function() {
             // Initialize PhotoUploadManager
+            // Note: Photo uploaders (profile, bank passbook) are initialized automatically
+            // in photo_upload_manager.js when their DOM elements are detected
             window.photoUploadManager = new PhotoUploadManager();
-
-            // Initialize profile photo uploader
-            window.photoUploadManager.initProfilePhotoUploader();
-
-            // Initialize bank passbook uploader
-            window.photoUploadManager.initBankPassbookUploader();
 
             // Try to load saved data on page load
             if (localStorage.getItem(FORM_STORAGE_KEY)) {
