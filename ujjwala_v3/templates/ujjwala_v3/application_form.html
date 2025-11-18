@@ -531,6 +531,23 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Profile Photo Upload -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="required-field">
+                                        <i class="fas fa-camera"></i> Profile Photo / Selfie (प्रार्थी की फोटो)
+                                    </label>
+                                    <small class="form-text text-muted mb-2">
+                                        Upload a clear photo or selfie of the applicant. This will be used for identity verification.
+                                    </small>
+                                    <div id="profilePhotoUploader"></div>
+                                    <input type="hidden" name="profile_photo_url" id="profilePhotoUrl">
+                                    <div id="profilePhotoPreview"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -749,6 +766,23 @@
                                 <div class="form-group">
                                     <label>Branch Address</label>
                                     <input type="text" id="bank_address" class="form-control" readonly placeholder="Auto-filled from IFSC">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bank Passbook Photo Upload -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="required-field">
+                                        <i class="fas fa-book"></i> Bank Passbook Photo (पास बुक का विवरण)
+                                    </label>
+                                    <small class="form-text text-muted mb-2">
+                                        Upload a clear photo of your bank passbook showing account holder name, account number, and IFSC code.
+                                    </small>
+                                    <div id="bankPassbookUploader"></div>
+                                    <input type="hidden" name="bank_passbook_url" id="bankPassbookUrl">
+                                    <div id="bankPassbookPreview"></div>
                                 </div>
                             </div>
                         </div>
@@ -974,6 +1008,11 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://releases.transloadit.com/uppy/v2.13.1/uppy.min.js"></script>
+
+    <!-- Photo Upload Manager and Family Member Manager -->
+    <script src="{% static 'js/photo_upload_manager.js' %}"></script>
+    <script src="{% static 'js/family_member_manager.js' %}"></script>
+
     <script src="{% static '/js/moment.min.js' %}"></script>
 
     <script>
@@ -1441,77 +1480,9 @@
         }
 
         // Add Family Member
-        let familyMemberCounter = 0;
-        $('#addFamilyMember').click(function() {
-            familyMemberCounter++;
-            const memberId = familyMemberCounter;
-
-            const memberHtml = `
-                <div class="family-member-item" id="familyMember${memberId}">
-                    <div class="d-flex justify-content-between mb-2">
-                        <h6><i class="fas fa-user"></i> Family Member ${memberId}</h6>
-                        <button type="button" class="btn btn-sm btn-danger" onclick="removeFamilyMember(${memberId})">
-                            <i class="fas fa-times"></i> Remove
-                        </button>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Full Name</label>
-                                <input type="text" name="family_member_${memberId}_name" class="form-control" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Relation</label>
-                                <select name="family_member_${memberId}_relation" class="form-control" required>
-                                    <option value="">Select</option>
-                                    <option value="SELF">Self</option>
-                                    <option value="HUSBAND">Husband</option>
-                                    <option value="WIFE">Wife</option>
-                                    <option value="SON">Son</option>
-                                    <option value="DAUGHTER">Daughter</option>
-                                    <option value="FATHER">Father</option>
-                                    <option value="MOTHER">Mother</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label>Gender</label>
-                                <select name="family_member_${memberId}_gender" class="form-control" required>
-                                    <option value="">Select</option>
-                                    <option value="M">Male</option>
-                                    <option value="F">Female</option>
-                                    <option value="O">Other</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="required-field">Date of Birth</label>
-                                <input type="date" name="family_member_${memberId}_dob" class="form-control" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label>Aadhaar Number</label>
-                                <input type="text" name="family_member_${memberId}_aadhaar" class="form-control" required
-                                       pattern="[0-9]{12}" maxlength="12">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            $('#familyMembersContainer').append(memberHtml);
-        });
-
-        function removeFamilyMember(memberId) {
-            $(`#familyMember${memberId}`).remove();
-        }
+        // Family Member management is now handled by family_member_manager.js
+        // The addFamilyMemberWithUID() function is called by the button click handler in that file
+        // removeFamilyMemberWithUID() is also defined there
 
         // IFSC validation with bank details auto-fill
         $('#bank_ifsc').on('input', function() {
@@ -1678,6 +1649,23 @@
         function submitAfterPreview() {
             if (!$('#preview-confirm-checkbox').is(':checked')) {
                 alert('कृपया पुष्टि चेकबॉक्स को चेक करें। Please check the confirmation checkbox. ਕਿਰਪਾ ਕਰਕੇ ਪੁਸ਼ਟੀਕਰਨ ਚੈੱਕਬਾਕਸ ਨੂੰ ਚੈੱਕ ਕਰੋ।');
+                return;
+            }
+
+            // Validate profile photo
+            if (!$('#profilePhotoUrl').val()) {
+                alert('कृपया प्रोफ़ाइल फ़ोटो अपलोड करें। Please upload your profile photo. ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੀ ਪ੍ਰੋਫਾਈਲ ਫੋਟੋ ਅੱਪਲੋਡ ਕਰੋ।');
+                return;
+            }
+
+            // Validate bank passbook photo
+            if (!$('#bankPassbookUrl').val()) {
+                alert('कृपया बैंक पासबुक फ़ोटो अपलोड करें। Please upload your bank passbook photo. ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੀ ਬੈਂਕ ਪਾਸਬੁੱਕ ਫੋਟੋ ਅੱਪਲੋਡ ਕਰੋ।');
+                return;
+            }
+
+            // Validate family members have UID photos
+            if (!validateFamilyMembers()) {
                 return;
             }
 
@@ -1898,18 +1886,12 @@
                     familyMembers: []
                 };
 
-                // Collect family member data
-                $('.family-member-item').each(function() {
-                    const memberId = $(this).attr('id').replace('familyMember', '');
-                    formData.familyMembers.push({
-                        id: memberId,
-                        name: $(this).find('[name^="family_member_"][name$="_name"]').val(),
-                        relation: $(this).find('[name^="family_member_"][name$="_relation"]').val(),
-                        gender: $(this).find('[name^="family_member_"][name$="_gender"]').val(),
-                        dob: $(this).find('[name^="family_member_"][name$="_dob"]').val(),
-                        aadhaar: $(this).find('[name^="family_member_"][name$="_aadhaar"]').val()
-                    });
-                });
+                // Collect family member data with UID photos and OCR results
+                formData.familyMembers = collectFamilyMemberData();
+
+                // Add profile photo and bank passbook URLs
+                formData.profile_photo_url = $('#profilePhotoUrl').val();
+                formData.bank_passbook_url = $('#bankPassbookUrl').val();
 
                 localStorage.setItem('ujjwala_v3_form_data', JSON.stringify(formData));
                 console.log('Form data saved to localStorage');
@@ -2090,6 +2072,15 @@
 
         // Restore form data on page load
         $(document).ready(function() {
+            // Initialize PhotoUploadManager
+            window.photoUploadManager = new PhotoUploadManager();
+
+            // Initialize profile photo uploader
+            window.photoUploadManager.initProfilePhotoUploader();
+
+            // Initialize bank passbook uploader
+            window.photoUploadManager.initBankPassbookUploader();
+
             setTimeout(restoreFormData, 1000);
         });
 
