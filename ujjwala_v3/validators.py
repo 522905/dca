@@ -62,7 +62,9 @@ def validate_mobile_number(value: str) -> None:
 
     # Remove any spaces, hyphens, or +91
     clean_value = re.sub(r'[\s\-+]', '', value)
-    clean_value = clean_value.removeprefix('91')
+    # Python 3.8 compatible way to remove '91' prefix
+    if clean_value.startswith('91'):
+        clean_value = clean_value[2:]
 
     if len(clean_value) != 10:
         raise ValidationError('Mobile number must be exactly 10 digits.')
