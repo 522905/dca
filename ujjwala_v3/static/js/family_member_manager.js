@@ -27,17 +27,53 @@ function addFamilyMemberWithUID() {
                 </div>
             </div>
             <div class="card-body">
+                <!-- UID Photo Upload Section - First Step -->
+                <div class="alert alert-primary">
+                    <i class="fas fa-camera"></i> <strong>Step 1: Upload Aadhaar/UID Photos</strong><br>
+                    Please upload both front and back photos of the Aadhaar card first. The system will automatically extract and fill the details using OCR.
+                    <br><small>कृपया पहले आधार कार्ड के आगे और पीछे की फोटो अपलोड करें। सिस्टम OCR का उपयोग करके विवरण स्वचालित रूप से भर देगा।</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="required-field">Aadhaar Front Photo (आधार कार्ड आगे की तरफ)</label>
+                            <div id="uidFrontUploader_${memberId}"></div>
+                            <input type="hidden" name="family_member_${memberId}_uid_front_url" id="uidFrontUrl_${memberId}">
+                            <div id="uidFrontPreview_${memberId}" class="mt-2"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="required-field">Aadhaar Back Photo (आधार कार्ड पीछे की तरफ)</label>
+                            <div id="uidBackUploader_${memberId}"></div>
+                            <input type="hidden" name="family_member_${memberId}_uid_back_url" id="uidBackUrl_${memberId}">
+                            <div id="uidBackPreview_${memberId}" class="mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OCR Status -->
+                <div id="ocrStatus_${memberId}" class="mb-3"></div>
+
+                <!-- Step 2: Member Details (Auto-filled by OCR or Manual Entry) -->
+                <div class="alert alert-secondary">
+                    <i class="fas fa-edit"></i> <strong>Step 2: Verify/Edit Member Details</strong><br>
+                    After uploading photos, details will be auto-filled. Please verify and edit if needed, or fill manually if OCR fails.
+                    <br><small>फोटो अपलोड करने के बाद, विवरण स्वचालित रूप से भर जाएंगे। कृपया सत्यापित करें और आवश्यकता हो तो संपादित करें।</small>
+                </div>
+
                 <!-- Basic Details Row -->
                 <div class="row">
                     <div class="col-md-6 form-group">
                         <label class="required-field">Full Name (पूरा नाम)</label>
-                        <input type="text" name="family_member_${memberId}_name"
+                        <input type="text" name="family_member_${memberId}_name" id="familyMember_${memberId}_name"
                                class="form-control" placeholder="As per Aadhaar" required>
                     </div>
                     <div class="col-md-6 form-group">
                         <label class="required-field">Relation to Applicant (संबंध)</label>
-                        <select name="family_member_${memberId}_relation" class="form-control" required
-                                onchange="updateRelationLabel(${memberId})">
+                        <select name="family_member_${memberId}_relation" id="familyMember_${memberId}_relation"
+                                class="form-control" required onchange="updateRelationLabel(${memberId})">
                             <option value="">-- Select Relation --</option>
                             <option value="SELF">Self (स्वयं) - Applicant</option>
                             <option value="HUSBAND">Husband (पति)</option>
@@ -65,7 +101,8 @@ function addFamilyMemberWithUID() {
                 <div class="row">
                     <div class="col-md-4 form-group">
                         <label class="required-field">Gender (लिंग)</label>
-                        <select name="family_member_${memberId}_gender" class="form-control" required>
+                        <select name="family_member_${memberId}_gender" id="familyMember_${memberId}_gender"
+                                class="form-control" required>
                             <option value="">-- Select --</option>
                             <option value="M">Male (पुरुष)</option>
                             <option value="F">Female (महिला)</option>
@@ -74,43 +111,16 @@ function addFamilyMemberWithUID() {
                     </div>
                     <div class="col-md-4 form-group">
                         <label class="required-field">Date of Birth (जन्म तिथि)</label>
-                        <input type="date" name="family_member_${memberId}_dob" class="form-control" required>
+                        <input type="date" name="family_member_${memberId}_dob" id="familyMember_${memberId}_dob"
+                               class="form-control" required>
                     </div>
                     <div class="col-md-4 form-group">
                         <label class="required-field">Aadhaar Number (आधार संख्या)</label>
-                        <input type="text" name="family_member_${memberId}_aadhaar"
+                        <input type="text" name="family_member_${memberId}_aadhaar" id="familyMember_${memberId}_aadhaar"
                                class="form-control" placeholder="12-digit Aadhaar"
                                pattern="[0-9]{12}" maxlength="12" required>
                     </div>
                 </div>
-
-                <!-- UID Photo Upload Section -->
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i> <strong>Upload Aadhaar/UID Photos</strong><br>
-                    Upload both front and back photos of the Aadhaar card. The system will automatically extract details using OCR.
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="required-field">Aadhaar Front Photo (आधार कार्ड आगे की तरफ)</label>
-                            <div id="uidFrontUploader_${memberId}"></div>
-                            <input type="hidden" name="family_member_${memberId}_uid_front_url" id="uidFrontUrl_${memberId}">
-                            <div id="uidFrontPreview_${memberId}" class="mt-2"></div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="required-field">Aadhaar Back Photo (आधार कार्ड पीछे की तरफ)</label>
-                            <div id="uidBackUploader_${memberId}"></div>
-                            <input type="hidden" name="family_member_${memberId}_uid_back_url" id="uidBackUrl_${memberId}">
-                            <div id="uidBackPreview_${memberId}" class="mt-2"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- OCR Status -->
-                <div id="ocrStatus_${memberId}"></div>
 
                 <!-- Hidden fields for OCR data -->
                 <input type="hidden" id="ocrResult_${memberId}" name="family_member_${memberId}_ocr_result">
