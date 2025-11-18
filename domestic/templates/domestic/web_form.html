@@ -464,6 +464,10 @@
 </html>
 
 <script src="https://arungas.com/public/ujwalla/js/app.js"></script>
+<script>
+// Global variable for signature URL (used in preview)
+var signature_url_global = null;
+</script>
 <script src="{% static '/js/ujjwala_webform_18012024.js' %}"></script>
 <script>
 
@@ -1342,8 +1346,6 @@ $('[name="referral_code"]').attr('readonly', true);
 // ocr_loader
 
 // Preview functionality
-var signature_url_global = null;
-
 function showPreview() {
     // Populate personal details
     $('#preview-whatsapp').text($('#contact_mobile').val());
