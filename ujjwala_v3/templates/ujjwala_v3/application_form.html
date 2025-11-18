@@ -380,6 +380,45 @@
         </div>
     </div>
 
+    <!-- Error Modal -->
+    <div class="modal fade" id="errorModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle"></i> Error Occurred
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <strong>Error Message:</strong>
+                        <p id="errorMessage"></p>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <strong>Technical Details:</strong>
+                            <button type="button" class="btn btn-sm btn-secondary float-right" onclick="copyErrorDetails()">
+                                <i class="fas fa-copy"></i> Copy Details
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <pre id="errorDetails" style="max-height: 300px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 4px;"></pre>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="retryOCR()">
+                        <i class="fas fa-redo"></i> Retry OCR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <div class="form-container">
             <div class="form-header">
@@ -425,9 +464,14 @@
                             <li>Complete remaining details and submit</li>
                         </ol>
                     </div>
-                    <button type="button" class="btn btn-danger" onclick="discardAndStartOver()" style="white-space: nowrap;">
-                        <i class="fas fa-redo"></i> Discard & Start Over
-                    </button>
+                    <div class="d-flex flex-column" style="gap: 10px;">
+                        <button type="button" class="btn btn-info btn-sm" onclick="loadFormData()" title="Restore previously saved form data">
+                            <i class="fas fa-history"></i> Resume Saved Form
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="discardAndStartOver()" style="white-space: nowrap;">
+                            <i class="fas fa-redo"></i> Discard & Start Over
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -1325,12 +1369,53 @@
                         alert('OCR processing failed. Please try again.');
                     }
                 },
-                error: function() {
-                    alert('Error processing OCR. Please try again.');
+                error: function(xhr, status, error) {
+                    $('#loader').hide();
+
+                    let errorMessage = 'Error processing OCR. ';
+                    let errorDetails = '';
+
+                    if (xhr.responseJSON) {
+                        errorMessage += xhr.responseJSON.message || error;
+                        if (xhr.responseJSON.error) {
+                            errorDetails = xhr.responseJSON.error;
+                        }
+                        if (xhr.responseJSON.traceback) {
+                            errorDetails += '\n\nTraceback:\n' + xhr.responseJSON.traceback;
+                        }
+                    } else if (xhr.responseText) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            errorMessage += response.message || error;
+                            errorDetails = response.error || xhr.responseText;
+                        } catch (e) {
+                            errorMessage += error;
+                            errorDetails = xhr.responseText;
+                        }
+                    } else {
+                        errorMessage += error;
+                        errorDetails = `Status: ${status}\nError: ${error}`;
+                    }
+
+                    // Show detailed error in a modal
+                    showErrorModal(errorMessage, errorDetails);
+
+                    // Save error to localStorage for debugging
+                    const errorLog = {
+                        timestamp: new Date().toISOString(),
+                        message: errorMessage,
+                        details: errorDetails,
+                        urls: {
+                            front: uid_front_url,
+                            back: uid_back_url
+                        }
+                    };
+                    localStorage.setItem('ujjwala_v3_last_error', JSON.stringify(errorLog));
                 },
                 complete: function() {
                     $('#loader').hide();
-                }
+                },
+                timeout: 45000  // 45 second timeout instead of default
             });
         });
 
@@ -1486,6 +1571,216 @@
         // Family Member management is now handled by family_member_manager.js
         // The addFamilyMemberWithUID() function is called by the button click handler in that file
         // removeFamilyMemberWithUID() is also defined there
+
+        // ============= ERROR MODAL FUNCTIONS =============
+
+        // Show error modal
+        function showErrorModal(message, details) {
+            $('#errorMessage').text(message);
+            $('#errorDetails').text(details);
+            $('#errorModal').modal('show');
+        }
+
+        // Copy error details
+        function copyErrorDetails() {
+            const details = $('#errorDetails').text();
+            navigator.clipboard.writeText(details).then(() => {
+                alert('Error details copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+                // Fallback for older browsers
+                const textarea = document.createElement('textarea');
+                textarea.value = details;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('Error details copied to clipboard!');
+            });
+        }
+
+        // Retry OCR
+        function retryOCR() {
+            $('#errorModal').modal('hide');
+            $('#processOcrBtn').click();
+        }
+
+        // ============= LOCAL STORAGE PERSISTENCE =============
+
+        const FORM_STORAGE_KEY = 'ujjwala_v3_form_data';
+        const AUTO_SAVE_INTERVAL = 3000; // Auto-save every 3 seconds
+        let autoSaveTimer = null;
+
+        // Schedule auto-save
+        function scheduleAutoSave() {
+            if (autoSaveTimer) {
+                clearTimeout(autoSaveTimer);
+            }
+            autoSaveTimer = setTimeout(saveFormData, AUTO_SAVE_INTERVAL);
+        }
+
+        // Show save indicator
+        function showSaveIndicator() {
+            let indicator = $('#saveIndicator');
+            if (indicator.length === 0) {
+                indicator = $('<div id="saveIndicator" style="position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 10px 20px; border-radius: 4px; z-index: 10000; display: none;"><i class="fas fa-check-circle"></i> Form Auto-Saved</div>');
+                $('body').append(indicator);
+            }
+            indicator.fadeIn(200).delay(1500).fadeOut(500);
+        }
+
+        // Clear saved form data
+        function clearSavedFormData() {
+            if (confirm('Are you sure you want to clear all saved form data?')) {
+                localStorage.removeItem(FORM_STORAGE_KEY);
+                alert('Saved form data cleared!');
+            }
+        }
+
+        // Load form data from localStorage
+        function loadFormData() {
+            try {
+                const savedData = localStorage.getItem(FORM_STORAGE_KEY);
+                if (!savedData) {
+                    alert('No saved form data found.');
+                    console.log('No saved form data found');
+                    return false;
+                }
+
+                const formData = JSON.parse(savedData);
+                console.log('Loading saved form data:', formData);
+
+                // Show confirmation dialog
+                if (!confirm(`Found saved form data from ${new Date(formData.timestamp).toLocaleString()}.\n\nDo you want to restore this data?`)) {
+                    return false;
+                }
+
+                // Restore applicant data
+                if (formData.applicant) {
+                    $('#applicant_first_name').val(formData.applicant.firstName || '');
+                    $('#applicant_middle_name').val(formData.applicant.middleName || '');
+                    $('#applicant_last_name').val(formData.applicant.lastName || '');
+                    $('#applicant_gender').val(formData.applicant.gender || '');
+                    $('#applicant_aadhaar_number').val(formData.applicant.aadhaar || '');
+                    $('#applicant_mobile').val(formData.applicant.mobile || '');
+                    $('#applicant_email').val(formData.applicant.email || '');
+                    $('#caste').val(formData.applicant.caste || '');
+                }
+
+                // Restore UID photos
+                if (formData.uidPhotos && formData.uidPhotos.ocrProcessed === 'yes') {
+                    $('#uid_front_url').val(formData.uidPhotos.front);
+                    $('#uid_back_url').val(formData.uidPhotos.back);
+                    $('#ocr_processed').val('yes');
+
+                    // Show Aadhaar preview
+                    if (formData.uidPhotos.front && formData.uidPhotos.back) {
+                        $('#aadhaarFrontPreview').attr('src', formData.uidPhotos.front);
+                        $('#aadhaarBackPreview').attr('src', formData.uidPhotos.back);
+                        $('#aadhaarPreview').show();
+                        $('#aadhaar_front_uppy').hide();
+                        $('#aadhaar_back_uppy').hide();
+                        $('#processOcrBtn').hide();
+                        $('#applicationForm').show();
+                    }
+                }
+
+                // Restore addresses
+                if (formData.currentAddress) {
+                    $('[name="current_house_flat_no"]').val(formData.currentAddress.houseFlatNo || '');
+                    $('[name="current_floor_number"]').val(formData.currentAddress.floorNumber || '');
+                    $('[name="current_building_colony"]').val(formData.currentAddress.buildingColony || '');
+                    $('[name="current_street_road"]').val(formData.currentAddress.streetRoad || '');
+                    $('[name="current_village_panchayat_area"]').val(formData.currentAddress.villagePanchayatArea || '');
+                    $('[name="current_block_sub_district"]').val(formData.currentAddress.blockSubDistrict || '');
+                    $('[name="current_district"]').val(formData.currentAddress.district || '');
+                    $('[name="current_city_town"]').val(formData.currentAddress.cityTown || '');
+                    $('[name="current_state"]').val(formData.currentAddress.state || '');
+                    $('[name="current_pincode"]').val(formData.currentAddress.pincode || '');
+                    $('[name="current_landmark"]').val(formData.currentAddress.landmark || '');
+                    $('[name="current_poa_code"]').val(formData.currentAddress.poaCode || '');
+                }
+
+                if (formData.permanentAddress) {
+                    $('[name="permanent_house_flat_no"]').val(formData.permanentAddress.houseFlatNo || '');
+                    $('[name="permanent_floor_number"]').val(formData.permanentAddress.floorNumber || '');
+                    $('[name="permanent_building_colony"]').val(formData.permanentAddress.buildingColony || '');
+                    $('[name="permanent_street_road"]').val(formData.permanentAddress.streetRoad || '');
+                    $('[name="permanent_village_panchayat_area"]').val(formData.permanentAddress.villagePanchayatArea || '');
+                    $('[name="permanent_block_sub_district"]').val(formData.permanentAddress.blockSubDistrict || '');
+                    $('[name="permanent_district"]').val(formData.permanentAddress.district || '');
+                    $('[name="permanent_city_town"]').val(formData.permanentAddress.cityTown || '');
+                    $('[name="permanent_state"]').val(formData.permanentAddress.state || '');
+                    $('[name="permanent_pincode"]').val(formData.permanentAddress.pincode || '');
+                    $('[name="permanent_landmark"]').val(formData.permanentAddress.landmark || '');
+                    $('[name="permanent_poa_code"]').val(formData.permanentAddress.poaCode || '');
+                }
+
+                // Restore bank details
+                if (formData.bankDetails) {
+                    $('[name="bank_ifsc"]').val(formData.bankDetails.ifsc || '');
+                    $('[name="bank_account_name"]').val(formData.bankDetails.accountName || '');
+                    $('[name="bank_name"]').val(formData.bankDetails.bankName || '');
+                    $('[name="bank_branch"]').val(formData.bankDetails.branch || '');
+                    $('[name="bank_account_number"]').val(formData.bankDetails.accountNumber || '');
+                }
+
+                // Restore family members
+                if (formData.familyMembers && formData.familyMembers.length > 0) {
+                    formData.familyMembers.forEach(member => {
+                        addFamilyMemberWithUID();
+                        const memberId = familyMemberCounter;
+
+                        $(`#familyMember_${memberId}_name`).val(member.name || '');
+                        $(`#familyMember_${memberId}_relation`).val(member.relation || '');
+                        $(`#familyMember_${memberId}_gender`).val(member.gender || '');
+                        $(`#familyMember_${memberId}_dob`).val(member.dob || '');
+                        $(`#familyMember_${memberId}_aadhaar`).val(member.aadhaar || '');
+                        $(`#uidFrontUrl_${memberId}`).val(member.uidFrontUrl || '');
+                        $(`#uidBackUrl_${memberId}`).val(member.uidBackUrl || '');
+
+                        updateRelationLabel(memberId);
+                    });
+                }
+
+                // Restore other fields
+                if (formData.lpgConnectionType) {
+                    $('[name="lpg_connection_type"]').val(formData.lpgConnectionType);
+                }
+
+                if (formData.familyDoc) {
+                    $('[name="family_doc_issuing_state"]').val(formData.familyDoc.issuingState || '');
+                    $('[name="family_doc_type"]').val(formData.familyDoc.type || '');
+                    $('[name="family_doc_number"]').val(formData.familyDoc.number || '');
+                }
+
+                alert('Form data restored successfully!');
+                return true;
+            } catch (error) {
+                console.error('Error loading form data:', error);
+                alert('Error restoring saved data: ' + error.message);
+                return false;
+            }
+        }
+
+        // Collect family members data for storage
+        function collectFamilyMembersForStorage() {
+            const members = [];
+            $('.family-member-item').each(function() {
+                const memberId = $(this).attr('id').replace('familyMember_', '');
+                members.push({
+                    id: memberId,
+                    name: $(`#familyMember_${memberId}_name`).val(),
+                    relation: $(`#familyMember_${memberId}_relation`).val(),
+                    gender: $(`#familyMember_${memberId}_gender`).val(),
+                    dob: $(`#familyMember_${memberId}_dob`).val(),
+                    aadhaar: $(`#familyMember_${memberId}_aadhaar`).val(),
+                    uidFrontUrl: $(`#uidFrontUrl_${memberId}`).val(),
+                    uidBackUrl: $(`#uidBackUrl_${memberId}`).val()
+                });
+            });
+            return members;
+        }
 
         // IFSC validation with bank details auto-fill
         $('#bank_ifsc').on('input', function() {
@@ -1833,231 +2128,87 @@
             syncApplicantDOB();
         });
 
-        // Save form data to localStorage
+        // Save form data to localStorage (Enhanced version)
         function saveFormData() {
             try {
                 const formData = {
-                    // Basic applicant details
-                    applicant_first_name: $('#applicant_first_name').val(),
-                    applicant_middle_name: $('#applicant_middle_name').val(),
-                    applicant_last_name: $('#applicant_last_name').val(),
-                    applicant_gender: $('#applicant_gender').val(),
-                    applicant_aadhaar_number: $('#applicant_aadhaar_number').val(),
-                    applicant_mobile: $('#applicant_mobile').val(),
-                    applicant_email: $('#applicant_email').val(),
-                    caste: $('#caste').val(),
-
-                    // Current address
-                    current_house_flat_no: $('[name="current_house_flat_no"]').val(),
-                    current_floor_number: $('[name="current_floor_number"]').val(),
-                    current_street_road: $('[name="current_street_road"]').val(),
-                    current_landmark: $('[name="current_landmark"]').val(),
-                    current_state: $('[name="current_state"]').val(),
-                    current_district: $('[name="current_district"]').val(),
-                    current_city_town: $('[name="current_city_town"]').val(),
-                    current_pincode: $('[name="current_pincode"]').val(),
-                    current_poa_code: $('[name="current_poa_code"]').val(),
-
-                    // Permanent address
-                    permanent_house_flat_no: $('[name="permanent_house_flat_no"]').val(),
-                    permanent_street_road: $('[name="permanent_street_road"]').val(),
-                    permanent_village_panchayat_area: $('[name="permanent_village_panchayat_area"]').val(),
-                    permanent_district: $('[name="permanent_district"]').val(),
-                    permanent_city_town: $('[name="permanent_city_town"]').val(),
-                    permanent_state: $('[name="permanent_state"]').val(),
-                    permanent_pincode: $('[name="permanent_pincode"]').val(),
-                    permanent_poa_code: $('[name="permanent_poa_code"]').val(),
-
-                    // Bank details
-                    bank_account_name: $('[name="bank_account_name"]').val(),
-                    bank_name: $('[name="bank_name"]').val(),
-                    bank_branch: $('[name="bank_branch"]').val(),
-                    bank_ifsc: $('[name="bank_ifsc"]').val(),
-                    bank_account_number: $('[name="bank_account_number"]').val(),
-
-                    // LPG details
-                    family_doc_type: $('[name="family_doc_type"]').val(),
-
-                    // Aadhaar URLs
-                    uid_front_url: $('#uid_front_url').val(),
-                    uid_back_url: $('#uid_back_url').val(),
-
-                    // Documents
-                    documents: documentUploadedList,
-
-                    // Family members
-                    familyMembers: []
+                    timestamp: new Date().toISOString(),
+                    applicant: {
+                        firstName: $('#applicant_first_name').val(),
+                        middleName: $('#applicant_middle_name').val(),
+                        lastName: $('#applicant_last_name').val(),
+                        gender: $('#applicant_gender').val(),
+                        aadhaar: $('#applicant_aadhaar_number').val(),
+                        mobile: $('#applicant_mobile').val(),
+                        email: $('#applicant_email').val(),
+                        caste: $('#caste').val()
+                    },
+                    uidPhotos: {
+                        front: $('#uid_front_url').val(),
+                        back: $('#uid_back_url').val(),
+                        ocrProcessed: $('#ocr_processed').val()
+                    },
+                    currentAddress: {
+                        houseFlatNo: $('[name="current_house_flat_no"]').val(),
+                        floorNumber: $('[name="current_floor_number"]').val(),
+                        buildingColony: $('[name="current_building_colony"]').val(),
+                        streetRoad: $('[name="current_street_road"]').val(),
+                        villagePanchayatArea: $('[name="current_village_panchayat_area"]').val(),
+                        blockSubDistrict: $('[name="current_block_sub_district"]').val(),
+                        district: $('[name="current_district"]').val(),
+                        cityTown: $('[name="current_city_town"]').val(),
+                        state: $('[name="current_state"]').val(),
+                        pincode: $('[name="current_pincode"]').val(),
+                        landmark: $('[name="current_landmark"]').val(),
+                        poaCode: $('[name="current_poa_code"]').val()
+                    },
+                    permanentAddress: {
+                        houseFlatNo: $('[name="permanent_house_flat_no"]').val(),
+                        floorNumber: $('[name="permanent_floor_number"]').val(),
+                        buildingColony: $('[name="permanent_building_colony"]').val(),
+                        streetRoad: $('[name="permanent_street_road"]').val(),
+                        villagePanchayatArea: $('[name="permanent_village_panchayat_area"]').val(),
+                        blockSubDistrict: $('[name="permanent_block_sub_district"]').val(),
+                        district: $('[name="permanent_district"]').val(),
+                        cityTown: $('[name="permanent_city_town"]').val(),
+                        state: $('[name="permanent_state"]').val(),
+                        pincode: $('[name="permanent_pincode"]').val(),
+                        landmark: $('[name="permanent_landmark"]').val(),
+                        poaCode: $('[name="permanent_poa_code"]').val()
+                    },
+                    familyMembers: collectFamilyMembersForStorage(),
+                    bankDetails: {
+                        ifsc: $('[name="bank_ifsc"]').val(),
+                        accountName: $('[name="bank_account_name"]').val(),
+                        bankName: $('[name="bank_name"]').val(),
+                        branch: $('[name="bank_branch"]').val(),
+                        accountNumber: $('[name="bank_account_number"]').val()
+                    },
+                    lpgConnectionType: $('[name="lpg_connection_type"]').val(),
+                    familyDoc: {
+                        issuingState: $('[name="family_doc_issuing_state"]').val(),
+                        type: $('[name="family_doc_type"]').val(),
+                        number: $('[name="family_doc_number"]').val()
+                    },
+                    documents: documentUploadedList || [],
+                    profilePhotoUrl: $('#profilePhotoUrl').val(),
+                    bankPassbookUrl: $('#bankPassbookUrl').val()
                 };
 
-                // Collect family member data with UID photos and OCR results
-                formData.familyMembers = collectFamilyMemberData();
+                localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(formData));
 
-                // Add profile photo and bank passbook URLs
-                formData.profile_photo_url = $('#profilePhotoUrl').val();
-                formData.bank_passbook_url = $('#bankPassbookUrl').val();
+                // Show save indicator
+                showSaveIndicator();
 
-                localStorage.setItem('ujjwala_v3_form_data', JSON.stringify(formData));
-                console.log('Form data saved to localStorage');
-            } catch (e) {
-                console.error('Error saving form data:', e);
+                console.log('Form data saved to localStorage', formData);
+                return true;
+            } catch (error) {
+                console.error('Error saving form data:', error);
+                return false;
             }
         }
 
-        // Restore form data from localStorage
-        function restoreFormData() {
-            try {
-                const savedData = localStorage.getItem('ujjwala_v3_form_data');
-                if (!savedData) return;
-
-                const formData = JSON.parse(savedData);
-
-                // Show confirmation
-                if (confirm('Found previously saved form data. Would you like to restore it?\n\nपहले से सहेजा गया फॉर्म डेटा मिला। क्या आप इसे पुनर्स्थापित करना चाहते हैं?\n\nਪਹਿਲਾਂ ਤੋਂ ਸੰਭਾਲਿਆ ਗਿਆ ਫਾਰਮ ਡੇਟਾ ਮਿਲਿਆ। ਕੀ ਤੁਸੀਂ ਇਸਨੂੰ ਬਹਾਲ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?')) {
-                    // Restore basic applicant details
-                    $('#applicant_first_name').val(formData.applicant_first_name || '');
-                    $('#applicant_middle_name').val(formData.applicant_middle_name || '');
-                    $('#applicant_last_name').val(formData.applicant_last_name || '');
-                    $('#applicant_gender').val(formData.applicant_gender || '');
-                    $('#applicant_aadhaar_number').val(formData.applicant_aadhaar_number || '');
-                    $('#applicant_mobile').val(formData.applicant_mobile || '');
-                    $('#applicant_email').val(formData.applicant_email || '');
-                    $('#caste').val(formData.caste || '');
-
-                    // Restore current address
-                    $('[name="current_house_flat_no"]').val(formData.current_house_flat_no || '');
-                    $('[name="current_floor_number"]').val(formData.current_floor_number || '');
-                    $('[name="current_street_road"]').val(formData.current_street_road || '');
-                    $('[name="current_landmark"]').val(formData.current_landmark || '');
-                    $('[name="current_district"]').val(formData.current_district || '');
-                    $('[name="current_city_town"]').val(formData.current_city_town || '');
-                    $('[name="current_pincode"]').val(formData.current_pincode || '');
-                    $('[name="current_poa_code"]').val(formData.current_poa_code || '');
-
-                    // Restore permanent address
-                    $('[name="permanent_house_flat_no"]').val(formData.permanent_house_flat_no || '');
-                    $('[name="permanent_street_road"]').val(formData.permanent_street_road || '');
-                    $('[name="permanent_village_panchayat_area"]').val(formData.permanent_village_panchayat_area || '');
-                    $('[name="permanent_district"]').val(formData.permanent_district || '');
-                    $('[name="permanent_city_town"]').val(formData.permanent_city_town || '');
-                    $('[name="permanent_state"]').val(formData.permanent_state || '');
-                    $('[name="permanent_pincode"]').val(formData.permanent_pincode || '');
-                    $('[name="permanent_poa_code"]').val(formData.permanent_poa_code || '');
-
-                    // Restore bank details
-                    $('[name="bank_account_name"]').val(formData.bank_account_name || '');
-                    $('[name="bank_name"]').val(formData.bank_name || '');
-                    $('[name="bank_branch"]').val(formData.bank_branch || '');
-                    $('[name="bank_ifsc"]').val(formData.bank_ifsc || '');
-                    $('[name="bank_account_number"]').val(formData.bank_account_number || '');
-
-                    // Enable account number if bank details exist
-                    if (formData.bank_ifsc && formData.bank_name) {
-                        $('#bank_account_number').prop('disabled', false);
-                    }
-
-                    // Restore LPG details
-                    $('[name="family_doc_type"]').val(formData.family_doc_type || '');
-
-                    // Restore Aadhaar URLs
-                    if (formData.uid_front_url && formData.uid_back_url) {
-                        $('#uid_front_url').val(formData.uid_front_url);
-                        $('#uid_back_url').val(formData.uid_back_url);
-                        $('#aadhaarFrontPreview').attr('src', formData.uid_front_url);
-                        $('#aadhaarBackPreview').attr('src', formData.uid_back_url);
-                        $('#aadhaarPreview').show();
-                        $('#aadhaar_front_uppy').hide();
-                        $('#aadhaar_back_uppy').hide();
-                        $('#processOcrBtn').hide();
-                        $('#applicationForm').show();
-                    }
-
-                    // Restore documents
-                    if (formData.documents && formData.documents.length > 0) {
-                        formData.documents.forEach(doc => {
-                            addDocumentToList(doc);
-                        });
-                    }
-
-                    // Restore family members
-                    if (formData.familyMembers && formData.familyMembers.length > 0) {
-                        formData.familyMembers.forEach(member => {
-                            // Set counter to max ID to avoid conflicts
-                            if (parseInt(member.id) > familyMemberCounter) {
-                                familyMemberCounter = parseInt(member.id);
-                            }
-
-                            const isSelf = member.relation === 'SELF';
-                            const memberHtml = `
-                                <div class="family-member-item" id="familyMember${member.id}">
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <h6><i class="fas fa-user"></i> Family Member ${member.id}${isSelf ? ' (Self - Applicant)' : ''}</h6>
-                                        <button type="button" class="btn btn-sm btn-danger" onclick="removeFamilyMember(${member.id})">
-                                            <i class="fas fa-times"></i> Remove
-                                        </button>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Full Name</label>
-                                                <input type="text" name="family_member_${member.id}_name" class="form-control" value="${member.name || ''}" required>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Relation</label>
-                                                <select name="family_member_${member.id}_relation" class="form-control" required>
-                                                    <option value="">Select</option>
-                                                    <option value="SELF" ${member.relation === 'SELF' ? 'selected' : ''}>Self</option>
-                                                    <option value="HUSBAND" ${member.relation === 'HUSBAND' ? 'selected' : ''}>Husband</option>
-                                                    <option value="WIFE" ${member.relation === 'WIFE' ? 'selected' : ''}>Wife</option>
-                                                    <option value="SON" ${member.relation === 'SON' ? 'selected' : ''}>Son</option>
-                                                    <option value="DAUGHTER" ${member.relation === 'DAUGHTER' ? 'selected' : ''}>Daughter</option>
-                                                    <option value="FATHER" ${member.relation === 'FATHER' ? 'selected' : ''}>Father</option>
-                                                    <option value="MOTHER" ${member.relation === 'MOTHER' ? 'selected' : ''}>Mother</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Gender</label>
-                                                <select name="family_member_${member.id}_gender" class="form-control" required>
-                                                    <option value="">Select</option>
-                                                    <option value="M" ${member.gender === 'M' ? 'selected' : ''}>Male</option>
-                                                    <option value="F" ${member.gender === 'F' ? 'selected' : ''}>Female</option>
-                                                    <option value="O" ${member.gender === 'O' ? 'selected' : ''}>Other</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label class="required-field">Date of Birth</label>
-                                                <input type="date" name="family_member_${member.id}_dob" class="form-control" value="${member.dob || ''}" required>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Aadhaar Number</label>
-                                                <input type="text" name="family_member_${member.id}_aadhaar" class="form-control" value="${member.aadhaar || ''}" required pattern="[0-9]{12}" maxlength="12">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                            $('#familyMembersContainer').append(memberHtml);
-                        });
-                    }
-
-                    console.log('Form data restored from localStorage');
-                } else {
-                    // User declined, clear the saved data
-                    localStorage.removeItem('ujjwala_v3_form_data');
-                }
-            } catch (e) {
-                console.error('Error restoring form data:', e);
-            }
-        }
+        // ============= AUTO-SAVE AND INITIALIZATION =============
 
         // Auto-save form data every 30 seconds
         setInterval(function() {
@@ -2084,14 +2235,23 @@
             // Initialize bank passbook uploader
             window.photoUploadManager.initBankPassbookUploader();
 
-            setTimeout(restoreFormData, 1000);
+            // Try to load saved data on page load
+            if (localStorage.getItem(FORM_STORAGE_KEY)) {
+                setTimeout(() => loadFormData(), 500);
+            }
+
+            // Set up auto-save on form field changes
+            $('#applicationForm').on('input change', 'input, select, textarea', function() {
+                scheduleAutoSave();
+            });
         });
 
         // Discard and start over function
         function discardAndStartOver() {
             if (confirm('Are you sure you want to discard this form and start over? All entered data will be lost.\n\nक्या आप सुनिश्चित हैं कि आप इस फॉर्म को छोड़ना और फिर से शुरू करना चाहते हैं?\n\nਕੀ ਤੁਸੀਂ ਯਕੀਨੀ ਹੋ ਕਿ ਤੁਸੀਂ ਇਸ ਫਾਰਮ ਨੂੰ ਰੱਦ ਕਰਨਾ ਅਤੇ ਦੁਬਾਰਾ ਸ਼ੁਰੂ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?')) {
                 // Clear local storage
-                localStorage.removeItem('ujjwala_v3_form_data');
+                localStorage.removeItem(FORM_STORAGE_KEY);
+                localStorage.removeItem('ujjwala_v3_last_error');
                 // Reload the page
                 window.location.reload();
             }
