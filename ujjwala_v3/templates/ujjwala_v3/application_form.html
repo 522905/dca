@@ -265,6 +265,16 @@
         input[readonly] {
             background-color: #e9ecef;
         }
+        #documentsContainer {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        @media (max-width: 768px) {
+            #documentsContainer {
+                grid-template-columns: 1fr;
+            }
+        }
 
         /* Image Modal Styles */
         .image-modal {
@@ -380,14 +390,21 @@
             {% endif %}
 
             <div class="info-box">
-                <strong><i class="fas fa-info-circle"></i> Application Process:</strong>
-                <ol class="mb-0 mt-2">
-                    <li>First, upload your Aadhaar card (front & back) for OCR</li>
-                    <li>Your details will be automatically filled from Aadhaar</li>
-                    <li>Review and complete remaining details</li>
-                    <li>Upload required documents</li>
-                    <li>Submit your application</li>
-                </ol>
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong><i class="fas fa-info-circle"></i> Application Process:</strong>
+                        <ol class="mb-0 mt-2">
+                            <li>First, upload your Aadhaar card (front & back) for OCR</li>
+                            <li>Your details will be automatically filled from Aadhaar</li>
+                            <li>Review and complete remaining details</li>
+                            <li>Upload required documents</li>
+                            <li>Submit your application</li>
+                        </ol>
+                    </div>
+                    <button type="button" class="btn btn-danger" onclick="discardAndStartOver()" style="white-space: nowrap;">
+                        <i class="fas fa-redo"></i> Discard & Start Over
+                    </button>
+                </div>
             </div>
 
             <!-- Aadhaar OCR Section -->
@@ -462,13 +479,10 @@
                             </div>
                         </div>
 
+                        <!-- Hidden DOB field - will be populated from family member SELF data -->
+                        <input type="hidden" name="applicant_dob" id="applicant_dob">
+
                         <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="required-field">Date of Birth</label>
-                                    <input type="date" name="applicant_dob" id="applicant_dob" class="form-control" required>
-                                </div>
-                            </div>
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label class="required-field">Gender</label>
@@ -685,41 +699,56 @@
 
                 <div class="card mb-3">
                     <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> <strong>Note:</strong> Please enter IFSC code first. Bank details will be auto-filled.
+                        </div>
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="required-field">Account Holder Name</label>
-                                    <input type="text" name="bank_account_name" class="form-control" required maxlength="200">
+                                    <label class="required-field">IFSC Code</label>
+                                    <input type="text" name="bank_ifsc" id="bank_ifsc" class="form-control" required
+                                           pattern="[A-Z]{4}0[A-Z0-9]{6}" maxlength="11" style="text-transform: uppercase;"
+                                           placeholder="Enter IFSC Code (e.g., SBIN0001234)">
+                                    <small id="ifsc_info" class="text-muted"></small>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="required-field">Bank Name</label>
-                                    <input type="text" name="bank_name" class="form-control" required maxlength="200">
+                                    <label class="required-field">Account Holder Name</label>
+                                    <input type="text" name="bank_account_name" class="form-control" required maxlength="200"
+                                           placeholder="As per bank account">
                                 </div>
                             </div>
                         </div>
 
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="required-field">Bank Name</label>
+                                    <input type="text" name="bank_name" id="bank_name" class="form-control" required maxlength="200" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="required-field">Branch Name</label>
-                                    <input type="text" name="bank_branch" class="form-control" required maxlength="200">
+                                    <input type="text" name="bank_branch" id="bank_branch" class="form-control" required maxlength="200" readonly>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="required-field">IFSC Code</label>
-                                    <input type="text" name="bank_ifsc" id="bank_ifsc" class="form-control" required
-                                           pattern="[A-Z]{4}0[A-Z0-9]{6}" maxlength="11" style="text-transform: uppercase;">
-                                    <small id="ifsc_info" class="text-muted"></small>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="required-field">Account Number</label>
-                                    <input type="text" name="bank_account_number" class="form-control" required
-                                           minlength="9" maxlength="18">
+                                    <input type="text" name="bank_account_number" id="bank_account_number" class="form-control" required
+                                           minlength="9" maxlength="18" disabled placeholder="Enter IFSC first">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Branch Address</label>
+                                    <input type="text" id="bank_address" class="form-control" readonly placeholder="Auto-filled from IFSC">
                                 </div>
                             </div>
                         </div>
@@ -816,29 +845,11 @@
                     </div>
                 </div>
 
-                <!-- Declaration -->
-                <div class="section-title">
-                    <i class="fas fa-check-circle"></i> Declaration
-                </div>
-
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="form-group">
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" id="is_deprivation_decl_signed"
-                                       name="is_deprivation_decl_signed" required>
-                                <label class="custom-control-label" for="is_deprivation_decl_signed">
-                                    मैं घोषणा करती हूं कि उपर दी गई सभी जानकारी सत्य है और मैं प्रवासी हूं
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="text-center mt-4">
-                            <button type="button" class="btn btn-primary btn-lg" onclick="showPreview()">
-                                <i class="fas fa-eye"></i> Preview Application
-                            </button>
-                        </div>
-                    </div>
+                <!-- Preview Button -->
+                <div class="text-center mt-4 mb-4">
+                    <button type="button" class="btn btn-primary btn-lg" onclick="showPreview()">
+                        <i class="fas fa-eye"></i> Preview Application
+                    </button>
                 </div>
             </form>
 
@@ -1240,8 +1251,10 @@
                         $('#aadhaarBackPreview').attr('src', uid_back_url);
                         $('#aadhaarPreview').show();
 
-                        // Hide Aadhaar upload section and show form
-                        $('#aadhaarOcrSection').slideUp();
+                        // Hide only the uppy uploaders and process button, keep the preview visible
+                        $('#aadhaar_front_uppy').hide();
+                        $('#aadhaar_back_uppy').hide();
+                        $('#processOcrBtn').hide();
                         $('#applicationForm').slideDown();
                         $('html, body').animate({ scrollTop: $('#applicationForm').offset().top }, 500);
                     } else {
@@ -1267,17 +1280,7 @@
                 $('#applicant_last_name').val(nameParts.slice(2).join(' ') || '');
             }
 
-            // DOB
-            if (data.dob && data.dob.value) {
-                let dobValue = data.dob.value;
-                const dobParts = dobValue.split('/');
-                if (dobParts.length === 1) {
-                    dobValue = `${dobParts[0]}-01-01`;
-                } else if (dobParts.length === 3) {
-                    dobValue = `${dobParts[2]}-${dobParts[1]}-${dobParts[0]}`;
-                }
-                $('#applicant_dob').val(dobValue);
-            }
+            // DOB - will be set from family member SELF data, no need to set here
 
             // Gender
             if (data.gender && data.gender.value) {
@@ -1510,19 +1513,55 @@
             $(`#familyMember${memberId}`).remove();
         }
 
-        // IFSC validation
+        // IFSC validation with bank details auto-fill
         $('#bank_ifsc').on('input', function() {
             this.value = this.value.toUpperCase();
+
+            // Disable account number field when IFSC is being changed
+            if (this.value.length < 11) {
+                $('#bank_account_number').prop('disabled', true).val('');
+                $('#bank_name').val('');
+                $('#bank_branch').val('');
+                $('#bank_address').val('');
+                $('#ifsc_info').html('');
+            }
         });
 
         $('#bank_ifsc').on('blur', function() {
             const ifsc = $(this).val();
             if (ifsc.length === 11) {
-                $.getJSON('https://ifsc.razorpay.com/' + ifsc, function(data) {
-                    $('#ifsc_info').html(`<span class="text-success">✓ ${data.BANK}, ${data.BRANCH}</span>`);
-                }).fail(function() {
-                    $('#ifsc_info').html('<span class="text-danger">✗ Invalid IFSC</span>');
+                // Show loading message
+                $('#ifsc_info').html('<span class="text-info"><i class="fas fa-spinner fa-spin"></i> Validating IFSC...</span>');
+
+                $.ajax({
+                    url: 'https://ifsc.razorpay.com/' + ifsc,
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        // Auto-fill bank details
+                        $('#bank_name').val(data.BANK || '');
+                        $('#bank_branch').val(data.BRANCH || '');
+                        $('#bank_address').val(data.ADDRESS || '');
+
+                        // Show success message
+                        $('#ifsc_info').html(`<span class="text-success"><i class="fas fa-check-circle"></i> Valid IFSC - ${data.BANK}, ${data.BRANCH}</span>`);
+
+                        // Enable account number field
+                        $('#bank_account_number').prop('disabled', false).attr('placeholder', 'Enter account number');
+                    },
+                    error: function() {
+                        // Show error message
+                        $('#ifsc_info').html('<span class="text-danger"><i class="fas fa-times-circle"></i> Invalid IFSC Code. Please check and try again.</span>');
+
+                        // Clear fields and keep account number disabled
+                        $('#bank_name').val('');
+                        $('#bank_branch').val('');
+                        $('#bank_address').val('');
+                        $('#bank_account_number').prop('disabled', true).val('').attr('placeholder', 'Enter valid IFSC first');
+                    }
                 });
+            } else if (ifsc.length > 0) {
+                $('#ifsc_info').html('<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> IFSC must be 11 characters</span>');
             }
         });
 
@@ -1541,7 +1580,17 @@
             const fullName = [firstName, middleName, lastName].filter(n => n).join(' ');
 
             $('#preview-name').text(fullName);
-            $('#preview-dob').text($('#applicant_dob').val());
+
+            // Get DOB from SELF family member
+            let selfDOB = '';
+            $('select[name^="family_member_"][name$="_relation"]').each(function() {
+                if ($(this).val() === 'SELF') {
+                    const memberId = $(this).attr('name').match(/family_member_(\d+)_relation/)[1];
+                    selfDOB = $(`[name="family_member_${memberId}_dob"]`).val();
+                    return false; // break loop
+                }
+            });
+            $('#preview-dob').text(selfDOB || 'Not specified');
             $('#preview-gender').text($('#applicant_gender option:selected').text());
             $('#preview-aadhaar').text($('#applicant_aadhaar_number').val());
             $('#preview-mobile').text($('#applicant_mobile').val());
@@ -1632,8 +1681,88 @@
                 return;
             }
 
-            // Submit the form
-            $('#applicationForm').submit();
+            // Save form data before submission
+            saveFormData();
+
+            // Show loader
+            $('#loader').show();
+            $('#ocr_loader').text('Submitting your application, please wait...');
+
+            // Serialize form data
+            const formData = $('#applicationForm').serialize();
+
+            // Submit via AJAX
+            $.ajax({
+                url: window.location.pathname,
+                type: 'POST',
+                data: formData,
+                success: function(response, textStatus, xhr) {
+                    // Check if redirected to success page
+                    if (xhr.status === 200 || xhr.status === 302) {
+                        // Clear localStorage on successful submission
+                        localStorage.removeItem('ujjwala_v3_form_data');
+
+                        // If response contains a redirect URL, follow it
+                        if (response.redirect_url) {
+                            window.location.href = response.redirect_url;
+                        } else {
+                            // Otherwise, reload to show success message
+                            window.location.reload();
+                        }
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('#loader').hide();
+
+                    // Parse error details
+                    let errorMessage = 'An error occurred while submitting your application.\n\n';
+                    errorMessage += 'Error Details:\n';
+                    errorMessage += '- Status: ' + xhr.status + '\n';
+                    errorMessage += '- Error: ' + error + '\n';
+
+                    if (xhr.responseText) {
+                        try {
+                            const errorData = JSON.parse(xhr.responseText);
+                            errorMessage += '- Message: ' + (errorData.message || errorData.error || '') + '\n';
+                        } catch (e) {
+                            // If not JSON, show first 200 chars of response
+                            errorMessage += '- Response: ' + xhr.responseText.substring(0, 200) + '\n';
+                        }
+                    }
+
+                    errorMessage += '\n✓ Your data has been saved locally and will be restored.\n';
+                    errorMessage += '✓ Please try again or contact support with the error details above.\n\n';
+                    errorMessage += 'आपका डेटा सुरक्षित रूप से सहेजा गया है।\n';
+                    errorMessage += 'ਤੁਹਾਡਾ ਡੇਟਾ ਸੁਰੱਖਿਅਤ ਰੂਪ ਵਿੱਚ ਸੰਭਾਲਿਆ ਗਿਆ ਹੈ।';
+
+                    alert(errorMessage);
+
+                    // Log to console for debugging
+                    console.error('Submission Error:', {
+                        status: xhr.status,
+                        statusText: xhr.statusText,
+                        error: error,
+                        response: xhr.responseText
+                    });
+
+                    // Return to form view
+                    editApplication();
+                }
+            });
+        }
+
+        // Sync DOB from SELF family member to hidden applicant_dob field
+        function syncApplicantDOB() {
+            // Find the SELF family member and get their DOB
+            let selfDOB = '';
+            $('select[name^="family_member_"][name$="_relation"]').each(function() {
+                if ($(this).val() === 'SELF') {
+                    const memberId = $(this).attr('name').match(/family_member_(\d+)_relation/)[1];
+                    selfDOB = $(`[name="family_member_${memberId}_dob"]`).val();
+                    return false; // break loop
+                }
+            });
+            $('#applicant_dob').val(selfDOB);
         }
 
         // Form validation
@@ -1646,7 +1775,271 @@
                 alert('Current and Permanent addresses must be in different states for migrant applications');
                 return false;
             }
+
+            // Sync DOB from SELF family member before submission
+            syncApplicantDOB();
         });
+
+        // Save form data to localStorage
+        function saveFormData() {
+            try {
+                const formData = {
+                    // Basic applicant details
+                    applicant_first_name: $('#applicant_first_name').val(),
+                    applicant_middle_name: $('#applicant_middle_name').val(),
+                    applicant_last_name: $('#applicant_last_name').val(),
+                    applicant_gender: $('#applicant_gender').val(),
+                    applicant_aadhaar_number: $('#applicant_aadhaar_number').val(),
+                    applicant_mobile: $('#applicant_mobile').val(),
+                    applicant_email: $('#applicant_email').val(),
+                    caste: $('#caste').val(),
+
+                    // Current address
+                    current_house_flat_no: $('[name="current_house_flat_no"]').val(),
+                    current_floor_number: $('[name="current_floor_number"]').val(),
+                    current_street_road: $('[name="current_street_road"]').val(),
+                    current_landmark: $('[name="current_landmark"]').val(),
+                    current_state: $('[name="current_state"]').val(),
+                    current_district: $('[name="current_district"]').val(),
+                    current_city_town: $('[name="current_city_town"]').val(),
+                    current_pincode: $('[name="current_pincode"]').val(),
+                    current_poa_code: $('[name="current_poa_code"]').val(),
+
+                    // Permanent address
+                    permanent_house_flat_no: $('[name="permanent_house_flat_no"]').val(),
+                    permanent_street_road: $('[name="permanent_street_road"]').val(),
+                    permanent_village_panchayat_area: $('[name="permanent_village_panchayat_area"]').val(),
+                    permanent_district: $('[name="permanent_district"]').val(),
+                    permanent_city_town: $('[name="permanent_city_town"]').val(),
+                    permanent_state: $('[name="permanent_state"]').val(),
+                    permanent_pincode: $('[name="permanent_pincode"]').val(),
+                    permanent_poa_code: $('[name="permanent_poa_code"]').val(),
+
+                    // Bank details
+                    bank_account_name: $('[name="bank_account_name"]').val(),
+                    bank_name: $('[name="bank_name"]').val(),
+                    bank_branch: $('[name="bank_branch"]').val(),
+                    bank_ifsc: $('[name="bank_ifsc"]').val(),
+                    bank_account_number: $('[name="bank_account_number"]').val(),
+
+                    // LPG details
+                    family_doc_type: $('[name="family_doc_type"]').val(),
+
+                    // Aadhaar URLs
+                    uid_front_url: $('#uid_front_url').val(),
+                    uid_back_url: $('#uid_back_url').val(),
+
+                    // Documents
+                    documents: documentUploadedList,
+
+                    // Family members
+                    familyMembers: []
+                };
+
+                // Collect family member data
+                $('.family-member-item').each(function() {
+                    const memberId = $(this).attr('id').replace('familyMember', '');
+                    formData.familyMembers.push({
+                        id: memberId,
+                        name: $(this).find('[name^="family_member_"][name$="_name"]').val(),
+                        relation: $(this).find('[name^="family_member_"][name$="_relation"]').val(),
+                        gender: $(this).find('[name^="family_member_"][name$="_gender"]').val(),
+                        dob: $(this).find('[name^="family_member_"][name$="_dob"]').val(),
+                        aadhaar: $(this).find('[name^="family_member_"][name$="_aadhaar"]').val()
+                    });
+                });
+
+                localStorage.setItem('ujjwala_v3_form_data', JSON.stringify(formData));
+                console.log('Form data saved to localStorage');
+            } catch (e) {
+                console.error('Error saving form data:', e);
+            }
+        }
+
+        // Restore form data from localStorage
+        function restoreFormData() {
+            try {
+                const savedData = localStorage.getItem('ujjwala_v3_form_data');
+                if (!savedData) return;
+
+                const formData = JSON.parse(savedData);
+
+                // Show confirmation
+                if (confirm('Found previously saved form data. Would you like to restore it?\n\nपहले से सहेजा गया फॉर्म डेटा मिला। क्या आप इसे पुनर्स्थापित करना चाहते हैं?\n\nਪਹਿਲਾਂ ਤੋਂ ਸੰਭਾਲਿਆ ਗਿਆ ਫਾਰਮ ਡੇਟਾ ਮਿਲਿਆ। ਕੀ ਤੁਸੀਂ ਇਸਨੂੰ ਬਹਾਲ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?')) {
+                    // Restore basic applicant details
+                    $('#applicant_first_name').val(formData.applicant_first_name || '');
+                    $('#applicant_middle_name').val(formData.applicant_middle_name || '');
+                    $('#applicant_last_name').val(formData.applicant_last_name || '');
+                    $('#applicant_gender').val(formData.applicant_gender || '');
+                    $('#applicant_aadhaar_number').val(formData.applicant_aadhaar_number || '');
+                    $('#applicant_mobile').val(formData.applicant_mobile || '');
+                    $('#applicant_email').val(formData.applicant_email || '');
+                    $('#caste').val(formData.caste || '');
+
+                    // Restore current address
+                    $('[name="current_house_flat_no"]').val(formData.current_house_flat_no || '');
+                    $('[name="current_floor_number"]').val(formData.current_floor_number || '');
+                    $('[name="current_street_road"]').val(formData.current_street_road || '');
+                    $('[name="current_landmark"]').val(formData.current_landmark || '');
+                    $('[name="current_district"]').val(formData.current_district || '');
+                    $('[name="current_city_town"]').val(formData.current_city_town || '');
+                    $('[name="current_pincode"]').val(formData.current_pincode || '');
+                    $('[name="current_poa_code"]').val(formData.current_poa_code || '');
+
+                    // Restore permanent address
+                    $('[name="permanent_house_flat_no"]').val(formData.permanent_house_flat_no || '');
+                    $('[name="permanent_street_road"]').val(formData.permanent_street_road || '');
+                    $('[name="permanent_village_panchayat_area"]').val(formData.permanent_village_panchayat_area || '');
+                    $('[name="permanent_district"]').val(formData.permanent_district || '');
+                    $('[name="permanent_city_town"]').val(formData.permanent_city_town || '');
+                    $('[name="permanent_state"]').val(formData.permanent_state || '');
+                    $('[name="permanent_pincode"]').val(formData.permanent_pincode || '');
+                    $('[name="permanent_poa_code"]').val(formData.permanent_poa_code || '');
+
+                    // Restore bank details
+                    $('[name="bank_account_name"]').val(formData.bank_account_name || '');
+                    $('[name="bank_name"]').val(formData.bank_name || '');
+                    $('[name="bank_branch"]').val(formData.bank_branch || '');
+                    $('[name="bank_ifsc"]').val(formData.bank_ifsc || '');
+                    $('[name="bank_account_number"]').val(formData.bank_account_number || '');
+
+                    // Enable account number if bank details exist
+                    if (formData.bank_ifsc && formData.bank_name) {
+                        $('#bank_account_number').prop('disabled', false);
+                    }
+
+                    // Restore LPG details
+                    $('[name="family_doc_type"]').val(formData.family_doc_type || '');
+
+                    // Restore Aadhaar URLs
+                    if (formData.uid_front_url && formData.uid_back_url) {
+                        $('#uid_front_url').val(formData.uid_front_url);
+                        $('#uid_back_url').val(formData.uid_back_url);
+                        $('#aadhaarFrontPreview').attr('src', formData.uid_front_url);
+                        $('#aadhaarBackPreview').attr('src', formData.uid_back_url);
+                        $('#aadhaarPreview').show();
+                        $('#aadhaar_front_uppy').hide();
+                        $('#aadhaar_back_uppy').hide();
+                        $('#processOcrBtn').hide();
+                        $('#applicationForm').show();
+                    }
+
+                    // Restore documents
+                    if (formData.documents && formData.documents.length > 0) {
+                        formData.documents.forEach(doc => {
+                            addDocumentToList(doc);
+                        });
+                    }
+
+                    // Restore family members
+                    if (formData.familyMembers && formData.familyMembers.length > 0) {
+                        formData.familyMembers.forEach(member => {
+                            // Set counter to max ID to avoid conflicts
+                            if (parseInt(member.id) > familyMemberCounter) {
+                                familyMemberCounter = parseInt(member.id);
+                            }
+
+                            const isSelf = member.relation === 'SELF';
+                            const memberHtml = `
+                                <div class="family-member-item" id="familyMember${member.id}">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <h6><i class="fas fa-user"></i> Family Member ${member.id}${isSelf ? ' (Self - Applicant)' : ''}</h6>
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="removeFamilyMember(${member.id})">
+                                            <i class="fas fa-times"></i> Remove
+                                        </button>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Full Name</label>
+                                                <input type="text" name="family_member_${member.id}_name" class="form-control" value="${member.name || ''}" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Relation</label>
+                                                <select name="family_member_${member.id}_relation" class="form-control" required>
+                                                    <option value="">Select</option>
+                                                    <option value="SELF" ${member.relation === 'SELF' ? 'selected' : ''}>Self</option>
+                                                    <option value="HUSBAND" ${member.relation === 'HUSBAND' ? 'selected' : ''}>Husband</option>
+                                                    <option value="WIFE" ${member.relation === 'WIFE' ? 'selected' : ''}>Wife</option>
+                                                    <option value="SON" ${member.relation === 'SON' ? 'selected' : ''}>Son</option>
+                                                    <option value="DAUGHTER" ${member.relation === 'DAUGHTER' ? 'selected' : ''}>Daughter</option>
+                                                    <option value="FATHER" ${member.relation === 'FATHER' ? 'selected' : ''}>Father</option>
+                                                    <option value="MOTHER" ${member.relation === 'MOTHER' ? 'selected' : ''}>Mother</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>Gender</label>
+                                                <select name="family_member_${member.id}_gender" class="form-control" required>
+                                                    <option value="">Select</option>
+                                                    <option value="M" ${member.gender === 'M' ? 'selected' : ''}>Male</option>
+                                                    <option value="F" ${member.gender === 'F' ? 'selected' : ''}>Female</option>
+                                                    <option value="O" ${member.gender === 'O' ? 'selected' : ''}>Other</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label class="required-field">Date of Birth</label>
+                                                <input type="date" name="family_member_${member.id}_dob" class="form-control" value="${member.dob || ''}" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>Aadhaar Number</label>
+                                                <input type="text" name="family_member_${member.id}_aadhaar" class="form-control" value="${member.aadhaar || ''}" required pattern="[0-9]{12}" maxlength="12">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            $('#familyMembersContainer').append(memberHtml);
+                        });
+                    }
+
+                    console.log('Form data restored from localStorage');
+                } else {
+                    // User declined, clear the saved data
+                    localStorage.removeItem('ujjwala_v3_form_data');
+                }
+            } catch (e) {
+                console.error('Error restoring form data:', e);
+            }
+        }
+
+        // Auto-save form data every 30 seconds
+        setInterval(function() {
+            if ($('#applicationForm').is(':visible')) {
+                saveFormData();
+            }
+        }, 30000);
+
+        // Save form data when user leaves page
+        $(window).on('beforeunload', function() {
+            if ($('#applicationForm').is(':visible')) {
+                saveFormData();
+            }
+        });
+
+        // Restore form data on page load
+        $(document).ready(function() {
+            setTimeout(restoreFormData, 1000);
+        });
+
+        // Discard and start over function
+        function discardAndStartOver() {
+            if (confirm('Are you sure you want to discard this form and start over? All entered data will be lost.\n\nक्या आप सुनिश्चित हैं कि आप इस फॉर्म को छोड़ना और फिर से शुरू करना चाहते हैं?\n\nਕੀ ਤੁਸੀਂ ਯਕੀਨੀ ਹੋ ਕਿ ਤੁਸੀਂ ਇਸ ਫਾਰਮ ਨੂੰ ਰੱਦ ਕਰਨਾ ਅਤੇ ਦੁਬਾਰਾ ਸ਼ੁਰੂ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?')) {
+                // Clear local storage
+                localStorage.removeItem('ujjwala_v3_form_data');
+                // Reload the page
+                window.location.reload();
+            }
+        }
 
         // Image Modal Functions
         function viewImage(imageUrl, caption) {
