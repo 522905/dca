@@ -15,6 +15,12 @@ class PhotoUploadManager {
      * Initialize profile photo uploader
      */
     initProfilePhotoUploader() {
+        // Check if already initialized
+        if (this.uploaders.profile) {
+            console.log('Profile photo uploader already initialized');
+            return;
+        }
+
         const profileUppy = new Uppy.Core({
             maxFileSize: 10000000, // 10 MB
             maxNumberOfFiles: 1,
@@ -70,6 +76,12 @@ class PhotoUploadManager {
      * Initialize bank passbook photo uploader
      */
     initBankPassbookUploader() {
+        // Check if already initialized
+        if (this.uploaders.bankPassbook) {
+            console.log('Bank passbook uploader already initialized');
+            return;
+        }
+
         const passbookUppy = new Uppy.Core({
             maxFileSize: 10000000, // 10 MB
             maxNumberOfFiles: 1,
