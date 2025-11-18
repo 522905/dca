@@ -18,44 +18,48 @@
 
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f5f7fa;
             min-height: 100vh;
-            padding: 20px 0;
+            padding: 15px 0;
         }
         .form-container {
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            padding: 40px;
-            margin: 20px auto;
-            max-width: 1200px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 25px;
+            margin: 15px auto;
+            max-width: 1100px;
         }
         .form-header {
             text-align: center;
-            margin-bottom: 40px;
-            padding-bottom: 20px;
-            border-bottom: 3px solid #667eea;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #4a5568;
         }
         .section-title {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #2d3748;
             color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-top: 30px;
-            margin-bottom: 20px;
-            font-weight: bold;
-            font-size: 1.2em;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            font-size: 1.05em;
+            border-left: 4px solid #4299e1;
         }
         .form-control:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            border-color: #4299e1;
+            box-shadow: 0 0 0 0.2rem rgba(66, 153, 225, 0.25);
         }
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #4299e1;
             border: none;
-            padding: 12px 40px;
-            font-size: 1.1em;
-            border-radius: 25px;
+            padding: 8px 25px;
+            font-size: 1em;
+            border-radius: 4px;
+        }
+        .btn-primary:hover {
+            background: #3182ce;
         }
         .required-field::after {
             content: " *";
@@ -64,9 +68,29 @@
         .info-box {
             background: #e7f3ff;
             border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        .card {
+            margin-bottom: 15px;
+            border: 1px solid #e2e8f0;
+        }
+        .card-body {
             padding: 15px;
-            margin: 20px 0;
-            border-radius: 5px;
+        }
+        label {
+            font-size: 0.9em;
+            font-weight: 500;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+        .form-control {
+            font-size: 0.9em;
+            padding: 6px 12px;
         }
         .loader {
             position: fixed;
@@ -100,19 +124,19 @@
             margin: 20px auto;
         }
         .document-item {
-            background: linear-gradient(to bottom, #ffffff, #f8f9fa);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            border: 2px solid #e0e0e0;
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            border: 1px solid #e2e8f0;
             position: relative;
             transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
         .document-item:hover {
-            border-color: #667eea;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-            transform: translateY(-2px);
+            border-color: #4299e1;
+            box-shadow: 0 2px 8px rgba(66, 153, 225, 0.15);
+            transform: translateY(-1px);
         }
         .document-preview-container {
             display: flex;
@@ -131,9 +155,9 @@
             transition: all 0.3s ease;
         }
         .document-preview-thumb:hover {
-            border-color: #667eea;
+            border-color: #4299e1;
             transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
         }
         .document-preview-thumb img {
             width: 100%;
@@ -146,7 +170,7 @@
             justify-content: center;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #4299e1;
             color: white;
             font-size: 2em;
         }
@@ -222,9 +246,9 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         .aadhaar-preview-item:hover {
-            border-color: #667eea;
-            transform: translateY(-4px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+            border-color: #4299e1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
         }
         .aadhaar-preview-item img {
             width: 100%;
@@ -248,7 +272,7 @@
             top: 10px;
             right: 10px;
             background: rgba(255,255,255,0.9);
-            color: #667eea;
+            color: #4299e1;
             width: 35px;
             height: 35px;
             border-radius: 50%;
@@ -394,11 +418,11 @@
                     <div>
                         <strong><i class="fas fa-info-circle"></i> Application Process:</strong>
                         <ol class="mb-0 mt-2">
-                            <li>First, upload your Aadhaar card (front & back) for OCR</li>
-                            <li>Your details will be automatically filled from Aadhaar</li>
-                            <li>Review and complete remaining details</li>
+                            <li>Fill in your basic details (name, contact, etc.)</li>
+                            <li>Add family members with their Aadhaar cards (OCR auto-fills details)</li>
+                            <li>Provide bank account information</li>
                             <li>Upload required documents</li>
-                            <li>Submit your application</li>
+                            <li>Preview and submit your application</li>
                         </ol>
                     </div>
                     <button type="button" class="btn btn-danger" onclick="discardAndStartOver()" style="white-space: nowrap;">
@@ -407,44 +431,8 @@
                 </div>
             </div>
 
-            <!-- Aadhaar OCR Section -->
-            <div class="card mb-4" id="aadhaarOcrSection">
-                <div class="section-title">
-                    <i class="fas fa-id-card"></i> Step 1: Upload Aadhaar Card for Verification
-                </div>
-                <div class="p-3">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label class="required-field">Aadhaar Card Front Photo</label>
-                            <div id="aadhaar_front_uppy"></div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="required-field">Aadhaar Card Back Photo</label>
-                            <div id="aadhaar_back_uppy"></div>
-                        </div>
-                    </div>
-                    <div class="text-center mt-3">
-                        <button type="button" class="btn btn-primary btn-lg" id="processOcrBtn">
-                            <i class="fas fa-magic"></i> Process Aadhaar & Fill Details
-                        </button>
-                    </div>
-                    <div id="aadhaarPreview" class="aadhaar-preview" style="display:none;">
-                        <div class="aadhaar-preview-item" onclick="viewImage(this.querySelector('img').src, 'Aadhaar Card - Front')">
-                            <img id="aadhaarFrontPreview" alt="Aadhaar Front">
-                            <div class="preview-label">Aadhaar Card - Front</div>
-                            <div class="zoom-icon"><i class="fas fa-search-plus"></i></div>
-                        </div>
-                        <div class="aadhaar-preview-item" onclick="viewImage(this.querySelector('img').src, 'Aadhaar Card - Back')">
-                            <img id="aadhaarBackPreview" alt="Aadhaar Back">
-                            <div class="preview-label">Aadhaar Card - Back</div>
-                            <div class="zoom-icon"><i class="fas fa-search-plus"></i></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main Application Form (Hidden until OCR) -->
-            <form method="POST" id="applicationForm" style="display:none;">
+            <!-- Main Application Form -->
+            <form method="POST" id="applicationForm">
                 {% csrf_token %}
 
                 <input type="hidden" name="uid_front_url" id="uid_front_url">
@@ -528,23 +516,6 @@
                                         <option value="GENERAL">General</option>
                                         <option value="OTHERS">Others</option>
                                     </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Profile Photo Upload -->
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <label class="required-field">
-                                        <i class="fas fa-camera"></i> Profile Photo / Selfie (प्रार्थी की फोटो)
-                                    </label>
-                                    <small class="form-text text-muted mb-2">
-                                        Upload a clear photo or selfie of the applicant. This will be used for identity verification.
-                                    </small>
-                                    <div id="profilePhotoUploader"></div>
-                                    <input type="hidden" name="profile_photo_url" id="profilePhotoUrl">
-                                    <div id="profilePhotoPreview"></div>
                                 </div>
                             </div>
                         </div>
@@ -709,7 +680,26 @@
                     </div>
                 </div>
 
-                <!-- Section 4: Bank Details -->
+                <!-- Section 4: Family Members -->
+                <div class="section-title">
+                    <i class="fas fa-users"></i> Family Members (परिवार के सदस्य)
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> <strong>Note:</strong> Add all family members including yourself (SELF). Upload their Aadhaar cards to auto-fill details using OCR.
+                        </div>
+                        <div id="familyMembersContainer">
+                            <!-- Dynamically added family members -->
+                        </div>
+                        <button type="button" class="btn btn-secondary" id="addFamilyMember">
+                            <i class="fas fa-plus"></i> Add Family Member
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Section 5: Bank Details -->
                 <div class="section-title">
                     <i class="fas fa-university"></i> Bank Account Details
                 </div>
@@ -789,7 +779,7 @@
                     </div>
                 </div>
 
-                <!-- Section 5: LPG Connection -->
+                <!-- Section 6: LPG Connection -->
                 <div class="section-title">
                     <i class="fas fa-fire-alt"></i> LPG Connection Details
                 </div>
@@ -819,22 +809,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Section 6: Family Members -->
-                <div class="section-title">
-                    <i class="fas fa-users"></i> Family Members (परिवार के सदस्य)
-                </div>
-
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div id="familyMembersContainer">
-                            <!-- Dynamically added family members -->
-                        </div>
-                        <button type="button" class="btn btn-secondary" id="addFamilyMember">
-                            <i class="fas fa-plus"></i> Add Family Member
-                        </button>
                     </div>
                 </div>
 
@@ -895,7 +869,7 @@
 
                     <!-- Applicant Details Preview -->
                     <div class="card mb-3">
-                        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <div class="card-header" style="background: #2d3748; color: white;">
                             <h5 class="mb-0"><i class="fas fa-user"></i> Applicant Details (आवेदक विवरण / ਅਰਜ਼ੀਦਾਰ ਦਾ ਵੇਰਵਾ)</h5>
                         </div>
                         <div class="card-body">
@@ -919,7 +893,7 @@
 
                     <!-- Address Preview -->
                     <div class="card mb-3">
-                        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <div class="card-header" style="background: #2d3748; color: white;">
                             <h5 class="mb-0"><i class="fas fa-map-marker-alt"></i> Addresses (पते / ਪਤੇ)</h5>
                         </div>
                         <div class="card-body">
@@ -933,7 +907,7 @@
 
                     <!-- Bank Details Preview -->
                     <div class="card mb-3">
-                        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <div class="card-header" style="background: #2d3748; color: white;">
                             <h5 class="mb-0"><i class="fas fa-university"></i> Bank Details (बैंक विवरण / ਬੈਂਕ ਵੇਰਵਾ)</h5>
                         </div>
                         <div class="card-body">
@@ -950,7 +924,7 @@
 
                     <!-- Family Members Preview -->
                     <div class="card mb-3">
-                        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <div class="card-header" style="background: #2d3748; color: white;">
                             <h5 class="mb-0"><i class="fas fa-users"></i> Family Members (परिवार के सदस्य / ਪਰਿਵਾਰਕ ਮੈਂਬਰ)</h5>
                         </div>
                         <div class="card-body" id="preview-family"></div>
@@ -958,7 +932,7 @@
 
                     <!-- Documents Preview -->
                     <div class="card mb-3">
-                        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <div class="card-header" style="background: #2d3748; color: white;">
                             <h5 class="mb-0"><i class="fas fa-file-alt"></i> Uploaded Documents (अपलोड किए गए दस्तावेज़ / ਅੱਪਲੋਡ ਦਸਤਾਵੇਜ਼)</h5>
                         </div>
                         <div class="card-body" id="preview-documents"></div>

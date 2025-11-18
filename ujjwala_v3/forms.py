@@ -25,19 +25,17 @@ class UjjwalaV3ApplicationForm(forms.ModelForm):
             'applicant_last_name',
             'applicant_gender',
             'applicant_dob',
-            'applicant_age',
             'applicant_aadhaar_number',
-            'applicant_mobile_number',
-            'applicant_alternate_mobile_number',
+            'applicant_mobile',
             'applicant_email',
             'caste',
 
             # Bank Details
             'bank_account_number',
-            'bank_ifsc_code',
+            'bank_ifsc',
             'bank_name',
-            'bank_branch_name',
-            'account_holder_name',
+            'bank_branch',
+            'bank_account_name',
 
             # Migration Details
             'is_migrant',
@@ -72,21 +70,13 @@ class UjjwalaV3ApplicationForm(forms.ModelForm):
                 'class': 'form-control',
                 'type': 'date'
             }),
-            'applicant_age': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Age (must be 18+)'
-            }),
             'applicant_aadhaar_number': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': '12-digit Aadhaar number'
             }),
-            'applicant_mobile_number': forms.TextInput(attrs={
+            'applicant_mobile': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': '10-digit mobile number'
-            }),
-            'applicant_alternate_mobile_number': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Alternate mobile (optional)'
             }),
             'applicant_email': forms.EmailInput(attrs={
                 'class': 'form-control',
@@ -97,7 +87,7 @@ class UjjwalaV3ApplicationForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'Bank account number'
             }),
-            'bank_ifsc_code': forms.TextInput(attrs={
+            'bank_ifsc': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'IFSC code (e.g., SBIN0001234)'
             }),
@@ -105,11 +95,11 @@ class UjjwalaV3ApplicationForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'Bank name'
             }),
-            'bank_branch_name': forms.TextInput(attrs={
+            'bank_branch': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Branch name'
             }),
-            'account_holder_name': forms.TextInput(attrs={
+            'bank_account_name': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Account holder name'
             }),
@@ -134,51 +124,52 @@ class UjjwalaV3AddressForm(forms.ModelForm):
         model = UjjwalaV3Address
         fields = [
             'address_type',
-            'house_number',
-            'building_name',
+            'house_flat_no',
             'floor_number',
+            'building_colony',
             'street_road',
-            'area_locality',
-            'landmark',
-            'village_town',
-            'city',
+            'village_panchayat_area',
+            'block_sub_district',
+            'district',
+            'city_town',
             'state',
             'pincode',
+            'landmark',
             'poa_code',
         ]
         widgets = {
             'address_type': forms.Select(attrs={'class': 'form-control'}),
-            'house_number': forms.TextInput(attrs={
+            'house_flat_no': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'House/Flat number'
-            }),
-            'building_name': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Building name (optional)'
             }),
             'floor_number': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Floor number (optional)'
             }),
+            'building_colony': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Building/Colony name (optional)'
+            }),
             'street_road': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Street/Road name (optional)'
             }),
-            'area_locality': forms.TextInput(attrs={
+            'village_panchayat_area': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Area/Locality'
+                'placeholder': 'Village/Panchayat/Area (optional)'
             }),
-            'landmark': forms.TextInput(attrs={
+            'block_sub_district': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Nearby landmark (optional)'
+                'placeholder': 'Block/Sub-district (optional)'
             }),
-            'village_town': forms.TextInput(attrs={
+            'district': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Village/Town (optional)'
+                'placeholder': 'District'
             }),
-            'city': forms.TextInput(attrs={
+            'city_town': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'City (e.g., Ludhiana)'
+                'placeholder': 'City/Town (e.g., Ludhiana)'
             }),
             'state': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -187,6 +178,10 @@ class UjjwalaV3AddressForm(forms.ModelForm):
             'pincode': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': '6-digit pincode'
+            }),
+            'landmark': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Nearby landmark (optional)'
             }),
             'poa_code': forms.Select(attrs={'class': 'form-control'}),
         }
