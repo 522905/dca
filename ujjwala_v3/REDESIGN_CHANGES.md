@@ -77,15 +77,12 @@ Added all new fields to the serializer for REST API support:
 
 Modified `ApplicationSubmitSerializer.validate()` to check for `uid_front_link` and `uid_back_link` on family members instead of checking for Aadhaar documents in the documents table.
 
-### 4. Migration Created (`ujjwala_v3/migrations/0002_add_uid_photo_fields.py`)
+### 4. Migration Created (`ujjwala_v3/migrations/0001_initial.py`)
 
-Created migration file that adds only the new fields to the existing `UjjwalaV3FamilyMember` table:
-- UID photo URL fields (uid_front_link, uid_back_link, uid_original_front_link, uid_original_back_link)
-- OCR processing result fields (uid_check_result, is_valid_uid, validated)
-- File metadata fields (uid_front_compressed, uid_back_compressed, uid_front_file_size, uid_back_file_size)
-- Additional fields (additional_details, ration_card_available)
-
-**Note**: This is an ALTER TABLE migration, not a CREATE TABLE migration, since the ujjwala_v3 tables already exist in the database from a previous migration.
+Created initial migration file that includes:
+- All models (UjjwalaV3Application, UjjwalaV3Address, UjjwalaV3FamilyMember, UjjwalaV3Document, UjjwalaV3AuditLog)
+- All new UID photo and OCR fields in the FamilyMember model
+- All constraints and indexes
 
 ### 5. Admin Interface Updates (`ujjwala_v3/admin.py`)
 
@@ -221,7 +218,7 @@ uid_front_uppy = new Uppy.Core({
 2. `ujjwala_v3/forms.py` - Updated FamilyMember form with new fields
 3. `ujjwala_v3/serializers.py` - Updated serializers with new fields
 4. `ujjwala_v3/admin.py` - Enhanced admin interface for UID photo display
-5. `ujjwala_v3/migrations/0002_add_uid_photo_fields.py` - Created migration to add new fields
+5. `ujjwala_v3/migrations/0001_initial.py` - Created initial migration
 
 ## Files To Be Created/Updated (Future Work)
 
@@ -240,26 +237,11 @@ These changes are **backward compatible** because:
 ## Migration Instructions
 
 ```bash
-# Run migrations to add new fields to UjjwalaV3FamilyMember table
+# Run migrations (when Django is available)
 python manage.py migrate ujjwala_v3
 
 # Or if using Docker
 docker-compose exec web python manage.py migrate ujjwala_v3
-
-# The migration will execute the following SQL operations:
-# - ALTER TABLE ujjwala_v3_family_member ADD COLUMN uid_front_link VARCHAR(500) NULL;
-# - ALTER TABLE ujjwala_v3_family_member ADD COLUMN uid_back_link VARCHAR(500) NULL;
-# - ALTER TABLE ujjwala_v3_family_member ADD COLUMN uid_original_front_link VARCHAR(500) NULL;
-# - ALTER TABLE ujjwala_v3_family_member ADD COLUMN uid_original_back_link VARCHAR(500) NULL;
-# - ALTER TABLE ujjwala_v3_family_member ADD COLUMN uid_check_result JSONB NULL;
-# - ALTER TABLE ujjwala_v3_family_member ADD COLUMN is_valid_uid BOOLEAN DEFAULT FALSE;
-# - ALTER TABLE ujjwala_v3_family_member ADD COLUMN validated BOOLEAN DEFAULT FALSE;
-# - ALTER TABLE ujjwala_v3_family_member ADD COLUMN uid_front_compressed BOOLEAN DEFAULT FALSE;
-# - ALTER TABLE ujjwala_v3_family_member ADD COLUMN uid_back_compressed BOOLEAN DEFAULT FALSE;
-# - ALTER TABLE ujjwala_v3_family_member ADD COLUMN uid_front_file_size VARCHAR(50) NULL;
-# - ALTER TABLE ujjwala_v3_family_member ADD COLUMN uid_back_file_size VARCHAR(50) NULL;
-# - ALTER TABLE ujjwala_v3_family_member ADD COLUMN additional_details JSONB NULL;
-# - ALTER TABLE ujjwala_v3_family_member ADD COLUMN ration_card_available BOOLEAN DEFAULT FALSE;
 ```
 
 ## Summary
