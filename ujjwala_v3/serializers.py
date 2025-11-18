@@ -75,15 +75,25 @@ class UjjwalaV3FamilyMemberSerializer(serializers.ModelSerializer):
     relation_display = serializers.CharField(source='get_relation_to_applicant_display', read_only=True)
     gender_display = serializers.CharField(source='get_gender_display', read_only=True)
     age = serializers.SerializerMethodField()
+    current_age = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = UjjwalaV3FamilyMember
         fields = [
             'id', 'application', 'full_name', 'relation_to_applicant', 'relation_display',
-            'gender', 'gender_display', 'aadhaar_number', 'dob', 'age',
-            'age_at_application', 'created_at', 'updated_at'
+            'gender', 'gender_display', 'aadhaar_number', 'dob', 'age', 'current_age',
+            'age_at_application',
+            # UID Photo Links
+            'uid_front_link', 'uid_back_link', 'uid_original_front_link', 'uid_original_back_link',
+            # OCR Results
+            'uid_check_result', 'is_valid_uid', 'validated',
+            # File Metadata
+            'uid_front_compressed', 'uid_back_compressed', 'uid_front_file_size', 'uid_back_file_size',
+            # Additional Details
+            'additional_details', 'ration_card_available',
+            'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'age_at_application', 'created_at', 'updated_at', 'age']
+        read_only_fields = ['id', 'age_at_application', 'created_at', 'updated_at', 'age', 'current_age']
 
     def get_age(self, obj):
         """Calculate current age."""
@@ -439,20 +449,11 @@ class ApplicationSubmitSerializer(serializers.Serializer):
                 f"Missing required documents: {', '.join(missing_docs)}"
             )
 
-        # Validate each family member has Aadhaar documents
+        # Validate each family member has Aadhaar UID photos
         for member in application.family_members.all():
-            has_front = application.documents.filter(
-                family_member=member,
-                doc_type=DocumentType.AADHAAR_FRONT
-            ).exists()
-            has_back = application.documents.filter(
-                family_member=member,
-                doc_type=DocumentType.AADHAAR_BACK
-            ).exists()
-
-            if not (has_front and has_back):
+            if not member.uid_front_link or not member.uid_back_link:
                 raise serializers.ValidationError(
-                    f"Family member {member.full_name} missing Aadhaar documents (front and back required)"
+                    f"Family member {member.full_name} missing UID/Aadhaar front and back photos"
                 )
 
         # Check for duplicate Aadhaar numbers within application
