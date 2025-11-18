@@ -1347,26 +1347,50 @@
                 },
                 headers: { 'X-CSRFToken': getCookie('csrftoken') },
                 success: function(response) {
-                    if (response.status === 'success') {
-                        const data = JSON.parse(response.data.text);
-                        prefillFromOCR(data, uid_front_url, uid_back_url);
-                        $('#uid_front_url').val(uid_front_url);
-                        $('#uid_back_url').val(uid_back_url);
-                        $('#ocr_processed').val('yes');
+                    console.log('OCR Response:', response);
 
-                        // Show preview
-                        $('#aadhaarFrontPreview').attr('src', uid_front_url);
-                        $('#aadhaarBackPreview').attr('src', uid_back_url);
-                        $('#aadhaarPreview').show();
+                    try {
+                        if (response.status === 'success') {
+                            const data = JSON.parse(response.data.text);
+                            console.log('OCR Data:', data);
 
-                        // Hide only the uppy uploaders and process button, keep the preview visible
-                        $('#aadhaar_front_uppy').hide();
-                        $('#aadhaar_back_uppy').hide();
-                        $('#processOcrBtn').hide();
-                        $('#applicationForm').slideDown();
-                        $('html, body').animate({ scrollTop: $('#applicationForm').offset().top }, 500);
-                    } else {
-                        alert('OCR processing failed. Please try again.');
+                            // Pre-fill applicant details
+                            prefillFromOCR(data, uid_front_url, uid_back_url);
+
+                            $('#uid_front_url').val(uid_front_url);
+                            $('#uid_back_url').val(uid_back_url);
+                            $('#ocr_processed').val('yes');
+
+                            // Show preview
+                            $('#aadhaarFrontPreview').attr('src', uid_front_url);
+                            $('#aadhaarBackPreview').attr('src', uid_back_url);
+                            $('#aadhaarPreview').show();
+
+                            // Hide only the uppy uploaders and process button, keep the preview visible
+                            $('#aadhaar_front_uppy').hide();
+                            $('#aadhaar_back_uppy').hide();
+                            $('#processOcrBtn').hide();
+
+                            // Show form
+                            $('#applicationForm').slideDown(500, function() {
+                                // Scroll after animation completes
+                                $('html, body').animate({ scrollTop: $('#applicationForm').offset().top }, 500);
+                            });
+
+                            // Save to localStorage
+                            saveFormData();
+
+                            console.log('OCR processing completed successfully');
+                        } else {
+                            throw new Error(response.message || 'OCR processing failed');
+                        }
+                    } catch (error) {
+                        console.error('Error processing OCR response:', error);
+                        $('#loader').hide();
+                        showErrorModal(
+                            'Error processing OCR response: ' + error.message,
+                            'Error details:\n' + error.stack + '\n\nResponse:\n' + JSON.stringify(response, null, 2)
+                        );
                     }
                 },
                 error: function(xhr, status, error) {
@@ -1485,22 +1509,37 @@
             }
 
             // Automatically add SELF as family member using modern card-based approach
-            createSelfFamilyMember(data, frontUrl, backUrl);
+            try {
+                createSelfFamilyMember(data, frontUrl, backUrl);
+            } catch (error) {
+                console.error('Error creating SELF family member:', error);
+                showErrorModal(
+                    'Error creating SELF family member: ' + error.message,
+                    'Error details:\n' + error.stack
+                );
+            }
         }
 
         // Create SELF family member automatically from OCR data using the modern card-based approach
         function createSelfFamilyMember(data, frontUrl, backUrl) {
+            console.log('Creating SELF family member with OCR data');
+
             // Add a new family member using the modern card-based structure
             addFamilyMemberWithUID();
 
             // Get the newly created member ID (latest counter value)
             const memberId = familyMemberCounter;
 
+            console.log('SELF member created with ID:', memberId);
+
             // Auto-select relation as SELF
             $(`#familyMember_${memberId}_relation`).val('SELF');
 
-            // Trigger the relation label update to show profile photo section
-            updateRelationLabel(memberId);
+            // Wait for DOM to be fully rendered, then trigger relation label update
+            setTimeout(function() {
+                console.log('Triggering updateRelationLabel for SELF member');
+                updateRelationLabel(memberId);
+            }, 100);
 
             // Pre-fill the UID photo URLs for this member
             $(`#uidFrontUrl_${memberId}`).val(frontUrl);
