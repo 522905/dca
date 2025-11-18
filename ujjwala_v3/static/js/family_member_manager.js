@@ -63,28 +63,30 @@ function addFamilyMemberWithUID() {
                     </div>
                 </div>
 
-                <!-- Step 2: Aadhaar Photo Upload -->
-                <div class="alert alert-secondary">
-                    <i class="fas fa-camera"></i> <strong>Step 2: Upload Aadhaar/UID Photos</strong><br>
-                    Upload both front and back photos of the Aadhaar card. The system will automatically extract and fill the details using OCR.
-                    <br><small>आधार कार्ड के आगे और पीछे की फोटो अपलोड करें। सिस्टम OCR का उपयोग करके विवरण स्वचालित रूप से भर देगा।</small>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="required-field">Aadhaar Front Photo (आधार कार्ड आगे की तरफ)</label>
-                            <div id="uidFrontUploader_${memberId}"></div>
-                            <input type="hidden" name="family_member_${memberId}_uid_front_url" id="uidFrontUrl_${memberId}">
-                            <div id="uidFrontPreview_${memberId}" class="mt-2"></div>
-                        </div>
+                <!-- Step 2: Aadhaar Photo Upload (Hidden for SELF member) -->
+                <div id="aadhaarUploadSection_${memberId}">
+                    <div class="alert alert-secondary">
+                        <i class="fas fa-camera"></i> <strong>Step 2: Upload Aadhaar/UID Photos</strong><br>
+                        Upload both front and back photos of the Aadhaar card. The system will automatically extract and fill the details using OCR.
+                        <br><small>आधार कार्ड के आगे और पीछे की फोटो अपलोड करें। सिस्टम OCR का उपयोग करके विवरण स्वचालित रूप से भर देगा।</small>
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="required-field">Aadhaar Back Photo (आधार कार्ड पीछे की तरफ)</label>
-                            <div id="uidBackUploader_${memberId}"></div>
-                            <input type="hidden" name="family_member_${memberId}_uid_back_url" id="uidBackUrl_${memberId}">
-                            <div id="uidBackPreview_${memberId}" class="mt-2"></div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="required-field">Aadhaar Front Photo (आधार कार्ड आगे की तरफ)</label>
+                                <div id="uidFrontUploader_${memberId}"></div>
+                                <input type="hidden" name="family_member_${memberId}_uid_front_url" id="uidFrontUrl_${memberId}">
+                                <div id="uidFrontPreview_${memberId}" class="mt-2"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="required-field">Aadhaar Back Photo (आधार कार्ड पीछे की तरफ)</label>
+                                <div id="uidBackUploader_${memberId}"></div>
+                                <input type="hidden" name="family_member_${memberId}_uid_back_url" id="uidBackUrl_${memberId}">
+                                <div id="uidBackPreview_${memberId}" class="mt-2"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -191,6 +193,17 @@ function updateRelationLabel(memberId) {
         // Show profile photo section for SELF member
         $(`#profilePhotoSection_${memberId}`).show();
 
+        // Hide Aadhaar upload section for SELF (already uploaded in Step 1)
+        $(`#aadhaarUploadSection_${memberId}`).hide();
+
+        // Show note that Aadhaar is already uploaded
+        $(`#ocrStatus_${memberId}`).html(`
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> <strong>Note:</strong> Your Aadhaar has already been uploaded and verified in Step 1.
+                <br><small>आपका आधार पहले ही चरण 1 में अपलोड और सत्यापित हो चुका है।</small>
+            </div>
+        `);
+
         // Initialize profile photo uploader if not already initialized
         setTimeout(function() {
             if (window.photoUploadManager && typeof window.photoUploadManager.initProfilePhotoUploader === 'function') {
@@ -210,6 +223,10 @@ function updateRelationLabel(memberId) {
 
         // Hide profile photo section for non-SELF members
         $(`#profilePhotoSection_${memberId}`).hide();
+
+        // Show Aadhaar upload for other members
+        $(`#aadhaarUploadSection_${memberId}`).show();
+        $(`#ocrStatus_${memberId}`).html('');
     }
 }
 
