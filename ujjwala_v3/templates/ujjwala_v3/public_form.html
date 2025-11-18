@@ -471,12 +471,102 @@
             </div>
 
             <!-- Submit Button -->
-            <div class="form-container text-center">
-                <button type="submit" class="btn btn-primary btn-lg px-5">
-                    Submit Application
+            <div class="form-container text-center" id="submit-btn-container">
+                <button type="button" class="btn btn-primary btn-lg px-5" onclick="showPreview()">
+                    Preview Application
                 </button>
             </div>
         </form>
+
+        <!-- Preview Section -->
+        <div id="preview-section" style="display: none;">
+            <div class="form-container">
+                <div class="step-header">
+                    <h3 class="text-center mb-4">Application Preview (आवेदन पूर्वावलोकन / ਅਰਜ਼ੀ ਪੂਰਵ-ਦ੍ਰਿਸ਼)</h3>
+                    <p class="text-center text-muted">Please review your information before final submission</p>
+                </div>
+
+                <!-- Applicant Details Preview -->
+                <div class="item-card">
+                    <h5 style="color: #667eea;"><i class="fas fa-user"></i> Applicant Details (आवेदक विवरण / ਅਰਜ਼ੀਦਾਰ ਦਾ ਵੇਰਵਾ)</h5>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6"><strong>Full Name:</strong> <span id="preview-applicant-name"></span></div>
+                        <div class="col-md-6"><strong>Gender:</strong> <span id="preview-applicant-gender"></span></div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-6"><strong>Date of Birth:</strong> <span id="preview-applicant-dob"></span></div>
+                        <div class="col-md-6"><strong>Age:</strong> <span id="preview-applicant-age"></span></div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-6"><strong>Aadhaar Number:</strong> <span id="preview-applicant-aadhaar"></span></div>
+                        <div class="col-md-6"><strong>Category:</strong> <span id="preview-applicant-caste"></span></div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-6"><strong>Mobile Number:</strong> <span id="preview-applicant-mobile" style="background-color: #fff3cd; padding: 3px 10px; border-radius: 3px; font-weight: bold;"></span></div>
+                        <div class="col-md-6"><strong>Email:</strong> <span id="preview-applicant-email"></span></div>
+                    </div>
+                </div>
+
+                <!-- Bank Details Preview -->
+                <div class="item-card">
+                    <h5 style="color: #667eea;"><i class="fas fa-university"></i> Bank Details (बैंक विवरण / ਬੈਂਕ ਵੇਰਵਾ)</h5>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6"><strong>Account Number:</strong> <span id="preview-bank-account"></span></div>
+                        <div class="col-md-6"><strong>IFSC Code:</strong> <span id="preview-bank-ifsc"></span></div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-6"><strong>Bank Name:</strong> <span id="preview-bank-name"></span></div>
+                        <div class="col-md-6"><strong>Branch:</strong> <span id="preview-bank-branch"></span></div>
+                    </div>
+                </div>
+
+                <!-- Addresses Preview -->
+                <div class="item-card">
+                    <h5 style="color: #667eea;"><i class="fas fa-map-marker-alt"></i> Addresses (पते / ਪਤੇ)</h5>
+                    <hr>
+                    <div id="preview-addresses"></div>
+                </div>
+
+                <!-- Family Members Preview -->
+                <div class="item-card">
+                    <h5 style="color: #667eea;"><i class="fas fa-users"></i> Family Members (परिवार के सदस्य / ਪਰਿਵਾਰਕ ਮੈਂਬਰ)</h5>
+                    <hr>
+                    <div id="preview-family-members"></div>
+                </div>
+
+                <!-- Documents Preview -->
+                <div class="item-card">
+                    <h5 style="color: #667eea;"><i class="fas fa-file-alt"></i> Documents (दस्तावेज / ਦਸਤਾਵੇਜ਼)</h5>
+                    <hr>
+                    <div id="preview-documents"></div>
+                </div>
+
+                <!-- Confirmation Checkbox -->
+                <div class="item-card" style="background: #fffbf0; border: 2px solid #ffc107;">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="preview-confirm-checkbox" required>
+                        <label class="form-check-label" for="preview-confirm-checkbox" style="font-size: 1.1em;">
+                            <strong style="color:red">*</strong>
+                            <strong>मैं पुष्टि करती हूं कि ऊपर दी गई सभी जानकारी सत्य और सही है।</strong><br>
+                            <strong>I confirm that all the information provided above is true and correct.</strong><br>
+                            <strong>ਮੈਂ ਪੁਸ਼ਟੀ ਕਰਦੀ ਹਾਂ ਕਿ ਉਪਰੋਕਤ ਸਾਰੀ ਜਾਣਕਾਰੀ ਸੱਚ ਅਤੇ ਸਹੀ ਹੈ।</strong>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="text-center mt-4">
+                    <button type="button" class="btn btn-secondary btn-lg px-4 mr-3" onclick="editApplication()">
+                        <i class="fas fa-edit"></i> Edit (संपादित करें / ਸੋਧੋ)
+                    </button>
+                    <button type="button" class="btn btn-primary btn-lg px-4" onclick="submitAfterPreview()">
+                        <i class="fas fa-check"></i> Submit Application (आवेदन जमा करें / ਅਰਜ਼ੀ ਜਮ੍ਹਾਂ ਕਰੋ)
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Bootstrap JS -->
@@ -570,16 +660,16 @@
                         </select>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label required-field">File URL</label>
-                        <input type="url" class="form-control" name="doc_file_url[]"
-                               placeholder="https://your-tus-server.com/files/..." required>
+                        <label class="form-label required-field">File Name</label>
+                        <input type="text" class="form-control" name="doc_file_name[]" required>
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label required-field">File Name</label>
-                        <input type="text" class="form-control" name="doc_file_name[]" required>
+                        <label class="form-label required-field">File URL</label>
+                        <input type="url" class="form-control" name="doc_file_url[]"
+                               placeholder="https://your-tus-server.com/files/..." required>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Description</label>
@@ -592,6 +682,116 @@
 
         // Initialize with one family member (SELF)
         addFamilyMember();
+
+        // Preview functionality
+        function showPreview() {
+            const form = document.getElementById('ujjwalaForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const formData = new FormData(form);
+
+            // Populate applicant details
+            document.getElementById('preview-applicant-name').textContent = formData.get('applicant_full_name');
+            document.getElementById('preview-applicant-gender').textContent = formData.get('applicant_gender') === 'F' ? 'Female' : 'Male';
+            document.getElementById('preview-applicant-dob').textContent = formData.get('applicant_dob');
+            document.getElementById('preview-applicant-age').textContent = formData.get('applicant_age');
+            document.getElementById('preview-applicant-aadhaar').textContent = formData.get('applicant_aadhaar_number');
+            document.getElementById('preview-applicant-caste').textContent = formData.get('caste');
+            document.getElementById('preview-applicant-mobile').textContent = formData.get('applicant_mobile_number');
+            document.getElementById('preview-applicant-email').textContent = formData.get('applicant_email') || 'N/A';
+
+            // Populate bank details
+            document.getElementById('preview-bank-account').textContent = formData.get('bank_account_number');
+            document.getElementById('preview-bank-ifsc').textContent = formData.get('bank_ifsc_code');
+            document.getElementById('preview-bank-name').textContent = formData.get('bank_name');
+            document.getElementById('preview-bank-branch').textContent = formData.get('bank_branch_name');
+
+            // Populate addresses
+            const addressTypes = formData.getAll('address_type[]');
+            const houseNumbers = formData.getAll('address_house_number[]');
+            const cities = formData.getAll('address_city[]');
+            const states = formData.getAll('address_state[]');
+            const pincodes = formData.getAll('address_pincode[]');
+
+            let addressesHtml = '';
+            for (let i = 0; i < addressTypes.length; i++) {
+                addressesHtml += `
+                    <div class="mb-3 pb-2 border-bottom">
+                        <strong>${addressTypes[i]} Address:</strong><br>
+                        ${houseNumbers[i]}, ${cities[i]}, ${states[i]} - ${pincodes[i]}
+                    </div>
+                `;
+            }
+            document.getElementById('preview-addresses').innerHTML = addressesHtml;
+
+            // Populate family members
+            const familyNames = formData.getAll('family_full_name[]');
+            const familyRelations = formData.getAll('family_relation[]');
+            const familyGenders = formData.getAll('family_gender[]');
+            const familyDobs = formData.getAll('family_dob[]');
+            const familyAadhaars = formData.getAll('family_aadhaar[]');
+
+            let familyHtml = '';
+            for (let i = 0; i < familyNames.length; i++) {
+                familyHtml += `
+                    <div class="mb-3 pb-2 border-bottom">
+                        <div class="row">
+                            <div class="col-md-6"><strong>Name:</strong> ${familyNames[i]}</div>
+                            <div class="col-md-6"><strong>Relation:</strong> ${familyRelations[i]}</div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-md-6"><strong>Gender:</strong> ${familyGenders[i]}</div>
+                            <div class="col-md-6"><strong>DOB:</strong> ${familyDobs[i]}</div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-md-6"><strong>Aadhaar:</strong> ${familyAadhaars[i]}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            document.getElementById('preview-family-members').innerHTML = familyHtml;
+
+            // Populate documents
+            const docTypes = formData.getAll('doc_type[]');
+            const docFileNames = formData.getAll('doc_file_name[]');
+
+            let docsHtml = '';
+            for (let i = 0; i < docTypes.length; i++) {
+                docsHtml += `
+                    <div class="mb-2">
+                        <i class="fas fa-file"></i> <strong>${docTypes[i]}:</strong> ${docFileNames[i]}
+                    </div>
+                `;
+            }
+            document.getElementById('preview-documents').innerHTML = docsHtml;
+
+            // Hide form and show preview
+            document.getElementById('ujjwalaForm').style.display = 'none';
+            document.getElementById('submit-btn-container').style.display = 'none';
+            document.getElementById('preview-section').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        function editApplication() {
+            document.getElementById('preview-section').style.display = 'none';
+            document.getElementById('ujjwalaForm').style.display = 'block';
+            document.getElementById('submit-btn-container').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        function submitAfterPreview() {
+            const checkbox = document.getElementById('preview-confirm-checkbox');
+            if (!checkbox.checked) {
+                alert('कृपया पुष्टि चेकबॉक्स को चेक करें। Please check the confirmation checkbox. ਕਿਰਪਾ ਕਰਕੇ ਪੁਸ਼ਟੀਕਰਨ ਚੈੱਕਬਾਕਸ ਨੂੰ ਚੈੱਕ ਕਰੋ।');
+                return;
+            }
+
+            // Trigger the actual form submission
+            document.getElementById('ujjwalaForm').dispatchEvent(new Event('submit', { cancelable: true }));
+        }
 
         // Form submission
         document.getElementById('ujjwalaForm').addEventListener('submit', function(e) {

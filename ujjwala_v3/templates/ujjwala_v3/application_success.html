@@ -97,7 +97,9 @@
             </div>
 
             <h1>Application Submitted Successfully!</h1>
-            <p class="lead">Your PMUY V3 application has been received and is being processed.</p>
+            <h4 style="color: #28a745;">आवेदन सफलतापूर्वक जमा हो गया!</h4>
+            <h4 style="color: #28a745;">ਅਰਜ਼ੀ ਸਫਲਤਾਪੂਰਵਕ ਜਮ੍ਹਾ ਹੋ ਗਈ!</h4>
+            <p class="lead mt-3">Your PMUY V3 application has been received and is being processed.</p>
 
             <div class="application-number">
                 <i class="fas fa-file-alt"></i> Application Number<br>
@@ -111,12 +113,37 @@
                 <h5><i class="fas fa-user"></i> Applicant Details</h5>
                 <hr>
                 <p><strong>Name:</strong> {{ application.applicant_full_name }}</p>
-                <p><strong>Mobile:</strong> {{ application.applicant_mobile }}</p>
+                <p><strong>Mobile Number / मोबाइल नंबर / ਮੋਬਾਈਲ ਨੰਬਰ:</strong>
+                    <span style="background-color: #fff3cd; padding: 5px 15px; border-radius: 5px; font-size: 1.3em; font-weight: bold; color: #856404;">
+                        📱 {{ application.applicant_mobile }}
+                    </span>
+                </p>
                 {% if application.applicant_email %}
                 <p><strong>Email:</strong> {{ application.applicant_email }}</p>
                 {% endif %}
                 <p><strong>Application Status:</strong> <span class="badge badge-info">{{ application.get_status_display }}</span></p>
                 <p><strong>Submitted On:</strong> {{ application.created_at|date:"d M Y, h:i A" }}</p>
+            </div>
+
+            <!-- Trilingual Communication Notice -->
+            <div class="info-card" style="background: #fffbf0; border-left-color: #ffc107; border: 2px solid #ffc107;">
+                <h5><i class="fas fa-mobile-alt"></i> Important Notice (महत्वपूर्ण सूचना / ਮਹੱਤਵਪੂਰਨ ਸੂਚਨਾ)</h5>
+                <hr>
+
+                <div class="mb-3 pb-3 border-bottom">
+                    <p class="mb-2"><strong>English:</strong></p>
+                    <p class="mb-0">All communication regarding your application will be done through <strong>SMS and WhatsApp</strong> on the mobile number <span style="background-color: #fff3cd; padding: 2px 8px; border-radius: 3px; font-weight: bold;">{{ application.applicant_mobile }}</span>. Please keep this number active.</p>
+                </div>
+
+                <div class="mb-3 pb-3 border-bottom">
+                    <p class="mb-2"><strong>हिंदी:</strong></p>
+                    <p class="mb-0">आपके आवेदन से संबंधित सभी संचार मोबाइल नंबर <span style="background-color: #fff3cd; padding: 2px 8px; border-radius: 3px; font-weight: bold;">{{ application.applicant_mobile }}</span> पर <strong>SMS और WhatsApp</strong> के माध्यम से किया जाएगा। कृपया इस नंबर को सक्रिय रखें।</p>
+                </div>
+
+                <div class="mb-0">
+                    <p class="mb-2"><strong>ਪੰਜਾਬੀ:</strong></p>
+                    <p class="mb-0">ਤੁਹਾਡੀ ਅਰਜ਼ੀ ਸੰਬੰਧੀ ਸਾਰਾ ਸੰਚਾਰ ਮੋਬਾਈਲ ਨੰਬਰ <span style="background-color: #fff3cd; padding: 2px 8px; border-radius: 3px; font-weight: bold;">{{ application.applicant_mobile }}</span> 'ਤੇ <strong>SMS ਅਤੇ WhatsApp</strong> ਰਾਹੀਂ ਕੀਤਾ ਜਾਵੇਗਾ। ਕਿਰਪਾ ਕਰਕੇ ਇਸ ਨੰਬਰ ਨੂੰ ਸਰਗਰਮ ਰੱਖੋ।</p>
+                </div>
             </div>
 
             <div class="info-card">
