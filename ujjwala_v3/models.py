@@ -217,7 +217,6 @@ class UjjwalaV3Application(TimeStampedModel):
         choices=ApplicationStatus.choices,
         default=ApplicationStatus.DRAFT,
         db_index=True,
-        protected=True,
         help_text='Current status of the application (FSM-controlled)'
     )
 
