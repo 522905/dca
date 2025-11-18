@@ -291,7 +291,10 @@ async function upload_sign_and_submit() {
     
                 } else {
                     console.info('Successful uploads:', result.successful);
-                    submit_form(result.successful[0].uploadURL)
+                    signature_url_global = result.successful[0].uploadURL;
+                    jQuery('#submit').html('Upload Signature & Submit');
+                    jQuery('#submit').attr('disabled', false);
+                    showPreview();
                 }
             });
     
@@ -379,21 +382,65 @@ function submit_form(signature_url) {
         success: function (result) {
 
             $('#form').hide();
+            $('#preview-section').hide();
             console.log(result);
             jQuery('#form')['0'].reset();
             jQuery('#submit').val('Submit');
             jQuery('#submit').attr('disabled', false);
-            swal({
-                html: true,
-                title: "successful",
-                text: "Thank You ",
-                icon: "success",
-            })
 
-            $("#message").html('<div class="alert alert-success" style="color:red; text-align:center; margin-top:250px;"><strong>SUCCESS!</strong> your application has been submitted</div>');
+            var contactMobile = $('#contact_mobile').val();
+            var applicationId = result.id;
 
-            $("#cus_id").append(result);
-            $("#message").append(result.id).css({"text-align": "center"}).append(" <b> is you application Id</b>.");
+            var successHtml = `
+                <div class="container" style="background-color: #fff; padding: 30px; margin-top: 50px;">
+                    <div class="text-center mb-4">
+                        <i class="fa fa-check-circle" style="font-size: 80px; color: #28a745;"></i>
+                        <h3 class="mt-3" style="color: #28a745;"><strong>Application Submitted Successfully!</strong></h3>
+                        <h4 class="mt-2" style="color: #28a745;"><strong>आवेदन सफलतापूर्वक जमा हो गया!</strong></h4>
+                        <h4 class="mt-2" style="color: #28a745;"><strong>ਅਰਜ਼ੀ ਸਫਲਤਾਪੂਰਵਕ ਜਮ੍ਹਾ ਹੋ ਗਈ!</strong></h4>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-body text-center">
+                            <h4><strong>Application Number (आवेदन संख्या)</strong></h4>
+                            <h2 style="color: #2957A4; font-weight: bold;">${applicationId}</h2>
+                        </div>
+                    </div>
+
+                    <div class="card" style="border: 2px solid #ffc107;">
+                        <div class="card-body">
+                            <h5 class="text-center mb-3" style="color: #856404;"><strong>Important Notice (महत्वपूर्ण सूचना / ਮਹੱਤਵਪੂਰਨ ਸੂਚਨਾ)</strong></h5>
+
+                            <div class="alert alert-warning mb-0">
+                                <p class="mb-2"><strong>📱 Your Contact Number: <span style="background-color: #fff3cd; padding: 5px 15px; border-radius: 5px; font-size: 1.2em;">${contactMobile}</span></strong></p>
+
+                                <hr>
+
+                                <p class="mb-2"><strong>English:</strong></p>
+                                <p>All communication regarding your application will be done through <strong>SMS and WhatsApp</strong> on this number. Please keep this number active.</p>
+
+                                <hr>
+
+                                <p class="mb-2"><strong>हिंदी:</strong></p>
+                                <p>आपके आवेदन से संबंधित सभी संचार इस नंबर पर <strong>SMS और WhatsApp</strong> के माध्यम से किया जाएगा। कृपया इस नंबर को सक्रिय रखें।</p>
+
+                                <hr>
+
+                                <p class="mb-2"><strong>ਪੰਜਾਬੀ:</strong></p>
+                                <p>ਤੁਹਾਡੀ ਅਰਜ਼ੀ ਸੰਬੰਧੀ ਸਾਰਾ ਸੰਚਾਰ ਇਸ ਨੰਬਰ 'ਤੇ <strong>SMS ਅਤੇ WhatsApp</strong> ਰਾਹੀਂ ਕੀਤਾ ਜਾਵੇਗਾ। ਕਿਰਪਾ ਕਰਕੇ ਇਸ ਨੰਬਰ ਨੂੰ ਸਰਗਰਮ ਰੱਖੋ।</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <button class="btn btn-primary" onclick="window.location.reload();">
+                            Submit New Application (नया आवेदन जमा करें)
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            $("#message").html(successHtml);
 
             $('#application_receipt').show();
         },
@@ -585,7 +632,7 @@ function addFamilyMember(relation_name, relation_label) {
                 </div>
                 <div class="col-sm-4 mt-2">
                     <div class="">
-                        <button type="button" class="btn btn-primary float-right"
+                        <button type="button" class="btn btn-primary float-right upload-aadhaar-btn"
                         onclick="family_member_service.update_fm_via_ocr('${relation_name}')">
                             Upload Aadhaar
                         </button>
