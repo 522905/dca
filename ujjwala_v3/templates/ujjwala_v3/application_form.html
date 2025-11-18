@@ -373,6 +373,12 @@
                 {% endfor %}
             {% endif %}
 
+            {% if user.is_authenticated %}
+                <div class="alert alert-info">
+                    <i class="fas fa-user-check"></i> <strong>Filled By:</strong> {{ user.get_full_name|default:user.username }} ({{ user.email }})
+                </div>
+            {% endif %}
+
             <div class="info-box">
                 <strong><i class="fas fa-info-circle"></i> Application Process:</strong>
                 <ol class="mb-0 mt-2">
@@ -828,13 +834,119 @@
                         </div>
 
                         <div class="text-center mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-paper-plane"></i> Submit Application
+                            <button type="button" class="btn btn-primary btn-lg" onclick="showPreview()">
+                                <i class="fas fa-eye"></i> Preview Application
                             </button>
                         </div>
                     </div>
                 </div>
             </form>
+
+            <!-- Preview Section -->
+            <div id="previewSection" style="display: none;">
+                <div class="form-container">
+                    <div class="section-title text-center">
+                        <h3>Application Preview (आवेदन पूर्वावलोकन / ਅਰਜ਼ੀ ਪੂਰਵ-ਦ੍ਰਿਸ਼)</h3>
+                        <p class="text-white" style="font-size: 0.9em;">Please review your information before final submission</p>
+                    </div>
+
+                    <!-- Applicant Details Preview -->
+                    <div class="card mb-3">
+                        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                            <h5 class="mb-0"><i class="fas fa-user"></i> Applicant Details (आवेदक विवरण / ਅਰਜ਼ੀਦਾਰ ਦਾ ਵੇਰਵਾ)</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6"><strong>Full Name:</strong> <span id="preview-name"></span></div>
+                                <div class="col-md-6"><strong>DOB:</strong> <span id="preview-dob"></span></div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-6"><strong>Gender:</strong> <span id="preview-gender"></span></div>
+                                <div class="col-md-6"><strong>Aadhaar:</strong> <span id="preview-aadhaar"></span></div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-6"><strong>Mobile:</strong> <span id="preview-mobile" style="background-color: #fff3cd; padding: 3px 10px; border-radius: 3px; font-weight: bold;"></span></div>
+                                <div class="col-md-6"><strong>Email:</strong> <span id="preview-email"></span></div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-6"><strong>Category:</strong> <span id="preview-caste"></span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Address Preview -->
+                    <div class="card mb-3">
+                        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                            <h5 class="mb-0"><i class="fas fa-map-marker-alt"></i> Addresses (पते / ਪਤੇ)</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="text-primary">Current Address:</h6>
+                            <p id="preview-current-address"></p>
+                            <hr>
+                            <h6 class="text-primary">Permanent Address:</h6>
+                            <p id="preview-permanent-address"></p>
+                        </div>
+                    </div>
+
+                    <!-- Bank Details Preview -->
+                    <div class="card mb-3">
+                        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                            <h5 class="mb-0"><i class="fas fa-university"></i> Bank Details (बैंक विवरण / ਬੈਂਕ ਵੇਰਵਾ)</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6"><strong>Account Name:</strong> <span id="preview-bank-name"></span></div>
+                                <div class="col-md-6"><strong>Bank:</strong> <span id="preview-bank"></span></div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-6"><strong>Account Number:</strong> <span id="preview-acc-num"></span></div>
+                                <div class="col-md-6"><strong>IFSC:</strong> <span id="preview-ifsc"></span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Family Members Preview -->
+                    <div class="card mb-3">
+                        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                            <h5 class="mb-0"><i class="fas fa-users"></i> Family Members (परिवार के सदस्य / ਪਰਿਵਾਰਕ ਮੈਂਬਰ)</h5>
+                        </div>
+                        <div class="card-body" id="preview-family"></div>
+                    </div>
+
+                    <!-- Documents Preview -->
+                    <div class="card mb-3">
+                        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                            <h5 class="mb-0"><i class="fas fa-file-alt"></i> Uploaded Documents (अपलोड किए गए दस्तावेज़ / ਅੱਪਲੋਡ ਦਸਤਾਵੇਜ਼)</h5>
+                        </div>
+                        <div class="card-body" id="preview-documents"></div>
+                    </div>
+
+                    <!-- Trilingual Confirmation Checkbox -->
+                    <div class="card mb-3" style="background: #fffbf0; border: 2px solid #ffc107;">
+                        <div class="card-body">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="preview-confirm-checkbox" required>
+                                <label class="custom-control-label" for="preview-confirm-checkbox" style="font-size: 1.1em;">
+                                    <strong style="color:red">*</strong>
+                                    <strong>मैं पुष्टि करती हूं कि ऊपर दी गई सभी जानकारी सत्य और सही है।</strong><br>
+                                    <strong>I confirm that all the information provided above is true and correct.</strong><br>
+                                    <strong>ਮੈਂ ਪੁਸ਼ਟੀ ਕਰਦੀ ਹਾਂ ਕਿ ਉਪਰੋਕਤ ਸਾਰੀ ਜਾਣਕਾਰੀ ਸੱਚ ਅਤੇ ਸਹੀ ਹੈ।</strong>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="text-center mb-4">
+                        <button type="button" class="btn btn-secondary btn-lg mr-3" onclick="editApplication()">
+                            <i class="fas fa-edit"></i> Edit (संपादित करें / ਸੋਧੋ)
+                        </button>
+                        <button type="button" class="btn btn-primary btn-lg" onclick="submitAfterPreview()">
+                            <i class="fas fa-check"></i> Submit Application (आवेदन जमा करें / ਅਰਜ਼ੀ ਜਮ੍ਹਾਂ ਕਰੋ)
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1128,7 +1240,8 @@
                         $('#aadhaarBackPreview').attr('src', uid_back_url);
                         $('#aadhaarPreview').show();
 
-                        // Show form
+                        // Hide Aadhaar upload section and show form
+                        $('#aadhaarOcrSection').slideUp();
                         $('#applicationForm').slideDown();
                         $('html, body').animate({ scrollTop: $('#applicationForm').offset().top }, 500);
                     } else {
@@ -1305,7 +1418,7 @@
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label>Date of Birth</label>
+                                <label class="required-field">Date of Birth</label>
                                 <input type="date" name="family_member_${memberId}_dob" class="form-control"
                                        value="${dobValue}" required>
                             </div>
@@ -1375,7 +1488,7 @@
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label>Date of Birth</label>
+                                <label class="required-field">Date of Birth</label>
                                 <input type="date" name="family_member_${memberId}_dob" class="form-control" required>
                             </div>
                         </div>
@@ -1412,6 +1525,116 @@
                 });
             }
         });
+
+        // Preview functionality
+        function showPreview() {
+            const form = $('#applicationForm')[0];
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            // Populate applicant details
+            const firstName = $('#applicant_first_name').val();
+            const middleName = $('#applicant_middle_name').val();
+            const lastName = $('#applicant_last_name').val();
+            const fullName = [firstName, middleName, lastName].filter(n => n).join(' ');
+
+            $('#preview-name').text(fullName);
+            $('#preview-dob').text($('#applicant_dob').val());
+            $('#preview-gender').text($('#applicant_gender option:selected').text());
+            $('#preview-aadhaar').text($('#applicant_aadhaar_number').val());
+            $('#preview-mobile').text($('#applicant_mobile').val());
+            $('#preview-email').text($('#applicant_email').val() || 'N/A');
+            $('#preview-caste').text($('#caste option:selected').text());
+
+            // Populate current address
+            const currentAddr = `${$('[name="current_house_flat_no"]').val()}, ` +
+                               `${$('[name="current_floor_number"]').val() || ''} ` +
+                               `${$('[name="current_street_road"]').val() || ''}, ` +
+                               `${$('[name="current_landmark"]').val() || ''}, ` +
+                               `${$('[name="current_city_town"]').val()}, ` +
+                               `${$('[name="current_district"]').val()}, ` +
+                               `${$('[name="current_state"]').val()} - ${$('[name="current_pincode"]').val()}`;
+            $('#preview-current-address').text(currentAddr);
+
+            // Populate permanent address
+            const permAddr = `${$('[name="permanent_house_flat_no"]').val()}, ` +
+                            `${$('[name="permanent_street_road"]').val() || ''}, ` +
+                            `${$('[name="permanent_village_panchayat_area"]').val() || ''}, ` +
+                            `${$('[name="permanent_city_town"]').val()}, ` +
+                            `${$('[name="permanent_district"]').val()}, ` +
+                            `${$('[name="permanent_state"]').val()} - ${$('[name="permanent_pincode"]').val()}`;
+            $('#preview-permanent-address').text(permAddr);
+
+            // Populate bank details
+            $('#preview-bank-name').text($('[name="bank_account_name"]').val());
+            $('#preview-bank').text($('[name="bank_name"]').val() + ' - ' + $('[name="bank_branch"]').val());
+            $('#preview-acc-num').text($('[name="bank_account_number"]').val());
+            $('#preview-ifsc').text($('[name="bank_ifsc"]').val());
+
+            // Populate family members
+            let familyHTML = '';
+            $('.family-member-item').each(function(index) {
+                const memberNum = index + 1;
+                const inputs = $(this).find('input, select');
+                const name = $(this).find('[name^="family_member_"][name$="_name"]').val();
+                const relation = $(this).find('[name^="family_member_"][name$="_relation"] option:selected').text();
+                const gender = $(this).find('[name^="family_member_"][name$="_gender"] option:selected').text();
+                const dob = $(this).find('[name^="family_member_"][name$="_dob"]').val();
+                const aadhaar = $(this).find('[name^="family_member_"][name$="_aadhaar"]').val();
+
+                familyHTML += `
+                    <div class="border-bottom pb-2 mb-2">
+                        <h6><strong>Member ${memberNum}</strong></h6>
+                        <div class="row">
+                            <div class="col-md-6"><strong>Name:</strong> ${name}</div>
+                            <div class="col-md-6"><strong>Relation:</strong> ${relation}</div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-md-6"><strong>Gender:</strong> ${gender}</div>
+                            <div class="col-md-6"><strong>DOB:</strong> ${dob}</div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-md-6"><strong>Aadhaar:</strong> ${aadhaar}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            $('#preview-family').html(familyHTML || '<p class="text-muted">No family members added</p>');
+
+            // Populate documents
+            let docsHTML = '';
+            documentUploadedList.forEach(function(doc, index) {
+                docsHTML += `
+                    <div class="mb-2">
+                        <i class="fas fa-file text-success"></i> <strong>${doc.typeName}:</strong> ${doc.fileName}
+                    </div>
+                `;
+            });
+            $('#preview-documents').html(docsHTML || '<p class="text-muted">No documents uploaded</p>');
+
+            // Hide form and show preview
+            $('#applicationForm').hide();
+            $('#previewSection').show();
+            $('html, body').animate({ scrollTop: $('#previewSection').offset().top - 50 }, 500);
+        }
+
+        function editApplication() {
+            $('#previewSection').hide();
+            $('#applicationForm').show();
+            $('html, body').animate({ scrollTop: $('#applicationForm').offset().top - 50 }, 500);
+        }
+
+        function submitAfterPreview() {
+            if (!$('#preview-confirm-checkbox').is(':checked')) {
+                alert('कृपया पुष्टि चेकबॉक्स को चेक करें। Please check the confirmation checkbox. ਕਿਰਪਾ ਕਰਕੇ ਪੁਸ਼ਟੀਕਰਨ ਚੈੱਕਬਾਕਸ ਨੂੰ ਚੈੱਕ ਕਰੋ।');
+                return;
+            }
+
+            // Submit the form
+            $('#applicationForm').submit();
+        }
 
         // Form validation
         $('#applicationForm').submit(function(e) {
