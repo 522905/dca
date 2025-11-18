@@ -123,26 +123,30 @@
                 {% endif %}
                 <p><strong>Application Status:</strong> <span class="badge badge-info">{{ application.get_status_display }}</span></p>
                 <p><strong>Submitted On:</strong> {{ application.created_at|date:"d M Y, h:i A" }}</p>
+                {% if filled_by %}
+                <p><strong>Filled By / द्वारा भरा गया / ਦੁਆਰਾ ਭਰਿਆ ਗਿਆ:</strong> {{ filled_by.name }}{% if filled_by.email %} ({{ filled_by.email }}){% endif %}</p>
+                {% endif %}
             </div>
 
             <!-- Trilingual Communication Notice -->
             <div class="info-card" style="background: #fffbf0; border-left-color: #ffc107; border: 2px solid #ffc107;">
-                <h5><i class="fas fa-mobile-alt"></i> Important Notice (महत्वपूर्ण सूचना / ਮਹੱਤਵਪੂਰਨ ਸੂਚਨਾ)</h5>
+                <h5><i class="fas fa-mobile-alt"></i> <i class="fab fa-whatsapp"></i> Important Communication Notice</h5>
+                <h6 style="color: #856404;">महत्वपूर्ण संचार सूचना / ਮਹੱਤਵਪੂਰਨ ਸੰਚਾਰ ਸੂਚਨਾ</h6>
                 <hr>
 
                 <div class="mb-3 pb-3 border-bottom">
-                    <p class="mb-2"><strong>English:</strong></p>
-                    <p class="mb-0">All communication regarding your application will be done through <strong>SMS and WhatsApp</strong> on the mobile number <span style="background-color: #fff3cd; padding: 2px 8px; border-radius: 3px; font-weight: bold;">{{ application.applicant_mobile }}</span>. Please keep this number active.</p>
+                    <p class="mb-2"><strong>📱 English:</strong></p>
+                    <p class="mb-0">All communications regarding your application will be done on the mobile number <span style="background-color: #fff3cd; padding: 3px 10px; border-radius: 3px; font-weight: bold; font-size: 1.1em; color: #856404;">{{ application.applicant_mobile }}</span>. We will update you using <strong>WhatsApp, SMS and Calls</strong>. Please keep this number active and check your messages regularly.</p>
                 </div>
 
                 <div class="mb-3 pb-3 border-bottom">
-                    <p class="mb-2"><strong>हिंदी:</strong></p>
-                    <p class="mb-0">आपके आवेदन से संबंधित सभी संचार मोबाइल नंबर <span style="background-color: #fff3cd; padding: 2px 8px; border-radius: 3px; font-weight: bold;">{{ application.applicant_mobile }}</span> पर <strong>SMS और WhatsApp</strong> के माध्यम से किया जाएगा। कृपया इस नंबर को सक्रिय रखें।</p>
+                    <p class="mb-2"><strong>📱 हिंदी:</strong></p>
+                    <p class="mb-0">आपके आवेदन से संबंधित सभी संचार मोबाइल नंबर <span style="background-color: #fff3cd; padding: 3px 10px; border-radius: 3px; font-weight: bold; font-size: 1.1em; color: #856404;">{{ application.applicant_mobile }}</span> पर किया जाएगा। हम आपको <strong>WhatsApp, SMS और Calls</strong> के माध्यम से अपडेट करेंगे। कृपया इस नंबर को सक्रिय रखें और अपने संदेशों को नियमित रूप से जांचें।</p>
                 </div>
 
                 <div class="mb-0">
-                    <p class="mb-2"><strong>ਪੰਜਾਬੀ:</strong></p>
-                    <p class="mb-0">ਤੁਹਾਡੀ ਅਰਜ਼ੀ ਸੰਬੰਧੀ ਸਾਰਾ ਸੰਚਾਰ ਮੋਬਾਈਲ ਨੰਬਰ <span style="background-color: #fff3cd; padding: 2px 8px; border-radius: 3px; font-weight: bold;">{{ application.applicant_mobile }}</span> 'ਤੇ <strong>SMS ਅਤੇ WhatsApp</strong> ਰਾਹੀਂ ਕੀਤਾ ਜਾਵੇਗਾ। ਕਿਰਪਾ ਕਰਕੇ ਇਸ ਨੰਬਰ ਨੂੰ ਸਰਗਰਮ ਰੱਖੋ।</p>
+                    <p class="mb-2"><strong>📱 ਪੰਜਾਬੀ:</strong></p>
+                    <p class="mb-0">ਤੁਹਾਡੀ ਅਰਜ਼ੀ ਸੰਬੰਧੀ ਸਾਰਾ ਸੰਚਾਰ ਮੋਬਾਈਲ ਨੰਬਰ <span style="background-color: #fff3cd; padding: 3px 10px; border-radius: 3px; font-weight: bold; font-size: 1.1em; color: #856404;">{{ application.applicant_mobile }}</span> 'ਤੇ ਕੀਤਾ ਜਾਵੇਗਾ। ਅਸੀਂ ਤੁਹਾਨੂੰ <strong>WhatsApp, SMS ਅਤੇ Calls</strong> ਰਾਹੀਂ ਅੱਪਡੇਟ ਕਰਾਂਗੇ। ਕਿਰਪਾ ਕਰਕੇ ਇਸ ਨੰਬਰ ਨੂੰ ਸਰਗਰਮ ਰੱਖੋ ਅਤੇ ਆਪਣੇ ਸੁਨੇਹੇ ਨਿਯਮਿਤ ਤੌਰ 'ਤੇ ਚੈੱਕ ਕਰੋ।</p>
                 </div>
             </div>
 

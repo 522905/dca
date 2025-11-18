@@ -8,6 +8,9 @@ from datetime import datetime, date
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
+from django.http import JsonResponse
+import traceback
+import sys
 
 from .models import (
     UjjwalaV3Application,
@@ -81,8 +84,18 @@ def public_application_form(request):
 
         # Check if Aadhaar already exists
         if UjjwalaV3Application.objects.filter(applicant_aadhaar_number=applicant_aadhaar).exists():
-            messages.error(request, 'An application with this Aadhaar number already exists.')
+            error_msg = 'An application with this Aadhaar number already exists.'
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'message': error_msg}, status=400)
+            messages.error(request, error_msg)
             return render(request, 'ujjwala_v3/application_form.html')
+
+        # Store filled_by information if user is authenticated
+        filled_by_name = None
+        filled_by_email = None
+        if request.user.is_authenticated:
+            filled_by_name = request.user.get_full_name() or request.user.username
+            filled_by_email = request.user.email
 
         # Create application
         application = UjjwalaV3Application.objects.create(
@@ -228,23 +241,52 @@ def public_application_form(request):
                         print(f"Invalid document type: {doc_type}")
                         continue
 
-        # Success message
-        messages.success(
-            request,
-            f'Your application has been submitted successfully! '
-            f'Application Number: {application.application_number}. '
-            f'Please save this number for future reference.'
-        )
-
-        # Redirect to success page
-        return redirect('ujjwala_v3_application_success', application_number=application.application_number)
+        # Success - check if AJAX request
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # Return JSON response for AJAX
+            return JsonResponse({
+                'status': 'success',
+                'application_number': application.application_number,
+                'redirect_url': f'/ujjwala_v3/success/{application.application_number}/',
+                'message': 'Application submitted successfully!'
+            })
+        else:
+            # Regular form submission - redirect to success page
+            messages.success(
+                request,
+                f'Your application has been submitted successfully! '
+                f'Application Number: {application.application_number}. '
+                f'Please save this number for future reference.'
+            )
+            return redirect('ujjwala_v3_application_success', application_number=application.application_number)
 
     except Exception as e:
+        # Get detailed error information
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        tb_lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+        error_traceback = ''.join(tb_lines)
+
+        # Log error
         print(f"Error creating application: {e}")
-        import traceback
-        traceback.print_exc()
-        messages.error(request, f'An error occurred while submitting your application. Please try again.')
-        return render(request, 'ujjwala_v3/application_form.html')
+        print(error_traceback)
+
+        # Prepare error message
+        error_msg = f'An error occurred while submitting your application: {str(e)}'
+
+        # Check if AJAX request
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # Return detailed JSON error for AJAX
+            return JsonResponse({
+                'status': 'error',
+                'message': error_msg,
+                'error': str(e),
+                'error_type': exc_type.__name__ if exc_type else 'Unknown',
+                'traceback': error_traceback
+            }, status=500)
+        else:
+            # Regular form submission
+            messages.error(request, error_msg)
+            return render(request, 'ujjwala_v3/application_form.html')
 
 
 @require_http_methods(["GET"])
@@ -257,8 +299,19 @@ def application_success(request, application_number):
     """
     try:
         application = UjjwalaV3Application.objects.get(application_number=application_number)
+
+        # Prepare filled_by information
+        filled_by_info = None
+        if request.user.is_authenticated:
+            filled_by_info = {
+                'name': request.user.get_full_name() or request.user.username,
+                'email': request.user.email,
+                'username': request.user.username
+            }
+
         return render(request, 'ujjwala_v3/application_success.html', {
-            'application': application
+            'application': application,
+            'filled_by': filled_by_info
         })
     except UjjwalaV3Application.DoesNotExist:
         messages.error(request, 'Application not found.')

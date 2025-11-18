@@ -1696,54 +1696,116 @@
                 url: window.location.pathname,
                 type: 'POST',
                 data: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 success: function(response, textStatus, xhr) {
-                    // Check if redirected to success page
-                    if (xhr.status === 200 || xhr.status === 302) {
-                        // Clear localStorage on successful submission
-                        localStorage.removeItem('ujjwala_v3_form_data');
+                    $('#loader').hide();
 
-                        // If response contains a redirect URL, follow it
-                        if (response.redirect_url) {
-                            window.location.href = response.redirect_url;
-                        } else {
-                            // Otherwise, reload to show success message
-                            window.location.reload();
-                        }
+                    // Clear localStorage on successful submission
+                    localStorage.removeItem('ujjwala_v3_form_data');
+
+                    // Check if response contains redirect URL
+                    if (response.redirect_url) {
+                        // Redirect to success page
+                        window.location.href = response.redirect_url;
+                    } else if (response.status === 'success' && response.application_number) {
+                        // Construct success URL from application number
+                        window.location.href = '/ujjwala_v3/success/' + response.application_number + '/';
+                    } else {
+                        // Fallback: reload page
+                        window.location.reload();
                     }
                 },
                 error: function(xhr, status, error) {
                     $('#loader').hide();
 
-                    // Parse error details
+                    // Parse error details from JSON response
                     let errorMessage = 'An error occurred while submitting your application.\n\n';
-                    errorMessage += 'Error Details:\n';
-                    errorMessage += '- Status: ' + xhr.status + '\n';
-                    errorMessage += '- Error: ' + error + '\n';
+                    let errorDetails = '';
+                    let traceback = '';
 
-                    if (xhr.responseText) {
-                        try {
-                            const errorData = JSON.parse(xhr.responseText);
-                            errorMessage += '- Message: ' + (errorData.message || errorData.error || '') + '\n';
-                        } catch (e) {
-                            // If not JSON, show first 200 chars of response
-                            errorMessage += '- Response: ' + xhr.responseText.substring(0, 200) + '\n';
+                    try {
+                        const errorData = JSON.parse(xhr.responseText);
+
+                        // Build user-friendly error message
+                        errorMessage += '❌ Error Details:\n';
+                        errorMessage += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+
+                        if (errorData.message) {
+                            errorMessage += '📋 Message: ' + errorData.message + '\n\n';
                         }
+
+                        if (errorData.error_type) {
+                            errorMessage += '🔍 Error Type: ' + errorData.error_type + '\n';
+                        }
+
+                        if (errorData.error) {
+                            errorMessage += '⚠️ Error: ' + errorData.error + '\n\n';
+                        }
+
+                        errorMessage += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
+                        errorMessage += '✅ Your data has been saved locally and will be restored.\n';
+                        errorMessage += '✅ Please try again or contact support with the error details.\n\n';
+                        errorMessage += 'आपका डेटा सुरक्षित रूप से सहेजा गया है।\n';
+                        errorMessage += 'ਤੁਹਾਡਾ ਡੇਟਾ ਸੁਰੱਖਿਅਤ ਰੂਪ ਵਿੱਚ ਸੰਭਾਲਿਆ ਗਿਆ ਹੈ।';
+
+                        // Store traceback for console
+                        if (errorData.traceback) {
+                            traceback = errorData.traceback;
+                        }
+
+                        // Build detailed error info for console
+                        errorDetails = {
+                            status: xhr.status,
+                            statusText: xhr.statusText,
+                            errorType: errorData.error_type || 'Unknown',
+                            errorMessage: errorData.error || error,
+                            serverMessage: errorData.message || '',
+                            traceback: traceback,
+                            timestamp: new Date().toISOString()
+                        };
+
+                    } catch (e) {
+                        // Fallback if response is not JSON
+                        errorMessage += '❌ Status Code: ' + xhr.status + '\n';
+                        errorMessage += '❌ Error: ' + error + '\n\n';
+
+                        if (xhr.responseText && xhr.responseText.length < 500) {
+                            errorMessage += '📋 Response: ' + xhr.responseText + '\n\n';
+                        }
+
+                        errorMessage += '✅ Your data has been saved locally and will be restored.\n';
+                        errorMessage += '✅ Please try again or contact support.\n\n';
+                        errorMessage += 'आपका डेटा सुरक्षित रूप से सहेजा गया है।\n';
+                        errorMessage += 'ਤੁਹਾਡਾ ਡੇਟਾ ਸੁਰੱਖਿਅਤ ਰੂਪ ਵਿੱਚ ਸੰਭਾਲਿਆ ਗਿਆ ਹੈ।';
+
+                        errorDetails = {
+                            status: xhr.status,
+                            statusText: xhr.statusText,
+                            error: error,
+                            response: xhr.responseText,
+                            timestamp: new Date().toISOString()
+                        };
                     }
 
-                    errorMessage += '\n✓ Your data has been saved locally and will be restored.\n';
-                    errorMessage += '✓ Please try again or contact support with the error details above.\n\n';
-                    errorMessage += 'आपका डेटा सुरक्षित रूप से सहेजा गया है।\n';
-                    errorMessage += 'ਤੁਹਾਡਾ ਡੇਟਾ ਸੁਰੱਖਿਅਤ ਰੂਪ ਵਿੱਚ ਸੰਭਾਲਿਆ ਗਿਆ ਹੈ।';
-
+                    // Show user-friendly error message
                     alert(errorMessage);
 
-                    // Log to console for debugging
-                    console.error('Submission Error:', {
-                        status: xhr.status,
-                        statusText: xhr.statusText,
-                        error: error,
-                        response: xhr.responseText
-                    });
+                    // Log detailed error to console for debugging
+                    console.error('═══════════════════════════════════════════');
+                    console.error('SUBMISSION ERROR - DETAILED TRACEBACK');
+                    console.error('═══════════════════════════════════════════');
+                    console.error('Error Details:', errorDetails);
+
+                    if (traceback) {
+                        console.error('');
+                        console.error('Server Traceback:');
+                        console.error('─────────────────────────────────────────');
+                        console.error(traceback);
+                    }
+
+                    console.error('═══════════════════════════════════════════');
 
                     // Return to form view
                     editApplication();
