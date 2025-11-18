@@ -60,17 +60,47 @@ def public_application_form(request):
         applicant_full_name = ' '.join([part for part in name_parts if part])
 
         applicant_gender = request.POST.get('applicant_gender')
-        applicant_dob_str = request.POST.get('applicant_dob')
-        applicant_dob = datetime.strptime(applicant_dob_str, '%Y-%m-%d').date()
+
+        # DOB is now in the SELF family member - we'll extract it later
+        applicant_dob = None
+        applicant_dob_str = request.POST.get('applicant_dob', '').strip()
+
+        # If applicant_dob is provided (from hidden field synced from SELF member), use it
+        if applicant_dob_str:
+            applicant_dob = datetime.strptime(applicant_dob_str, '%Y-%m-%d').date()
+
         applicant_aadhaar = request.POST.get('applicant_aadhaar_number', '').strip()
         applicant_mobile = request.POST.get('applicant_mobile', '').strip()
         applicant_email = request.POST.get('applicant_email', '').strip()
         caste = request.POST.get('caste')
 
+        # If DOB not provided yet, try to find it from SELF family member
+        if not applicant_dob:
+            for key in request.POST.keys():
+                if key.startswith('family_member_') and key.endswith('_relation'):
+                    member_id = key.split('_')[2]
+                    member_relation = request.POST.get(f'family_member_{member_id}_relation')
+                    if member_relation == 'SELF':
+                        member_dob_str = request.POST.get(f'family_member_{member_id}_dob', '').strip()
+                        if member_dob_str:
+                            applicant_dob = datetime.strptime(member_dob_str, '%Y-%m-%d').date()
+                            break
+
+        # Validate DOB is provided
+        if not applicant_dob:
+            error_msg = 'Date of Birth is required. Please add a family member with relation "SELF" and provide their date of birth.'
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'message': error_msg}, status=400)
+            messages.error(request, error_msg)
+            return render(request, 'ujjwala_v3/application_form.html')
+
         # Validate age (must be 18+)
         age = calculate_age(applicant_dob)
         if age < 18:
-            messages.error(request, 'Applicant must be at least 18 years old.')
+            error_msg = 'Applicant must be at least 18 years old.'
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'message': error_msg}, status=400)
+            messages.error(request, error_msg)
             return render(request, 'ujjwala_v3/application_form.html')
 
         # Get address details
