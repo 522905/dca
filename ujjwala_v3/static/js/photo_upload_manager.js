@@ -22,6 +22,7 @@ class PhotoUploadManager {
         }
 
         const profileUppy = new Uppy.Core({
+            autoProceed: true, // Auto-upload after file selection
             maxFileSize: 10000000, // 10 MB
             maxNumberOfFiles: 1,
             allowedFileTypes: ['image/*'],
@@ -36,8 +37,8 @@ class PhotoUploadManager {
             inline: true,
             target: '#profilePhotoUploader',
             height: 250,
-            hideUploadButton: false,
-            showRemoveButtonAfterComplete: true,
+            hideUploadButton: true, // Hide manual upload button since auto-upload is enabled
+            showRemoveButtonAfterComplete: false,
             note: 'Images only, up to 10 MB'
         })
         .use(Uppy.ImageEditor, {
@@ -55,12 +56,32 @@ class PhotoUploadManager {
         profileUppy.on('upload-success', (file, response) => {
             const photoUrl = response.uploadURL;
             $('#profilePhotoUrl').val(photoUrl);
+
+            // Hide uploader and show preview with hover actions
+            $('#profilePhotoUploader').hide();
             $('#profilePhotoPreview').html(`
-                <div class="mt-2">
-                    <img src="${photoUrl}" alt="Profile Photo" style="max-width: 200px; border-radius: 8px; border: 2px solid #667eea;">
-                    <p class="text-success mt-2"><i class="fas fa-check-circle"></i> Profile photo uploaded successfully!</p>
+                <div class="photo-preview-container" style="position: relative; display: inline-block;">
+                    <img src="${photoUrl}" alt="Profile Photo"
+                         style="max-width: 200px; border-radius: 8px; border: 2px solid #28a745; cursor: pointer;">
+                    <div class="photo-hover-actions" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                         display: none; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 8px;">
+                        <button type="button" class="btn btn-sm btn-light mx-1" onclick="viewImage('${photoUrl}', 'Profile Photo')">
+                            <i class="fas fa-search-plus"></i> Zoom
+                        </button>
+                        <button type="button" class="btn btn-sm btn-warning mx-1" onclick="window.photoUploadManager.changeProfilePhoto()">
+                            <i class="fas fa-edit"></i> Change
+                        </button>
+                    </div>
                 </div>
-            `);
+                <p class="text-success mt-2"><i class="fas fa-check-circle"></i> Profile photo uploaded successfully!</p>
+            `).show();
+
+            // Add hover effect
+            $('.photo-preview-container').hover(
+                function() { $(this).find('.photo-hover-actions').fadeIn(200); },
+                function() { $(this).find('.photo-hover-actions').fadeOut(200); }
+            );
+
             console.log('Profile photo uploaded:', photoUrl);
         });
 
@@ -70,6 +91,18 @@ class PhotoUploadManager {
         });
 
         this.uploaders.profile = profileUppy;
+    }
+
+    /**
+     * Change profile photo - show uploader again
+     */
+    changeProfilePhoto() {
+        $('#profilePhotoUploader').show();
+        $('#profilePhotoPreview').hide();
+        // Reset uploader
+        if (this.uploaders.profile) {
+            this.uploaders.profile.reset();
+        }
     }
 
     /**
@@ -83,6 +116,7 @@ class PhotoUploadManager {
         }
 
         const passbookUppy = new Uppy.Core({
+            autoProceed: true, // Auto-upload after file selection
             maxFileSize: 10000000, // 10 MB
             maxNumberOfFiles: 1,
             allowedFileTypes: ['image/*'],
@@ -97,8 +131,8 @@ class PhotoUploadManager {
             inline: true,
             target: '#bankPassbookUploader',
             height: 250,
-            hideUploadButton: false,
-            showRemoveButtonAfterComplete: true,
+            hideUploadButton: true, // Hide manual upload button since auto-upload is enabled
+            showRemoveButtonAfterComplete: false,
             note: 'Images only, up to 10 MB'
         })
         .use(Uppy.ImageEditor, {
@@ -116,12 +150,32 @@ class PhotoUploadManager {
         passbookUppy.on('upload-success', (file, response) => {
             const photoUrl = response.uploadURL;
             $('#bankPassbookUrl').val(photoUrl);
+
+            // Hide uploader and show preview with hover actions
+            $('#bankPassbookUploader').hide();
             $('#bankPassbookPreview').html(`
-                <div class="mt-2">
-                    <img src="${photoUrl}" alt="Bank Passbook" style="max-width: 300px; border-radius: 8px; border: 2px solid #667eea;">
-                    <p class="text-success mt-2"><i class="fas fa-check-circle"></i> Bank passbook uploaded successfully!</p>
+                <div class="photo-preview-container" style="position: relative; display: inline-block;">
+                    <img src="${photoUrl}" alt="Bank Passbook"
+                         style="max-width: 300px; border-radius: 8px; border: 2px solid #28a745; cursor: pointer;">
+                    <div class="photo-hover-actions" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                         display: none; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 8px;">
+                        <button type="button" class="btn btn-sm btn-light mx-1" onclick="viewImage('${photoUrl}', 'Bank Passbook')">
+                            <i class="fas fa-search-plus"></i> Zoom
+                        </button>
+                        <button type="button" class="btn btn-sm btn-warning mx-1" onclick="window.photoUploadManager.changeBankPassbookPhoto()">
+                            <i class="fas fa-edit"></i> Change
+                        </button>
+                    </div>
                 </div>
-            `);
+                <p class="text-success mt-2"><i class="fas fa-check-circle"></i> Bank passbook uploaded successfully!</p>
+            `).show();
+
+            // Add hover effect
+            $('.photo-preview-container').hover(
+                function() { $(this).find('.photo-hover-actions').fadeIn(200); },
+                function() { $(this).find('.photo-hover-actions').fadeOut(200); }
+            );
+
             console.log('Bank passbook uploaded:', photoUrl);
         });
 
@@ -134,12 +188,25 @@ class PhotoUploadManager {
     }
 
     /**
+     * Change bank passbook photo - show uploader again
+     */
+    changeBankPassbookPhoto() {
+        $('#bankPassbookUploader').show();
+        $('#bankPassbookPreview').hide();
+        // Reset uploader
+        if (this.uploaders.bankPassbook) {
+            this.uploaders.bankPassbook.reset();
+        }
+    }
+
+    /**
      * Initialize UID photo uploaders for a family member
      */
     initFamilyMemberUIDUploaders(memberId) {
         // UID Front uploader
         const frontUppy = new Uppy.Core({
             id: `uidFront_${memberId}`,
+            autoProceed: true, // Auto-upload after file selection
             maxFileSize: 50000000,
             maxNumberOfFiles: 1,
             allowedFileTypes: ['image/*'],
@@ -148,8 +215,8 @@ class PhotoUploadManager {
             inline: true,
             target: `#uidFrontUploader_${memberId}`,
             height: 200,
-            hideUploadButton: false,
-            showRemoveButtonAfterComplete: true,
+            hideUploadButton: true,
+            showRemoveButtonAfterComplete: false,
             note: 'Aadhaar Front - Images only, up to 50 MB'
         })
         .use(Uppy.ImageEditor, {
@@ -166,6 +233,7 @@ class PhotoUploadManager {
         // UID Back uploader
         const backUppy = new Uppy.Core({
             id: `uidBack_${memberId}`,
+            autoProceed: true, // Auto-upload after file selection
             maxFileSize: 50000000,
             maxNumberOfFiles: 1,
             allowedFileTypes: ['image/*'],
@@ -174,8 +242,8 @@ class PhotoUploadManager {
             inline: true,
             target: `#uidBackUploader_${memberId}`,
             height: 200,
-            hideUploadButton: false,
-            showRemoveButtonAfterComplete: true,
+            hideUploadButton: true,
+            showRemoveButtonAfterComplete: false,
             note: 'Aadhaar Back - Images only, up to 50 MB'
         })
         .use(Uppy.ImageEditor, {
@@ -206,9 +274,31 @@ class PhotoUploadManager {
             memberData.uid_front_url = response.uploadURL;
             memberData.uid_original_front_url = response.uploadURL;
             $(`#uidFrontUrl_${memberId}`).val(response.uploadURL);
+
+            // Hide uploader and show preview with hover actions
+            $(`#uidFrontUploader_${memberId}`).hide();
             $(`#uidFrontPreview_${memberId}`).html(`
-                <img src="${response.uploadURL}" alt="UID Front" style="max-width: 200px; border: 2px solid #28a745; border-radius: 5px;">
-            `);
+                <div class="photo-preview-container" style="position: relative; display: inline-block;">
+                    <img src="${response.uploadURL}" alt="UID Front"
+                         style="max-width: 200px; border: 2px solid #28a745; border-radius: 5px; cursor: pointer;">
+                    <div class="photo-hover-actions" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                         display: none; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 8px;">
+                        <button type="button" class="btn btn-sm btn-light mx-1" onclick="viewImage('${response.uploadURL}', 'Aadhaar Front')">
+                            <i class="fas fa-search-plus"></i> Zoom
+                        </button>
+                        <button type="button" class="btn btn-sm btn-warning mx-1" onclick="window.photoUploadManager.changeUIDPhoto(${memberId}, 'front')">
+                            <i class="fas fa-edit"></i> Change
+                        </button>
+                    </div>
+                </div>
+            `).show();
+
+            // Add hover effect
+            $(`#uidFrontPreview_${memberId} .photo-preview-container`).hover(
+                function() { $(this).find('.photo-hover-actions').fadeIn(200); },
+                function() { $(this).find('.photo-hover-actions').fadeOut(200); }
+            );
+
             this.checkAndTriggerOCR(memberId);
         });
 
@@ -216,14 +306,55 @@ class PhotoUploadManager {
             memberData.uid_back_url = response.uploadURL;
             memberData.uid_original_back_url = response.uploadURL;
             $(`#uidBackUrl_${memberId}`).val(response.uploadURL);
+
+            // Hide uploader and show preview with hover actions
+            $(`#uidBackUploader_${memberId}`).hide();
             $(`#uidBackPreview_${memberId}`).html(`
-                <img src="${response.uploadURL}" alt="UID Back" style="max-width: 200px; border: 2px solid #28a745; border-radius: 5px;">
-            `);
+                <div class="photo-preview-container" style="position: relative; display: inline-block;">
+                    <img src="${response.uploadURL}" alt="UID Back"
+                         style="max-width: 200px; border: 2px solid #28a745; border-radius: 5px; cursor: pointer;">
+                    <div class="photo-hover-actions" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                         display: none; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 8px;">
+                        <button type="button" class="btn btn-sm btn-light mx-1" onclick="viewImage('${response.uploadURL}', 'Aadhaar Back')">
+                            <i class="fas fa-search-plus"></i> Zoom
+                        </button>
+                        <button type="button" class="btn btn-sm btn-warning mx-1" onclick="window.photoUploadManager.changeUIDPhoto(${memberId}, 'back')">
+                            <i class="fas fa-edit"></i> Change
+                        </button>
+                    </div>
+                </div>
+            `).show();
+
+            // Add hover effect
+            $(`#uidBackPreview_${memberId} .photo-preview-container`).hover(
+                function() { $(this).find('.photo-hover-actions').fadeIn(200); },
+                function() { $(this).find('.photo-hover-actions').fadeOut(200); }
+            );
+
             this.checkAndTriggerOCR(memberId);
         });
 
         this.uploaders[`uidFront_${memberId}`] = frontUppy;
         this.uploaders[`uidBack_${memberId}`] = backUppy;
+    }
+
+    /**
+     * Change UID photo - show uploader again
+     */
+    changeUIDPhoto(memberId, side) {
+        if (side === 'front') {
+            $(`#uidFrontUploader_${memberId}`).show();
+            $(`#uidFrontPreview_${memberId}`).hide();
+            if (this.uploaders[`uidFront_${memberId}`]) {
+                this.uploaders[`uidFront_${memberId}`].reset();
+            }
+        } else {
+            $(`#uidBackUploader_${memberId}`).show();
+            $(`#uidBackPreview_${memberId}`).hide();
+            if (this.uploaders[`uidBack_${memberId}`]) {
+                this.uploaders[`uidBack_${memberId}`].reset();
+            }
+        }
     }
 
     /**
