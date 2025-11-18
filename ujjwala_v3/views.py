@@ -149,8 +149,8 @@ def public_application_form(request):
             family_doc_issuing_state=request.POST.get('family_doc_issuing_state', '').strip() or None,
             family_doc_type=request.POST.get('family_doc_type') or None,
             family_doc_number=request.POST.get('family_doc_number', '').strip() or None,
-            is_deprivation_decl_signed=request.POST.get('is_deprivation_decl_signed') == 'on',
-            status=ApplicationStatus.DRAFT
+            is_deprivation_decl_signed=request.POST.get('is_deprivation_decl_signed') == 'on'
+            # Note: status field uses FSM default value (DRAFT) - cannot be set directly
         )
 
         # Create Current Address
