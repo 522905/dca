@@ -13,11 +13,24 @@ class PhotoUploadManager {
 
     /**
      * Initialize profile photo uploader
+     * @param {number} memberId - Optional member ID for family member profile photos
      */
-    initProfilePhotoUploader() {
+    initProfilePhotoUploader(memberId = null) {
+        // Determine target selectors based on whether this is for a family member
+        const uploaderKey = memberId ? `profile_${memberId}` : 'profile';
+        const targetUploader = memberId ? `#profilePhotoUploader_${memberId}` : '#profilePhotoUploader';
+        const targetUrlField = memberId ? `#profilePhotoUrl_${memberId}` : '#profilePhotoUrl';
+        const targetPreview = memberId ? `#profilePhotoPreview_${memberId}` : '#profilePhotoPreview';
+
+        // Check if target element exists
+        if (!$(targetUploader).length) {
+            console.error(`Profile photo uploader target not found: ${targetUploader}`);
+            return;
+        }
+
         // Check if already initialized
-        if (this.uploaders.profile) {
-            console.log('Profile photo uploader already initialized');
+        if (this.uploaders[uploaderKey]) {
+            console.log(`Profile photo uploader already initialized for ${uploaderKey}`);
             return;
         }
 
@@ -35,7 +48,7 @@ class PhotoUploadManager {
         })
         .use(Uppy.Dashboard, {
             inline: true,
-            target: '#profilePhotoUploader',
+            target: targetUploader,
             height: 250,
             hideUploadButton: true, // Hide manual upload button since auto-upload is enabled
             showRemoveButtonAfterComplete: false,
@@ -55,11 +68,11 @@ class PhotoUploadManager {
 
         profileUppy.on('upload-success', (file, response) => {
             const photoUrl = response.uploadURL;
-            $('#profilePhotoUrl').val(photoUrl);
+            $(targetUrlField).val(photoUrl);
 
             // Hide uploader and show preview with hover actions
-            $('#profilePhotoUploader').hide();
-            $('#profilePhotoPreview').html(`
+            $(targetUploader).hide();
+            $(targetPreview).html(`
                 <div class="photo-preview-container" style="position: relative; display: inline-block;">
                     <img src="${photoUrl}" alt="Profile Photo"
                          style="max-width: 200px; border-radius: 8px; border: 2px solid #28a745; cursor: pointer;">
@@ -68,7 +81,7 @@ class PhotoUploadManager {
                         <button type="button" class="btn btn-sm btn-light mx-1" onclick="viewImage('${photoUrl}', 'Profile Photo')">
                             <i class="fas fa-search-plus"></i> Zoom
                         </button>
-                        <button type="button" class="btn btn-sm btn-warning mx-1" onclick="window.photoUploadManager.changeProfilePhoto()">
+                        <button type="button" class="btn btn-sm btn-warning mx-1" onclick="window.photoUploadManager.changeProfilePhoto(${memberId})">
                             <i class="fas fa-edit"></i> Change
                         </button>
                     </div>
@@ -77,7 +90,7 @@ class PhotoUploadManager {
             `).show();
 
             // Add hover effect
-            $('.photo-preview-container').hover(
+            $(targetPreview).find('.photo-preview-container').hover(
                 function() { $(this).find('.photo-hover-actions').fadeIn(200); },
                 function() { $(this).find('.photo-hover-actions').fadeOut(200); }
             );
@@ -90,18 +103,23 @@ class PhotoUploadManager {
             alert('Failed to upload profile photo. Please try again.');
         });
 
-        this.uploaders.profile = profileUppy;
+        this.uploaders[uploaderKey] = profileUppy;
     }
 
     /**
      * Change profile photo - show uploader again
+     * @param {number} memberId - Optional member ID for family member profile photos
      */
-    changeProfilePhoto() {
-        $('#profilePhotoUploader').show();
-        $('#profilePhotoPreview').hide();
+    changeProfilePhoto(memberId = null) {
+        const uploaderKey = memberId ? `profile_${memberId}` : 'profile';
+        const targetUploader = memberId ? `#profilePhotoUploader_${memberId}` : '#profilePhotoUploader';
+        const targetPreview = memberId ? `#profilePhotoPreview_${memberId}` : '#profilePhotoPreview';
+
+        $(targetUploader).show();
+        $(targetPreview).hide();
         // Reset uploader
-        if (this.uploaders.profile) {
-            this.uploaders.profile.reset();
+        if (this.uploaders[uploaderKey]) {
+            this.uploaders[uploaderKey].reset();
         }
     }
 

@@ -192,9 +192,18 @@ function updateRelationLabel(memberId) {
         $(`#profilePhotoSection_${memberId}`).show();
 
         // Initialize profile photo uploader if not already initialized
-        if (window.photoUploadManager && typeof window.photoUploadManager.initProfilePhotoUploader === 'function') {
-            window.photoUploadManager.initProfilePhotoUploader(memberId);
-        }
+        setTimeout(function() {
+            if (window.photoUploadManager && typeof window.photoUploadManager.initProfilePhotoUploader === 'function') {
+                try {
+                    console.log('Initializing profile photo uploader for member:', memberId);
+                    window.photoUploadManager.initProfilePhotoUploader(memberId);
+                } catch (error) {
+                    console.error('Error initializing profile photo uploader:', error);
+                }
+            } else {
+                console.warn('PhotoUploadManager not available or initProfilePhotoUploader not a function');
+            }
+        }, 200); // Wait for DOM to be fully rendered
     } else {
         $(`#familyMember_${memberId}`).css('border-color', '#4299e1');
         $(`#familyMember_${memberId} .card-header`).css('background', '#2d3748');
