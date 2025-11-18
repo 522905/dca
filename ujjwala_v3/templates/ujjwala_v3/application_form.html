@@ -103,11 +103,11 @@
             background: linear-gradient(to bottom, #ffffff, #f8f9fa);
             padding: 15px;
             border-radius: 10px;
-            margin-bottom: 15px;
             border: 2px solid #e0e0e0;
             position: relative;
             transition: all 0.3s ease;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            height: 100%;
         }
         .document-item:hover {
             border-color: #667eea;
@@ -434,6 +434,13 @@
                 <input type="hidden" name="uid_back_url" id="uid_back_url">
                 <input type="hidden" name="ocr_processed" id="ocr_processed" value="no">
 
+                <!-- Start Over Button -->
+                <div class="text-right mb-3">
+                    <button type="button" class="btn btn-warning" onclick="startOver()" title="Discard all data and start fresh">
+                        <i class="fas fa-redo"></i> Start Over / फिर से शुरू करें
+                    </button>
+                </div>
+
                 <!-- Section 1: Applicant Details -->
                 <div class="section-title">
                     <i class="fas fa-user"></i> Applicant Details (आवेदक विवरण)
@@ -463,13 +470,7 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="required-field">Date of Birth</label>
-                                    <input type="date" name="applicant_dob" id="applicant_dob" class="form-control" required>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="required-field">Gender</label>
                                     <select name="applicant_gender" id="applicant_gender" class="form-control" required>
@@ -480,7 +481,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="required-field">Aadhaar Number</label>
                                     <input type="text" name="applicant_aadhaar_number" id="applicant_aadhaar_number" class="form-control" required
@@ -685,41 +686,90 @@
 
                 <div class="card mb-3">
                     <div class="card-body">
+                        <!-- Step 1: IFSC Code Entry -->
+                        <div class="info-box mb-3" style="background-color: #e7f3ff; border-left-color: #2196F3;">
+                            <strong><i class="fas fa-info-circle"></i> Step 1:</strong> Enter IFSC Code to auto-fill bank details
+                        </div>
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="required-field">Account Holder Name</label>
-                                    <input type="text" name="bank_account_name" class="form-control" required maxlength="200">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="required-field">Bank Name</label>
-                                    <input type="text" name="bank_name" class="form-control" required maxlength="200">
+                                    <label class="required-field">IFSC Code</label>
+                                    <div class="input-group">
+                                        <input type="text" name="bank_ifsc" id="bank_ifsc" class="form-control" required
+                                               pattern="[A-Z]{4}0[A-Z0-9]{6}" maxlength="11" style="text-transform: uppercase;"
+                                               placeholder="e.g., SBIN0001234">
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-info" id="fetchBankDetailsBtn" onclick="fetchBankDetails()">
+                                                <i class="fas fa-search"></i> Fetch Details
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <small id="ifsc_info" class="form-text"></small>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="required-field">Branch Name</label>
-                                    <input type="text" name="bank_branch" class="form-control" required maxlength="200">
+                        <!-- Step 2: Auto-filled Bank Details (Initially Hidden) -->
+                        <div id="bankDetailsSection" style="display: none;">
+                            <div class="info-box mb-3" style="background-color: #e8f5e9; border-left-color: #4caf50;">
+                                <strong><i class="fas fa-check-circle"></i> Bank Details Fetched Successfully</strong>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="required-field">Bank Name</label>
+                                        <input type="text" name="bank_name" id="bank_name" class="form-control" required maxlength="200" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="required-field">Branch Name</label>
+                                        <input type="text" name="bank_branch" id="bank_branch" class="form-control" required maxlength="200" readonly>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="required-field">IFSC Code</label>
-                                    <input type="text" name="bank_ifsc" id="bank_ifsc" class="form-control" required
-                                           pattern="[A-Z]{4}0[A-Z0-9]{6}" maxlength="11" style="text-transform: uppercase;">
-                                    <small id="ifsc_info" class="text-muted"></small>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>City</label>
+                                        <input type="text" id="bank_city" class="form-control" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>District</label>
+                                        <input type="text" id="bank_district" class="form-control" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>State</label>
+                                        <input type="text" id="bank_state" class="form-control" readonly>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="required-field">Account Number</label>
-                                    <input type="text" name="bank_account_number" class="form-control" required
-                                           minlength="9" maxlength="18">
+
+                            <!-- Step 3: Account Details Entry -->
+                            <div class="info-box mb-3">
+                                <strong><i class="fas fa-info-circle"></i> Step 2:</strong> Enter account details
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="required-field">Account Holder Name</label>
+                                        <input type="text" name="bank_account_name" id="bank_account_name" class="form-control" required maxlength="200">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="required-field">Account Number</label>
+                                        <input type="text" name="bank_account_number" id="bank_account_number" class="form-control" required
+                                               minlength="9" maxlength="18">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -766,6 +816,22 @@
 
                 <div class="card mb-3">
                     <div class="card-body">
+                        <!-- Applicant DOB -->
+                        <div class="info-box mb-3" style="background-color: #e7f3ff; border-left-color: #2196F3;">
+                            <strong><i class="fas fa-user"></i> Applicant Information</strong>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="required-field">Applicant Date of Birth</label>
+                                    <input type="date" name="applicant_dob" id="applicant_dob" class="form-control" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-box mb-3">
+                            <strong><i class="fas fa-users"></i> Other Family Members</strong>
+                        </div>
                         <div id="familyMembersContainer">
                             <!-- Dynamically added family members -->
                         </div>
@@ -786,8 +852,8 @@
                             <strong>Required Documents:</strong> Bank Proof, Applicant Photo, Family Photo, Signature
                         </div>
 
-                        <div id="documentsContainer">
-                            <!-- Dynamically added documents -->
+                        <div class="row" id="documentsContainer">
+                            <!-- Dynamically added documents in two columns -->
                         </div>
 
                         <div class="row">
@@ -816,29 +882,11 @@
                     </div>
                 </div>
 
-                <!-- Declaration -->
-                <div class="section-title">
-                    <i class="fas fa-check-circle"></i> Declaration
-                </div>
-
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="form-group">
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" id="is_deprivation_decl_signed"
-                                       name="is_deprivation_decl_signed" required>
-                                <label class="custom-control-label" for="is_deprivation_decl_signed">
-                                    मैं घोषणा करती हूं कि उपर दी गई सभी जानकारी सत्य है और मैं प्रवासी हूं
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="text-center mt-4">
-                            <button type="button" class="btn btn-primary btn-lg" onclick="showPreview()">
-                                <i class="fas fa-eye"></i> Preview Application
-                            </button>
-                        </div>
-                    </div>
+                <!-- Preview Button -->
+                <div class="text-center mb-4">
+                    <button type="button" class="btn btn-primary btn-lg" onclick="showPreview()">
+                        <i class="fas fa-eye"></i> Preview Application (पूर्वावलोकन / ਝਲਕ)
+                    </button>
                 </div>
             </form>
 
@@ -921,16 +969,20 @@
                         <div class="card-body" id="preview-documents"></div>
                     </div>
 
-                    <!-- Trilingual Confirmation Checkbox -->
+                    <!-- Trilingual Confirmation & Declaration Checkbox -->
                     <div class="card mb-3" style="background: #fffbf0; border: 2px solid #ffc107;">
                         <div class="card-body">
+                            <div class="section-title" style="margin-bottom: 20px;">
+                                <i class="fas fa-check-circle"></i> Declaration (घोषणा / ਘੋਸ਼ਣਾ)
+                            </div>
                             <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" id="preview-confirm-checkbox" required>
-                                <label class="custom-control-label" for="preview-confirm-checkbox" style="font-size: 1.1em;">
+                                <input type="checkbox" class="custom-control-input" id="preview-confirm-checkbox"
+                                       name="is_deprivation_decl_signed" required>
+                                <label class="custom-control-label" for="preview-confirm-checkbox" style="font-size: 1.1em; line-height: 1.8;">
                                     <strong style="color:red">*</strong>
-                                    <strong>मैं पुष्टि करती हूं कि ऊपर दी गई सभी जानकारी सत्य और सही है।</strong><br>
-                                    <strong>I confirm that all the information provided above is true and correct.</strong><br>
-                                    <strong>ਮੈਂ ਪੁਸ਼ਟੀ ਕਰਦੀ ਹਾਂ ਕਿ ਉਪਰੋਕਤ ਸਾਰੀ ਜਾਣਕਾਰੀ ਸੱਚ ਅਤੇ ਸਹੀ ਹੈ।</strong>
+                                    <strong>मैं घोषणा करती हूं कि ऊपर दी गई सभी जानकारी सत्य और सही है और मैं प्रवासी हूं।</strong><br>
+                                    <strong>I declare that all the information provided above is true and correct and I am a migrant.</strong><br>
+                                    <strong>ਮੈਂ ਘੋਸ਼ਣਾ ਕਰਦੀ ਹਾਂ ਕਿ ਉਪਰੋਕਤ ਸਾਰੀ ਜਾਣਕਾਰੀ ਸੱਚ ਅਤੇ ਸਹੀ ਹੈ ਅਤੇ ਮੈਂ ਪ੍ਰਵਾਸੀ ਹਾਂ।</strong>
                                 </label>
                             </div>
                         </div>
@@ -1143,21 +1195,23 @@
             }
 
             const docHtml = `
-                <div class="document-item" id="doc_${docId}">
-                    <button type="button" class="remove-doc-btn" onclick="removeDocument(${docId})">
-                        <i class="fas fa-times"></i> Remove
-                    </button>
-                    <div class="document-preview-container">
-                        ${previewHTML}
-                        <div class="document-info">
-                            <h6><i class="fas fa-file-alt"></i> ${doc.typeName}</h6>
-                            <small class="text-muted"><i class="fas fa-paperclip"></i> ${doc.fileName}</small>
-                            <small class="text-muted d-block mt-1"><i class="fas fa-check-circle text-success"></i> Uploaded successfully</small>
+                <div class="col-md-6 mb-3">
+                    <div class="document-item" id="doc_${docId}">
+                        <button type="button" class="remove-doc-btn" onclick="removeDocument(${docId})">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
+                        <div class="document-preview-container">
+                            ${previewHTML}
+                            <div class="document-info">
+                                <h6><i class="fas fa-file-alt"></i> ${doc.typeName}</h6>
+                                <small class="text-muted"><i class="fas fa-paperclip"></i> ${doc.fileName}</small>
+                                <small class="text-muted d-block mt-1"><i class="fas fa-check-circle text-success"></i> Uploaded successfully</small>
+                            </div>
                         </div>
+                        <input type="hidden" name="document_${docId}_type" value="${doc.type}">
+                        <input type="hidden" name="document_${docId}_url" value="${doc.url}">
+                        <input type="hidden" name="document_${docId}_filename" value="${doc.fileName}">
                     </div>
-                    <input type="hidden" name="document_${docId}_type" value="${doc.type}">
-                    <input type="hidden" name="document_${docId}_url" value="${doc.url}">
-                    <input type="hidden" name="document_${docId}_filename" value="${doc.fileName}">
                 </div>
             `;
 
@@ -1173,7 +1227,8 @@
                 uploadedDocumentTypes.delete(doc.type);
             }
 
-            $(`#doc_${docId}`).remove();
+            // Remove the column wrapper (parent of document-item)
+            $(`#doc_${docId}`).parent().remove();
             documentUploadedList = documentUploadedList.filter(d => d.id !== docId);
 
             // Update dropdown to re-enable this option
@@ -1240,8 +1295,11 @@
                         $('#aadhaarBackPreview').attr('src', uid_back_url);
                         $('#aadhaarPreview').show();
 
-                        // Hide Aadhaar upload section and show form
-                        $('#aadhaarOcrSection').slideUp();
+                        // Hide only Uppy widgets and process button, keep preview visible
+                        $('#aadhaar_front_uppy').closest('.row').slideUp(); // Hides both upload widgets
+                        $('#processOcrBtn').parent().slideUp(); // Hides the process button
+
+                        // Show form
                         $('#applicationForm').slideDown();
                         $('html, body').animate({ scrollTop: $('#applicationForm').offset().top }, 500);
                     } else {
@@ -1510,20 +1568,9 @@
             $(`#familyMember${memberId}`).remove();
         }
 
-        // IFSC validation
+        // IFSC auto-uppercase
         $('#bank_ifsc').on('input', function() {
             this.value = this.value.toUpperCase();
-        });
-
-        $('#bank_ifsc').on('blur', function() {
-            const ifsc = $(this).val();
-            if (ifsc.length === 11) {
-                $.getJSON('https://ifsc.razorpay.com/' + ifsc, function(data) {
-                    $('#ifsc_info').html(`<span class="text-success">✓ ${data.BANK}, ${data.BRANCH}</span>`);
-                }).fail(function() {
-                    $('#ifsc_info').html('<span class="text-danger">✗ Invalid IFSC</span>');
-                });
-            }
         });
 
         // Preview functionality
@@ -1636,6 +1683,118 @@
             $('#applicationForm').submit();
         }
 
+        function startOver() {
+            // Multilingual confirmation
+            const confirmMsg = 'क्या आप वाकई सभी डेटा को हटाकर नए सिरे से शुरू करना चाहते हैं?\n\n' +
+                             'Are you sure you want to discard all data and start over?\n\n' +
+                             'ਕੀ ਤੁਸੀਂ ਯਕੀਨੀ ਤੌਰ \'ਤੇ ਸਾਰੇ ਡੇਟਾ ਨੂੰ ਰੱਦ ਕਰਨਾ ਅਤੇ ਦੁਬਾਰਾ ਸ਼ੁਰੂ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?';
+
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+
+            // Reset the form
+            $('#applicationForm')[0].reset();
+
+            // Clear all arrays
+            documentUploadedList = [];
+            uploadedDocumentTypes.clear();
+            familyMemberCount = 0;
+
+            // Clear containers
+            $('#documentsContainer').empty();
+            $('#familyMembersContainer').empty();
+
+            // Clear Aadhaar preview
+            $('#aadhaarPreview').hide();
+            $('#aadhaarFrontPreview').attr('src', '');
+            $('#aadhaarBackPreview').attr('src', '');
+
+            // Clear hidden fields
+            $('#uid_front_url').val('');
+            $('#uid_back_url').val('');
+            $('#ocr_processed').val('no');
+
+            // Show upload widgets again
+            $('#aadhaar_front_uppy').closest('.row').slideDown();
+            $('#processOcrBtn').parent().slideDown();
+
+            // Hide application form and show Aadhaar section
+            $('#applicationForm').slideUp();
+            $('#previewSection').hide();
+            $('#aadhaarOcrSection').slideDown();
+
+            // Reinitialize Uppy for Aadhaar
+            if (aadhaarFrontUppy) {
+                aadhaarFrontUppy.reset();
+            }
+            if (aadhaarBackUppy) {
+                aadhaarBackUppy.reset();
+            }
+
+            // Scroll to top
+            $('html, body').animate({ scrollTop: 0 }, 500);
+        }
+
+        // Fetch bank details from IFSC API
+        function fetchBankDetails() {
+            const ifscCode = $('#bank_ifsc').val().trim().toUpperCase();
+
+            // Validate IFSC format
+            const ifscPattern = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+            if (!ifscPattern.test(ifscCode)) {
+                $('#ifsc_info').html('<span class="text-danger"><i class="fas fa-exclamation-circle"></i> कृपया मान्य IFSC कोड दर्ज करें। Please enter a valid IFSC code.</span>');
+                return;
+            }
+
+            // Show loading
+            $('#fetchBankDetailsBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Fetching...');
+            $('#ifsc_info').html('<span class="text-info"><i class="fas fa-spinner fa-spin"></i> Fetching bank details...</span>');
+
+            // Call IFSC API
+            $.ajax({
+                url: `https://ifsc.razorpay.com/${ifscCode}`,
+                method: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    // Populate fields
+                    $('#bank_name').val(response.BANK || '');
+                    $('#bank_branch').val(response.BRANCH || '');
+                    $('#bank_city').val(response.CITY || '');
+                    $('#bank_district').val(response.DISTRICT || '');
+                    $('#bank_state').val(response.STATE || '');
+
+                    // Show success message
+                    $('#ifsc_info').html('<span class="text-success"><i class="fas fa-check-circle"></i> बैंक विवरण सफलतापूर्वक प्राप्त किया गया। Bank details fetched successfully.</span>');
+
+                    // Show the bank details section
+                    $('#bankDetailsSection').slideDown();
+
+                    // Focus on account holder name
+                    $('#bank_account_name').focus();
+                },
+                error: function(xhr) {
+                    if (xhr.status === 404) {
+                        $('#ifsc_info').html('<span class="text-danger"><i class="fas fa-exclamation-circle"></i> अमान्य IFSC कोड। कृपया जांचें और पुनः प्रयास करें। Invalid IFSC code. Please check and try again.</span>');
+                    } else {
+                        $('#ifsc_info').html('<span class="text-danger"><i class="fas fa-exclamation-circle"></i> बैंक विवरण प्राप्त करने में त्रुटि। कृपया पुनः प्रयास करें। Error fetching bank details. Please try again.</span>');
+                    }
+                    $('#bankDetailsSection').hide();
+                },
+                complete: function() {
+                    $('#fetchBankDetailsBtn').prop('disabled', false).html('<i class="fas fa-search"></i> Fetch Details');
+                }
+            });
+        }
+
+        // Allow fetching on Enter key
+        $('#bank_ifsc').on('keypress', function(e) {
+            if (e.which === 13) { // Enter key
+                e.preventDefault();
+                fetchBankDetails();
+            }
+        });
+
         // Form validation
         $('#applicationForm').submit(function(e) {
             const currentState = $('#current_state').val();
@@ -1678,6 +1837,79 @@
             modal.style.display = 'none';
             document.onkeydown = null;
         }
+
+        // Restore form data on error
+        {% if form_data %}
+        $(document).ready(function() {
+            // Parse form data from Django context (values come as arrays)
+            const formDataRaw = {{ form_data|safe }};
+
+            // Convert array values to single values
+            const formData = {};
+            Object.keys(formDataRaw).forEach(function(key) {
+                const value = formDataRaw[key];
+                formData[key] = Array.isArray(value) ? value[0] : value;
+            });
+
+            // Restore all form fields
+            Object.keys(formData).forEach(function(fieldName) {
+                const value = formData[fieldName];
+                const $field = $('[name="' + fieldName + '"]');
+
+                if ($field.length > 0 && value) {
+                    if ($field.is(':checkbox')) {
+                        if (value === 'on' || value === 'true') {
+                            $field.prop('checked', true);
+                        }
+                    } else if ($field.is(':radio')) {
+                        $field.filter('[value="' + value + '"]').prop('checked', true);
+                    } else {
+                        $field.val(value);
+                    }
+                }
+            });
+
+            // If form has data, it means OCR was already processed
+            if (formData.ocr_processed === 'yes') {
+                // Hide Aadhaar upload section
+                $('#aadhaar_front_uppy').closest('.row').hide();
+                $('#processOcrBtn').parent().hide();
+
+                // Show Aadhaar preview if URLs exist
+                if (formData.uid_front_url && formData.uid_back_url) {
+                    $('#aadhaarFrontPreview').attr('src', formData.uid_front_url);
+                    $('#aadhaarBackPreview').attr('src', formData.uid_back_url);
+                    $('#aadhaarPreview').show();
+                }
+
+                // Show application form
+                $('#applicationForm').show();
+                $('#aadhaarOcrSection').show();
+            }
+
+            // Show bank details section if IFSC was filled
+            if (formData.bank_ifsc && formData.bank_name) {
+                $('#bankDetailsSection').show();
+            }
+
+            // Show error message prominently
+            $('.alert-danger').each(function() {
+                $(this).css({
+                    'position': 'sticky',
+                    'top': '10px',
+                    'z-index': '1000',
+                    'animation': 'shake 0.5s'
+                });
+            });
+
+            // Scroll to error message
+            if ($('.alert-danger').length > 0) {
+                $('html, body').animate({
+                    scrollTop: $('.alert-danger').first().offset().top - 100
+                }, 500);
+            }
+        });
+        {% endif %}
     </script>
 </body>
 </html>

@@ -68,7 +68,9 @@ def public_application_form(request):
         age = calculate_age(applicant_dob)
         if age < 18:
             messages.error(request, 'Applicant must be at least 18 years old.')
-            return render(request, 'ujjwala_v3/application_form.html')
+            return render(request, 'ujjwala_v3/application_form.html', {
+                'form_data': dict(request.POST)
+            })
 
         # Get address details
         current_state = request.POST.get('current_state')
@@ -77,12 +79,16 @@ def public_application_form(request):
         # Validate that states are different for migrants
         if current_state == permanent_state:
             messages.error(request, 'For migrant applications, Current and Permanent addresses must be in different states.')
-            return render(request, 'ujjwala_v3/application_form.html')
+            return render(request, 'ujjwala_v3/application_form.html', {
+                'form_data': dict(request.POST)
+            })
 
         # Check if Aadhaar already exists
         if UjjwalaV3Application.objects.filter(applicant_aadhaar_number=applicant_aadhaar).exists():
             messages.error(request, 'An application with this Aadhaar number already exists.')
-            return render(request, 'ujjwala_v3/application_form.html')
+            return render(request, 'ujjwala_v3/application_form.html', {
+                'form_data': dict(request.POST)
+            })
 
         # Create application
         application = UjjwalaV3Application.objects.create(
@@ -243,8 +249,10 @@ def public_application_form(request):
         print(f"Error creating application: {e}")
         import traceback
         traceback.print_exc()
-        messages.error(request, f'An error occurred while submitting your application. Please try again.')
-        return render(request, 'ujjwala_v3/application_form.html')
+        messages.error(request, f'An error occurred while submitting your application: {str(e)}. Please review your information and try again.')
+        return render(request, 'ujjwala_v3/application_form.html', {
+            'form_data': dict(request.POST)
+        })
 
 
 @require_http_methods(["GET"])
