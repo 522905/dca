@@ -319,16 +319,18 @@
                             <span class="text-white">Bank Detail</span>
                         </div>
                         <div class="row p-2">
-                            <div class="col-sm-4">
+                            <div class="col-sm-6">
                                 <label>Bank Detail (पास बुक का विवरण)<strong style="color:red">*</strong></label>
                                 <span class="custom-file-input" name="bankdetail" id="bankdetail"></span>
                             </div>
-                            <div class="col-sm-4">
+                            <div class="col-sm-6">
                                 <label>Enter Bank Account No (बैंक खाता संख्या)<strong style="color:red">*</strong></label>
                                 <input type="number"  class="form-control" pattern = "[0-9]" maxlength="19" id="bank_account_number"
                                     name="bank_account_number" required />
                             </div>
-                            <div class="col-sm-4 p-sm-t-2" id="ifsccontainer">
+                        </div>
+                        <div class="row p-2">
+                            <div class="col-sm-6 p-sm-t-2" id="ifsccontainer">
                                 <!-- SBIN0050873 -->
                                 <label>Enter the IFSC code:</label>
                                 <!-- ^[A-Z]{4}0[A-Z0-9]{6}$ -->
@@ -391,7 +393,108 @@
                 </form>
             </div>
             <div id="message"></div>
-        
+
+            <!-- Preview Section -->
+            <div class="container p-0" id="preview-section" style="display: none; background-color: #fff;">
+                <div class="p-4">
+                    <h5 class="text-center mb-4"><b>Application Preview (आवेदन पूर्वावलोकन / ਅਰਜ਼ੀ ਪੂਰਵ-ਦ੍ਰਿਸ਼)</b></h5>
+
+                    <!-- Personal Details Preview -->
+                    <div class="card mb-3">
+                        <div class="card-header" style="background-color: #2957A4; color: white;">
+                            <strong>Personal Details (व्यक्तिगत विवरण / ਨਿੱਜੀ ਵੇਰਵਾ)</strong>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-6"><strong>WhatsApp Number:</strong> <span id="preview-whatsapp"></span></div>
+                                <div class="col-sm-6"><strong>Aadhaar Linked Mobile:</strong> <span id="preview-mobile"></span></div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-sm-6"><strong>Marital Status:</strong> <span id="preview-marital"></span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Family Members Preview -->
+                    <div class="card mb-3">
+                        <div class="card-header" style="background-color: #2957A4; color: white;">
+                            <strong>Family Details (परिवार का विवरण / ਪਰਿਵਾਰਕ ਵੇਰਵਾ)</strong>
+                        </div>
+                        <div class="card-body" id="preview-family-members">
+                        </div>
+                    </div>
+
+                    <!-- Address Preview -->
+                    <div class="card mb-3">
+                        <div class="card-header" style="background-color: #2957A4; color: white;">
+                            <strong>Address (पता / ਪਤਾ)</strong>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-6"><strong>House No:</strong> <span id="preview-house"></span></div>
+                                <div class="col-sm-6"><strong>Room No:</strong> <span id="preview-room"></span></div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-sm-6"><strong>Floor:</strong> <span id="preview-floor"></span></div>
+                                <div class="col-sm-6"><strong>Street No:</strong> <span id="preview-street"></span></div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-sm-6"><strong>Landmark:</strong> <span id="preview-landmark"></span></div>
+                                <div class="col-sm-6"><strong>Village/Locality:</strong> <span id="preview-village"></span></div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-sm-6"><strong>Ward No:</strong> <span id="preview-ward"></span></div>
+                                <div class="col-sm-6"><strong>Post Office:</strong> <span id="preview-post"></span></div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-sm-6"><strong>City:</strong> <span id="preview-city"></span></div>
+                                <div class="col-sm-6"><strong>Pincode:</strong> <span id="preview-pincode"></span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bank Details Preview -->
+                    <div class="card mb-3">
+                        <div class="card-header" style="background-color: #2957A4; color: white;">
+                            <strong>Bank Details (बैंक विवरण / ਬੈਂਕ ਵੇਰਵਾ)</strong>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-6"><strong>Account Number:</strong> <span id="preview-account"></span></div>
+                                <div class="col-sm-6"><strong>IFSC Code:</strong> <span id="preview-ifsc"></span></div>
+                            </div>
+                            <div class="row mt-2" id="preview-referral-row" style="display:none;">
+                                <div class="col-sm-6"><strong>Referral Code:</strong> <span id="preview-referral"></span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Confirmation Checkbox -->
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="preview-confirm-checkbox" required>
+                                <label class="form-check-label" for="preview-confirm-checkbox">
+                                    <strong style="color:red">*</strong> मैं पुष्टि करती हूं कि ऊपर दी गई सभी जानकारी सत्य और सही है।
+                                    <br>I confirm that all the information provided above is true and correct.
+                                    <br>ਮੈਂ ਪੁਸ਼ਟੀ ਕਰਦੀ ਹਾਂ ਕਿ ਉਪਰੋਕਤ ਸਾਰੀ ਜਾਣਕਾਰੀ ਸੱਚ ਅਤੇ ਸਹੀ ਹੈ।
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="text-center mb-4">
+                        <button type="button" class="btn btn-secondary mr-2" onclick="editApplication()">
+                            <i class="fa fa-edit"></i> Edit (संपादित करें / ਸੋਧੋ)
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="submitAfterPreview()">
+                            <i class="fa fa-check"></i> Submit Application (आवेदन जमा करें / ਅਰਜ਼ੀ ਜਮ੍ਹਾਂ ਕਰੋ)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Aadhar OCR Modal -->
             <div class="modal fade"
                 id="uid_ocr_modal" tabindex="-1" role="dialog"
@@ -991,6 +1094,9 @@ function FamilyMemberService(html_block_id, aadhaar_ocr_service) {
         $(`#${fm.relation}-uid_front_link`).attr('src',fm.src_data.uid_front_url);
         $(`#${fm.relation}-uid_back_link`).attr('src', fm.src_data.uid_back_url);
         $(`[name="${fm.relation}-ocr_processed"]`).val('yes');
+
+        // Hide upload button after successful OCR
+        $(`.${fm.relation}-familyMemberLineItem .upload-aadhaar-btn`).hide();
     }
 
     function unlockManualMode(relation, uid_front_url, uid_back_url) {
@@ -1353,6 +1459,88 @@ function addMember() {
 $('[name="referral_code"]').val('{{ referral_code }}');
 $('[name="referral_code"]').attr('readonly', true);
 {% endif %}
+
+// Preview functionality
+function showPreview() {
+    // Populate personal details
+    $('#preview-whatsapp').text($('#contact_mobile').val());
+    $('#preview-mobile').text($('#uid_linked_mobile').val());
+    $('#preview-marital').text($('#marital_status option:selected').text());
+
+    // Populate family members
+    var familyMembers = gatherFamilyMembersData();
+    var familyHtml = '';
+    familyMembers.forEach(function(member, index) {
+        familyHtml += `
+            <div class="border-bottom pb-2 mb-2">
+                <h6><strong>${member.relation}</strong></h6>
+                <div class="row">
+                    <div class="col-sm-6"><strong>Name:</strong> ${member.name}</div>
+                    <div class="col-sm-6"><strong>DOB:</strong> ${member.dob}</div>
+                </div>
+                <div class="row mt-1">
+                    <div class="col-sm-6"><strong>Gender:</strong> ${member.gender}</div>
+                    <div class="col-sm-6"><strong>Aadhaar:</strong> ${member.uid_no}</div>
+                </div>
+                <div class="row mt-1">
+                    <div class="col-sm-6"><strong>Profession:</strong> ${member.additional_details.profession || 'N/A'}</div>
+                    <div class="col-sm-6"><strong>Company:</strong> ${member.additional_details.company_name || 'N/A'}</div>
+                </div>
+            </div>
+        `;
+    });
+    $('#preview-family-members').html(familyHtml);
+
+    // Populate address
+    $('#preview-house').text($('#house_no').val());
+    $('#preview-room').text($('#room_no').val());
+    $('#preview-floor').text($('#floor').val());
+    $('#preview-street').text($('#street_no').val());
+    $('#preview-landmark').text($('#landmark').val());
+    $('#preview-village').text($('#village').val());
+    $('#preview-ward').text($('#ward_no').val());
+    $('#preview-post').text($('#post_office').val());
+    $('#preview-city').text($('#ludhiana').val());
+    $('#preview-pincode').text($('#pincode').val());
+
+    // Populate bank details
+    $('#preview-account').text($('#bank_account_number').val());
+    $('#preview-ifsc').text($('#ifsc_code').val());
+
+    // Populate referral if exists
+    var referralCode = $('#reference').val();
+    if (referralCode) {
+        $('#preview-referral').text(referralCode);
+        $('#preview-referral-row').show();
+    } else {
+        $('#preview-referral-row').hide();
+    }
+
+    // Hide form and show preview
+    $('#background_image_styles > .container').first().hide();
+    $('#form').hide();
+    $('#preview-section').show();
+
+    // Scroll to top
+    window.scrollTo(0, 0);
+}
+
+function editApplication() {
+    $('#preview-section').hide();
+    $('#background_image_styles > .container').first().show();
+    $('#form').show();
+    window.scrollTo(0, 0);
+}
+
+function submitAfterPreview() {
+    if (!$('#preview-confirm-checkbox').is(':checked')) {
+        alert('कृपया पुष्टि चेकबॉक्स को चेक करें। Please check the confirmation checkbox. ਕਿਰਪਾ ਕਰਕੇ ਪੁਸ਼ਟੀਕਰਨ ਚੈੱਕਬਾਕਸ ਨੂੰ ਚੈੱਕ ਕਰੋ।');
+        return;
+    }
+
+    // Proceed with actual submission
+    submit_form(signature_url_global);
+}
 
 // $(".aadhaar_ocr:not([readonly])").css("border: 1px dashed ; -webkit-animation: blink .5s step-end infinite alternate;");
 // ocr_loader
