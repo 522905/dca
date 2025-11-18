@@ -38,9 +38,17 @@ class UjjwalaV3FamilyMemberInline(admin.TabularInline):
     extra = 0
     fields = [
         'full_name', 'relation_to_applicant', 'gender',
-        'aadhaar_number', 'dob', 'age_at_application'
+        'aadhaar_number', 'dob', 'age_at_application',
+        'uid_photos_display', 'is_valid_uid', 'validated'
     ]
-    readonly_fields = ['age_at_application', 'created_at', 'updated_at']
+    readonly_fields = ['age_at_application', 'uid_photos_display', 'created_at', 'updated_at']
+
+    def uid_photos_display(self, obj):
+        """Display UID photo links."""
+        if obj and obj.pk:
+            return mark_safe(obj.download_links())
+        return '-'
+    uid_photos_display.short_description = 'UID Photos'
 
 
 class UjjwalaV3DocumentInline(admin.TabularInline):
@@ -332,11 +340,12 @@ class UjjwalaV3FamilyMemberAdmin(admin.ModelAdmin):
 
     list_display = [
         'application_link', 'full_name', 'relation_badge',
-        'gender_display', 'dob', 'age_at_application', 'created_at'
+        'gender_display', 'dob', 'age_at_application',
+        'uid_status_display', 'created_at'
     ]
 
     list_filter = [
-        'relation_to_applicant', 'gender',
+        'relation_to_applicant', 'gender', 'is_valid_uid', 'validated',
         ('created_at', admin.DateFieldListFilter),
     ]
 
@@ -345,7 +354,10 @@ class UjjwalaV3FamilyMemberAdmin(admin.ModelAdmin):
         'full_name', 'aadhaar_number'
     ]
 
-    readonly_fields = ['id', 'age_at_application', 'created_at', 'updated_at']
+    readonly_fields = [
+        'id', 'age_at_application', 'uid_photos_display',
+        'ocr_result_display', 'created_at', 'updated_at'
+    ]
 
     fieldsets = (
         ('Link to Application', {
@@ -359,10 +371,86 @@ class UjjwalaV3FamilyMemberAdmin(admin.ModelAdmin):
                 'age_at_application',
             )
         }),
+        ('UID/Aadhaar Photos', {
+            'fields': (
+                'uid_photos_display',
+                ('uid_front_link', 'uid_back_link'),
+                ('uid_original_front_link', 'uid_original_back_link'),
+                ('uid_front_compressed', 'uid_back_compressed'),
+                ('uid_front_file_size', 'uid_back_file_size'),
+            )
+        }),
+        ('OCR & Validation', {
+            'fields': (
+                'ocr_result_display',
+                ('is_valid_uid', 'validated'),
+            )
+        }),
+        ('Additional Information', {
+            'classes': ('collapse',),
+            'fields': (
+                'additional_details',
+                'ration_card_available',
+            )
+        }),
         ('Timestamps', {
             'fields': (('created_at', 'updated_at'),)
         }),
     )
+
+    def uid_photos_display(self, obj):
+        """Display UID photo links with preview."""
+        if not obj:
+            return '-'
+
+        html_parts = []
+        if obj.uid_front_link:
+            html_parts.append(
+                f'<div style="margin: 10px 0;">'
+                f'<strong>Front:</strong> <a href="{obj.uid_front_link}" target="_blank">View</a><br>'
+                f'<a href="{obj.uid_front_link}" target="_blank">'
+                f'<img src="{obj.uid_front_link}" style="max-width: 200px; max-height: 150px; border: 1px solid #ddd; margin-top: 5px;" />'
+                f'</a></div>'
+            )
+
+        if obj.uid_back_link:
+            html_parts.append(
+                f'<div style="margin: 10px 0;">'
+                f'<strong>Back:</strong> <a href="{obj.uid_back_link}" target="_blank">View</a><br>'
+                f'<a href="{obj.uid_back_link}" target="_blank">'
+                f'<img src="{obj.uid_back_link}" style="max-width: 200px; max-height: 150px; border: 1px solid #ddd; margin-top: 5px;" />'
+                f'</a></div>'
+            )
+
+        return mark_safe(''.join(html_parts)) if html_parts else '-'
+    uid_photos_display.short_description = 'UID Photos'
+
+    def ocr_result_display(self, obj):
+        """Display OCR result in formatted JSON."""
+        if obj and obj.uid_check_result:
+            import json
+            try:
+                formatted = json.dumps(obj.uid_check_result, indent=2)
+                return mark_safe(f'<pre style="background: #f5f5f5; padding: 10px; border-radius: 5px;">{formatted}</pre>')
+            except:
+                return str(obj.uid_check_result)
+        return '-'
+    ocr_result_display.short_description = 'OCR Results'
+
+    def uid_status_display(self, obj):
+        """Display UID validation status."""
+        if obj.is_valid_uid:
+            return format_html(
+                '<span style="color: green; font-weight: bold;">✓ Valid</span>'
+            )
+        elif obj.uid_front_link and obj.uid_back_link:
+            return format_html(
+                '<span style="color: orange; font-weight: bold;">⧗ Pending</span>'
+            )
+        return format_html(
+            '<span style="color: red; font-weight: bold;">✗ Missing</span>'
+        )
+    uid_status_display.short_description = 'UID Status'
 
     def application_link(self, obj):
         """Link to parent application."""

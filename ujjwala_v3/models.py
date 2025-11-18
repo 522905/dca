@@ -491,20 +491,11 @@ class UjjwalaV3Application(TimeStampedModel):
         if self_member.gender != self.applicant_gender:
             raise ValidationError("SELF member gender must match applicant gender")
 
-        # Validate each family member has Aadhaar documents
+        # Validate each family member has Aadhaar UID photos
         for member in self.family_members.all():
-            has_front = self.documents.filter(
-                family_member=member,
-                doc_type=DocumentType.AADHAAR_FRONT
-            ).exists()
-            has_back = self.documents.filter(
-                family_member=member,
-                doc_type=DocumentType.AADHAAR_BACK
-            ).exists()
-
-            if not (has_front and has_back):
+            if not member.uid_front_link or not member.uid_back_link:
                 raise ValidationError(
-                    f"Family member {member.full_name} missing Aadhaar documents"
+                    f"Family member {member.full_name} missing UID/Aadhaar front and back photos"
                 )
 
         # Check for duplicate Aadhaar within application
@@ -857,7 +848,7 @@ class UjjwalaV3FamilyMember(TimeStampedModel):
     Family member model representing household composition.
 
     The applicant herself must be included as a family member with relation = SELF.
-    Each family member's Aadhaar documents are stored in UjjwalaV3Document model.
+    Each family member's Aadhaar documents (UID photos) are stored directly here for OCR processing.
     """
 
     application = models.ForeignKey(
@@ -904,6 +895,89 @@ class UjjwalaV3FamilyMember(TimeStampedModel):
         null=True,
         blank=True,
         help_text='Age at the time of application (auto-calculated)'
+    )
+
+    # ==================== UID/AADHAAR PHOTO LINKS ====================
+    uid_front_link = models.URLField(
+        max_length=500,
+        null=True,
+        blank=True,
+        help_text='URL to Aadhaar/UID front photo (compressed)'
+    )
+
+    uid_back_link = models.URLField(
+        max_length=500,
+        null=True,
+        blank=True,
+        help_text='URL to Aadhaar/UID back photo (compressed)'
+    )
+
+    uid_original_front_link = models.URLField(
+        max_length=500,
+        null=True,
+        blank=True,
+        help_text='URL to original uncompressed Aadhaar/UID front photo'
+    )
+
+    uid_original_back_link = models.URLField(
+        max_length=500,
+        null=True,
+        blank=True,
+        help_text='URL to original uncompressed Aadhaar/UID back photo'
+    )
+
+    # ==================== OCR PROCESSING RESULTS ====================
+    uid_check_result = models.JSONField(
+        null=True,
+        blank=True,
+        help_text='OCR results from Zoho Catalyst containing extracted Aadhaar data (name, DOB, gender, address, etc.)'
+    )
+
+    is_valid_uid = models.BooleanField(
+        default=False,
+        help_text='Whether UID/Aadhaar validation passed'
+    )
+
+    validated = models.BooleanField(
+        default=False,
+        help_text='Whether family member data has been validated'
+    )
+
+    # ==================== FILE METADATA ====================
+    uid_front_compressed = models.BooleanField(
+        default=False,
+        help_text='Whether front UID photo has been compressed'
+    )
+
+    uid_back_compressed = models.BooleanField(
+        default=False,
+        help_text='Whether back UID photo has been compressed'
+    )
+
+    uid_front_file_size = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        help_text='File size of front UID photo (e.g., "1.2 MB")'
+    )
+
+    uid_back_file_size = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        help_text='File size of back UID photo (e.g., "1.5 MB")'
+    )
+
+    # ==================== ADDITIONAL DETAILS ====================
+    additional_details = models.JSONField(
+        null=True,
+        blank=True,
+        help_text='Additional details like profession, company name, etc.'
+    )
+
+    ration_card_available = models.BooleanField(
+        default=False,
+        help_text='Whether family member has ration card'
     )
 
     class Meta:
@@ -960,6 +1034,35 @@ class UjjwalaV3FamilyMember(TimeStampedModel):
             )
 
         super().save(*args, **kwargs)
+
+    def download_links(self):
+        """Generate HTML links for downloading UID photos."""
+        html_parts = []
+
+        if self.uid_front_link:
+            html_parts.append(
+                f'<a href="{self.uid_front_link}" target="_blank" class="btn btn-sm btn-primary">Front</a>'
+            )
+
+        if self.uid_back_link:
+            html_parts.append(
+                f'<a href="{self.uid_back_link}" target="_blank" class="btn btn-sm btn-primary">Back</a>'
+            )
+
+        return ' '.join(html_parts) if html_parts else 'No photos uploaded'
+
+    download_links.allow_tags = True
+    download_links.short_description = 'UID Photos'
+
+    @property
+    def current_age(self):
+        """Calculate member's current age."""
+        if not self.dob:
+            return None
+        today = date.today()
+        return today.year - self.dob.year - (
+            (today.month, today.day) < (self.dob.month, self.dob.day)
+        )
 
 
 class UjjwalaV3Document(TimeStampedModel):

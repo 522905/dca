@@ -203,6 +203,19 @@ class UjjwalaV3FamilyMemberForm(forms.ModelForm):
             'gender',
             'dob',
             'aadhaar_number',
+            'uid_front_link',
+            'uid_back_link',
+            'uid_original_front_link',
+            'uid_original_back_link',
+            'uid_check_result',
+            'is_valid_uid',
+            'validated',
+            'uid_front_compressed',
+            'uid_back_compressed',
+            'uid_front_file_size',
+            'uid_back_file_size',
+            'additional_details',
+            'ration_card_available',
         ]
         widgets = {
             'full_name': forms.TextInput(attrs={
@@ -220,4 +233,43 @@ class UjjwalaV3FamilyMemberForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': '12-digit Aadhaar number'
             }),
+            'uid_front_link': forms.URLInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'UID front photo URL'
+            }),
+            'uid_back_link': forms.URLInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'UID back photo URL'
+            }),
+            'uid_original_front_link': forms.URLInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Original front photo URL'
+            }),
+            'uid_original_back_link': forms.URLInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Original back photo URL'
+            }),
+            'uid_check_result': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'OCR result JSON'
+            }),
+            'is_valid_uid': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'validated': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'uid_front_compressed': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'uid_back_compressed': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'uid_front_file_size': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., 1.2 MB'
+            }),
+            'uid_back_file_size': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., 1.5 MB'
+            }),
+            'additional_details': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 2,
+                'placeholder': 'Additional details JSON'
+            }),
+            'ration_card_available': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
