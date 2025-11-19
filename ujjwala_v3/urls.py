@@ -12,7 +12,7 @@ from .viewsets import (
     UjjwalaV3AddressViewSet,
     UjjwalaV3FamilyMemberViewSet,
     UjjwalaV3DocumentViewSet,
-    UjjwalaV3AuditLogViewSet
+    UjjwalaV2ToV3MigrationViewSet
 )
 from .views import public_application_form, application_success
 
@@ -44,9 +44,9 @@ router.register(
 )
 
 router.register(
-    r'audit-logs',
-    UjjwalaV3AuditLogViewSet,
-    basename='ujjwala-v3-audit-log'
+    r'migration',
+    UjjwalaV2ToV3MigrationViewSet,
+    basename='ujjwala-v2-to-v3-migration'
 )
 
 # The API URLs are now determined automatically by the router
@@ -105,7 +105,12 @@ Documents:
     # Custom actions
     POST   /api/ujjwala-v3/documents/{id}/verify/           - Verify document
 
-Audit Logs:
-    GET    /api/ujjwala-v3/audit-logs/                      - List all audit logs
-    GET    /api/ujjwala-v3/audit-logs/{id}/                 - Get audit log details
+Migration (V2 to V3):
+    POST   /api/ujjwala-v3/migration/migrate-single/        - Migrate single V2 application
+           Body: {"v2_app_id": 123, "skip_if_exists": true}
+
+    POST   /api/ujjwala-v3/migration/migrate-batch/         - Batch migrate V2 applications
+           Body: {"v2_app_ids": [123, 456], "limit": 100, "skip_if_exists": true}
+
+    GET    /api/ujjwala-v3/migration/migration-stats/       - Get migration statistics
 """
