@@ -120,22 +120,34 @@ class UjjwalaV2ToV3MigrationService:
             MaritalStatusEnum.MARRIED
         )
 
+        # Get applicant details from SELF family member (if available)
+        try:
+            self_member = v2_app.family_members.filter(relation='SELF').first()
+            applicant_uid = self_member.uid_no if self_member and self_member.uid_no else f"TEMP{v2_app.pk:012d}"
+            applicant_dob = self_member.dob if self_member and self_member.dob else timezone.now().date() - timezone.timedelta(days=365*25)
+            applicant_name = self_member.name if self_member and self_member.name else v2_app.name
+        except Exception:
+            # Fallback to V2 app fields
+            applicant_uid = f"TEMP{v2_app.pk:012d}"
+            applicant_dob = timezone.now().date() - timezone.timedelta(days=365*25)
+            applicant_name = v2_app.name
+
         # Parse name (assume full name for now)
-        name_parts = v2_app.name.split(' ', 2) if v2_app.name else ['', '', '']
-        first_name = name_parts[0] if len(name_parts) > 0 else ''
-        middle_name = name_parts[1] if len(name_parts) > 1 else ''
-        last_name = name_parts[2] if len(name_parts) > 2 else ''
+        name_parts = applicant_name.split(' ', 2) if applicant_name else ['Unknown', '', '']
+        first_name = name_parts[0] if len(name_parts) > 0 else 'Unknown'
+        middle_name = name_parts[1] if len(name_parts) > 1 else None
+        last_name = name_parts[2] if len(name_parts) > 2 else None
 
         # Create V3 application
         v3_app = UjjwalaV3Application.objects.create(
             # Basic info
-            applicant_full_name=v2_app.name or 'Unknown',
-            applicant_first_name=first_name or 'Unknown',
-            applicant_middle_name=middle_name or None,
-            applicant_last_name=last_name or None,
+            applicant_full_name=applicant_name or 'Unknown',
+            applicant_first_name=first_name,
+            applicant_middle_name=middle_name,
+            applicant_last_name=last_name,
             applicant_gender=Gender.FEMALE,  # PMUY V3 requires female
-            applicant_dob=timezone.now().date() - timezone.timedelta(days=365*25),  # Default age 25
-            applicant_aadhaar_number=v2_app.application_id_kyc_no or f"TEMP{v2_app.pk:012d}",
+            applicant_dob=applicant_dob,
+            applicant_aadhaar_number=applicant_uid,
             applicant_mobile=v2_app.contact_mobile or '0000000000',
             applicant_email=None,
             caste=Caste.GENERAL,
@@ -144,6 +156,9 @@ class UjjwalaV2ToV3MigrationService:
             # Marital info
             marital_status=v3_marital_status,
             marriage_date=v2_app.marriage_date,
+
+            # Ration card (if available)
+            ration_card_number=v2_app.ration_card_number,
 
             # eKYC fields (from V2)
             ekyc_date=v2_app.ekyc_date,
@@ -160,7 +175,7 @@ class UjjwalaV2ToV3MigrationService:
             version=v2_app.version or 'V2',
 
             # Bank details
-            bank_account_name=v2_app.name or 'Unknown',
+            bank_account_name=applicant_name or 'Unknown',
             bank_name='Unknown',  # Not in V2
             bank_branch='Unknown',  # Not in V2
             bank_ifsc=v2_app.ifsc_code or 'XXXX0000000',
@@ -174,6 +189,8 @@ class UjjwalaV2ToV3MigrationService:
             status=v3_status,
 
             # Timestamps
+            created_at=v2_app.created_on,
+            updated_at=v2_app.updated_on,
             submitted_at=v2_app.created_on if v3_status != ApplicationStatus.DRAFT else None,
 
             # Verification status
@@ -253,12 +270,12 @@ class UjjwalaV2ToV3MigrationService:
         v2_app: UjjwalaV2Application,
         v3_app: UjjwalaV3Application
     ) -> List[UjjwalaV3FamilyMember]:
-        """Migrate family members from V2 to V3."""
+        """Migrate family members from V2 to V3 (excluding SELF since that's the applicant)."""
         v3_members = []
 
         try:
-            # Get V2 family members
-            v2_members = v2_app.family_members.all()
+            # Get V2 family members (exclude SELF since applicant data is already in V3 application)
+            v2_members = v2_app.family_members.exclude(relation='SELF')
 
             for v2_member in v2_members:
                 # Map relation
