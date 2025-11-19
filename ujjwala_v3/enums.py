@@ -86,11 +86,6 @@ class RelationToApplicant(models.TextChoices):
 
 class DocumentType(models.TextChoices):
     """Document types for file uploads."""
-    # Aadhaar Documents
-    AADHAAR_FRONT = 'AADHAAR_FRONT', 'Aadhaar Front'
-    AADHAAR_BACK = 'AADHAAR_BACK', 'Aadhaar Back'
-    AADHAAR_XML = 'AADHAAR_XML', 'Aadhaar XML (DigiLocker)'
-
     # Address Proof Documents
     CURRENT_ADDRESS_POA = 'CURRENT_ADDRESS_POA', 'Current Address Proof of Address'
     PERMANENT_ADDRESS_POA = 'PERMANENT_ADDRESS_POA', 'Permanent Address Proof of Address'

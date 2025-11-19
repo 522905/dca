@@ -173,13 +173,6 @@ class UjjwalaV3Application(TimeStampedModel):
         help_text='Whether eKYC verification has been cleared/passed'
     )
 
-    robo_execution_failed_count = models.IntegerField(
-        default=0,
-        blank=True,
-        null=True,
-        help_text='Count of failed robotic process automation attempts'
-    )
-
     # ==================== LOCATION TRACKING ====================
     latitude = models.CharField(
         max_length=32,
@@ -320,24 +313,6 @@ class UjjwalaV3Application(TimeStampedModel):
         help_text='Timestamp when application verification completed'
     )
 
-    approved_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        help_text='Timestamp when application was approved'
-    )
-
-    connection_issued_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        help_text='Timestamp when LPG connection was issued'
-    )
-
-    verification_started_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        help_text='Timestamp when verification process started'
-    )
-
     rejected_at = models.DateTimeField(
         null=True,
         blank=True,
@@ -345,25 +320,11 @@ class UjjwalaV3Application(TimeStampedModel):
     )
 
     # ==================== VERIFICATION TRACKING ====================
-    aadhaar_verification_status = models.CharField(
-        max_length=20,
-        choices=VerificationStatus.choices,
-        default=VerificationStatus.PENDING,
-        help_text='Status of Aadhaar verification'
-    )
-
     bank_verification_status = models.CharField(
         max_length=20,
         choices=VerificationStatus.choices,
         default=VerificationStatus.PENDING,
         help_text='Status of bank account verification'
-    )
-
-    address_verification_status = models.CharField(
-        max_length=20,
-        choices=VerificationStatus.choices,
-        default=VerificationStatus.PENDING,
-        help_text='Status of address verification'
     )
 
     # ==================== ADDITIONAL METADATA ====================
@@ -383,15 +344,6 @@ class UjjwalaV3Application(TimeStampedModel):
         blank=True,
         related_name='verified_ujjwala_v3_applications',
         help_text='User who verified the application'
-    )
-
-    approved_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='approved_ujjwala_v3_applications',
-        help_text='User who approved the application'
     )
 
     class Meta:
@@ -494,8 +446,6 @@ class UjjwalaV3Application(TimeStampedModel):
 
         # Check required documents
         required_docs = [
-            DocumentType.AADHAAR_FRONT,
-            DocumentType.AADHAAR_BACK,
             DocumentType.BANK_PROOF,
             DocumentType.MIGRANT_DECLARATION,
         ]
@@ -670,7 +620,6 @@ class UjjwalaV3Application(TimeStampedModel):
 
         Moves application from SUBMITTED to UNDER_VERIFICATION.
         """
-        self.verification_started_at = timezone.now()
         if user:
             self.verified_by = user
 
@@ -686,20 +635,13 @@ class UjjwalaV3Application(TimeStampedModel):
         Moves application from UNDER_VERIFICATION to APPROVED.
         Only possible after all verifications are complete.
         """
-        # Additional validation: ensure all verifications are done
-        if self.aadhaar_verification_status != VerificationStatus.VERIFIED:
-            raise ValidationError("Aadhaar verification must be completed before approval")
-
+        # Additional validation: ensure bank verification is done
         if self.bank_verification_status != VerificationStatus.VERIFIED:
             raise ValidationError("Bank verification must be completed before approval")
 
-        if self.address_verification_status != VerificationStatus.VERIFIED:
-            raise ValidationError("Address verification must be completed before approval")
-
-        self.approved_at = timezone.now()
         self.verified_at = timezone.now()
         if user:
-            self.approved_by = user
+            self.verified_by = user
 
     @transition(
         field=status,
@@ -738,7 +680,7 @@ class UjjwalaV3Application(TimeStampedModel):
         Final step - marks connection as issued.
         Only possible from APPROVED status.
         """
-        self.connection_issued_at = timezone.now()
+        pass
 
 
 class UjjwalaV3Address(TimeStampedModel):
@@ -1024,16 +966,6 @@ class UjjwalaV3FamilyMember(TimeStampedModel):
     )
 
     # ==================== FILE METADATA ====================
-    uid_front_compressed = models.BooleanField(
-        default=False,
-        help_text='Whether front UID photo has been compressed'
-    )
-
-    uid_back_compressed = models.BooleanField(
-        default=False,
-        help_text='Whether back UID photo has been compressed'
-    )
-
     uid_front_file_size = models.CharField(
         max_length=50,
         null=True,
@@ -1265,13 +1197,6 @@ class UjjwalaV3Document(TimeStampedModel):
         """Custom validation."""
         super().clean()
 
-        # Validate family member documents must have family_member set
-        if self.doc_type in [DocumentType.AADHAAR_FRONT, DocumentType.AADHAAR_BACK]:
-            if not self.family_member_id:
-                raise ValidationError({
-                    'family_member': f'{self.get_doc_type_display()} must be linked to a family member.'
-                })
-
         # Validate address POA documents must have address set
         if self.doc_type in [DocumentType.CURRENT_ADDRESS_POA, DocumentType.PERMANENT_ADDRESS_POA]:
             if not self.address_id:
@@ -1302,64 +1227,3 @@ class UjjwalaV3Document(TimeStampedModel):
                 self.file_name = self.file.name
 
         super().save(*args, **kwargs)
-
-
-class UjjwalaV3AuditLog(TimeStampedModel):
-    """
-    Audit log model for tracking all changes to applications.
-
-    Provides a complete audit trail of who did what and when.
-    """
-
-    application = models.ForeignKey(
-        'UjjwalaV3Application',
-        on_delete=models.CASCADE,
-        related_name='audit_logs',
-        help_text='Related application'
-    )
-
-    action = models.CharField(
-        max_length=100,
-        db_index=True,
-        help_text='Action performed (e.g., CREATED, UPDATED, SUBMITTED, APPROVED)'
-    )
-
-    actor = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='ujjwala_v3_audit_actions',
-        help_text='User who performed the action'
-    )
-
-    changes = models.JSONField(
-        null=True,
-        blank=True,
-        help_text='JSON object containing field changes'
-    )
-
-    remarks = models.TextField(
-        null=True,
-        blank=True,
-        help_text='Additional remarks or notes'
-    )
-
-    ip_address = models.GenericIPAddressField(
-        null=True,
-        blank=True,
-        help_text='IP address of the actor'
-    )
-
-    class Meta:
-        db_table = 'ujjwala_v3_audit_log'
-        verbose_name = 'Ujjwala V3 Audit Log'
-        verbose_name_plural = 'Ujjwala V3 Audit Logs'
-        ordering = ['-created_at']
-        indexes = [
-            models.Index(fields=['application', 'action', '-created_at']),
-            models.Index(fields=['actor', '-created_at']),
-        ]
-
-    def __str__(self):
-        return f'{self.action} - {self.application.application_number} at {self.created_at}'

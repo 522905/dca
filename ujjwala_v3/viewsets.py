@@ -17,8 +17,7 @@ from .models import (
     UjjwalaV3Application,
     UjjwalaV3Address,
     UjjwalaV3FamilyMember,
-    UjjwalaV3Document,
-    UjjwalaV3AuditLog
+    UjjwalaV3Document
 )
 from .serializers import (
     UjjwalaV3ApplicationListSerializer,
@@ -27,7 +26,6 @@ from .serializers import (
     UjjwalaV3AddressSerializer,
     UjjwalaV3FamilyMemberSerializer,
     UjjwalaV3DocumentSerializer,
-    UjjwalaV3AuditLogSerializer,
     ApplicationSubmitSerializer,
     ApplicationApprovalSerializer
 )
@@ -104,8 +102,7 @@ class UjjwalaV3ApplicationViewSet(viewsets.ModelViewSet):
             queryset = queryset.prefetch_related(
                 'addresses',
                 'family_members',
-                'documents',
-                'audit_logs'
+                'documents'
             ).select_related(
                 'submitted_by',
                 'verified_by',
@@ -117,21 +114,10 @@ class UjjwalaV3ApplicationViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Set created_by on creation."""
         serializer.save()
-        # Create audit log
-        self._create_audit_log(
-            application=serializer.instance,
-            action='CREATED',
-            remarks='Application created'
-        )
 
     def perform_update(self, serializer):
-        """Create audit log on update."""
+        """Update application."""
         serializer.save()
-        self._create_audit_log(
-            application=serializer.instance,
-            action='UPDATED',
-            remarks='Application updated'
-        )
 
     @action(detail=True, methods=['post'])
     def submit(self, request, pk=None):
@@ -153,13 +139,6 @@ class UjjwalaV3ApplicationViewSet(viewsets.ModelViewSet):
             # Use FSM transition (includes all validation)
             application.submit(user=request.user if request.user.is_authenticated else None)
             application.save()
-
-            # Create audit log
-            self._create_audit_log(
-                application=application,
-                action='SUBMITTED',
-                remarks=serializer.validated_data.get('remarks', 'Application submitted via FSM transition')
-            )
         except ValidationError as e:
             return Response(
                 {'error': str(e)},
@@ -186,13 +165,6 @@ class UjjwalaV3ApplicationViewSet(viewsets.ModelViewSet):
             # Use FSM transition
             application.start_verification(user=request.user if request.user.is_authenticated else None)
             application.save()
-
-            # Create audit log
-            self._create_audit_log(
-                application=application,
-                action='VERIFICATION_STARTED',
-                remarks=remarks or 'Verification process started via FSM transition'
-            )
         except ValidationError as e:
             return Response(
                 {'error': str(e)},
@@ -227,13 +199,6 @@ class UjjwalaV3ApplicationViewSet(viewsets.ModelViewSet):
             # Use FSM transition (validates all verifications are complete)
             application.approve(user=request.user if request.user.is_authenticated else None)
             application.save()
-
-            # Create audit log
-            self._create_audit_log(
-                application=application,
-                action='APPROVED',
-                remarks=serializer.validated_data.get('remarks', 'Application approved via FSM transition')
-            )
         except ValidationError as e:
             return Response(
                 {'error': str(e)},
@@ -271,13 +236,6 @@ class UjjwalaV3ApplicationViewSet(viewsets.ModelViewSet):
                 user=request.user if request.user.is_authenticated else None
             )
             application.save()
-
-            # Create audit log
-            self._create_audit_log(
-                application=application,
-                action='REJECTED',
-                remarks=serializer.validated_data.get('remarks', 'Application rejected via FSM transition')
-            )
         except ValidationError as e:
             return Response(
                 {'error': str(e)},
@@ -305,13 +263,11 @@ class UjjwalaV3ApplicationViewSet(viewsets.ModelViewSet):
             # Use FSM transition
             application.issue_connection(user=request.user if request.user.is_authenticated else None)
             application.save()
-
-        # Create audit log
-        self._create_audit_log(
-            application=application,
-            action='CONNECTION_ISSUED',
-            remarks=remarks or 'LPG connection issued'
-        )
+        except ValidationError as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         return Response(
             UjjwalaV3ApplicationDetailSerializer(application).data,
@@ -346,25 +302,6 @@ class UjjwalaV3ApplicationViewSet(viewsets.ModelViewSet):
         }
 
         return Response(stats)
-
-    def _create_audit_log(self, application, action, remarks=''):
-        """Helper method to create audit log."""
-        UjjwalaV3AuditLog.objects.create(
-            application=application,
-            action=action,
-            actor=self.request.user if self.request.user.is_authenticated else None,
-            remarks=remarks,
-            ip_address=self._get_client_ip()
-        )
-
-    def _get_client_ip(self):
-        """Get client IP address."""
-        x_forwarded_for = self.request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0]
-        else:
-            ip = self.request.META.get('REMOTE_ADDR')
-        return ip
 
 
 class UjjwalaV3AddressViewSet(viewsets.ModelViewSet):
@@ -439,30 +376,125 @@ class UjjwalaV3DocumentViewSet(viewsets.ModelViewSet):
         document.verified_at = timezone.now()
         document.save()
 
-        # Create audit log for application
-        UjjwalaV3AuditLog.objects.create(
-            application=document.application,
-            action='DOCUMENT_VERIFIED',
-            actor=request.user if request.user.is_authenticated else None,
-            remarks=f'{document.get_doc_type_display()} verified. {remarks}'
-        )
-
         return Response(
             UjjwalaV3DocumentSerializer(document, context={'request': request}).data,
             status=status.HTTP_200_OK
         )
 
 
-class UjjwalaV3AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
+class UjjwalaV2ToV3MigrationViewSet(viewsets.ViewSet):
     """
-    ViewSet for Audit Logs.
+    ViewSet for migrating Ujjwala V2 applications to V3.
 
-    Read-only access to audit trail.
+    Provides endpoints to migrate individual applications or batch migrations.
     """
 
-    queryset = UjjwalaV3AuditLog.objects.all()
-    serializer_class = UjjwalaV3AuditLogSerializer
-    filterset_fields = ['application', 'action', 'actor']
-    search_fields = ['action', 'remarks']
-    ordering_fields = ['created_at', 'action']
-    ordering = ['-created_at']
+    permission_classes = [permissions.IsAuthenticated]
+
+    @action(detail=False, methods=['post'], url_path='migrate-single')
+    def migrate_single(self, request):
+        """
+        Migrate a single V2 application to V3.
+
+        POST /api/ujjwala-v3/migration/migrate-single/
+        Body: {
+            "v2_app_id": 123,
+            "skip_if_exists": true
+        }
+        """
+        from ujjwala_v3.migration_service import UjjwalaV2ToV3MigrationService
+        from ujjwala.models import UjjwalaV2Application
+
+        v2_app_id = request.data.get('v2_app_id')
+        skip_if_exists = request.data.get('skip_if_exists', True)
+
+        if not v2_app_id:
+            return Response(
+                {'error': 'v2_app_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            v2_app = UjjwalaV2Application.objects.get(pk=v2_app_id)
+        except UjjwalaV2Application.DoesNotExist:
+            return Response(
+                {'error': f'V2 application {v2_app_id} not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        service = UjjwalaV2ToV3MigrationService()
+        v3_app, success, message = service.migrate_application(v2_app, skip_if_exists)
+
+        if success and v3_app:
+            return Response({
+                'success': True,
+                'message': message,
+                'v2_app_id': v2_app.pk,
+                'v3_app_id': v3_app.pk,
+                'v3_application_number': v3_app.application_number,
+            }, status=status.HTTP_201_CREATED)
+        elif "already exists" in message:
+            return Response({
+                'success': False,
+                'skipped': True,
+                'message': message,
+                'v2_app_id': v2_app.pk,
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                'success': False,
+                'message': message,
+                'v2_app_id': v2_app.pk,
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['post'], url_path='migrate-batch')
+    def migrate_batch(self, request):
+        """
+        Migrate multiple V2 applications to V3 in batch.
+
+        POST /api/ujjwala-v3/migration/migrate-batch/
+        Body: {
+            "v2_app_ids": [123, 456, 789],  // Optional, if not provided migrates all
+            "limit": 100,  // Optional, maximum number to migrate
+            "skip_if_exists": true
+        }
+        """
+        from ujjwala_v3.migration_service import UjjwalaV2ToV3MigrationService
+
+        v2_app_ids = request.data.get('v2_app_ids')
+        limit = request.data.get('limit')
+        skip_if_exists = request.data.get('skip_if_exists', True)
+
+        service = UjjwalaV2ToV3MigrationService()
+        stats = service.migrate_batch(
+            v2_app_ids=v2_app_ids,
+            limit=limit,
+            skip_if_exists=skip_if_exists
+        )
+
+        return Response({
+            'success': True,
+            'statistics': stats,
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='migration-stats')
+    def migration_stats(self, request):
+        """
+        Get migration statistics.
+
+        GET /api/ujjwala-v3/migration/migration-stats/
+        """
+        from ujjwala.models import UjjwalaV2Application
+
+        v2_total = UjjwalaV2Application.objects.count()
+        v3_total = UjjwalaV3Application.objects.count()
+        v3_migrated = UjjwalaV3Application.objects.filter(
+            version='V2'
+        ).count()
+
+        return Response({
+            'v2_total_applications': v2_total,
+            'v3_total_applications': v3_total,
+            'v3_migrated_from_v2': v3_migrated,
+            'v2_pending_migration': v2_total - v3_migrated,
+        }, status=status.HTTP_200_OK)
