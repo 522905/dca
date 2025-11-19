@@ -99,7 +99,6 @@ INSTALLED_APPS = [
     'options',
     'django_summernote',
     'lpg_dealer_association',
-    'ujjwala_v3.apps.UjjwalaV3Config'
 ]
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"

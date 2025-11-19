@@ -22,11 +22,12 @@ from django.db import models
 from django.db.models import Q, CheckConstraint, UniqueConstraint
 from django.utils import timezone
 from django_fsm import FSMField, transition
+from taggit.managers import TaggableManager
 
 from .enums import (
     Gender, Caste, FamilyDocumentType, LPGConnectionType,
     ApplicationStatus, AddressType, RelationToApplicant,
-    DocumentType, POACode, VerificationStatus
+    DocumentType, POACode, VerificationStatus, MaritalStatusEnum
 )
 from .validators import (
     validate_aadhaar_number, validate_mobile_number, validate_ifsc_code,
@@ -132,6 +133,85 @@ class UjjwalaV3Application(TimeStampedModel):
     is_migrant = models.BooleanField(
         default=True,
         help_text='Migrant status - Must be True for PMUY V3'
+    )
+
+    marital_status = models.CharField(
+        max_length=25,
+        choices=MaritalStatusEnum.choices,
+        default=MaritalStatusEnum.MARRIED,
+        help_text='Marital status of the applicant'
+    )
+
+    marriage_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text='Date of marriage (if applicable)'
+    )
+
+    # ==================== eKYC FIELDS ====================
+    ekyc_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='Date and time when eKYC was performed'
+    )
+
+    ekyc_channel = models.CharField(
+        max_length=128,
+        null=True,
+        blank=True,
+        help_text='Channel through which eKYC was performed (e.g., Aadhaar, DigiLocker)'
+    )
+
+    ekyc_last_attempt_log = models.TextField(
+        null=True,
+        blank=True,
+        help_text='Log of the last eKYC attempt (error messages, responses)'
+    )
+
+    ekyc_cleared = models.BooleanField(
+        default=False,
+        help_text='Whether eKYC verification has been cleared/passed'
+    )
+
+    robo_execution_failed_count = models.IntegerField(
+        default=0,
+        blank=True,
+        null=True,
+        help_text='Count of failed robotic process automation attempts'
+    )
+
+    # ==================== LOCATION TRACKING ====================
+    latitude = models.CharField(
+        max_length=32,
+        null=True,
+        blank=True,
+        help_text='Latitude coordinate for application location'
+    )
+
+    longitude = models.CharField(
+        max_length=32,
+        null=True,
+        blank=True,
+        help_text='Longitude coordinate for application location'
+    )
+
+    accuracy = models.CharField(
+        max_length=24,
+        null=True,
+        blank=True,
+        help_text='GPS accuracy of the location coordinates'
+    )
+
+    # ==================== VERSION & TAGS ====================
+    version = models.CharField(
+        max_length=2,
+        default='V3',
+        help_text='Version of the Ujjwala application (V2, V3)'
+    )
+
+    tags = TaggableManager(
+        blank=True,
+        help_text='Tags for categorization and filtering'
     )
 
     # ==================== FAMILY COMPOSITION DOCUMENT METADATA ====================

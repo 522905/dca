@@ -159,3 +159,12 @@ class VerificationStatus(models.TextChoices):
     VERIFIED = 'VERIFIED', 'Verified'
     FAILED = 'FAILED', 'Failed'
     SKIPPED = 'SKIPPED', 'Skipped'
+
+
+class MaritalStatusEnum(models.TextChoices):
+    """Marital status choices."""
+    MARRIED = 'MARRIED', 'Married'
+    UNMARRIED = 'UNMARRIED', 'Unmarried'
+    DIVORCED = 'DIVORCED', 'Divorced'
+    WIDOWED = 'WIDOWED', 'Widowed'
+    SEPARATED = 'SEPARATED', 'Separated'
