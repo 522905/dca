@@ -498,3 +498,79 @@ class UjjwalaV2ToV3MigrationViewSet(viewsets.ViewSet):
             'v3_migrated_from_v2': v3_migrated,
             'v2_pending_migration': v2_total - v3_migrated,
         }, status=status.HTTP_200_OK)
+
+
+class UjjwalaV2LookupViewSet(viewsets.ViewSet):
+    """
+    ViewSet for looking up Ujjwala V2 applications by phone number.
+
+    Provides endpoints to search V2 applications in specific statuses.
+    """
+
+    permission_classes = [permissions.AllowAny]
+
+    @action(detail=False, methods=['get'], url_path='search-by-phone')
+    def search_by_phone(self, request):
+        """
+        Search V2 applications by phone number.
+
+        Returns applications in NIC_CLEARED or READY_FOR_DISBURSEMENT status.
+
+        GET /api/ujjwala-v3/v2-lookup/search-by-phone/?phone_number=9876543210
+
+        Query Parameters:
+            phone_number (required): 10-digit mobile number
+
+        Returns:
+            List of matching applications with complete data
+        """
+        from ujjwala.models import UjjwalaV2Application
+        from ujjwala.serializers import UjjwalaV2ApplicationSerializer
+        from ujjwala.enums import UjjwalaV2ApplicationStatus
+
+        phone_number = request.query_params.get('phone_number')
+
+        if not phone_number:
+            return Response(
+                {'error': 'phone_number query parameter is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate phone number format (basic validation)
+        if not phone_number.isdigit() or len(phone_number) != 10:
+            return Response(
+                {'error': 'phone_number must be a 10-digit number'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Search for applications with the given phone number and specific statuses
+        applications = UjjwalaV2Application.objects.filter(
+            contact_mobile=phone_number,
+            status__in=[
+                UjjwalaV2ApplicationStatus.NIC_CLEARED,
+                UjjwalaV2ApplicationStatus.READY_FOR_DISBURSEMENT
+            ]
+        ).prefetch_related('documents', 'family_members')
+
+        if not applications.exists():
+            return Response(
+                {
+                    'message': 'No applications found with the given phone number in NIC_CLEARED or READY_FOR_DISBURSEMENT status',
+                    'phone_number': phone_number,
+                    'results': []
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Serialize the applications
+        serializer = UjjwalaV2ApplicationSerializer(applications, many=True)
+
+        return Response(
+            {
+                'message': f'Found {applications.count()} application(s)',
+                'phone_number': phone_number,
+                'count': applications.count(),
+                'results': serializer.data
+            },
+            status=status.HTTP_200_OK
+        )

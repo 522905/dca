@@ -12,7 +12,8 @@ from .viewsets import (
     UjjwalaV3AddressViewSet,
     UjjwalaV3FamilyMemberViewSet,
     UjjwalaV3DocumentViewSet,
-    UjjwalaV2ToV3MigrationViewSet
+    UjjwalaV2ToV3MigrationViewSet,
+    UjjwalaV2LookupViewSet
 )
 from .views import public_application_form, application_success
 
@@ -47,6 +48,12 @@ router.register(
     r'migration',
     UjjwalaV2ToV3MigrationViewSet,
     basename='ujjwala-v2-to-v3-migration'
+)
+
+router.register(
+    r'v2-lookup',
+    UjjwalaV2LookupViewSet,
+    basename='ujjwala-v2-lookup'
 )
 
 # The API URLs are now determined automatically by the router
@@ -113,4 +120,9 @@ Migration (V2 to V3):
            Body: {"v2_app_ids": [123, 456], "limit": 100, "skip_if_exists": true}
 
     GET    /api/ujjwala-v3/migration/migration-stats/       - Get migration statistics
+
+V2 Application Lookup:
+    GET    /api/ujjwala-v3/v2-lookup/search-by-phone/       - Search V2 apps by phone number
+           Query: ?phone_number=9876543210
+           Returns: Applications in NIC_CLEARED or READY_FOR_DISBURSEMENT status
 """
